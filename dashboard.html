@@ -43,21 +43,33 @@
         }
         
         .logo-icon {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             background: linear-gradient(135deg, #00f5ff, #b829dd);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 0 25px rgba(0, 245, 255, 0.5);
-            animation: glow 2s infinite alternate;
+            font-size: 1.25rem;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
         }
         
-        @keyframes glow {
-            from { box-shadow: 0 0 20px rgba(0, 245, 255, 0.5); }
-            to { box-shadow: 0 0 40px rgba(0, 245, 255, 0.8), 0 0 60px rgba(184, 41, 221, 0.4); }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+        
+        .logo-value {
+            font-size: 1.1rem;
+            font-weight: 700;
         }
         
         .nav-item {
@@ -329,9 +341,9 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-icon">🚀</div>
-                <div>
-                    <div style="font-size: 1.5rem; font-weight: 700;">DWE</div>
-                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Command Center</div>
+                <div class="logo-text">
+                    <div class="logo-label">Command Center</div>
+                    <div class="logo-value">DWE</div>
                 </div>
             </div>
             
