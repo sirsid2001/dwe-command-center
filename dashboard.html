@@ -951,10 +951,10 @@
                 // Render recent completed
                 renderRecentCompleted(recentCompleted);
                 
-                // Update sidebar stats
-                const total = tasks.length;
-                const completed = doneTasks.length;
-                const inProgress = progressTasks.length;
+                // Update sidebar stats (use API stats, not limited task list)
+                const total = data.stats.total;
+                const completed = data.stats.completed;
+                const inProgress = data.stats.inProgress;
                 const critical = tasks.filter(t => t.priority === 'Critical').length;
                 
                 console.log('Stats:', { total, completed, inProgress, critical });
