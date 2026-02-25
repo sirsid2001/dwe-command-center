@@ -282,7 +282,8 @@
         <div id="projects" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h2>📁 Projects <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">(from Notion)</span></h2>
-                <div style="display: flex; gap: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);" id="last-refresh-projects">Never</span>
                     <button class="btn" onclick="refreshProjects()">🔄 Refresh</button>
                 </div>
             </div>
@@ -887,10 +888,24 @@
         // Fetch and render Projects (Kanban view)
         async function fetchProjects() {
             try {
+                console.log('Fetching projects from Notion...');
                 const res = await fetch(`${API_BASE}/notion-tasks`);
                 const data = await res.json();
                 
-                if (!data.tasks) return;
+                console.log('Projects data:', data.stats);
+                
+                if (!data.tasks) {
+                    console.error('No tasks found in response');
+                    return;
+                }
+                
+                // Update last refresh timestamp
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const refreshEl = document.getElementById('last-refresh-projects');
+                if (refreshEl) {
+                    refreshEl.textContent = timeStr;
+                }
                 
                 const tasks = data.tasks;
                 
@@ -924,7 +939,9 @@
                 const total = tasks.length;
                 const completed = doneTasks.length;
                 const inProgress = progressTasks.length;
-                const critical = tasks.filter(t => t.pastDue && t.priority === 'High').length;
+                const critical = tasks.filter(t => t.pastDue && (t.priority === 'High' || t.priority === 'Critical')).length;
+                
+                console.log('Stats:', { total, completed, inProgress, critical });
                 
                 document.getElementById('sidebar-total').textContent = total;
                 document.getElementById('sidebar-completed').textContent = completed;
@@ -1010,7 +1027,26 @@
         }
 
         function refreshProjects() {
-            fetchProjects();
+            const btn = document.querySelector('#projects .btn');
+            if (btn) {
+                btn.textContent = '🔄 Refreshing...';
+                btn.disabled = true;
+            }
+            
+            fetchProjects().then(() => {
+                if (btn) {
+                    btn.textContent = '🔄 Refresh';
+                    btn.disabled = false;
+                }
+            }).catch(() => {
+                if (btn) {
+                    btn.textContent = '❌ Failed';
+                    setTimeout(() => {
+                        btn.textContent = '🔄 Refresh';
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            });
         }
 
         // Initialize
