@@ -3,282 +3,467 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>DWE | Command Center</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3d 50%, #162044 100%);
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 50%, #162044 100%);
+            color: #fff;
             min-height: 100vh;
         }
         
-        .header { 
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem 2rem;
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 245, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(184, 41, 221, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
         }
         
-        .logo { 
-            display: flex; 
-            align-items: center; 
-            gap: 1rem; 
-            font-size: 1.75rem; 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .container { display: flex; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: rgba(10, 10, 26, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 25px rgba(0, 245, 255, 0.5);
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(0, 245, 255, 0.5); }
+            to { box-shadow: 0 0 40px rgba(0, 245, 255, 0.8), 0 0 60px rgba(184, 41, 221, 0.4); }
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(184, 41, 221, 0.1) 100%);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.2);
+        }
+        
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.1) 0%, rgba(184, 41, 221, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 30px;
+            padding: 3rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .hero h2 {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #00f5ff 50%, #b829dd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero .time {
+            text-align: right;
+        }
+        
+        .hero .date {
+            font-size: 1rem;
+            color: #00f5ff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero .clock {
+            font-size: 2.5rem;
             font-weight: 700;
         }
         
-        .logo-icon { 
-            width: 44px; 
-            height: 44px; 
-            background: linear-gradient(135deg, #00d4ff, #7c3aed);
-            border-radius: 12px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.5rem;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-        }
-        
-        .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
-        
-        .welcome { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
         
-        .welcome h1 { font-size: 1.25rem; color: rgba(255,255,255,0.6); font-weight: 500; }
-        .welcome p { color: rgba(255,255,255,0.4); font-size: 0.875rem; }
-        
-        .time { text-align: right; }
-        .time .date { color: #00d4ff; font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .time .clock { font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }
-        
-        .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        .metrics-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        
-        .metric-card { 
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 20px;
-            padding: 1.5rem;
-            border-left: 4px solid #00d4ff;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 1.75rem;
+            border-left: 4px solid #00f5ff;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
-        .metric-card.success { border-left-color: #00d68f; }
-        .metric-card.warning { border-left-color: #ffaa00; }
-        .metric-card.danger { border-left-color: #ff4757; }
         
-        .metric-label { font-size: 0.75rem; color: #00d4ff; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; }
-        .metric-value { font-size: 2.5rem; font-weight: 700; }
+        .stat-card.success { border-left-color: #00ff88; }
+        .stat-card.warning { border-left-color: #ff9500; }
+        .stat-card.danger { border-left-color: #ff00ff; }
         
-        .grid-3 {
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(184, 41, 221, 0.1) 100%);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+        
+        /* Progress Section */
+        .progress-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .progress-circle {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+        
+        .progress-circle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 12;
+        }
+        
+        .progress-bar {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 502;
+            stroke-dashoffset: 226;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .progress-text .percent {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .progress-stats {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .progress-stat {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+        }
+        
+        .progress-stat .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        
+        /* Services */
+        .services-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
-            margin-bottom: 1.5rem;
         }
         
-        .panel {
-            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 20px;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
+        .service-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 1.75rem;
         }
         
-        .panel h3 {
-            font-size: 0.875rem;
-            color: #00d4ff;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .job-item {
+        .panel-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 1.5rem;
         }
         
-        .status-dot {
+        .panel-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+        
+        .pulse-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #00d68f;
-            box-shadow: 0 0 8px #00d68f;
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            animation: pulse 2s infinite;
         }
-        .status-dot.warning { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
         
-        .heartbeat { animation: pulse 1.5s infinite; display: inline-block; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .pulse-dot.warning {
+            background: #ff9500;
+            box-shadow: 0 0 10px #ff9500;
+        }
         
-        @media (max-width: 1024px) {
-            .metrics, .metrics-2 { grid-template-columns: repeat(2, 1fr); }
-            .grid-3 { grid-template-columns: 1fr; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .services-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-<body style="display: flex;">
-    <!-- Sidebar -->
-    <aside style="width: 260px; background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto;">
-        <div class="logo" style="margin-bottom: 2rem;">
-            <div class="logo-icon">🚀</div>
-            <span style="font-size: 1.25rem;">DWE</span>
-        </div>
-        
-        <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(0,212,255,0.05) 100%); border-radius: 12px; color: #fff; text-decoration: none; border: 1px solid rgba(0,212,255,0.3);">
-                <span>📊</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
-                <span>🏢</span>
-                <span>AI Team</span>
-            </a>
-            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
-                <span>📋</span>
-                <span>Tasks</span>
-            </a>
-            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
-                <span>📜</span>
-                <span>Logs</span>
-            </a>
-        </nav>
-        
-        <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;">
-                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #00d4ff, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">S</div>
-                <div>
-                    <div style="font-size: 0.875rem; font-weight: 600;">Sidney Garcia</div>
-                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">CEO / Founder</div>
-                </div>
-            </div>
-        </div>
-    </aside>
+<body>
+    <svg width="0" height="0">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#00f5ff"/>
+                <stop offset="100%" style="stop-color:#b829dd"/>
+            </linearGradient>
+        </defs>
+    </svg>
     
-    <!-- Main Content -->
-    <main style="margin-left: 260px; flex: 1; padding: 2rem;">
-        <!-- Welcome Banner -->
-        <div style="background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(124,58,237,0.15) 100%); border: 1px solid rgba(0,212,255,0.2); border-radius: 24px; padding: 2.5rem; margin-bottom: 2rem; position: relative; overflow: hidden;">
-            <div style="position: relative; z-index: 1;">
-                <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem;">Welcome back,</div>
-                <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Sidney Garcia</h1>
-                <p style="color: rgba(255,255,255,0.6); font-size: 1rem;">CEO / Founder — Digital Wealth Ecosystem</p>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">DWE</div>
+                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Command Center</div>
+                </div>
             </div>
-            <div style="position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); text-align: right;">
+            
+            <nav>
+                <a href="#" class="nav-item active">📊 Dashboard</a>
+                <a href="#" class="nav-item">🤖 AI Team</a>
+                <a href="#" class="nav-item">📋 Tasks</a>
+                <a href="#" class="nav-item">📜 Logs</a>
+                <a href="#" class="nav-item">⚙️ Settings</a>
+            </nav>
+        </aside>
+        
+        <main class="main">
+            <div class="hero">
+                <div>
+                    <h2>Welcome Back</h2>
+                    <h1>Sidney Garcia</h1>
+                </div>
                 <div class="time">
-                    <div class="date" id="date" style="font-size: 1rem; margin-bottom: 0.25rem;">Loading...</div>
-                    <div class="clock" id="clock" style="font-size: 2rem;">00:00:00</div>
+                    <div class="date" id="date">Loading...</div>
+                    <div class="clock" id="clock">00:00:00</div>
                 </div>
-            </div>
-            <!-- Decorative glow -->
-            <div style="position: absolute; right: -100px; top: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,212,255,0.3) 0%, transparent 70%); pointer-events: none;"></div>
-        </div>
-        
-        <!-- Stats with Icons -->
-        <div class="metrics" style="margin-bottom: 1.5rem;">
-            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(0,214,143,0.2) 0%, rgba(0,214,143,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">🟢</div>
-                <div>
-                    <div class="metric-value" style="font-size: 1.75rem;">Online</div>
-                    <div class="metric-label" style="margin-bottom: 0;">Server Status</div>
-                </div>
-            </div>
-            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(0,212,255,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">🤖</div>
-                <div>
-                    <div class="metric-value" style="font-size: 1.75rem;">4</div>
-                    <div class="metric-label" style="margin-bottom: 0;">Active Agents</div>
-                </div>
-            </div>
-            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(255,170,0,0.2) 0%, rgba(255,170,0,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">💾</div>
-                <div>
-                    <div class="metric-value" style="font-size: 1.75rem;">8.8 MB</div>
-                    <div class="metric-label" style="margin-bottom: 0;">Memory</div>
-                </div>
-            </div>
-            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
-                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(255,71,87,0.2) 0%, rgba(255,71,87,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">💓</div>
-                <div>
-                    <div class="metric-value" style="font-size: 1.75rem;"><span id="uptime">0s</span></div>
-                    <div class="metric-label" style="margin-bottom: 0;">Uptime</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Task Stats -->
-        <div class="metrics-2" style="margin-bottom: 2rem;">
-            <div class="metric-card">
-                <div class="metric-label">Total Tasks</div>
-                <div class="metric-value">1020</div>
-            </div>
-            <div class="metric-card success">
-                <div class="metric-label">Completed</div>
-                <div class="metric-value">562</div>
-            </div>
-            <div class="metric-card warning">
-                <div class="metric-label">In Progress</div>
-                <div class="metric-value">4</div>
-            </div>
-            <div class="metric-card danger">
-                <div class="metric-label">Remaining</div>
-                <div class="metric-value">458</div>
-            </div>
-        </div>
-        
-        <div class="grid-3">
-            <div class="panel">
-                <h3>🔌 Services</h3>
-                <div class="job-item"><span class="status-dot"></span><span>OpenClaw Gateway (port 3000)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>n8n Digital Ocean</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>MCporter Client</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>Notion API</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>Pinecone</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>Ollama M4 GPU (5 models)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>OpenRouter</span></div>
             </div>
             
-            <div class="panel">
-                <h3>⏰ Cron Jobs</h3>
-                <div class="job-item"><span class="status-dot"></span><span>CRON-001 Swarm Guardian (9:10a)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>CRON-002 Ops Escalation (9:10a)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>CRON-003 Log Cleanup (12:00a)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>CRON-004 Lucy Email Sync (10:00a)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>CRON-005 macOS Daily (3:00a)</span></div>
-                <div class="job-item"><span class="status-dot warning"></span><span>CRON-006 macOS Weekly (Sun 4am)</span></div>
+            <div class="stats-grid">
+                <div class="stat-card success">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-value" style="color: #00ff88;">Online</div>
+                    <div class="stat-label">Server</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Agents</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-value">8.8 MB</div>
+                    <div class="stat-label">Memory</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon">💓</div>
+                    <div class="stat-value" id="uptime">0s</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
             </div>
             
-            <div class="panel">
-                <h3>🚀 LaunchD Services</h3>
-                <div class="job-item"><span class="status-dot"></span><span>DWE-001 Ops Report (3:00p)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>DWE-002 Ops Monitor (3:05p)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>DWE-003 Project Monitor (3:00p)</span></div>
-                <div class="job-item"><span class="status-dot"></span><span>DWE-007 COO Task Mgr (2:30p)</span></div>
-                <div class="job-item"><span class="status-dot warning"></span><span>DWE-008 Lucy Email (7:00a)</span></div>
+            <div class="progress-section">
+                <div class="progress-circle">
+                    <svg width="180" height="180" viewBox="0 0 180 180">
+                        <circle class="progress-bg" cx="90" cy="90" r="80"/>
+                        <circle class="progress-bar" cx="90" cy="90" r="80"/>
+                    </svg>
+                    <div class="progress-text">
+                        <div class="percent">55%</div>
+                        <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">Complete</div>
+                    </div>
+                </div>
+                
+                <div class="progress-stats">
+                    <div class="progress-stat">
+                        <div class="number" style="color: #00f5ff;">1020</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="number" style="color: #00ff88;">562</div>
+                        <div class="stat-label">Done</div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="number" style="color: #ff00ff;">458</div>
+                        <div class="stat-label">Left</div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </main>
+            
+            <div class="services-grid">
+                <div class="service-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">🔌</div>
+                        <div style="font-weight: 600;">Services</div>
+                    </div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>OpenClaw Gateway</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>n8n Digital Ocean</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>MCporter Client</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Notion API</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Pinecone</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Ollama M4 GPU</span></div>
+                </div>
+                
+                <div class="service-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">⏰</div>
+                        <div style="font-weight: 600;">Cron Jobs</div>
+                    </div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Swarm Guardian</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Ops Escalation</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Log Cleanup</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Lucy Email</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>macOS Daily</span></div>
+                    <div class="service-item"><span class="pulse-dot warning"></span><span>macOS Weekly</span></div>
+                </div>
+                
+                <div class="service-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">🚀</div>
+                        <div style="font-weight: 600;">LaunchD</div>
+                    </div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Ops Report</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Ops Monitor</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>Project Monitor</span></div>
+                    <div class="service-item"><span class="pulse-dot"></span><span>COO Task Mgr</span></div>
+                    <div class="service-item"><span class="pulse-dot warning"></span><span>Lucy Email</span></div>
+                </div>
+            </div>
+        </main>
     </div>
     
     <script>
         function updateClock() {
             const now = new Date();
-            const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
         }
         setInterval(updateClock, 1000);
@@ -290,11 +475,7 @@
             const h = Math.floor(uptime / 3600);
             const m = Math.floor((uptime % 3600) / 60);
             const s = uptime % 60;
-            let text = '';
-            if (h) text += h + 'h ';
-            if (m || h) text += m + 'm ';
-            text += s + 's';
-            document.getElementById('uptime').textContent = text;
+            document.getElementById('uptime').textContent = (h ? h + 'h ' : '') + (m ? m + 'm ' : '') + s + 's';
         }
         setInterval(updateUptime, 1000);
     </script>
