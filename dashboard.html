@@ -24,13 +24,16 @@
         .container { display: flex; }
         
         .sidebar {
-            width: 220px;
-            background: rgba(26, 30, 80, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 1.5rem 1rem;
+            width: 260px;
+            background: rgba(20, 25, 70, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 0 30px 30px 0;
+            padding: 1.5rem;
             position: fixed;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
         }
         
         .logo {
@@ -38,50 +41,132 @@
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
         }
         
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            box-shadow: 0 0 15px rgba(0, 245, 255, 0.4);
+            font-size: 1rem;
         }
         
-        .logo-label {
-            font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .logo-text {
+            display: flex;
+            flex-direction: column;
         }
         
         .logo-value {
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .nav-section-title {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            padding-left: 0.75rem;
         }
         
         .nav-item {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             margin-bottom: 0.25rem;
             border-radius: 12px;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
-            transition: all 0.3s;
-            font-size: 0.85rem;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
         }
         
-        .nav-item:hover, .nav-item.active {
-            background: rgba(0, 245, 255, 0.1);
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
             color: #fff;
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(184, 41, 221, 0.1) 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 245, 255, 0.2);
+        }
+        
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+        }
+        
+        .help-box {
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        
+        .help-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1.25rem;
+        }
+        
+        .help-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .help-text {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+        
+        .help-btn {
+            width: 100%;
+            padding: 0.625rem;
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
         }
         
         .main {
@@ -346,19 +431,52 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-icon">🚀</div>
-                <div>
-                    <div class="logo-label">Command Center</div>
-                    <div class="logo-value">DWE</div>
+                <div class="logo-text">
+                    <div class="logo-value">DWE FREE</div>
                 </div>
             </div>
             
-            <nav>
-                <a href="#" class="nav-item active">📊 Dashboard</a>
-                <a href="#" class="nav-item">🤖 AI Team</a>
-                <a href="#" class="nav-item">📋 Tasks</a>
-                <a href="#" class="nav-item">📜 Logs</a>
-                <a href="#" class="nav-item">⚙️ Settings</a>
-            </nav>
+            <div class="nav-section">
+                <button class="nav-item active">
+                    <div class="nav-icon">📊</div>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon">📋</div>
+                    <span>Tables</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon">💳</div>
+                    <span>Billing</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon">🔄</div>
+                    <span>RTL</span>
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Account Pages</div>
+                <button class="nav-item">
+                    <div class="nav-icon">👤</div>
+                    <span>Profile</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon">🔑</div>
+                    <span>Sign In</span>
+                </button>
+                <button class="nav-item">
+                    <div class="nav-icon">📝</div>
+                    <span>Sign Up</span>
+                </button>
+            </div>
+            
+            <div class="help-box">
+                <div class="help-icon">❓</div>
+                <div class="help-title">Need help?</div>
+                <div class="help-text">Please check our docs</div>
+                <button class="help-btn">Documentation</button>
+            </div>
         </aside>
         
         <main class="main">
