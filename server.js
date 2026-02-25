@@ -526,7 +526,8 @@ async function getNotionTasks(req, res) {
             total: allTasks.length,
             inProgress: allTasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
             completed: allTasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete').length,
-            todo: allTasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length
+            todo: allTasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length,
+            maxIdNumber: allTasks.reduce((max, t) => Math.max(max, t.idNumber || 0), 0)
         };
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -549,7 +550,7 @@ async function fetchAllNotionTasks() {
     let hasMore = true;
     let nextCursor = null;
     
-    while (hasMore && allTasks.length < 2000) {
+    while (hasMore && allTasks.length < 3000) {
         const options = {
             hostname: 'api.notion.com',
             path: `/v1/data_sources/${NOTION_DB_ID}/query`,
@@ -561,6 +562,7 @@ async function fetchAllNotionTasks() {
             }
         };
         
+        // Query ALL records - no filters
         const body = nextCursor 
             ? JSON.stringify({ page_size: 100, start_cursor: nextCursor })
             : JSON.stringify({ page_size: 100 });
@@ -589,8 +591,12 @@ async function fetchAllNotionTasks() {
                 if (props.Status?.status?.name) status = props.Status.status.name;
                 else if (props.Status?.select?.name) status = props.Status.select.name;
                 
+                // Get ID number from Notion's unique_id field
+                const idNumber = props.ID?.unique_id?.number || 0;
+                
                 return {
                     id: task.id,
+                    idNumber: idNumber,
                     name: props['Task name']?.title?.[0]?.plain_text || 'Untitled',
                     status: status,
                     priority: props.Priority?.select?.name || 'Medium',
