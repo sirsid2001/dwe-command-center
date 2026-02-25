@@ -4,59 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DWE | Command Center</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-primary: #050508;
-            --bg-card: rgba(255,255,255,0.04);
-            --border: rgba(255,255,255,0.06);
-            --accent: #00d4ff;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #fff;
-            --text-secondary: rgba(255,255,255,0.7);
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text); min-height: 100vh; }
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.08) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.06) 0%, transparent 50%);
-            pointer-events: none; z-index: -1;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
         }
-        .header { position: sticky; top: 0; backdrop-filter: blur(20px); background: rgba(5,5,8,0.8); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; }
-        .header-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 1.25rem; }
-        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #6366f1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-        .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
-        .tab { padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 8px; transition: all 0.15s; }
-        .tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-        .tab.active { color: var(--text); background: var(--bg-card); }
-        .main { max-width: 1600px; margin: 0 auto; padding: 2.5rem; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } }
-        .welcome { margin-bottom: 2.5rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .welcome h1 { font-size: 1.75rem; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .time { font-size: 2rem; font-weight: 300; }
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
-        .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; position: relative; animation: fadeIn 0.5s; }
-        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
-        .metric-value { font-size: 2rem; font-weight: 700; }
-        .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
-        .upload-zone:hover { border-color: var(--accent); background: rgba(0,212,255,0.05); }
-        .upload-zone.dragover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
-        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; background: var(--accent); color: #000; font-weight: 500; }
-        .btn:hover { filter: brightness(1.1); }
-        .status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
-        .status.online { background: rgba(16,185,129,0.2); color: var(--success); }
-        .status.busy { background: rgba(245,158,11,0.2); color: var(--warning); }
-        .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; }
-        .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .decision-item { background: var(--bg-card); border-left: 3px solid var(--accent); padding: 1rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0; }
-        .tag { display: inline-block; background: rgba(99,102,241,0.2); color: var(--accent); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+        .header {
+            background: rgba(20,20,20,0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 2rem;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .welcome {
+            margin-bottom: 2rem;
+        }
+        .welcome h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .welcome p {
+            color: rgba(255,255,255,0.6);
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 3px solid #3b82f6;
+        }
+        .metric-card div:first-child {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -64,1085 +88,47 @@
         <div class="header-content">
             <div class="logo">
                 <div class="logo-icon">🚀</div>
-                <span style="font-size: 1.25rem; font-weight: 600;">DWE | Command Center</span>
+                <span>DWE | Command Center</span>
             </div>
-            <nav class="tabs">
-                <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-                <button class="tab" onclick="showTab('agents')">🏢 AI Team</button>
-                <button class="tab" onclick="showTab('tasks')">✅ Tasks</button>
-                <button class="tab" onclick="showTab('decisions')">📋 Decisions</button>
-                <button class="tab" onclick="showTab('logs')">📜 Logs</button>
-                <button class="tab" onclick="showTab('projects')">📁 Projects</button>
-                <button class="tab" onclick="showTab('upload')">📤 Upload</button>
-            </nav>
         </div>
     </header>
-
+    
     <main class="main">
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="welcome">
-                <div>
-                    <h1 id="greeting">Good morning, Sidney</h1>
-                    <p style="color:var(--text-secondary);">CEO / Founder — Digital Wealth Ecosystem</p>
-                </div>
-                <div style="text-align:right;">
-                    <div class="time" id="clock">00:00</div>
-                    <div style="color:var(--text-secondary);font-size:0.875rem;" id="date">Loading...</div>
-                </div>
+        <div class="welcome">
+            <h1>Good morning, Sidney</h1>
+            <p>CEO / Founder — Digital Wealth Ecosystem</p>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div>Server Status</div>
+                <div class="metric-value" style="color: #10b981;">● Online</div>
             </div>
-
-            <div class="metrics">
-                <div class="metric-card">
-                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Server Status</div>
-                    <div class="metric-value" id="server-status" style="color:var(--success);">● Online</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--success);">
-                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Active Agents</div>
-                    <div class="metric-value" id="agent-count">4</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--warning);">
-                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Memory Usage</div>
-                    <div class="metric-value" id="memory-usage">8.8 MB</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--danger);">
-                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Uptime</div>
-                    <div class="metric-value" id="uptime">0s</div>
-                </div>
+            <div class="metric-card" style="border-left-color: #f59e0b;">
+                <div>Total Tasks</div>
+                <div class="metric-value">1020</div>
             </div>
-
-            <!-- Services Status Panel -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
-                <!-- Services Column -->
-                <div class="metric-card" style="--accent: var(--accent);">
-                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🔌 Services</h3>
-                    <div id="services-list" style="font-size: 0.875rem; line-height: 1.8;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>OpenClaw Gateway (port 3000)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>n8n Digital Ocean</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>MCporter Client</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Notion API</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Pinecone</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Ollama M4 GPU (5 models)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>OpenRouter</span></div>
-                    </div>
-                </div>
-
-                <!-- Cron Jobs Column -->
-                <div class="metric-card" style="--accent: var(--warning);">
-                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">⏰ Cron Jobs (Next Run)</h3>
-                    <div id="cron-list" style="font-size: 0.875rem; line-height: 1.8;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-001 Swarm Guardian (9:10a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-002 Ops Escalation (9:10a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-003 Log Cleanup (12:00a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-004 Lucy Email Sync (10:00a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-005 macOS Daily (3:00a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--warning);">🟡</span> <span>CRON-006 macOS Weekly (Sun 4am)</span></div>
-                    </div>
-                </div>
-
-                <!-- LaunchD Services Column -->
-                <div class="metric-card" style="--accent: #818cf8;">
-                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🚀 LaunchD Services (Next Run)</h3>
-                    <div id="launchd-list" style="font-size: 0.875rem; line-height: 1.8;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-001 Ops Report (10:00a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-002 Ops Monitor (10:05a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-003 Project Monitor (10:00a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-007 COO Task Mgr (9:30a)</span></div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--warning);">🟡</span> <span>DWE-008 Lucy Email (7:00a)</span></div>
-                    </div>
-                </div>
-
-                <!-- AI Agent Routing Column -->
-                <div class="metric-card" style="--accent: var(--success);">
-                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🤖 AI Agent Routing (via COO Task Mgr)</h3>
-                    <div id="agent-routing" style="font-size: 0.875rem; line-height: 1.8;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span>👨‍💼</span> <span><strong>COO</strong> — Task routing & coordination</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span>💻</span> <span><strong>CTO</strong> — Technical & infrastructure</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span>🔧</span> <span><strong>Chief</strong> — Systems & architecture</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>🛡️</span> <span><strong>Security</strong> — Protection & compliance</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="metric-card" style="border-left-color: #3b82f6;">
+                <div>Completed</div>
+                <div class="metric-value">562</div>
+            </div>
+            <div class="metric-card" style="border-left-color: #ef4444;">
+                <div>Remaining</div>
+                <div class="metric-value">458</div>
             </div>
         </div>
-
-        <!-- Agents Tab -->
-        <div id="agents" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2>🤖 AI Team Members</h2>
-                <button class="btn" onclick="refreshAgents()">🔄 Refresh</button>
-            </div>
-            <div class="agent-grid" id="agent-grid"></div>
-        </div>
-
-        <!-- Upload Tab -->
-        <div id="upload" class="tab-content">
-            <h2 style="margin-bottom: 1.5rem;">📤 Upload to OneDrive</h2>
-            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
-                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Drag & drop files here</p>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">or click to browse</p>
-                <input type="file" id="file-input" style="display: none;" accept=".zip,.pdf" onchange="handleFileSelect(event)">
-            </div>
-            <div id="upload-status" style="margin-top: 1rem; display: none;">
-                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span id="upload-filename">filename.zip</span>
-                        <span id="upload-progress">0%</span>
-                    </div>
-                    <div style="background: var(--bg-primary); height: 4px; border-radius: 2px; overflow: hidden;">
-                        <div id="upload-bar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tasks Tab -->
-        <div id="tasks" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2>✅ Tasks <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">(from Notion)</span></h2>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn" onclick="refreshTasks()">🔄 Refresh</button>
-                </div>
-            </div>
-            
-            <!-- Stats Cards -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem;">
-                <div class="metric-card" onclick="filterTasks('all')" style="cursor: pointer;" id="stat-all">
-                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Total</div>
-                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-total">--</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--warning); cursor: pointer;" onclick="filterTasks('todo')" id="stat-todo">
-                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">To Do</div>
-                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-todo">--</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--success); cursor: pointer;" onclick="filterTasks('done')" id="stat-done">
-                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Done</div>
-                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-done">--</div>
-                </div>
-                <div class="metric-card" style="--accent:var(--danger); cursor: pointer;" onclick="filterTasks('overdue')" id="stat-overdue">
-                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Overdue</div>
-                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-overdue">--</div>
-                </div>
-            </div>
-            
-            <!-- Role Filter Tabs -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-                <span style="font-size: 0.75rem; color: var(--text-secondary); align-self: center; margin-right: 0.5rem;">By Role:</span>
-                <button class="tab active" onclick="filterByRole('all')" id="role-all">All</button>
-                <button class="tab" onclick="filterByRole('CEO')" id="role-CEO">CEO</button>
-                <button class="tab" onclick="filterByRole('CTO')" id="role-CTO">Engineering</button>
-                <button class="tab" onclick="filterByRole('COO')" id="role-COO">Operations</button>
-                <button class="tab" onclick="filterByRole('PM')" id="role-PM">Project Mgmt</button>
-                <button class="tab" onclick="filterByRole('CFO')" id="role-CFO">Finance</button>
-                <button class="tab" onclick="filterByRole('Security')" id="role-Security">Security</button>
-            </div>
-
-            <!-- Critical Tickets Section -->
-            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1)); border: 1px solid var(--danger); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;" id="critical-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <h3 style="color: var(--danger); font-size: 1rem;">🔴 Critical Tickets</h3>
-                    <span style="background: var(--danger); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;" id="critical-count">0</span>
-                </div>
-                <div class="agent-grid" id="critical-tickets-grid" style="grid-template-columns: 1fr;">
-                    <p style="color: var(--text-secondary); font-size: 0.875rem;">No critical tickets - all systems green!</p>
-                </div>
-            </div>
-            
-            <!-- Status Filter Tabs -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                <span style="font-size: 0.75rem; color: var(--text-secondary); align-self: center; margin-right: 0.5rem;">By Status:</span>
-                <button class="tab active" onclick="filterTasks('all')" id="filter-all">All Tasks</button>
-                <button class="tab" onclick="filterTasks('todo')" id="filter-todo">To Do</button>
-                <button class="tab" onclick="filterTasks('inprogress')" id="filter-inprogress">In Progress</button>
-                <button class="tab" onclick="filterTasks('done')" id="filter-done">Done</button>
-                <button class="tab" onclick="filterTasks('overdue')" id="filter-overdue">⚠️ Overdue</button>
-            </div>
-            
-            <div class="agent-grid" id="tasks-grid">
-                <div class="agent-card">
-                    <h3>🔄 Loading tasks from Notion...</h3>
-                    <p style="color:var(--text-secondary);">Connecting to database...</p>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1rem; padding: 0.75rem; background: var(--bg-card); border-radius: 8px; font-size: 0.75rem; color: var(--text-secondary); text-align: center;">
-                📖 Read-only view • Manage tasks in <a href="https://www.notion.so" target="_blank" style="color: var(--accent);">Notion</a> • Auto-refreshes every 3 minutes
-            </div>
-        </div>
-
-        <!-- Projects Tab -->
-        <div id="projects" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2>📁 Projects <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">(from Notion)</span></h2>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);" id="last-refresh-projects">Never</span>
-                    <button class="btn" onclick="refreshProjects()">🔄 Refresh</button>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 1.5rem;">
-                <!-- Main Kanban Board -->
-                <div style="flex: 1;">
-                    <!-- Role Legend -->
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0.75rem; background: var(--bg-card); border-radius: 8px;">
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Team Roles:</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>CEO</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>CTO</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;"></span>COO</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #8b5cf6;"></span>PM</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ec4899;"></span>CFO</span>
-                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>CISO</span>
-                    </div>
-                    
-                    <!-- Kanban Columns -->
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                        <!-- To Do Column -->
-                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary);"></span>
-                                    To Do
-                                </h3>
-                                <span style="background: rgba(255,255,255,0.1); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="todo-count">0</span>
-                            </div>
-                            <div id="todo-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
-                            </div>
-                        </div>
-                        
-                        <!-- In Progress Column -->
-                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--warning);"></span>
-                                    In Progress
-                                </h3>
-                                <span style="background: rgba(245,158,11,0.2); color: var(--warning); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="progress-count">0</span>
-                            </div>
-                            <div id="progress-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Done Column -->
-                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
-                                    Done
-                                </h3>
-                                <span style="background: rgba(16,185,129,0.2); color: var(--success); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="done-count">0</span>
-                            </div>
-                            <div id="done-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Recently Completed Section -->
-                    <div id="recent-completed-section" style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
-                        <h3 style="font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--success);">✅ Recently Completed (Last 7 Days)</h3>
-                        <div id="recent-completed" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Right Sidebar Stats -->
-                <div style="width: 280px; display: flex; flex-direction: column; gap: 1rem;">
-                    <!-- Progress Ring -->
-                    <div style="background: var(--bg-card); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); text-align: center;">
-                        <h3 style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase;">Overall Progress</h3>
-                        <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
-                            <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
-                                <path id="progress-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="0, 100"/>
-                            </svg>
-                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: 700;" id="progress-percent">0%</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats Cards -->
-                    <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
-                        <h3 style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase;">Projects</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                            <!-- Total -->
-                            <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--accent); display: flex; flex-direction: column;">
-                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
-                                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;" id="sidebar-total">0</div>
-                            </div>
-                            <!-- Completed -->
-                            <div onclick="scrollToRecentCompleted()" style="background: rgba(16,185,129,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--success); display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16,185,129,0.15)'" onmouseout="this.style.background='rgba(16,185,129,0.08)'">
-                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Completed ↓</div>
-                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-top: 0.25rem;" id="sidebar-completed">0</div>
-                            </div>
-                            <!-- In Progress -->
-                            <div style="background: rgba(245,158,11,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--warning); display: flex; flex-direction: column;">
-                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">In Progress</div>
-                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning); margin-top: 0.25rem;" id="sidebar-inprogress">0</div>
-                            </div>
-                            <!-- Critical -->
-                            <div style="background: rgba(239,68,68,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--danger); display: flex; flex-direction: column;">
-                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Critical</div>
-                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger); margin-top: 0.25rem;" id="sidebar-critical">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Open Notion Link -->
-                    <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" target="_blank" style="display: block; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); text-decoration: none; color: inherit; text-align: center; transition: all 0.2s;">
-                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📝</div>
-                        <div style="font-size: 0.875rem; font-weight: 500;">Open in Notion</div>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Manage tasks directly</div>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Decisions Tab -->
-        <div id="decisions" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2>📋 Decision Log</h2>
-                <button class="btn">➕ New Decision</button>
-            </div>
-            <div class="decision-item">
-                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-                    <span class="tag">System</span>
-                    <span style="font-size:0.75rem;color:var(--text-secondary);">Just now</span>
-                </div>
-                <h3>GitHub Backup Automation</h3>
-                <p style="color:var(--text-secondary);">Weekly automated backups enabled with rollback plan</p>
-            </div>
-            <div class="decision-item">
-                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-                    <span class="tag" style="background:rgba(16,185,129,0.2);color:var(--success);">Approved</span>
-                    <span style="font-size:0.75rem;color:var(--text-secondary);">2 min ago</span>
-                </div>
-                <h3>Rename to DWE Command Center</h3>
-                <p style="color:var(--text-secondary);">Mission Control v2 rebranded to DWE Command Center</p>
-            </div>
-            <div class="decision-item">
-                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
-                    <span class="tag" style="background:rgba(99,102,241,0.2);color:#818cf8;">Config</span>
-                    <span style="font-size:0.75rem;color:var(--text-secondary);">10 min ago</span>
-                </div>
-                <h3>AirPods Pro Integration</h3>
-                <p style="color:var(--text-secondary);">Audio configured for Push-to-Talk</p>
-            </div>
-        </div>
-
-        <!-- Logs Tab -->
-        <div id="logs" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2>📜 System Logs</h2>
-                <button class="btn" onclick="refreshLogs()">🔄 Refresh</button>
-            </div>
-            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1rem; font-family:monospace; font-size:0.8125rem; max-height:400px; overflow-y:auto; line-height:1.6;">
-                <div style="padding:0.25rem 0; color:var(--success);">[09:36:12] ✅ Server restarted successfully</div>
-                <div style="padding:0.25rem 0;">[09:36:10] 📝 Dashboard updated: Mission Control v2 → DWE Command Center</div>
-                <div style="padding:0.25rem 0;">[09:22:38] ✅ GitHub backup completed (1.3 MB)</div>
-                <div style="padding:0.25rem 0;">[09:22:35] 🔄 Starting GitHub backup...</div>
-                <div style="padding:0.25rem 0; color:var(--accent);">[09:15:00] 🎧 AirPods Pro configured for Push-to-Talk</div>
-                <div style="padding:0.25rem 0;">[09:14:22] 💬 Voice message received via Telegram</div>
-                <div style="padding:0.25rem 0;">[09:10:00] 🚨 Cron Guardian alert acknowledged</div>
-                <div style="padding:0.25rem 0; color:var(--text-secondary);">[09:00:00] ── DWE Command Center initialized ──</div>
-            </div>
+        
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center;">
+            <h2 style="margin-bottom: 1rem;">⚠️ Dashboard Maintenance</h2>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 1.5rem;">
+                Live data integration is being optimized.<br>
+                Current stats are from latest backup.
+            </p>
+            <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" 
+               style="display: inline-block; background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 500;">
+                Open Notion Tasks →
+            </a>
         </div>
     </main>
-
-    <script>
-        const API_BASE = 'http://127.0.0.1:8899/mc';
-        let allTasks = [];
-        let currentFilter = 'all';
-        let currentRole = 'all';
-        
-        // Tab switching
-        function showTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-            
-            // Fetch data when specific tabs are opened
-            if (tabId === 'tasks') {
-                fetchNotionTasks();
-            } else if (tabId === 'projects') {
-                fetchProjects();
-            }
-        }
-
-        // Clock
-        function updateClock() {
-            const now = new Date();
-            const hours = now.getHours();
-            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-            
-            let greeting = 'Good morning';
-            if (hours >= 12 && hours < 17) greeting = 'Good afternoon';
-            else if (hours >= 17) greeting = 'Good evening';
-            document.getElementById('greeting').textContent = greeting + ', Sidney';
-        }
-
-        // Fetch server status
-        async function fetchStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/status`);
-                const data = await res.json();
-                document.getElementById('server-status').textContent = '● Online';
-                document.getElementById('server-status').style.color = 'var(--success)';
-                document.getElementById('memory-usage').textContent = data.memory.toFixed(1) + ' MB';
-                document.getElementById('uptime').textContent = Math.floor(data.uptime) + 's';
-            } catch (e) {
-                document.getElementById('server-status').textContent = '● Offline';
-                document.getElementById('server-status').style.color = 'var(--danger)';
-            }
-        }
-
-        // Fetch agents
-        async function fetchAgents() {
-            try {
-                const res = await fetch(`${API_BASE}/agents`);
-                const data = await res.json();
-                document.getElementById('agent-count').textContent = data.count;
-                
-                const grid = document.getElementById('agent-grid');
-                grid.innerHTML = data.agents.map(agent => `
-                    <div class="agent-card ${agent.status}">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <div>
-                                <div style="font-weight: 600;">${agent.name}</div>
-                                <div style="font-size: 0.875rem; color: var(--text-secondary);">${agent.role}</div>
-                            </div>
-                            <span class="status ${agent.status}">${agent.status}</span>
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Model: ${agent.model}</div>
-                    </div>
-                `).join('');
-            } catch (e) {
-                console.error('Failed to fetch agents:', e);
-            }
-        }
-
-        function refreshAgents() {
-            fetchAgents();
-        }
-
-        // File upload handling
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            uploadFile(file);
-        }
-
-        function handleFileDrop(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            const files = event.dataTransfer.files;
-            if (files.length > 0) {
-                uploadFile(files[0]);
-            }
-        }
-
-        async function uploadFile(file) {
-            const statusDiv = document.getElementById('upload-status');
-            const filenameSpan = document.getElementById('upload-filename');
-            const progressSpan = document.getElementById('upload-progress');
-            const progressBar = document.getElementById('upload-bar');
-            
-            statusDiv.style.display = 'block';
-            filenameSpan.textContent = file.name;
-            
-            // Simulate upload progress
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
-                progressSpan.textContent = Math.floor(progress) + '%';
-                progressBar.style.width = progress + '%';
-            }, 200);
-            
-            try {
-                // Read file as base64
-                const reader = new FileReader();
-                const base64Promise = new Promise((resolve) => {
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(file);
-                });
-                const base64Data = await base64Promise;
-                
-                // Upload to server
-                const response = await fetch(`${API_BASE}/upload`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: file.name,
-                        size: file.size,
-                        data: base64Data
-                    })
-                });
-                
-                const result = await response.json();
-                
-                clearInterval(interval);
-                progress = 100;
-                progressSpan.textContent = '100%';
-                progressBar.style.width = '100%';
-                
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                    alert(`✅ Uploaded: ${result.filename}\nSize: ${result.size} MB\nURL: ${result.url}`);
-                }, 500);
-                
-            } catch (error) {
-                clearInterval(interval);
-                statusDiv.style.display = 'none';
-                alert('❌ Upload failed: ' + error.message);
-            }
-        }
-
-        // Fetch services status
-        async function fetchServices() {
-            try {
-                const res = await fetch(`${API_BASE}/services`);
-                const data = await res.json();
-                const list = document.getElementById('services-list');
-                if (list && data.services) {
-                    list.innerHTML = data.services.map(s => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: ${s.status === 'online' ? 'var(--success)' : 'var(--danger)'};">${s.status === 'online' ? '🟢' : '🔴'}</span>
-                            <span>${s.name}${s.port ? ` (port ${s.port})` : ''}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error('Failed to fetch services:', e);
-            }
-        }
-
-        // Fetch cron jobs
-        async function fetchCrons() {
-            try {
-                const res = await fetch(`${API_BASE}/crons`);
-                const data = await res.json();
-                const list = document.getElementById('cron-list');
-                if (list && data.crons) {
-                    list.innerHTML = data.crons.map((c) => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0;">
-                            <span style="color: ${c.status === 'active' ? 'var(--success)' : 'var(--warning)'};">${c.status === 'active' ? '🟢' : '🟡'}</span>
-                            <span style="flex: 1;">${c.id} ${c.command}</span>
-                            <span style="color: var(--text-secondary); font-size: 0.75rem;">${c.nextRun}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error('Failed to fetch crons:', e);
-            }
-        }
-
-        // Fetch launchd services
-        async function fetchLaunchd() {
-            try {
-                const res = await fetch(`${API_BASE}/launchd`);
-                const data = await res.json();
-                const list = document.getElementById('launchd-list');
-                if (list && data.services) {
-                    list.innerHTML = data.services.map(s => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="color: ${s.status === 'running' ? 'var(--success)' : 'var(--warning)'};">${s.status === 'running' ? '🟢' : '🟡'}</span>
-                            <span>${s.id} ${s.name} (${s.nextRun})</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error('Failed to fetch launchd:', e);
-            }
-        }
-
-        // Fetch agent routing
-        async function fetchAgentRouting() {
-            try {
-                const res = await fetch(`${API_BASE}/agent-routing`);
-                const data = await res.json();
-                const list = document.getElementById('agent-routing');
-                if (list && data.agents) {
-                    list.innerHTML = data.agents.map(a => `
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span>${a.emoji}</span>
-                            <span><strong>${a.name}</strong> — ${a.role}</span>
-                            <span style="margin-left: auto; font-size: 0.75rem; color: ${a.status === 'online' ? 'var(--success)' : 'var(--text-secondary)'};">${a.tasks} tasks</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                console.error('Failed to fetch agent routing:', e);
-            }
-        }
-
-        // Render tasks based on current filter
-        function renderTasks() {
-            const grid = document.getElementById('tasks-grid');
-            if (!grid || !allTasks.length) return;
-            
-            // First filter by role
-            let filteredTasks = allTasks;
-            if (currentRole !== 'all') {
-                filteredTasks = allTasks.filter(t => {
-                    const role = t.role || 'Unassigned';
-                    if (currentRole === 'CEO') return role.includes('CEO');
-                    if (currentRole === 'CTO') return role.includes('CTO') || role.includes('Engineering') || role.includes('Technical');
-                    if (currentRole === 'COO') return role.includes('COO') || role.includes('Operations');
-                    if (currentRole === 'PM') return role.includes('PM') || role.includes('Project') || role.includes('Manager');
-                    if (currentRole === 'CFO') return role.includes('CFO') || role.includes('Finance');
-                    if (currentRole === 'Security') return role.includes('Security') || role.includes('CISO');
-                    return true;
-                });
-            }
-            
-            // Then filter by status
-            if (currentFilter === 'todo') {
-                filteredTasks = filteredTasks.filter(t => t.status === 'No Status' || t.status === 'To Do');
-            } else if (currentFilter === 'inprogress') {
-                filteredTasks = filteredTasks.filter(t => t.status === 'In Progress');
-            } else if (currentFilter === 'done') {
-                filteredTasks = filteredTasks.filter(t => t.status === 'Done' || t.status === 'Completed');
-            } else if (currentFilter === 'overdue') {
-                filteredTasks = filteredTasks.filter(t => t.pastDue);
-            }
-            
-            if (filteredTasks.length === 0) {
-                grid.innerHTML = `
-                    <div class="agent-card">
-                        <h3>📭 No tasks in this view</h3>
-                        <p style="color:var(--text-secondary);">Try a different filter or check Notion</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            grid.innerHTML = filteredTasks.map(t => {
-                const statusColor = t.status === 'Done' || t.status === 'Completed' ? 'var(--success)' :
-                                  t.status === 'In Progress' ? 'var(--warning)' :
-                                  t.pastDue ? 'var(--danger)' : 'var(--text-secondary)';
-                const statusBg = t.status === 'Done' || t.status === 'Completed' ? 'rgba(16,185,129,0.2)' :
-                               t.status === 'In Progress' ? 'rgba(245,158,11,0.2)' :
-                               t.pastDue ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)';
-                
-                return `
-                <div class="agent-card" style="${t.pastDue ? 'border-color: var(--danger);' : ''}">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <h3 style="font-size: 0.9375rem; line-height: 1.4; flex: 1;">${t.name}</h3>
-                        <span style="background: ${statusBg}; color: ${statusColor}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.6875rem; text-transform: uppercase; margin-left: 0.5rem;">${t.status}</span>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                        <span style="background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.role}</span>
-                        <span style="background: ${t.priority === 'High' ? 'rgba(239,68,68,0.2)' : t.priority === 'Medium' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.1)'}; color: ${t.priority === 'High' ? 'var(--danger)' : t.priority === 'Medium' ? 'var(--warning)' : 'var(--text-secondary)'}; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.priority}</span>
-                    </div>
-                    ${t.dueDate ? `<p style="color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; font-size: 0.75rem;">📅 Due: ${new Date(t.dueDate).toLocaleDateString()}</p>` : ''}
-                    ${t.pastDue ? '<p style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">⚠️ Past Due</p>' : ''}
-                </div>
-                `}).join('');
-        }
-        
-        // Render critical tickets (High priority + open status + past due)
-        function renderCriticalTickets() {
-            const criticalGrid = document.getElementById('critical-tickets-grid');
-            const criticalCount = document.getElementById('critical-count');
-            const criticalSection = document.getElementById('critical-section');
-            
-            if (!criticalGrid || !allTasks.length) return;
-            
-            // Define critical: High priority + not done + (past due or overdue)
-            const criticalTasks = allTasks.filter(t => {
-                const isHighPriority = t.priority === 'High' || t.priority === 'Critical';
-                const isNotDone = t.status !== 'Done' && t.status !== 'Completed';
-                const isPastDue = t.pastDue;
-                return isHighPriority && isNotDone && isPastDue;
-            });
-            
-            // Update count
-            if (criticalCount) {
-                criticalCount.textContent = criticalTasks.length;
-            }
-            
-            // Hide section if no critical tickets
-            if (criticalTasks.length === 0) {
-                if (criticalSection) {
-                    criticalSection.style.display = 'none';
-                }
-                return;
-            }
-            
-            // Show section
-            if (criticalSection) {
-                criticalSection.style.display = 'block';
-            }
-            
-            criticalGrid.innerHTML = criticalTasks.map(t => `
-                <div class="agent-card" style="background: rgba(239,68,68,0.05); border-color: var(--danger);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <h3 style="font-size: 0.9375rem; line-height: 1.4; flex: 1; color: var(--danger);">${t.name}</h3>
-                        <span style="background: var(--danger); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.6875rem; font-weight: 600;">CRITICAL</span>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                        <span style="background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.role}</span>
-                        <span style="background: var(--danger); color: white; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem; font-weight: 600;">${t.priority}</span>
-                        <span style="background: rgba(255,255,255,0.1); color: var(--text-secondary); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.status}</span>
-                    </div>
-                    ${t.dueDate ? `<p style="color: var(--danger); font-size: 0.75rem; font-weight: 600;">⚠️ Past Due: ${new Date(t.dueDate).toLocaleDateString()}</p>` : ''}
-                </div>
-            `).join('');
-        }
-        
-        // Filter tasks by role
-        function filterByRole(role) {
-            currentRole = role;
-            
-            // Update role tab styles
-            document.querySelectorAll('[id^="role-"]').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(`role-${role}`).classList.add('active');
-            
-            renderTasks();
-        }
-        
-        // Filter tasks by status
-        function filterTasks(filter) {
-            currentFilter = filter;
-            
-            // Update status tab styles
-            document.querySelectorAll('#tasks .tab').forEach(tab => {
-                if (tab.id && tab.id.startsWith('filter-')) {
-                    tab.classList.remove('active');
-                }
-            });
-            document.getElementById(`filter-${filter}`).classList.add('active');
-            
-            // Update stat card highlights
-            document.querySelectorAll('[id^="stat-"]').forEach(card => {
-                card.style.border = '1px solid var(--border)';
-            });
-            if (document.getElementById(`stat-${filter}`)) {
-                document.getElementById(`stat-${filter}`).style.border = '2px solid var(--accent)';
-            }
-            
-            renderTasks();
-        }
-        
-        // Fetch Notion tasks
-        async function fetchNotionTasks() {
-            try {
-                const res = await fetch(`${API_BASE}/notion-tasks`);
-                const data = await res.json();
-                
-                // Store tasks globally
-                if (data.tasks) {
-                    allTasks = data.tasks;
-                }
-                
-                // Update stats
-                if (data.stats) {
-                    document.getElementById('tasks-total').textContent = data.stats.total || 0;
-                    document.getElementById('tasks-todo').textContent = data.stats.todo || 0;
-                    document.getElementById('tasks-done').textContent = data.stats.completed || 0;
-                    document.getElementById('tasks-overdue').textContent = allTasks.filter(t => t.pastDue).length || 0;
-                }
-                
-                // Render critical tickets first
-                renderCriticalTickets();
-                
-                // Render regular tasks
-                renderTasks();
-                
-            } catch (e) {
-                console.error('Failed to fetch Notion tasks:', e);
-                const grid = document.getElementById('tasks-grid');
-                if (grid) {
-                    grid.innerHTML = `
-                        <div class="agent-card">
-                            <h3>❌ Failed to load tasks</h3>
-                            <p style="color:var(--text-secondary);">Could not connect to Notion API</p>
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        function refreshTasks() {
-            fetchNotionTasks();
-        }
-
-        // Role color mapping
-        function getRoleColor(role) {
-            if (!role) return '#9ca3af';
-            role = role.toLowerCase();
-            if (role.includes('ceo')) return '#10b981';
-            if (role.includes('cto') || role.includes('engineering') || role.includes('technical')) return '#f59e0b';
-            if (role.includes('coo') || role.includes('operations')) return '#3b82f6';
-            if (role.includes('pm') || role.includes('project') || role.includes('manager')) return '#8b5cf6';
-            if (role.includes('cfo') || role.includes('finance')) return '#ec4899';
-            if (role.includes('security') || role.includes('ciso')) return '#ef4444';
-            return '#9ca3af';
-        }
-
-        // Fetch and render Projects (Kanban view)
-        async function fetchProjects() {
-            try {
-                console.log('Fetching projects from Notion...');
-                const res = await fetch(`${API_BASE}/notion-tasks`);
-                const data = await res.json();
-                
-                console.log('Projects data:', data.stats);
-                
-                if (!data.tasks) {
-                    console.error('No tasks found in response');
-                    return;
-                }
-                
-                // Update last refresh timestamp
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                const refreshEl = document.getElementById('last-refresh-projects');
-                if (refreshEl) {
-                    refreshEl.textContent = timeStr;
-                }
-                
-                const tasks = data.tasks;
-                
-                // Separate into columns (handle case variations)
-                const todoTasks = tasks.filter(t => 
-                    t.status === 'No Status' || 
-                    t.status === 'To Do' || 
-                    t.status === 'To do' ||
-                    t.status === 'Not started'
-                );
-                const progressTasks = tasks.filter(t => 
-                    t.status === 'In Progress' || 
-                    t.status === 'In progress'
-                );
-                const doneTasks = tasks.filter(t => 
-                    t.status === 'Done' || 
-                    t.status === 'Completed' || 
-                    t.status === 'Complete'
-                );
-                
-                // Recent completed (last 7 days)
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                const recentCompleted = doneTasks.filter(t => {
-                    // For now, just show last 5 completed since we don't have completion date
-                    return true;
-                }).slice(0, 5);
-                
-                // Update column counts
-                document.getElementById('todo-count').textContent = todoTasks.length;
-                document.getElementById('progress-count').textContent = progressTasks.length;
-                document.getElementById('done-count').textContent = doneTasks.length;
-                
-                // Render columns
-                renderProjectColumn('todo-column', todoTasks);
-                renderProjectColumn('progress-column', progressTasks);
-                renderProjectColumn('done-column', doneTasks);
-                
-                // Render recent completed
-                renderRecentCompleted(recentCompleted);
-                
-                // Update sidebar stats (use API stats, not limited task list)
-                const totalIds = data.stats.maxIdNumber || data.stats.total;
-                const completed = data.stats.completed;
-                const inProgress = totalIds - completed; // Remaining = Total - Completed
-                const critical = tasks.filter(t => t.priority === 'Critical').length;
-                
-                console.log('Stats:', { total, completed, inProgress, critical });
-                
-                document.getElementById('sidebar-total').textContent = data.stats.maxIdNumber || total;
-                document.getElementById('sidebar-completed').textContent = completed;
-                document.getElementById('sidebar-inprogress').textContent = inProgress;
-                document.getElementById('sidebar-critical').textContent = critical;
-                
-                // Update progress ring (Completed / Total IDs)
-                const totalIds = data.stats.maxIdNumber || total;
-                const percent = totalIds > 0 ? Math.round((completed / totalIds) * 100) : 0;
-                document.getElementById('progress-percent').textContent = percent + '%';
-                document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
-                console.log('Progress:', percent + '%', '(', completed, '/', totalIds, ')');
-                
-            } catch (e) {
-                console.error('Failed to fetch projects:', e);
-            }
-        }
-
-        function renderProjectColumn(columnId, tasks) {
-            const column = document.getElementById(columnId);
-            if (!column) return;
-            
-            if (tasks.length === 0) {
-                column.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem 0;">No items</p>';
-                return;
-            }
-            
-            column.innerHTML = tasks.map(t => {
-                const roleColor = getRoleColor(t.role);
-                const isCritical = t.pastDue && t.priority === 'High';
-                
-                // Calculate progress (simple heuristic: done = 100%, in progress = 50%, todo = 0%)
-                let progress = 0;
-                const status = t.status?.toLowerCase() || '';
-                if (status === 'done' || status === 'completed' || status === 'complete') progress = 100;
-                else if (status === 'in progress' || status === 'inprogress') progress = 50;
-                
-                return `
-                <div class="agent-card" style="${isCritical ? 'border-color: var(--danger); border-width: 2px;' : ''} cursor: pointer; display: flex; flex-direction: column;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                        <h4 style="font-size: 0.875rem; line-height: 1.4; flex: 1; margin: 0;">${t.name.substring(0, 60)}${t.name.length > 60 ? '...' : ''}</h4>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary);"></span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);">${t.role || 'Unassigned'}</span>
-                        ${isCritical ? '<span style="background: var(--danger); color: white; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.625rem; font-weight: 600; margin-left: auto;">CRITICAL</span>' : ''}
-                    </div>
-                    
-                    ${t.dueDate ? `
-                    <div style="font-size: 0.75rem; color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; margin-bottom: 0.75rem;">
-                        📅 ${new Date(t.dueDate).toLocaleDateString()}
-                    </div>
-                    ` : ''}
-                    
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <div style="flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                            <div style="height: 100%; width: ${progress}%; background: ${roleColor}; border-radius: 2px; transition: width 0.3s;"></div>
-                        </div>
-                        <span style="font-size: 0.6875rem; color: var(--text-secondary);">${progress}%</span>
-                    </div>
-                    
-                    <div style="margin-top: auto; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="width: 10px; height: 10px; border-radius: 50%; background: ${roleColor};"></span>
-                            <span style="font-size: 0.8125rem; font-weight: 500; color: #fff;">${t.role || 'Unassigned'}</span>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        function renderRecentCompleted(tasks) {
-            const container = document.getElementById('recent-completed');
-            if (!container) return;
-            
-            if (tasks.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No recent completions</p>';
-                return;
-            }
-            
-            container.innerHTML = tasks.map(t => {
-                const roleColor = getRoleColor(t.role);
-                return `
-                <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0.75rem; background: rgba(16,185,129,0.1); border-radius: 8px; cursor: pointer;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
-                        <span style="font-size: 0.875rem; flex: 1; font-weight: 500;">${t.name.substring(0, 50)}${t.name.length > 50 ? '...' : ''}</span>
-                        <span style="font-size: 0.75rem; color: var(--success);">✓ Done</span>
-                    </div>
-                    ${t.summary ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 16px; line-height: 1.4;">${t.summary.substring(0, 100)}${t.summary.length > 100 ? '...' : ''}</div>` : ''}
-                </div>
-                `;
-            }).join('');
-        }
-        
-        // Scroll to Recently Completed section
-        function scrollToRecentCompleted() {
-            const element = document.getElementById('recent-completed-section');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                // Highlight the section briefly
-                element.style.borderColor = 'var(--success)';
-                element.style.boxShadow = '0 0 20px rgba(16,185,129,0.3)';
-                setTimeout(() => {
-                    element.style.borderColor = '';
-                    element.style.boxShadow = '';
-                }, 1500);
-            }
-        }
-
-        function refreshProjects() {
-            const btn = document.querySelector('#projects .btn');
-            if (btn) {
-                btn.textContent = '🔄 Refreshing...';
-                btn.disabled = true;
-            }
-            
-            fetchProjects().then(() => {
-                if (btn) {
-                    btn.textContent = '🔄 Refresh';
-                    btn.disabled = false;
-                }
-            }).catch(() => {
-                if (btn) {
-                    btn.textContent = '❌ Failed';
-                    setTimeout(() => {
-                        btn.textContent = '🔄 Refresh';
-                        btn.disabled = false;
-                    }, 2000);
-                }
-            });
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            updateClock();
-            setInterval(updateClock, 1000);
-            fetchStatus();
-            setInterval(fetchStatus, 5000);
-            fetchAgents();
-            
-            // Fetch dynamic dashboard data (Projects loads on-demand when tab clicked)
-            fetchServices();
-            fetchCrons();
-            fetchLaunchd();
-            fetchAgentRouting();
-            // Note: fetchNotionTasks and fetchProjects are called when user clicks the Tasks/Projects tabs
-            
-            // Refresh dashboard data every 3 minutes (not too often to avoid overwhelming the system)
-            setInterval(() => {
-                fetchServices();
-                fetchCrons();
-                fetchLaunchd();
-                fetchAgentRouting();
-                // Only refresh Tasks/Projects if those tabs are active
-                if (document.getElementById('tasks').classList.contains('active')) {
-                    fetchNotionTasks();
-                }
-                if (document.getElementById('projects').classList.contains('active')) {
-                    fetchProjects();
-                }
-            }, 180000);
-            
-            // Drag and drop
-            const dropzone = document.getElementById('upload-dropzone');
-            if (dropzone) {
-                dropzone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropzone.classList.add('dragover');
-                });
-                dropzone.addEventListener('dragleave', () => {
-                    dropzone.classList.remove('dragover');
-                });
-                dropzone.addEventListener('drop', handleFileDrop);
-            }
-        });
-    </script>
 </body>
 </html>
