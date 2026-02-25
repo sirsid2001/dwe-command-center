@@ -43,18 +43,18 @@
             display: flex; 
             align-items: center; 
             gap: 0.75rem; 
-            font-size: 1.25rem; 
+            font-size: 1.5rem; 
             font-weight: 600; 
         }
         .logo-icon { 
-            width: 36px; 
-            height: 36px; 
+            width: 40px; 
+            height: 40px; 
             background: linear-gradient(135deg, #3b82f6, #8b5cf6); 
             border-radius: 8px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.25rem;
+            font-size: 1.5rem;
         }
         .tabs { 
             display: flex; 
@@ -102,9 +102,20 @@
             font-size: 0.875rem;
         }
         .time { 
-            font-size: 2rem; 
-            font-weight: 300; 
+            font-size: 1rem; 
+            font-weight: 400; 
             color: var(--text-secondary);
+            text-align: right;
+            line-height: 1.4;
+        }
+        .time .date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        .time .clock{
+            font-size: 1.25rem;
+            color: var(--text);
+            font-weight: 500;
         }
         
         /* Metrics */
@@ -297,6 +308,18 @@
             color: var(--text);
         }
         
+        /* Heartbeat Animation */
+        .heartbeat {
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+        }
+        
         /* Responsive */
         @media (max-width: 1024px) {
             .metrics, .agent-grid { grid-template-columns: repeat(2, 1fr); }
@@ -328,7 +351,10 @@
                     <h1>Good morning, Sidney</h1>
                     <p>CEO / Founder — Digital Wealth Ecosystem</p>
                 </div>
-                <div class="time" id="clock">00:00</div>
+                <div class="time" id="clock">
+                    <div class="date">Loading...</div>
+                    <div class="clock">00:00:00</div>
+                </div>
             </div>
             
             <!-- System Metrics -->
@@ -347,7 +373,7 @@
                 </div>
                 <div class="metric-card danger">
                     <div class="metric-label">Uptime</div>
-                    <div class="metric-value" id="uptime">0s</div>
+                    <div class="metric-value" id="uptime"><span class="heartbeat">💓</span> 0s</div>
                 </div>
             </div>
             
@@ -592,21 +618,26 @@
             document.getElementById(tabId).classList.add('active');
         }
         
-        // Clock
+        // Clock with full date
         function updateClock() {
             const now = new Date();
+            const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('en-US', dateOptions);
             const timeStr = now.toLocaleTimeString('en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
+                second: '2-digit',
                 hour12: false 
             });
             const clockEl = document.getElementById('clock');
-            if (clockEl) clockEl.textContent = timeStr;
+            if (clockEl) {
+                clockEl.innerHTML = '<div class="date">' + dateStr + '</div><div class="clock">' + timeStr + '</div>';
+            }
         }
         updateClock();
         setInterval(updateClock, 1000);
         
-        // Uptime
+        // Uptime with heartbeat
         let uptimeSeconds = 0;
         function updateUptime() {
             uptimeSeconds++;
@@ -618,7 +649,7 @@
             if (mins > 0 || hours > 0) text += mins + 'm ';
             text += secs + 's';
             const uptimeEl = document.getElementById('uptime');
-            if (uptimeEl) uptimeEl.textContent = text;
+            if (uptimeEl) uptimeEl.innerHTML = '<span class="heartbeat">💓</span> ' + text;
         }
         setInterval(updateUptime, 1000);
     </script>
