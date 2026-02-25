@@ -131,46 +131,97 @@
         }
     </style>
 </head>
-<body>
-    <header class="header">
-        <div class="logo">
+<body style="display: flex;">
+    <!-- Sidebar -->
+    <aside style="width: 260px; background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.1); padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto;">
+        <div class="logo" style="margin-bottom: 2rem;">
             <div class="logo-icon">🚀</div>
-            <span>DWE | Command Center</span>
+            <span style="font-size: 1.25rem;">DWE</span>
         </div>
-    </header>
+        
+        <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(0,212,255,0.05) 100%); border-radius: 12px; color: #fff; text-decoration: none; border: 1px solid rgba(0,212,255,0.3);">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
+                <span>🏢</span>
+                <span>AI Team</span>
+            </a>
+            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
+                <span>📋</span>
+                <span>Tasks</span>
+            </a>
+            <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: rgba(255,255,255,0.6); text-decoration: none; border-radius: 12px; transition: all 0.2s;">
+                <span>📜</span>
+                <span>Logs</span>
+            </a>
+        </nav>
+        
+        <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;">
+                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #00d4ff, #7c3aed); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">S</div>
+                <div>
+                    <div style="font-size: 0.875rem; font-weight: 600;">Sidney Garcia</div>
+                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">CEO / Founder</div>
+                </div>
+            </div>
+        </div>
+    </aside>
     
-    <main class="main">
-        <div class="welcome">
-            <div>
-                <h1>Good morning, Sidney</h1>
-                <p>CEO / Founder — Digital Wealth Ecosystem</p>
+    <!-- Main Content -->
+    <main style="margin-left: 260px; flex: 1; padding: 2rem;">
+        <!-- Welcome Banner -->
+        <div style="background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(124,58,237,0.15) 100%); border: 1px solid rgba(0,212,255,0.2); border-radius: 24px; padding: 2.5rem; margin-bottom: 2rem; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 1;">
+                <div style="font-size: 0.875rem; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem;">Welcome back,</div>
+                <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Sidney Garcia</h1>
+                <p style="color: rgba(255,255,255,0.6); font-size: 1rem;">CEO / Founder — Digital Wealth Ecosystem</p>
             </div>
-            <div class="time">
-                <div class="date" id="date">Loading...</div>
-                <div class="clock" id="clock">00:00:00</div>
+            <div style="position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); text-align: right;">
+                <div class="time">
+                    <div class="date" id="date" style="font-size: 1rem; margin-bottom: 0.25rem;">Loading...</div>
+                    <div class="clock" id="clock" style="font-size: 2rem;">00:00:00</div>
+                </div>
+            </div>
+            <!-- Decorative glow -->
+            <div style="position: absolute; right: -100px; top: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,212,255,0.3) 0%, transparent 70%); pointer-events: none;"></div>
+        </div>
+        
+        <!-- Stats with Icons -->
+        <div class="metrics" style="margin-bottom: 1.5rem;">
+            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(0,214,143,0.2) 0%, rgba(0,214,143,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">🟢</div>
+                <div>
+                    <div class="metric-value" style="font-size: 1.75rem;">Online</div>
+                    <div class="metric-label" style="margin-bottom: 0;">Server Status</div>
+                </div>
+            </div>
+            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(0,212,255,0.2) 0%, rgba(0,212,255,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">🤖</div>
+                <div>
+                    <div class="metric-value" style="font-size: 1.75rem;">4</div>
+                    <div class="metric-label" style="margin-bottom: 0;">Active Agents</div>
+                </div>
+            </div>
+            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(255,170,0,0.2) 0%, rgba(255,170,0,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">💾</div>
+                <div>
+                    <div class="metric-value" style="font-size: 1.75rem;">8.8 MB</div>
+                    <div class="metric-label" style="margin-bottom: 0;">Memory</div>
+                </div>
+            </div>
+            <div class="metric-card" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(255,71,87,0.2) 0%, rgba(255,71,87,0.05) 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">💓</div>
+                <div>
+                    <div class="metric-value" style="font-size: 1.75rem;"><span id="uptime">0s</span></div>
+                    <div class="metric-label" style="margin-bottom: 0;">Uptime</div>
+                </div>
             </div>
         </div>
         
-        <div class="metrics">
-            <div class="metric-card">
-                <div class="metric-label">Server Status</div>
-                <div class="metric-value" style="color: #00d68f;">● Online</div>
-            </div>
-            <div class="metric-card success">
-                <div class="metric-label">Active Agents</div>
-                <div class="metric-value">4</div>
-            </div>
-            <div class="metric-card warning">
-                <div class="metric-label">Memory Usage</div>
-                <div class="metric-value">8.8 MB</div>
-            </div>
-            <div class="metric-card danger">
-                <div class="metric-label">Uptime</div>
-                <div class="metric-value"><span class="heartbeat">💓</span> <span id="uptime">0s</span></div>
-            </div>
-        </div>
-        
-        <div class="metrics-2">
+        <!-- Task Stats -->
+        <div class="metrics-2" style="margin-bottom: 2rem;">
             <div class="metric-card">
                 <div class="metric-label">Total Tasks</div>
                 <div class="metric-value">1020</div>
@@ -221,6 +272,7 @@
             </div>
         </div>
     </main>
+    </div>
     
     <script>
         function updateClock() {
