@@ -505,7 +505,7 @@ function getAgentRouting(req, res) {
 const NOTION_API_KEY = process.env.NOTION_API_KEY || '';
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
-function getNotionTasks(req, res) {
+async function getNotionTasks(req, res) {
     if (!NOTION_API_KEY) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ 
@@ -516,76 +516,99 @@ function getNotionTasks(req, res) {
         return;
     }
     
-    const options = {
-        hostname: 'api.notion.com',
-        path: `/v1/data_sources/${NOTION_DB_ID}/query`,
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${NOTION_API_KEY}`,
-            'Notion-Version': '2025-09-03',
-            'Content-Type': 'application/json'
-        }
-    };
+    try {
+        console.log('Fetching all Notion tasks...');
+        const allTasks = await fetchAllNotionTasks();
+        console.log(`Fetched ${allTasks.length} total tasks`);
 
-    const request = https.request(options, (response) => {
-        let data = '';
-        response.on('data', (chunk) => data += chunk);
-        response.on('end', () => {
-            try {
-                const notionData = JSON.parse(data);
-                const tasks = notionData.results.map(task => {
-                    const props = task.properties;
-                    // Handle both new 'status' type and legacy 'select' type
-                    let status = 'No Status';
-                    if (props.Status?.status?.name) {
-                        status = props.Status.status.name;
-                    } else if (props.Status?.select?.name) {
-                        status = props.Status.select.name;
-                    }
-                    
-                    return {
-                        id: task.id,
-                        name: props['Task name']?.title?.[0]?.plain_text || 'Untitled',
-                        status: status,
-                        priority: props.Priority?.select?.name || 'Medium',
-                        role: props.Role?.select?.name || 'Unassigned',
-                        dueDate: props['Due date']?.date?.start || null,
-                        pastDue: props['Past due']?.formula?.boolean || false,
-                        taskType: props['Task type']?.select?.name || 'Task',
-                        summary: props.Summary?.rich_text?.[0]?.plain_text || ''
-                    };
-                });
+        // Calculate stats
+        const stats = {
+            total: allTasks.length,
+            inProgress: allTasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
+            completed: allTasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete').length,
+            todo: allTasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length
+        };
 
-                // Calculate stats
-                const stats = {
-                    total: tasks.length,
-                    inProgress: tasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
-                    completed: tasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete').length,
-                    todo: tasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length
-                };
-
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ 
-                    tasks: tasks.slice(0, 20), // Limit to 20 for performance
-                    stats: stats,
-                    source: 'Notion',
-                    timestamp: new Date().toISOString()
-                }));
-            } catch (e) {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Failed to parse Notion data', tasks: [], stats: { total: 0, inProgress: 0, completed: 0, todo: 0 } }));
-            }
-        });
-    });
-
-    request.on('error', (error) => {
-        console.error('Notion API error:', error);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+            tasks: allTasks.slice(0, 100), // Limit displayed tasks to 100 for UI performance
+            stats: stats,
+            source: 'Notion',
+            timestamp: new Date().toISOString()
+        }));
+    } catch (e) {
+        console.error('Notion API error:', e);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Failed to fetch from Notion', tasks: [], stats: { total: 0, inProgress: 0, completed: 0, todo: 0 } }));
-    });
+    }
+}
 
-    request.write(JSON.stringify({ page_size: 20 }));
-    request.end();
+// Fetch all tasks with pagination
+async function fetchAllNotionTasks() {
+    const allTasks = [];
+    let hasMore = true;
+    let nextCursor = null;
+    
+    while (hasMore && allTasks.length < 2000) {
+        const options = {
+            hostname: 'api.notion.com',
+            path: `/v1/data_sources/${NOTION_DB_ID}/query`,
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${NOTION_API_KEY}`,
+                'Notion-Version': '2025-09-03',
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        const body = nextCursor 
+            ? JSON.stringify({ page_size: 100, start_cursor: nextCursor })
+            : JSON.stringify({ page_size: 100 });
+        
+        const response = await new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+            req.on('error', reject);
+            req.write(body);
+            req.end();
+        });
+        
+        if (response.results) {
+            const tasks = response.results.map(task => {
+                const props = task.properties;
+                let status = 'No Status';
+                if (props.Status?.status?.name) status = props.Status.status.name;
+                else if (props.Status?.select?.name) status = props.Status.select.name;
+                
+                return {
+                    id: task.id,
+                    name: props['Task name']?.title?.[0]?.plain_text || 'Untitled',
+                    status: status,
+                    priority: props.Priority?.select?.name || 'Medium',
+                    role: props.Role?.select?.name || 'Unassigned',
+                    dueDate: props['Due date']?.date?.start || null,
+                    pastDue: props['Past due']?.formula?.boolean || false,
+                    taskType: props['Task type']?.select?.name || 'Task',
+                    summary: props.Summary?.rich_text?.[0]?.plain_text || ''
+                };
+            });
+            allTasks.push(...tasks);
+        }
+        
+        hasMore = response.has_more;
+        nextCursor = response.next_cursor;
+    }
+    
+    return allTasks;
 }
 
 server.listen(PORT, HOST, () => {
