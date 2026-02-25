@@ -232,8 +232,32 @@
                 </div>
             </div>
             
-            <!-- Filter Tabs -->
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <!-- Role Filter Tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-secondary); align-self: center; margin-right: 0.5rem;">By Role:</span>
+                <button class="tab active" onclick="filterByRole('all')" id="role-all">All</button>
+                <button class="tab" onclick="filterByRole('CEO')" id="role-CEO">CEO</button>
+                <button class="tab" onclick="filterByRole('CTO')" id="role-CTO">Engineering</button>
+                <button class="tab" onclick="filterByRole('COO')" id="role-COO">Operations</button>
+                <button class="tab" onclick="filterByRole('PM')" id="role-PM">Project Mgmt</button>
+                <button class="tab" onclick="filterByRole('CFO')" id="role-CFO">Finance</button>
+                <button class="tab" onclick="filterByRole('Security')" id="role-Security">Security</button>
+            </div>
+
+            <!-- Critical Tickets Section -->
+            <div style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1)); border: 1px solid var(--danger); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;" id="critical-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h3 style="color: var(--danger); font-size: 1rem;">🔴 Critical Tickets</h3>
+                    <span style="background: var(--danger); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;" id="critical-count">0</span>
+                </div>
+                <div class="agent-grid" id="critical-tickets-grid" style="grid-template-columns: 1fr;">
+                    <p style="color: var(--text-secondary); font-size: 0.875rem;">No critical tickets - all systems green!</p>
+                </div>
+            </div>
+            
+            <!-- Status Filter Tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <span style="font-size: 0.75rem; color: var(--text-secondary); align-self: center; margin-right: 0.5rem;">By Status:</span>
                 <button class="tab active" onclick="filterTasks('all')" id="filter-all">All Tasks</button>
                 <button class="tab" onclick="filterTasks('todo')" id="filter-todo">To Do</button>
                 <button class="tab" onclick="filterTasks('inprogress')" id="filter-inprogress">In Progress</button>
@@ -308,6 +332,7 @@
         const API_BASE = 'http://127.0.0.1:8899/mc';
         let allTasks = [];
         let currentFilter = 'all';
+        let currentRole = 'all';
         
         // Tab switching
         function showTab(tabId) {
@@ -532,16 +557,30 @@
             const grid = document.getElementById('tasks-grid');
             if (!grid || !allTasks.length) return;
             
+            // First filter by role
             let filteredTasks = allTasks;
+            if (currentRole !== 'all') {
+                filteredTasks = allTasks.filter(t => {
+                    const role = t.role || 'Unassigned';
+                    if (currentRole === 'CEO') return role.includes('CEO');
+                    if (currentRole === 'CTO') return role.includes('CTO') || role.includes('Engineering') || role.includes('Technical');
+                    if (currentRole === 'COO') return role.includes('COO') || role.includes('Operations');
+                    if (currentRole === 'PM') return role.includes('PM') || role.includes('Project') || role.includes('Manager');
+                    if (currentRole === 'CFO') return role.includes('CFO') || role.includes('Finance');
+                    if (currentRole === 'Security') return role.includes('Security') || role.includes('CISO');
+                    return true;
+                });
+            }
             
+            // Then filter by status
             if (currentFilter === 'todo') {
-                filteredTasks = allTasks.filter(t => t.status === 'No Status' || t.status === 'To Do');
+                filteredTasks = filteredTasks.filter(t => t.status === 'No Status' || t.status === 'To Do');
             } else if (currentFilter === 'inprogress') {
-                filteredTasks = allTasks.filter(t => t.status === 'In Progress');
+                filteredTasks = filteredTasks.filter(t => t.status === 'In Progress');
             } else if (currentFilter === 'done') {
-                filteredTasks = allTasks.filter(t => t.status === 'Done' || t.status === 'Completed');
+                filteredTasks = filteredTasks.filter(t => t.status === 'Done' || t.status === 'Completed');
             } else if (currentFilter === 'overdue') {
-                filteredTasks = allTasks.filter(t => t.pastDue);
+                filteredTasks = filteredTasks.filter(t => t.pastDue);
             }
             
             if (filteredTasks.length === 0) {
@@ -568,9 +607,9 @@
                         <h3 style="font-size: 0.9375rem; line-height: 1.4; flex: 1;">${t.name}</h3>
                         <span style="background: ${statusBg}; color: ${statusColor}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.6875rem; text-transform: uppercase; margin-left: 0.5rem;">${t.status}</span>
                     </div>
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                         <span style="background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.role}</span>
-                        <span style="background: rgba(255,255,255,0.1); color: var(--text-secondary); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.priority}</span>
+                        <span style="background: ${t.priority === 'High' ? 'rgba(239,68,68,0.2)' : t.priority === 'Medium' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.1)'}; color: ${t.priority === 'High' ? 'var(--danger)' : t.priority === 'Medium' ? 'var(--warning)' : 'var(--text-secondary)'}; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.priority}</span>
                     </div>
                     ${t.dueDate ? `<p style="color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; font-size: 0.75rem;">📅 Due: ${new Date(t.dueDate).toLocaleDateString()}</p>` : ''}
                     ${t.pastDue ? '<p style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">⚠️ Past Due</p>' : ''}
@@ -578,13 +617,78 @@
                 `}).join('');
         }
         
-        // Filter tasks
+        // Render critical tickets (High priority + open status + past due)
+        function renderCriticalTickets() {
+            const criticalGrid = document.getElementById('critical-tickets-grid');
+            const criticalCount = document.getElementById('critical-count');
+            const criticalSection = document.getElementById('critical-section');
+            
+            if (!criticalGrid || !allTasks.length) return;
+            
+            // Define critical: High priority + not done + (past due or overdue)
+            const criticalTasks = allTasks.filter(t => {
+                const isHighPriority = t.priority === 'High' || t.priority === 'Critical';
+                const isNotDone = t.status !== 'Done' && t.status !== 'Completed';
+                const isPastDue = t.pastDue;
+                return isHighPriority && isNotDone && isPastDue;
+            });
+            
+            // Update count
+            if (criticalCount) {
+                criticalCount.textContent = criticalTasks.length;
+            }
+            
+            // Hide section if no critical tickets
+            if (criticalTasks.length === 0) {
+                if (criticalSection) {
+                    criticalSection.style.display = 'none';
+                }
+                return;
+            }
+            
+            // Show section
+            if (criticalSection) {
+                criticalSection.style.display = 'block';
+            }
+            
+            criticalGrid.innerHTML = criticalTasks.map(t => `
+                <div class="agent-card" style="background: rgba(239,68,68,0.05); border-color: var(--danger);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h3 style="font-size: 0.9375rem; line-height: 1.4; flex: 1; color: var(--danger);">${t.name}</h3>
+                        <span style="background: var(--danger); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.6875rem; font-weight: 600;">CRITICAL</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <span style="background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.role}</span>
+                        <span style="background: var(--danger); color: white; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem; font-weight: 600;">${t.priority}</span>
+                        <span style="background: rgba(255,255,255,0.1); color: var(--text-secondary); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.status}</span>
+                    </div>
+                    ${t.dueDate ? `<p style="color: var(--danger); font-size: 0.75rem; font-weight: 600;">⚠️ Past Due: ${new Date(t.dueDate).toLocaleDateString()}</p>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Filter tasks by role
+        function filterByRole(role) {
+            currentRole = role;
+            
+            // Update role tab styles
+            document.querySelectorAll('[id^="role-"]').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`role-${role}`).classList.add('active');
+            
+            renderTasks();
+        }
+        
+        // Filter tasks by status
         function filterTasks(filter) {
             currentFilter = filter;
             
-            // Update tab styles
+            // Update status tab styles
             document.querySelectorAll('#tasks .tab').forEach(tab => {
-                tab.classList.remove('active');
+                if (tab.id && tab.id.startsWith('filter-')) {
+                    tab.classList.remove('active');
+                }
             });
             document.getElementById(`filter-${filter}`).classList.add('active');
             
@@ -618,7 +722,10 @@
                     document.getElementById('tasks-overdue').textContent = allTasks.filter(t => t.pastDue).length || 0;
                 }
                 
-                // Render with current filter
+                // Render critical tickets first
+                renderCriticalTickets();
+                
+                // Render regular tasks
                 renderTasks();
                 
             } catch (e) {
