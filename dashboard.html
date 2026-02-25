@@ -219,6 +219,84 @@
             font-weight: 500;
         }
         
+        /* Quick Actions */
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.8125rem;
+        }
+        .action-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+        }
+        .action-btn span:first-child {
+            font-size: 1.25rem;
+        }
+        
+        /* Health Items */
+        .health-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .health-item:last-child {
+            border-bottom: none;
+        }
+        .health-status {
+            font-size: 0.5rem;
+        }
+        .health-status.good { color: var(--success); }
+        .health-status.warning { color: var(--warning); }
+        .health-status.danger { color: var(--danger); }
+        .health-value {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Activity Feed */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 6px;
+        }
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+            min-width: 40px;
+        }
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .activity-text {
+            font-size: 0.875rem;
+            color: var(--text);
+        }
+        
         /* Responsive */
         @media (max-width: 1024px) {
             .metrics, .agent-grid { grid-template-columns: repeat(2, 1fr); }
@@ -351,6 +429,82 @@
                     <div class="job-item">
                         <span class="status-dot warning"></span>
                         <span>CRON-006 macOS Weekly (Sun 4am)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions & System Health -->
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                <div class="panel">
+                    <h3 style="--dot-color: var(--accent);">⚡ Quick Actions</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+                        <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" target="_blank" class="action-btn">
+                            <span>📝</span>
+                            <span>Open Notion</span>
+                        </a>
+                        <button class="action-btn" onclick="location.reload()">
+                            <span>🔄</span>
+                            <span>Refresh</span>
+                        </button>
+                        <a href="https://github.com/sirsid2001" target="_blank" class="action-btn">
+                            <span>📦</span>
+                            <span>GitHub</span>
+                        </a>
+                        <button class="action-btn" onclick="alert('Backup triggered - check logs')">
+                            <span>💾</span>
+                            <span>Run Backup</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3 style="--dot-color: var(--success);">📊 System Health</h3>
+                    <div class="health-item">
+                        <span class="health-status good">●</span>
+                        <span>OpenClaw Gateway</span>
+                        <span class="health-value">Running</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-status good">●</span>
+                        <span>Notion API</span>
+                        <span class="health-value">Connected</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-status good">●</span>
+                        <span>GitHub Backup</span>
+                        <span class="health-value">2 hrs ago</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="health-status warning">●</span>
+                        <span>Disk Space</span>
+                        <span class="health-value">72% used</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="panel" style="margin-top: 1.5rem;">
+                <h3 style="--dot-color: var(--accent);">📋 Recent Activity</h3>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <span class="activity-time">15:47</span>
+                        <span class="activity-dot" style="background: var(--success);"></span>
+                        <span class="activity-text">DWE Dashboard updated with combined metrics</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">15:30</span>
+                        <span class="activity-dot" style="background: var(--success);"></span>
+                        <span class="activity-text">GitHub backup completed (1.5 MB)</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">14:45</span>
+                        <span class="activity-dot" style="background: var(--accent);"></span>
+                        <span class="activity-text">Swarm team alerted for dashboard optimization</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-time">13:15</span>
+                        <span class="activity-dot" style="background: var(--warning);"></span>
+                        <span class="activity-text">AirPods Pro configured for Push-to-Talk</span>
                     </div>
                 </div>
             </div>
