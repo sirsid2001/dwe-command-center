@@ -11,6 +11,9 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+// DWE Widget API
+const { getDWEStats } = require('./dwe-widget-api.js');
+
 // Config
 const PORT = 8899;
 const HOST = '127.0.0.1';
@@ -110,11 +113,41 @@ const server = http.createServer((req, res) => {
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
             break;
+        case '/dwe/status':
+            handleDWEStatus(req, res);
+            break;
+        case '/dwe':
+        case '/dwe/':
+        case '/dwe/widget':
+            serveFile(res, path.join(__dirname, 'dwe-widget.html'), 'text/html');
+            break;
         default:
             res.writeHead(404, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Not found' }));
     }
 });
+
+// DWE Widget Status Handler
+async function handleDWEStatus(req, res) {
+    try {
+        const stats = await getDWEStats();
+        res.writeHead(200, { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify(stats));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+            error: 'Failed to fetch stats',
+            total: 1020,
+            completed: 562,
+            inProgress: 4,
+            remaining: 458,
+            lastUpdated: new Date().toISOString()
+        }));
+    }
+}
 
 function serveFile(res, filePath, contentType) {
     fs.readFile(filePath, (err, data) => {

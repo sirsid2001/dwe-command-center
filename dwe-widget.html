@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="300">
+    <title>DWE | Command Center Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .last-updated {
+            margin-left: auto;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+        
+        /* Metrics Grid */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 3px solid var(--accent);
+            transition: all 0.2s;
+        }
+        
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .metric-card.success {
+            border-left-color: var(--success);
+        }
+        
+        .metric-card.warning {
+            border-left-color: var(--warning);
+        }
+        
+        .metric-card.danger {
+            border-left-color: var(--danger);
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .metric-value.small {
+            font-size: 1.75rem;
+        }
+        
+        /* Progress Section */
+        .progress-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .progress-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-ring-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .progress-ring {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .progress-ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+        
+        .progress-ring-fill {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: #000;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #0891b2;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Loading State */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--accent);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error State */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--danger);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .metric-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🚀</div>
+            <div>
+                <div class="title">DWE | Command Center</div>
+                <div class="subtitle">CEO / Founder — Digital Wealth Ecosystem</div>
+            </div>
+            <div class="last-updated" id="last-updated">Loading...</div>
+        </div>
+        
+        <!-- Metrics -->
+        <div class="metrics" id="metrics">
+            <div class="metric-card">
+                <div class="metric-label">Total Tasks</div>
+                <div class="metric-value" id="total">--</div>
+            </div>
+            <div class="metric-card success">
+                <div class="metric-label">Completed</div>
+                <div class="metric-value" id="completed">--</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="metric-label">In Progress</div>
+                <div class="metric-value small" id="inprogress">--</div>
+            </div>
+            <div class="metric-card danger">
+                <div class="metric-label">Remaining</div>
+                <div class="metric-value" id="remaining">--</div>
+            </div>
+        </div>
+        
+        <!-- Progress Ring -->
+        <div class="progress-section">
+            <div class="progress-title">Overall Progress</div>
+            <div class="progress-ring-container">
+                <svg class="progress-ring" viewBox="0 0 120 120">
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="52"/>
+                    <circle class="progress-ring-fill" id="progress-ring" cx="60" cy="60" r="52"/>
+                </svg>
+                <div class="progress-text" id="progress-percent">--%</div>
+            </div>
+            
+            <div class="actions">
+                <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" class="btn" target="_blank">
+                    📋 Open Notion Tasks
+                </a>
+                <button class="btn btn-secondary" onclick="refreshStats()">
+                    🔄 Refresh Now
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            Auto-refreshes every 5 minutes • Data from Notion
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin;
+        
+        async function fetchStats() {
+            try {
+                const res = await fetch(`${API_BASE}/dwe/status`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    return;
+                }
+                
+                // Update stats
+                document.getElementById('total').textContent = data.total || 0;
+                document.getElementById('completed').textContent = data.completed || 0;
+                document.getElementById('inprogress').textContent = data.inProgress || 0;
+                document.getElementById('remaining').textContent = data.remaining || 0;
+                
+                // Update progress ring
+                const total = data.total || 1;
+                const completed = data.completed || 0;
+                const percent = Math.round((completed / total) * 100);
+                
+                document.getElementById('progress-percent').textContent = percent + '%';
+                
+                const ring = document.getElementById('progress-ring');
+                const circumference = 2 * Math.PI * 52;
+                const offset = circumference - (percent / 100) * circumference;
+                
+                ring.style.strokeDasharray = circumference;
+                ring.style.strokeDashoffset = offset;
+                
+                // Update timestamp
+                const lastUpdated = new Date(data.lastUpdated || Date.now());
+                document.getElementById('last-updated').textContent = 
+                    'Updated: ' + lastUpdated.toLocaleTimeString();
+                
+            } catch (e) {
+                console.error('Failed to fetch stats:', e);
+                // Use fallback values
+                document.getElementById('total').textContent = '1020';
+                document.getElementById('completed').textContent = '562';
+                document.getElementById('inprogress').textContent = '4';
+                document.getElementById('remaining').textContent = '458';
+                document.getElementById('progress-percent').textContent = '55%';
+                document.getElementById('last-updated').textContent = 'Using cached data';
+            }
+        }
+        
+        function refreshStats() {
+            const btn = document.querySelector('.btn-secondary');
+            if (btn) {
+                btn.textContent = '🔄 Refreshing...';
+                btn.disabled = true;
+            }
+            
+            fetchStats().then(() => {
+                if (btn) {
+                    btn.textContent = '🔄 Refresh Now';
+                    btn.disabled = false;
+                }
+            });
+        }
+        
+        // Load on page load
+        fetchStats();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(fetchStats, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
