@@ -291,7 +291,16 @@
             <div style="display: flex; gap: 1.5rem;">
                 <!-- Main Kanban Board -->
                 <div style="flex: 1;">
-    
+                    <!-- Role Legend -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0.75rem; background: var(--bg-card); border-radius: 8px;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Team Roles:</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>CEO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>CTO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;"></span>COO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #8b5cf6;"></span>PM</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ec4899;"></span>CFO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>CISO</span>
+                    </div>
                     
                     <!-- Kanban Columns -->
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
@@ -358,37 +367,6 @@
                                 <path id="progress-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="0, 100"/>
                             </svg>
                             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: 700;" id="progress-percent">0%</div>
-                        </div>
-                        
-                        <!-- Role Legend -->
-                        <div style="margin-top: 1.5rem; text-align: left;">
-                            <h4 style="font-size: 0.6875rem; color: var(--text-secondary); margin-bottom: 0.75rem; text-transform: uppercase;">Team Roles</h4>
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
-                                    <span style="font-size: 0.8125rem;">CEO</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;"></span>
-                                    <span style="font-size: 0.8125rem;">CTO</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #3b82f6;"></span>
-                                    <span style="font-size: 0.8125rem;">COO</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #8b5cf6;"></span>
-                                    <span style="font-size: 0.8125rem;">PM</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #ec4899;"></span>
-                                    <span style="font-size: 0.8125rem;">CFO</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span>
-                                    <span style="font-size: 0.8125rem;">CISO</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     
