@@ -376,13 +376,8 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                             <!-- Total -->
                             <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--accent); display: flex; flex-direction: column;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                    <div>
-                                        <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
-                                        <div style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;" id="sidebar-total">0</div>
-                                    </div>
-                                    <div style="font-size: 0.625rem; color: var(--accent); background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 4px;" id="sidebar-latest-id">ID: 0</div>
-                                </div>
+                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;" id="sidebar-total">0</div>
                             </div>
                             <!-- Completed -->
                             <div onclick="scrollToRecentCompleted()" style="background: rgba(16,185,129,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--success); display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16,185,129,0.15)'" onmouseout="this.style.background='rgba(16,185,129,0.08)'">
@@ -964,18 +959,10 @@
                 
                 console.log('Stats:', { total, completed, inProgress, critical });
                 
-                console.log('Stats:', { total, completed, inProgress, critical });
-                
                 document.getElementById('sidebar-total').textContent = data.stats.maxIdNumber || total;
                 document.getElementById('sidebar-completed').textContent = completed;
                 document.getElementById('sidebar-inprogress').textContent = inProgress;
                 document.getElementById('sidebar-critical').textContent = critical;
-                
-                // Update latest ID number
-                const latestIdEl = document.getElementById('sidebar-latest-id');
-                if (latestIdEl && data.stats.maxIdNumber) {
-                    latestIdEl.textContent = 'ID: ' + data.stats.maxIdNumber;
-                }
                 
                 // Update progress ring (Completed / Total)
                 const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
