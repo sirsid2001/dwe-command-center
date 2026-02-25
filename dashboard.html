@@ -72,6 +72,7 @@
                 <button class="tab" onclick="showTab('tasks')">✅ Tasks</button>
                 <button class="tab" onclick="showTab('decisions')">📋 Decisions</button>
                 <button class="tab" onclick="showTab('logs')">📜 Logs</button>
+                <button class="tab" onclick="showTab('projects')">📁 Projects</button>
                 <button class="tab" onclick="showTab('upload')">📤 Upload</button>
             </nav>
         </div>
@@ -274,6 +275,130 @@
             
             <div style="margin-top: 1rem; padding: 0.75rem; background: var(--bg-card); border-radius: 8px; font-size: 0.75rem; color: var(--text-secondary); text-align: center;">
                 📖 Read-only view • Manage tasks in <a href="https://www.notion.so" target="_blank" style="color: var(--accent);">Notion</a> • Auto-refreshes every 3 minutes
+            </div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div id="projects" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>📁 Projects <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">(from Notion)</span></h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" onclick="refreshProjects()">🔄 Refresh</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1.5rem;">
+                <!-- Main Kanban Board -->
+                <div style="flex: 1;">
+                    <!-- Role Legend -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0.75rem; background: var(--bg-card); border-radius: 8px;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Roles:</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>CEO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>CTO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6;"></span>COO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #8b5cf6;"></span>PM</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ec4899;"></span>CFO</span>
+                        <span style="font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>Security</span>
+                    </div>
+                    
+                    <!-- Kanban Columns -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <!-- To Do Column -->
+                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-secondary);"></span>
+                                    To Do
+                                </h3>
+                                <span style="background: rgba(255,255,255,0.1); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="todo-count">0</span>
+                            </div>
+                            <div id="todo-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- In Progress Column -->
+                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--warning);"></span>
+                                    In Progress
+                                </h3>
+                                <span style="background: rgba(245,158,11,0.2); color: var(--warning); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="progress-count">0</span>
+                            </div>
+                            <div id="progress-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Done Column -->
+                        <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+                                    Done
+                                </h3>
+                                <span style="background: rgba(16,185,129,0.2); color: var(--success); padding: 0.125rem 0.5rem; border-radius: 12px; font-size: 0.75rem;" id="done-count">0</span>
+                            </div>
+                            <div id="done-column" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recently Completed Section -->
+                    <div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                        <h3 style="font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--success);">✅ Recently Completed (Last 7 Days)</h3>
+                        <div id="recent-completed" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Sidebar Stats -->
+                <div style="width: 280px; display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Progress Ring -->
+                    <div style="background: var(--bg-card); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border); text-align: center;">
+                        <h3 style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase;">Overall Progress</h3>
+                        <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
+                            <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                                <path id="progress-ring" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent)" stroke-width="3" stroke-dasharray="0, 100"/>
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: 700;" id="progress-percent">0%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div style="background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                        <h3 style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase;">Projects</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700;" id="sidebar-total">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Total</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; color: var(--success);" id="sidebar-completed">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Completed</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; color: var(--warning);" id="sidebar-inprogress">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">In Progress</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 1.75rem; font-weight: 700; color: var(--danger);" id="sidebar-critical">0</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Critical</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Open Notion Link -->
+                    <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" target="_blank" style="display: block; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border); text-decoration: none; color: inherit; text-align: center; transition: all 0.2s;">
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📝</div>
+                        <div style="font-size: 0.875rem; font-weight: 500;">Open in Notion</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Manage tasks directly</div>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -746,6 +871,148 @@
             fetchNotionTasks();
         }
 
+        // Role color mapping
+        function getRoleColor(role) {
+            if (!role) return '#9ca3af';
+            role = role.toLowerCase();
+            if (role.includes('ceo')) return '#10b981';
+            if (role.includes('cto') || role.includes('engineering') || role.includes('technical')) return '#f59e0b';
+            if (role.includes('coo') || role.includes('operations')) return '#3b82f6';
+            if (role.includes('pm') || role.includes('project') || role.includes('manager')) return '#8b5cf6';
+            if (role.includes('cfo') || role.includes('finance')) return '#ec4899';
+            if (role.includes('security') || role.includes('ciso')) return '#ef4444';
+            return '#9ca3af';
+        }
+
+        // Fetch and render Projects (Kanban view)
+        async function fetchProjects() {
+            try {
+                const res = await fetch(`${API_BASE}/notion-tasks`);
+                const data = await res.json();
+                
+                if (!data.tasks) return;
+                
+                const tasks = data.tasks;
+                
+                // Separate into columns
+                const todoTasks = tasks.filter(t => t.status === 'No Status' || t.status === 'To Do');
+                const progressTasks = tasks.filter(t => t.status === 'In Progress');
+                const doneTasks = tasks.filter(t => t.status === 'Done' || t.status === 'Completed');
+                
+                // Recent completed (last 7 days)
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                const recentCompleted = doneTasks.filter(t => {
+                    // For now, just show last 5 completed since we don't have completion date
+                    return true;
+                }).slice(0, 5);
+                
+                // Update column counts
+                document.getElementById('todo-count').textContent = todoTasks.length;
+                document.getElementById('progress-count').textContent = progressTasks.length;
+                document.getElementById('done-count').textContent = doneTasks.length;
+                
+                // Render columns
+                renderProjectColumn('todo-column', todoTasks);
+                renderProjectColumn('progress-column', progressTasks);
+                renderProjectColumn('done-column', doneTasks);
+                
+                // Render recent completed
+                renderRecentCompleted(recentCompleted);
+                
+                // Update sidebar stats
+                const total = tasks.length;
+                const completed = doneTasks.length;
+                const inProgress = progressTasks.length;
+                const critical = tasks.filter(t => t.pastDue && t.priority === 'High').length;
+                
+                document.getElementById('sidebar-total').textContent = total;
+                document.getElementById('sidebar-completed').textContent = completed;
+                document.getElementById('sidebar-inprogress').textContent = inProgress;
+                document.getElementById('sidebar-critical').textContent = critical;
+                
+                // Update progress ring
+                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                document.getElementById('progress-percent').textContent = percent + '%';
+                document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
+                
+            } catch (e) {
+                console.error('Failed to fetch projects:', e);
+            }
+        }
+
+        function renderProjectColumn(columnId, tasks) {
+            const column = document.getElementById(columnId);
+            if (!column) return;
+            
+            if (tasks.length === 0) {
+                column.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem; text-align: center; padding: 2rem 0;">No items</p>';
+                return;
+            }
+            
+            column.innerHTML = tasks.map(t => {
+                const roleColor = getRoleColor(t.role);
+                const isCritical = t.pastDue && t.priority === 'High';
+                
+                // Calculate progress (simple heuristic: done = 100%, in progress = 50%, todo = 0%)
+                let progress = 0;
+                if (t.status === 'Done' || t.status === 'Completed') progress = 100;
+                else if (t.status === 'In Progress') progress = 50;
+                
+                return `
+                <div class="agent-card" style="${isCritical ? 'border-color: var(--danger); border-width: 2px;' : ''} cursor: pointer;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h4 style="font-size: 0.875rem; line-height: 1.4; flex: 1; margin: 0;">${t.name.substring(0, 60)}${t.name.length > 60 ? '...' : ''}</h4>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">${t.role || 'Unassigned'}</span>
+                        ${isCritical ? '<span style="background: var(--danger); color: white; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.625rem; font-weight: 600; margin-left: auto;">CRITICAL</span>' : ''}
+                    </div>
+                    
+                    ${t.dueDate ? `
+                    <div style="font-size: 0.75rem; color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; margin-bottom: 0.5rem;">
+                        📅 ${new Date(t.dueDate).toLocaleDateString()}
+                    </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                            <div style="height: 100%; width: ${progress}%; background: ${roleColor}; border-radius: 2px; transition: width 0.3s;"></div>
+                        </div>
+                        <span style="font-size: 0.6875rem; color: var(--text-secondary);">${progress}%</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderRecentCompleted(tasks) {
+            const container = document.getElementById('recent-completed');
+            if (!container) return;
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.875rem;">No recent completions</p>';
+                return;
+            }
+            
+            container.innerHTML = tasks.map(t => {
+                const roleColor = getRoleColor(t.role);
+                return `
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: rgba(16,185,129,0.1); border-radius: 8px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
+                    <span style="font-size: 0.875rem; flex: 1;">${t.name.substring(0, 50)}${t.name.length > 50 ? '...' : ''}</span>
+                    <span style="font-size: 0.75rem; color: var(--success);">✓ Done</span>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function refreshProjects() {
+            fetchProjects();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             updateClock();
@@ -760,6 +1027,7 @@
             fetchLaunchd();
             fetchAgentRouting();
             fetchNotionTasks();
+            fetchProjects();
             
             // Refresh dashboard data every 3 minutes (not too often to avoid overwhelming the system)
             setInterval(() => {
@@ -768,6 +1036,7 @@
                 fetchLaunchd();
                 fetchAgentRouting();
                 fetchNotionTasks();
+                fetchProjects();
             }, 180000);
             
             // Drag and drop
