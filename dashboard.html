@@ -955,9 +955,9 @@
                 const total = tasks.length;
                 const completed = doneTasks.length;
                 const inProgress = progressTasks.length;
-                const critical = tasks.filter(t => t.pastDue && (t.priority === 'High' || t.priority === 'Critical')).length;
+                const critical = tasks.filter(t => t.priority === 'Critical').length;
                 
-                console.log('Column counts:', { todo: todoTasks.length, inProgress: progressTasks.length, done: doneTasks.length });
+                console.log('Stats:', { total, completed, inProgress, critical });
                 
                 console.log('Stats:', { total, completed, inProgress, critical });
                 
@@ -966,10 +966,11 @@
                 document.getElementById('sidebar-inprogress').textContent = inProgress;
                 document.getElementById('sidebar-critical').textContent = critical;
                 
-                // Update progress ring
+                // Update progress ring (Completed / Total)
                 const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
                 document.getElementById('progress-percent').textContent = percent + '%';
                 document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
+                console.log('Progress:', percent + '%');
                 
             } catch (e) {
                 console.error('Failed to fetch projects:', e);
