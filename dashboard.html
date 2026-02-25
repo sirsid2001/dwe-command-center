@@ -3,749 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>DWE | Command Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-card: rgba(255,255,255,0.03);
-            --border: rgba(255,255,255,0.1);
-            --accent: #06b6d4;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #fff;
-            --text-secondary: rgba(255,255,255,0.6);
-        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg-primary); 
-            color: var(--text); 
-            min-height: 100vh; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3d 50%, #162044 100%);
+            color: #ffffff;
+            min-height: 100vh;
         }
+        
         .header { 
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-            padding: 1rem 2rem; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
         }
-        .header-content { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
+        
         .logo { 
             display: flex; 
             align-items: center; 
             gap: 1rem; 
-            font-size: 2.25rem; 
+            font-size: 1.75rem; 
             font-weight: 700;
-            letter-spacing: -0.5px;
         }
+        
         .logo-icon { 
-            width: 48px; 
-            height: 48px; 
-            background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6); 
-            border-radius: 10px; 
+            width: 44px; 
+            height: 44px; 
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            border-radius: 12px;
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 1.75rem;
-            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
         }
-        .logo-text {
-            background: linear-gradient(135deg, #06b6d4, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .tabs { 
-            display: flex; 
-            gap: 4px; 
-            background: rgba(255,255,255,0.05); 
-            padding: 4px; 
-            border-radius: 12px; 
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .tab { 
-            padding: 0.625rem 1rem; 
-            border: none; 
-            background: transparent; 
-            color: var(--text-secondary); 
-            cursor: pointer; 
-            border-radius: 8px; 
-            font-size: 0.875rem;
-            transition: all 0.3s ease; 
-        }
-        .tab:hover { 
-            color: var(--text); 
-            background: rgba(255,255,255,0.05);
-        }
-        .tab.active { 
-            color: var(--text); 
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .main { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 2rem; 
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
         
-        /* Welcome Section */
+        .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
         .welcome { 
-            margin-bottom: 2rem; 
             display: flex; 
             justify-content: space-between; 
-            align-items: center; 
-        }
-        .welcome h1 { 
-            font-size: 1.125rem; 
-            margin-bottom: 0.25rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        .welcome p { 
-            color: rgba(255,255,255,0.4); 
-            font-size: 0.8125rem;
-        }
-        .time { 
-            font-size: 1rem; 
-            font-weight: 400; 
-            color: var(--text-secondary);
-            text-align: right;
-            line-height: 1.4;
-        }
-        .time .date {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-        .time .clock{
-            font-size: 1.25rem;
-            color: var(--text);
-            font-weight: 500;
-        }
-        
-        /* Metrics */
-        .metrics { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 1rem; 
-            margin-bottom: 2rem; 
-        }
-        .metric-card { 
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 16px; 
-            padding: 1.5rem; 
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
-        }
-        .metric-card.success { 
-            border-left-color: var(--success);
-        }
-        .metric-card.success:hover {
-            box-shadow: 0 12px 40px rgba(0, 214, 143, 0.2);
-        }
-        .metric-card.warning { 
-            border-left-color: var(--warning);
-        }
-        .metric-card.warning:hover {
-            box-shadow: 0 12px 40px rgba(255, 170, 0, 0.2);
-        }
-        .metric-card.danger { 
-            border-left-color: var(--danger);
-        }
-        .metric-card.danger:hover {
-            box-shadow: 0 12px 40px rgba(255, 71, 87, 0.2);
-        }
-        .metric-label { 
-            font-size: 0.75rem; 
-            color: var(--accent); 
-            text-transform: uppercase; 
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .metric-value { 
-            font-size: 2.5rem; 
-            font-weight: 700;
-            color: var(--text);
-            text-shadow: 0 2px 10px rgba(255,255,255,0.1);
-        }
-        
-        /* Services & Jobs */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            align-items: center;
             margin-bottom: 2rem;
         }
+        
+        .welcome h1 { font-size: 1.25rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+        .welcome p { color: rgba(255,255,255,0.4); font-size: 0.875rem; }
+        
+        .time { text-align: right; }
+        .time .date { color: #00d4ff; font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .time .clock { font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }
+        
+        .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .metrics-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        
+        .metric-card { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border-left: 4px solid #00d4ff;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .metric-card.success { border-left-color: #00d68f; }
+        .metric-card.warning { border-left-color: #ffaa00; }
+        .metric-card.danger { border-left-color: #ff4757; }
+        
+        .metric-label { font-size: 0.75rem; color: #00d4ff; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; }
+        .metric-value { font-size: 2.5rem; font-weight: 700; }
+        
         .grid-3 {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
+        
         .panel {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.12);
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
-        .panel:hover {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
+        
         .panel h3 {
-            font-size: 0.8125rem;
-            color: var(--accent);
+            font-size: 0.875rem;
+            color: #00d4ff;
             text-transform: uppercase;
+            font-weight: 600;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
         }
-        .panel h3::before {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent);
-        }
-        .service-item, .job-item {
+        
+        .job-item {
             display: flex;
             align-items: center;
             gap: 0.75rem;
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .service-item:last-child, .job-item:last-child {
-            border-bottom: none;
-        }
+        
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--success);
+            background: #00d68f;
+            box-shadow: 0 0 8px #00d68f;
         }
-        .status-dot.warning { background: var(--warning); }
-        .status-dot.danger { background: var(--danger); }
+        .status-dot.warning { background: #ffaa00; box-shadow: 0 0 8px #ffaa00; }
         
-        /* Agent Grid */
-        .agent-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-        }
-        .agent-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        .agent-card:hover {
-            transform: translateY(-3px);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-        .agent-emoji {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .agent-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        .agent-role {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
-        }
-        .agent-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            background: rgba(16,185,129,0.2);
-            color: var(--success);
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
+        .heartbeat { animation: pulse 1.5s infinite; display: inline-block; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         
-        /* Quick Actions */
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            color: var(--text);
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.8125rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .action-btn:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.2);
-        }
-        .action-btn span:first-child {
-            font-size: 1.25rem;
-        }
-        
-        /* Health Items */
-        .health-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.625rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .health-item:last-child {
-            border-bottom: none;
-        }
-        .health-status {
-            font-size: 0.5rem;
-        }
-        .health-status.good { color: var(--success); }
-        .health-status.warning { color: var(--warning); }
-        .health-status.danger { color: var(--danger); }
-        .health-value {
-            margin-left: auto;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        
-        /* Activity Feed */
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem;
-            background: rgba(255,255,255,0.02);
-            border-radius: 6px;
-        }
-        .activity-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            font-family: monospace;
-            min-width: 40px;
-        }
-        .activity-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .activity-text {
-            font-size: 0.875rem;
-            color: var(--text);
-        }
-        
-        /* Heartbeat Animation */
-        .heartbeat {
-            display: inline-block;
-            animation: heartbeat 1.5s ease-in-out infinite;
-        }
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.1); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.1); }
-        }
-        
-        /* Responsive */
         @media (max-width: 1024px) {
-            .metrics, .agent-grid { grid-template-columns: repeat(2, 1fr); }
-            .grid-2 { grid-template-columns: 1fr; }
+            .metrics, .metrics-2 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">🚀</div>
-                <span class="logo-text">DWE | Command Center</span>
-            </div>
-            <nav class="tabs">
-                <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-                <button class="tab" onclick="showTab('agents')">🏢 AI Team</button>
-                <button class="tab" onclick="showTab('decisions')">📋 Decisions</button>
-                <button class="tab" onclick="showTab('logs')">📜 Logs</button>
-            </nav>
+        <div class="logo">
+            <div class="logo-icon">🚀</div>
+            <span>DWE | Command Center</span>
         </div>
     </header>
     
     <main class="main">
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="welcome">
-                <div>
-                    <h1>Good morning, Sidney</h1>
-                    <p>CEO / Founder — Digital Wealth Ecosystem</p>
-                </div>
-                <div class="time" id="clock">
-                    <div class="date">Loading...</div>
-                    <div class="clock">00:00:00</div>
-                </div>
+        <div class="welcome">
+            <div>
+                <h1>Good morning, Sidney</h1>
+                <p>CEO / Founder — Digital Wealth Ecosystem</p>
             </div>
-            
-            <!-- System Metrics -->
-            <div class="metrics">
-                <div class="metric-card">
-                    <div class="metric-label">Server Status</div>
-                    <div class="metric-value" style="color: var(--success);">● Online</div>
-                </div>
-                <div class="metric-card success">
-                    <div class="metric-label">Active Agents</div>
-                    <div class="metric-value">4</div>
-                </div>
-                <div class="metric-card warning">
-                    <div class="metric-label">Memory Usage</div>
-                    <div class="metric-value">8.8 MB</div>
-                </div>
-                <div class="metric-card danger">
-                    <div class="metric-label">Uptime</div>
-                    <div class="metric-value" id="uptime"><span class="heartbeat">💓</span> 0s</div>
-                </div>
-            </div>
-            
-            <!-- DWE Task Metrics (from Notion) -->
-            <div class="metrics" style="margin-top: 1rem;">
-                <div class="metric-card">
-                    <div class="metric-label">Total Tasks</div>
-                    <div class="metric-value" id="dwe-total">1020</div>
-                </div>
-                <div class="metric-card success">
-                    <div class="metric-label">Completed</div>
-                    <div class="metric-value" id="dwe-completed">562</div>
-                </div>
-                <div class="metric-card warning">
-                    <div class="metric-label">In Progress</div>
-                    <div class="metric-value" id="dwe-inprogress">4</div>
-                </div>
-                <div class="metric-card danger">
-                    <div class="metric-label">Remaining</div>
-                    <div class="metric-value" id="dwe-remaining">458</div>
-                </div>
-            </div>
-            
-            <div class="grid-2">
-                <div class="panel">
-                    <h3>🔌 Services</h3>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>OpenClaw Gateway (port 3000)</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>n8n Digital Ocean</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>MCporter Client</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>Notion API</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>Pinecone</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>Ollama M4 GPU (5 models)</span>
-                    </div>
-                    <div class="service-item">
-                        <span class="status-dot"></span>
-                        <span>OpenRouter</span>
-                    </div>
-                </div>
-                
-                <div class="panel">
-                    <h3 style="--dot-color: var(--warning);">⏰ Cron Jobs (Next Run)</h3>
-                    <div class="job-item">
-                        <span class="status-dot"></span>
-                        <span>CRON-001 Swarm Guardian (9:10a)</span>
-                    </div>
-                    <div class="job-item">
-                        <span class="status-dot"></span>
-                        <span>CRON-002 Ops Escalation (9:10a)</span>
-                    </div>
-                    <div class="job-item">
-                        <span class="status-dot"></span>
-                        <span>CRON-003 Log Cleanup (12:00a)</span>
-                    </div>
-                    <div class="job-item">
-                        <span class="status-dot"></span>
-                        <span>CRON-004 Lucy Email Sync (10:00a)</span>
-                    </div>
-                    <div class="job-item">
-                        <span class="status-dot"></span>
-                        <span>CRON-005 macOS Daily (3:00a)</span>
-                    </div>
-                    <div class="job-item">
-                        <span class="status-dot warning"></span>
-                        <span>CRON-006 macOS Weekly (Sun 4am)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- LaunchD Services -->
-            <div class="panel" style="margin-top: 1.5rem;">
-                <h3>🚀 LaunchD Services (Next Run)</h3>
-                <div class="job-item">
-                    <span class="status-dot"></span>
-                    <span>DWE-001 Ops Report (3:00p)</span>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot"></span>
-                    <span>DWE-002 Ops Monitor (3:05p)</span>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot"></span>
-                    <span>DWE-003 Project Monitor (3:00p)</span>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot"></span>
-                    <span>DWE-007 COO Task Mgr (2:30p)</span>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot warning"></span>
-                    <span>DWE-008 Lucy Email (7:00a)</span>
-                </div>
-            </div>
-            
-            <!-- Quick Actions & System Health -->
-            <div class="grid-2" style="margin-top: 1.5rem;">
-                <div class="panel">
-                    <h3 style="--dot-color: var(--accent);">⚡ Quick Actions</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
-                        <a href="https://www.notion.so/sirsid2001/2f797f89-9129-8068-b8ae-c4321d1c72b7" target="_blank" class="action-btn">
-                            <span>📝</span>
-                            <span>Open Notion</span>
-                        </a>
-                        <button class="action-btn" onclick="location.reload()">
-                            <span>🔄</span>
-                            <span>Refresh</span>
-                        </button>
-                        <a href="https://github.com/sirsid2001" target="_blank" class="action-btn">
-                            <span>📦</span>
-                            <span>GitHub</span>
-                        </a>
-                        <button class="action-btn" onclick="alert('Backup triggered - check logs')">
-                            <span>💾</span>
-                            <span>Run Backup</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="panel">
-                    <h3 style="--dot-color: var(--success);">📊 System Health</h3>
-                    <div class="health-item">
-                        <span class="health-status good">●</span>
-                        <span>OpenClaw Gateway</span>
-                        <span class="health-value">Running</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="health-status good">●</span>
-                        <span>Notion API</span>
-                        <span class="health-value">Connected</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="health-status good">●</span>
-                        <span>GitHub Backup</span>
-                        <span class="health-value">2 hrs ago</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="health-status warning">●</span>
-                        <span>Disk Space</span>
-                        <span class="health-value">72% used</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Recent Activity -->
-            <div class="panel" style="margin-top: 1.5rem;">
-                <h3 style="--dot-color: var(--accent);">📋 Recent Activity</h3>
-                <div class="activity-list">
-                    <div class="activity-item">
-                        <span class="activity-time">15:47</span>
-                        <span class="activity-dot" style="background: var(--success);"></span>
-                        <span class="activity-text">DWE Dashboard updated with combined metrics</span>
-                    </div>
-                    <div class="activity-item">
-                        <span class="activity-time">15:30</span>
-                        <span class="activity-dot" style="background: var(--success);"></span>
-                        <span class="activity-text">GitHub backup completed (1.5 MB)</span>
-                    </div>
-                    <div class="activity-item">
-                        <span class="activity-time">14:45</span>
-                        <span class="activity-dot" style="background: var(--accent);"></span>
-                        <span class="activity-text">Swarm team alerted for dashboard optimization</span>
-                    </div>
-                    <div class="activity-item">
-                        <span class="activity-time">13:15</span>
-                        <span class="activity-dot" style="background: var(--warning);"></span>
-                        <span class="activity-text">AirPods Pro configured for Push-to-Talk</span>
-                    </div>
-                </div>
+            <div class="time">
+                <div class="date" id="date">Loading...</div>
+                <div class="clock" id="clock">00:00:00</div>
             </div>
         </div>
         
-        <!-- AI Team Tab -->
-        <div id="agents" class="tab-content">
-            <h2 style="margin-bottom: 1.5rem;">🏢 AI Team</h2>
-            <div class="agent-grid">
-                <div class="agent-card">
-                    <div class="agent-emoji">👨‍💼</div>
-                    <div class="agent-name">Maxx</div>
-                    <div class="agent-role">COO — Operations</div>
-                    <span class="agent-status">Online</span>
-                </div>
-                <div class="agent-card">
-                    <div class="agent-emoji">💻</div>
-                    <div class="agent-name">Steve</div>
-                    <div class="agent-role">CTO — Engineering</div>
-                    <span class="agent-status">Online</span>
-                </div>
-                <div class="agent-card">
-                    <div class="agent-emoji">🔧</div>
-                    <div class="agent-name">Chief</div>
-                    <div class="agent-role">Chief — Architecture</div>
-                    <span class="agent-status">Idle</span>
-                </div>
-                <div class="agent-card">
-                    <div class="agent-emoji">🛡️</div>
-                    <div class="agent-name">Security</div>
-                    <div class="agent-role">CISO — Protection</div>
-                    <span class="agent-status">Online</span>
-                </div>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-label">Server Status</div>
+                <div class="metric-value" style="color: #00d68f;">● Online</div>
+            </div>
+            <div class="metric-card success">
+                <div class="metric-label">Active Agents</div>
+                <div class="metric-value">4</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="metric-label">Memory Usage</div>
+                <div class="metric-value">8.8 MB</div>
+            </div>
+            <div class="metric-card danger">
+                <div class="metric-label">Uptime</div>
+                <div class="metric-value"><span class="heartbeat">💓</span> <span id="uptime">0s</span></div>
             </div>
         </div>
         
-        <!-- Decisions Tab -->
-        <div id="decisions" class="tab-content">
-            <h2 style="margin-bottom: 1.5rem;">📋 Recent Decisions</h2>
+        <div class="metrics-2">
+            <div class="metric-card">
+                <div class="metric-label">Total Tasks</div>
+                <div class="metric-value">1020</div>
+            </div>
+            <div class="metric-card success">
+                <div class="metric-label">Completed</div>
+                <div class="metric-value">562</div>
+            </div>
+            <div class="metric-card warning">
+                <div class="metric-label">In Progress</div>
+                <div class="metric-value">4</div>
+            </div>
+            <div class="metric-card danger">
+                <div class="metric-label">Remaining</div>
+                <div class="metric-value">458</div>
+            </div>
+        </div>
+        
+        <div class="grid-3">
             <div class="panel">
-                <div class="job-item">
-                    <span class="status-dot" style="background: var(--success);"></span>
-                    <div>
-                        <strong>GitHub Backup Automation</strong>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Weekly automated backups enabled</p>
-                    </div>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot" style="background: var(--success);"></span>
-                    <div>
-                        <strong>DWE Command Center Rebrand</strong>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Mission Control v2 → DWE Command Center</p>
-                    </div>
-                </div>
-                <div class="job-item">
-                    <span class="status-dot" style="background: var(--accent);"></span>
-                    <div>
-                        <strong>AirPods Pro Integration</strong>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary);">Audio configured for Push-to-Talk</p>
-                    </div>
-                </div>
+                <h3>🔌 Services</h3>
+                <div class="job-item"><span class="status-dot"></span><span>OpenClaw Gateway (port 3000)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>n8n Digital Ocean</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>MCporter Client</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>Notion API</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>Pinecone</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>Ollama M4 GPU (5 models)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>OpenRouter</span></div>
             </div>
-        </div>
-        
-        <!-- Logs Tab -->
-        <div id="logs" class="tab-content">
-            <h2 style="margin-bottom: 1.5rem;">📜 System Logs</h2>
-            <div class="panel" style="font-family: monospace; font-size: 0.875rem; line-height: 1.6;">
-                <div style="padding: 0.25rem 0; color: var(--success);">[14:45:12] ✅ DWE Widget deployed successfully</div>
-                <div style="padding: 0.25rem 0;">[14:30:00] 📝 Dashboard restored to working version</div>
-                <div style="padding: 0.25rem 0;">[14:15:00] 🎧 AirPods Pro configured</div>
-                <div style="padding: 0.25rem 0; color: var(--accent);">[14:00:00] 🚀 Server restarted with cache-busting</div>
-                <div style="padding: 0.25rem 0;">[13:45:00] ✅ GitHub backup completed</div>
-                <div style="padding: 0.25rem 0; color: var(--text-secondary);">[13:30:00] ── DWE Command Center initialized ──</div>
+            
+            <div class="panel">
+                <h3>⏰ Cron Jobs</h3>
+                <div class="job-item"><span class="status-dot"></span><span>CRON-001 Swarm Guardian (9:10a)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>CRON-002 Ops Escalation (9:10a)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>CRON-003 Log Cleanup (12:00a)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>CRON-004 Lucy Email Sync (10:00a)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>CRON-005 macOS Daily (3:00a)</span></div>
+                <div class="job-item"><span class="status-dot warning"></span><span>CRON-006 macOS Weekly (Sun 4am)</span></div>
+            </div>
+            
+            <div class="panel">
+                <h3>🚀 LaunchD Services</h3>
+                <div class="job-item"><span class="status-dot"></span><span>DWE-001 Ops Report (3:00p)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>DWE-002 Ops Monitor (3:05p)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>DWE-003 Project Monitor (3:00p)</span></div>
+                <div class="job-item"><span class="status-dot"></span><span>DWE-007 COO Task Mgr (2:30p)</span></div>
+                <div class="job-item"><span class="status-dot warning"></span><span>DWE-008 Lucy Email (7:00a)</span></div>
             </div>
         </div>
     </main>
     
     <script>
-        // Simple tab switching
-        function showTab(tabId) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-        
-        // Clock with full date
         function updateClock() {
             const now = new Date();
             const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            const dateStr = now.toLocaleDateString('en-US', dateOptions);
-            const timeStr = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false 
-            });
-            const clockEl = document.getElementById('clock');
-            if (clockEl) {
-                clockEl.innerHTML = '<div class="date">' + dateStr + '</div><div class="clock">' + timeStr + '</div>';
-            }
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
         }
-        updateClock();
         setInterval(updateClock, 1000);
+        updateClock();
         
-        // Uptime with heartbeat
-        let uptimeSeconds = 0;
+        let uptime = 0;
         function updateUptime() {
-            uptimeSeconds++;
-            const hours = Math.floor(uptimeSeconds / 3600);
-            const mins = Math.floor((uptimeSeconds % 3600) / 60);
-            const secs = uptimeSeconds % 60;
+            uptime++;
+            const h = Math.floor(uptime / 3600);
+            const m = Math.floor((uptime % 3600) / 60);
+            const s = uptime % 60;
             let text = '';
-            if (hours > 0) text += hours + 'h ';
-            if (mins > 0 || hours > 0) text += mins + 'm ';
-            text += secs + 's';
-            const uptimeEl = document.getElementById('uptime');
-            if (uptimeEl) uptimeEl.innerHTML = '<span class="heartbeat">💓</span> ' + text;
+            if (h) text += h + 'h ';
+            if (m || h) text += m + 'm ';
+            text += s + 's';
+            document.getElementById('uptime').textContent = text;
         }
         setInterval(updateUptime, 1000);
     </script>
