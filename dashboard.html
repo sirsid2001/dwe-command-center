@@ -964,11 +964,12 @@
                 document.getElementById('sidebar-inprogress').textContent = inProgress;
                 document.getElementById('sidebar-critical').textContent = critical;
                 
-                // Update progress ring (Completed / Total)
-                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                // Update progress ring (Completed / Total IDs)
+                const totalIds = data.stats.maxIdNumber || total;
+                const percent = totalIds > 0 ? Math.round((completed / totalIds) * 100) : 0;
                 document.getElementById('progress-percent').textContent = percent + '%';
                 document.getElementById('progress-ring').setAttribute('stroke-dasharray', `${percent}, 100`);
-                console.log('Progress:', percent + '%');
+                console.log('Progress:', percent + '%', '(', completed, '/', totalIds, ')');
                 
             } catch (e) {
                 console.error('Failed to fetch projects:', e);
