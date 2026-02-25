@@ -143,39 +143,52 @@
             border-radius: 16px;
             padding: 1rem;
             border-left: 3px solid #00f5ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .stat-card.success { border-left-color: #00ff88; }
         .stat-card.warning { border-left-color: #ff9500; }
         .stat-card.danger { border-left-color: #ff00aa; }
         
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
         .stat-icon {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-            background: rgba(0, 245, 255, 0.15);
-        }
-        
-        .stat-card.success .stat-icon { background: rgba(0, 255, 136, 0.15); }
-        .stat-card.warning .stat-icon { background: rgba(255, 149, 0, 0.15); }
-        .stat-card.danger .stat-icon { background: rgba(255, 0, 170, 0.15); }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.15rem;
-        }
-        
-        .stat-label {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(184, 41, 221, 0.1) 100%);
         }
         
         .progress-section {
@@ -362,24 +375,42 @@
             
             <div class="stats-grid">
                 <div class="stat-card success">
+                    <div class="stat-content">
+                        <div class="stat-label">Server Status</div>
+                        <div class="stat-value-row">
+                            <div class="stat-value" style="color: #00ff88;">Online</div>
+                        </div>
+                    </div>
                     <div class="stat-icon">🟢</div>
-                    <div class="stat-value" style="color: #00ff88;">Online</div>
-                    <div class="stat-label">Server</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Active Agents</div>
+                        <div class="stat-value-row">
+                            <div class="stat-value">4</div>
+                            <div class="stat-change">+2</div>
+                        </div>
+                    </div>
                     <div class="stat-icon">🤖</div>
-                    <div class="stat-value">4</div>
-                    <div class="stat-label">Agents</div>
                 </div>
                 <div class="stat-card warning">
+                    <div class="stat-content">
+                        <div class="stat-label">Memory Usage</div>
+                        <div class="stat-value-row">
+                            <div class="stat-value">8.8 MB</div>
+                            <div class="stat-change" style="color: #ff9500;">+5%</div>
+                        </div>
+                    </div>
                     <div class="stat-icon">💾</div>
-                    <div class="stat-value">8.8 MB</div>
-                    <div class="stat-label">Memory</div>
                 </div>
                 <div class="stat-card danger">
+                    <div class="stat-content">
+                        <div class="stat-label">System Uptime</div>
+                        <div class="stat-value-row">
+                            <div class="stat-value" id="uptime">0s</div>
+                        </div>
+                    </div>
                     <div class="stat-icon">💓</div>
-                    <div class="stat-value" id="uptime">0s</div>
-                    <div class="stat-label">Uptime</div>
                 </div>
             </div>
             
