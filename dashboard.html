@@ -470,6 +470,13 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
+            
+            // Fetch data when specific tabs are opened
+            if (tabId === 'tasks') {
+                fetchNotionTasks();
+            } else if (tabId === 'projects') {
+                fetchProjects();
+            }
         }
 
         // Clock
@@ -1101,13 +1108,12 @@
             setInterval(fetchStatus, 5000);
             fetchAgents();
             
-            // Fetch dynamic dashboard data
+            // Fetch dynamic dashboard data (Projects loads on-demand when tab clicked)
             fetchServices();
             fetchCrons();
             fetchLaunchd();
             fetchAgentRouting();
-            fetchNotionTasks();
-            fetchProjects();
+            // Note: fetchNotionTasks and fetchProjects are called when user clicks the Tasks/Projects tabs
             
             // Refresh dashboard data every 3 minutes (not too often to avoid overwhelming the system)
             setInterval(() => {
@@ -1115,8 +1121,13 @@
                 fetchCrons();
                 fetchLaunchd();
                 fetchAgentRouting();
-                fetchNotionTasks();
-                fetchProjects();
+                // Only refresh Tasks/Projects if those tabs are active
+                if (document.getElementById('tasks').classList.contains('active')) {
+                    fetchNotionTasks();
+                }
+                if (document.getElementById('projects').classList.contains('active')) {
+                    fetchProjects();
+                }
             }, 180000);
             
             // Drag and drop
