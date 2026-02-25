@@ -348,7 +348,7 @@
                     </div>
                     
                     <!-- Recently Completed Section -->
-                    <div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
+                    <div id="recent-completed-section" style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 12px; padding: 1rem; border: 1px solid var(--border);">
                         <h3 style="font-size: 0.875rem; margin-bottom: 0.75rem; color: var(--success);">✅ Recently Completed (Last 7 Days)</h3>
                         <div id="recent-completed" style="display: flex; flex-direction: column; gap: 0.5rem;">
                             <p style="color: var(--text-secondary); font-size: 0.875rem;">Loading...</p>
@@ -380,8 +380,8 @@
                                 <div style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;" id="sidebar-total">0</div>
                             </div>
                             <!-- Completed -->
-                            <div style="background: rgba(16,185,129,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--success); display: flex; flex-direction: column;">
-                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Completed</div>
+                            <div onclick="scrollToRecentCompleted()" style="background: rgba(16,185,129,0.08); border-radius: 8px; padding: 0.75rem; border-left: 3px solid var(--success); display: flex; flex-direction: column; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16,185,129,0.15)'" onmouseout="this.style.background='rgba(16,185,129,0.08)'">
+                                <div style="font-size: 0.6875rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Completed ↓</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-top: 0.25rem;" id="sidebar-completed">0</div>
                             </div>
                             <!-- In Progress -->
@@ -1043,13 +1043,31 @@
             container.innerHTML = tasks.map(t => {
                 const roleColor = getRoleColor(t.role);
                 return `
-                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: rgba(16,185,129,0.1); border-radius: 8px;">
-                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
-                    <span style="font-size: 0.875rem; flex: 1;">${t.name.substring(0, 50)}${t.name.length > 50 ? '...' : ''}</span>
-                    <span style="font-size: 0.75rem; color: var(--success);">✓ Done</span>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0.75rem; background: rgba(16,185,129,0.1); border-radius: 8px; cursor: pointer;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
+                        <span style="font-size: 0.875rem; flex: 1; font-weight: 500;">${t.name.substring(0, 50)}${t.name.length > 50 ? '...' : ''}</span>
+                        <span style="font-size: 0.75rem; color: var(--success);">✓ Done</span>
+                    </div>
+                    ${t.summary ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 16px; line-height: 1.4;">${t.summary.substring(0, 100)}${t.summary.length > 100 ? '...' : ''}</div>` : ''}
                 </div>
                 `;
             }).join('');
+        }
+        
+        // Scroll to Recently Completed section
+        function scrollToRecentCompleted() {
+            const element = document.getElementById('recent-completed-section');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Highlight the section briefly
+                element.style.borderColor = 'var(--success)';
+                element.style.boxShadow = '0 0 20px rgba(16,185,129,0.3)';
+                setTimeout(() => {
+                    element.style.borderColor = '';
+                    element.style.boxShadow = '';
+                }, 1500);
+            }
         }
 
         function refreshProjects() {

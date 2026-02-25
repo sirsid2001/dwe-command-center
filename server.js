@@ -551,7 +551,8 @@ function getNotionTasks(req, res) {
                         role: props.Role?.select?.name || 'Unassigned',
                         dueDate: props['Due date']?.date?.start || null,
                         pastDue: props['Past due']?.formula?.boolean || false,
-                        taskType: props['Task type']?.select?.name || 'Task'
+                        taskType: props['Task type']?.select?.name || 'Task',
+                        summary: props.Summary?.rich_text?.[0]?.plain_text || ''
                     };
                 });
 
