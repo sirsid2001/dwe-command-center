@@ -992,28 +992,35 @@
                 else if (status === 'in progress' || status === 'inprogress') progress = 50;
                 
                 return `
-                <div class="agent-card" style="${isCritical ? 'border-color: var(--danger); border-width: 2px;' : ''} cursor: pointer;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                <div class="agent-card" style="${isCritical ? 'border-color: var(--danger); border-width: 2px;' : ''} cursor: pointer; display: flex; flex-direction: column;" onclick="window.open('https://www.notion.so/${t.id.replace(/-/g, '')}', '_blank')">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                         <h4 style="font-size: 0.875rem; line-height: 1.4; flex: 1; margin: 0;">${t.name.substring(0, 60)}${t.name.length > 60 ? '...' : ''}</h4>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${roleColor};"></span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary);"></span>
                         <span style="font-size: 0.75rem; color: var(--text-secondary);">${t.role || 'Unassigned'}</span>
                         ${isCritical ? '<span style="background: var(--danger); color: white; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.625rem; font-weight: 600; margin-left: auto;">CRITICAL</span>' : ''}
                     </div>
                     
                     ${t.dueDate ? `
-                    <div style="font-size: 0.75rem; color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.75rem; color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; margin-bottom: 0.75rem;">
                         📅 ${new Date(t.dueDate).toLocaleDateString()}
                     </div>
                     ` : ''}
                     
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
                         <div style="flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
                             <div style="height: 100%; width: ${progress}%; background: ${roleColor}; border-radius: 2px; transition: width 0.3s;"></div>
                         </div>
                         <span style="font-size: 0.6875rem; color: var(--text-secondary);">${progress}%</span>
+                    </div>
+                    
+                    <div style="margin-top: auto; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: ${roleColor};"></span>
+                            <span style="font-size: 0.8125rem; font-weight: 500; color: ${roleColor};">${t.role || 'Unassigned'}</span>
+                        </div>
                     </div>
                 </div>
                 `;
