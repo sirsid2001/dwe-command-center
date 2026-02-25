@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control | Sidney Garcia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --bg-card: #16162a;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d2d44;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.625rem 1.25rem;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* AI Command Center Styles */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .agent-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .agent-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+        }
+
+        .agent-card.online { border-left: 4px solid var(--accent-success); }
+        .agent-card.busy { border-left: 4px solid var(--accent-warning); }
+        .agent-card.offline { border-left: 4px solid var(--text-muted); }
+
+        .agent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .agent-info h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-role {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-dot.online { background: var(--accent-success); box-shadow: 0 0 8px var(--accent-success); }
+        .status-dot.busy { background: var(--accent-warning); }
+        .status-dot.offline { background: var(--text-muted); }
+
+        .agent-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Decisions */
+        .decisions-section {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .decision-item {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .decision-item:last-child { border-bottom: none; }
+
+        .decision-question {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-summary {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .agent-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Slide Panel */
+        .panel-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            z-index: 300;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .slide-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .panel-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .panel-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        .panel-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .capability-tag {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin: 0.25rem;
+        }
+
+        .activity-log {
+            background: var(--bg-tertiary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+
+        .activity-item:last-child { border-bottom: none; }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .performance-notes {
+            background: var(--bg-tertiary);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <span>Mission Control</span>
+            </div>
+            <nav class="tab-nav">
+                <button class="tab-btn active" onclick="showTab('dashboard', this)">📊 Dashboard</button>
+                <button class="tab-btn" onclick="showTab('projects', this)">📋 Projects</button>
+                <button class="tab-btn" onclick="showTab('revenue', this)">💰 Revenue</button>
+                <button class="tab-btn" onclick="showTab('agents', this)">🏢 AI Team</button>
+                <button class="tab-btn" onclick="showTab('timeline', this)">📅 Timeline</button>
+                <button class="tab-btn" onclick="showTab('notes', this)">📝 Notes</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section-header">
+                <div class="section-title">📊 Dashboard</div>
+                <div id="clock" style="font-size: 1.5rem; color: var(--text-secondary);">00:00</div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <p>Dashboard coming soon.</p>
+                <p style="margin-top: 0.5rem; font-size: 0.875rem;">Switch to the 🏢 AI Team tab to manage your agents.</p>
+            </div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div id="projects" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">📋 Projects</div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>Projects kanban board coming soon.</p>
+            </div>
+        </div>
+
+        <!-- Revenue Tab -->
+        <div id="revenue" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">💰 Revenue</div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon">💰</div>
+                <p>Revenue dashboard coming soon.</p>
+            </div>
+        </div>
+
+        <!-- AI Command Center Tab -->
+        <div id="agents" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">🤖 AI Team Members</div>
+                <div>
+                    <button class="btn btn-secondary" onclick="refreshAgents()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <div class="agent-grid" id="agent-grid">
+                <!-- Agents rendered here -->
+            </div>
+
+            <div class="section-header" style="margin-top: 3rem;">
+                <div class="section-title">📋 Executive Decisions</div>
+                <button class="btn btn-primary" onclick="showDecisionModal()">➕ Log Decision</button>
+            </div>
+
+            <div class="decisions-section">
+                <div id="decisions-list">
+                    <!-- Decisions rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timeline" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">📅 Timeline</div>
+            </div>
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <p>Timeline roadmap coming soon.</p>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div id="notes" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">📝 Notes</div>
+            </div>
+            <div style="background: var(--bg-secondary); border-radius: 1rem; padding: 1.5rem; border: 1px solid var(--border-color);">
+                <textarea id="notes-area" style="width: 100%; min-height: 400px; background: transparent; border: none; color: var(--text-primary); font-family: inherit; font-size: 1rem; resize: vertical;" placeholder="# Quick Notes
+
+Start typing your thoughts here...
+
+- Auto-saves to localStorage
+- Markdown-style formatting
+- Persistent across sessions"></textarea>
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted);">
+                    <span id="char-count">0 characters</span>
+                    <span id="last-saved">Not saved yet</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Slide-out Panel -->
+    <div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+    <div class="slide-panel" id="slide-panel">
+        <div class="panel-header">
+            <button class="panel-close" onclick="closePanel()">×</button>
+            <div class="panel-avatar" id="panel-avatar">🤖</div>
+            <div>
+                <h2 id="panel-name">Agent Name</h2>
+                <p id="panel-role" style="color: var(--text-secondary);">Role</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="panel-section">
+                <div class="panel-section-title">📝 Description</div>
+                <div id="panel-description" class="performance-notes"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-section-title">⚡ Capabilities</div>
+                <div id="panel-capabilities"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-section-title">📊 Recent Activity</div>
+                <div class="activity-log" id="panel-activity"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-section-title">🎯 Performance Notes</div>
+                <div id="panel-performance" class="performance-notes"></div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="showTaskModal()">
+                📤 Send Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="task-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📤 Send Task to <span id="task-agent-name">Agent</span></h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Task Description</label>
+                    <textarea class="form-textarea" id="task-description" placeholder="Describe the task..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendTask()">Send Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decision Modal -->
+    <div class="modal-overlay" id="decision-modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📋 Log Executive Decision</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Question Asked</label>
+                    <input type="text" class="form-input" id="decision-question" placeholder="What was the decision question?">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Decision Summary</label>
+                    <textarea class="form-textarea" id="decision-summary" placeholder="Summarize the decision..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Agents Consulted (comma-separated)</label>
+                    <input type="text" class="form-input" id="decision-agents" placeholder="e.g. Steve, Sarah, Maxx">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDecisionModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="logDecision()">Log Decision</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        const STORAGE_KEY = 'mission_control_data';
+        
+        const sampleAgents = [
+            {
+                id: 'agent-1',
+                name: 'Steve',
+                role: 'Chief Technology Officer',
+                status: 'online',
+                model: 'claude-3-5-sonnet',
+                lastActive: new Date().toISOString(),
+                avatar: '👨‍💻',
+                description: 'Senior technical leader responsible for architecture decisions, infrastructure oversight, and technical strategy. Expert in system design and vendor evaluation.',
+                capabilities: ['Architecture Review', 'Infrastructure Planning', 'Security Audits', 'Vendor Evaluation', 'Technical Strategy', 'Code Review'],
+                activityLog: [
+                    { time: new Date(Date.now() - 3600000).toISOString(), text: 'Completed infrastructure review' },
+                    { time: new Date(Date.now() - 7200000).toISOString(), text: 'Approved n8n workflow deployment' },
+                    { time: new Date(Date.now() - 86400000).toISOString(), text: 'Security audit completed' }
+                ],
+                performanceNotes: 'Consistently delivers high-quality architecture recommendations. Strong in disaster recovery planning. Response time typically under 2 minutes.'
+            },
+            {
+                id: 'agent-2',
+                name: 'Maxx',
+                role: 'Chief Operating Officer',
+                status: 'busy',
+                model: 'gpt-4o',
+                lastActive: new Date(Date.now() - 1800000).toISOString(),
+                avatar: '🚀',
+                description: 'Operations mastermind with Southern charm. Direct, confident, and pragmatic. Keeps projects on track while maintaining team morale.',
+                capabilities: ['Project Management', 'Task Coordination', 'Team Leadership', 'Process Optimization', 'Performance Tracking', 'Resource Allocation'],
+                activityLog: [
+                    { time: new Date(Date.now() - 1800000).toISOString(), text: 'Reviewing quarterly objectives' },
+                    { time: new Date(Date.now() - 3600000).toISOString(), text: 'Assigned tasks to development team' },
+                    { time: new Date(Date.now() - 10800000).toISOString(), text: 'Completed project milestone review' }
+                ],
+                performanceNotes: 'Excellent at keeping multiple projects moving simultaneously. Known for awarding virtual cookies (🍪) for completed tasks. Response time varies based on workload.'
+            },
+            {
+                id: 'agent-3',
+                name: 'Anita',
+                role: 'Project Manager',
+                status: 'online',
+                model: 'claude-3-haiku',
+                lastActive: new Date(Date.now() - 600000).toISOString(),
+                avatar: '👩‍💼',
+                description: 'Project coordination and task management specialist. Tracks deliverables, manages deadlines, and ensures team morale through the cookie reward system.',
+                capabilities: ['Project Planning', 'Task Prioritization', 'Team Morale', 'Deadline Management', 'Status Reporting', 'Risk Assessment'],
+                activityLog: [
+                    { time: new Date(Date.now() - 600000).toISOString(), text: 'Updated project timeline' },
+                    { time: new Date(Date.now() - 1800000).toISOString(), text: 'Awarded cookies to completed tasks' },
+                    { time: new Date(Date.now() - 86400000).toISOString(), text: 'Weekly status report completed' }
+                ],
+                performanceNotes: 'Outstanding project coordination skills. Maintains high team morale. Recently implemented the cookie reward system which has improved completion rates by 23%.'
+            },
+            {
+                id: 'agent-4',
+                name: 'Lucy',
+                role: 'Executive Assistant',
+                status: 'online',
+                model: 'gpt-4o-mini',
+                lastActive: new Date(Date.now() - 300000).toISOString(),
+                avatar: '📧',
+                description: 'Email management and executive support specialist. Handles inbox triage, drafts responses, and manages calendar coordination.',
+                capabilities: ['Email Triage', 'Draft Responses', 'Calendar Coordination', 'Meeting Prep', 'Contact Management', 'Travel Logistics'],
+                activityLog: [
+                    { time: new Date(Date.now() - 300000).toISOString(), text: 'Processed morning email batch (47 messages)' },
+                    { time: new Date(Date.now() - 18000000).toISOString(), text: 'Scheduled 3 meetings for next week' },
+                    { time: new Date(Date.now() - 86400000).toISOString(), text: 'Drafted responses to investor inquiries' }
+                ],
+                performanceNotes: 'Excellent email management capabilities. Handles ~200 emails daily with 98% accuracy rate. Currently training on more complex calendar negotiations.'
+            }
+        ];
+
+        const sampleDecisions = [
+            {
+                id: 'dec-1',
+                date: new Date(Date.now() - 86400000).toISOString(),
+                question: 'Should we migrate from Anthropic to OpenRouter as primary provider?',
+                summary: 'Migrated to OpenRouter with Free Models Router as primary, keeping paid fallbacks. Achieved 90-99% cost reduction while maintaining reliability.',
+                agentsConsulted: ['Steve', 'Maxx']
+            },
+            {
+                id: 'dec-2',
+                date: new Date(Date.now() - 172800000).toISOString(),
+                question: 'What is our disaster recovery strategy for vendor failures?',
+                summary: 'Documented 6 failure scenarios with <24h recovery times. Pinecone vectors + Notion DB = owned assets. Front-end interfaces interchangeable.',
+                agentsConsulted: ['Steve', 'Maxx']
+            }
+        ];
+
+        let agents = [];
+        let decisions = [];
+        let currentAgent = null;
+
+        function init() {
+            loadData();
+            renderAgents();
+            renderDecisions();
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data = JSON.parse(stored);
+                agents = data.agents || [];
+                decisions = data.decisions || [];
+            } else {
+                agents = JSON.parse(JSON.stringify(sampleAgents));
+                decisions = JSON.parse(JSON.stringify(sampleDecisions));
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ agents, decisions }));
+        }
+
+        function showTab(tabId, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function renderAgents() {
+            const grid = document.getElementById('agent-grid');
+            grid.innerHTML = agents.map(agent => `
+                <div class="agent-card ${agent.status}" onclick="openAgentPanel('${agent.id}')">
+                    <div class="agent-header">
+                        <div class="agent-info">
+                            <div class="agent-name">${agent.avatar} ${agent.name}</div>
+                            <div class="agent-role">${agent.role}</div>
+                        </div>
+                        <div>
+                            <span class="status-dot ${agent.status}"></span>
+                            <span style="text-transform: capitalize; font-size: 0.75rem;">${agent.status}</span>
+                        </div>
+                    </div>
+                    <div class="agent-meta">
+                        <span>Model: ${agent.model}</span>
+                        <span>Last active: ${formatTime(agent.lastActive)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDecisions() {
+            const list = document.getElementById('decisions-list');
+            if (decisions.length === 0) {
+                list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No decisions logged yet</div>';
+                return;
+            }
+            
+            list.innerHTML = decisions.sort((a, b) => new Date(b.date) - new Date(a.date)).map(d => `
+                <div class="decision-item">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">${formatDate(d.date)}</span>
+                    </div>
+                    <div class="decision-question">${d.question}</div>
+                    <div class="decision-summary">${d.summary}</div>
+                    <div>
+                        ${d.agentsConsulted.map(a => `<span class="agent-tag">${a}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatTime(timestamp) {
+            const seconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+            return Math.floor(seconds / 86400) + 'd ago';
+        }
+
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function openAgentPanel(agentId) {
+            currentAgent = agents.find(a => a.id === agentId);
+            if (!currentAgent) return;
+
+            document.getElementById('panel-avatar').textContent = currentAgent.avatar;
+            document.getElementById('panel-name').textContent = currentAgent.name;
+            document.getElementById('panel-role').textContent = currentAgent.role;
+            document.getElementById('panel-description').textContent = currentAgent.description;
+            document.getElementById('panel-performance').textContent = currentAgent.performanceNotes;
+
+            document.getElementById('panel-capabilities').innerHTML = currentAgent.capabilities.map(cap => 
+                `<span class="capability-tag">${cap}</span>`
+            ).join('');
+
+            document.getElementById('panel-activity').innerHTML = currentAgent.activityLog.map(act => `
+                <div class="activity-item">
+                    <div class="activity-time">${formatTime(act.time)}</div>
+                    <div>${act.text}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('task-agent-name').textContent = currentAgent.name;
+
+            document.getElementById('panel-overlay').classList.add('active');
+            document.getElementById('slide-panel').classList.add('active');
+        }
+
+        function closePanel() {
+            document.getElementById('panel-overlay').classList.remove('active');
+            document.getElementById('slide-panel').classList.remove('active');
+            currentAgent = null;
+        }
+
+        function showTaskModal() {
+            document.getElementById('task-modal-overlay').classList.add('active');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal-overlay').classList.remove('active');
+            document.getElementById('task-description').value = '';
+        }
+
+        function sendTask() {
+            const text = document.getElementById('task-description').value.trim();
+            if (!text || !currentAgent) return;
+
+            currentAgent.activityLog.unshift({
+                time: new Date().toISOString(),
+                text: '📤 Task received: "' + text.substring(0, 80) + (text.length > 80 ? '...' : '') + '"'
+            });
+            
+            saveData();
+            renderAgents();
+            openAgentPanel(currentAgent.id);
+            closeTaskModal();
+        }
+
+        function refreshAgents() {
+            renderAgents();
+        }
+
+        function showDecisionModal() {
+            document.getElementById('decision-modal-overlay').classList.add('active');
+        }
+
+        function closeDecisionModal() {
+            document.getElementById('decision-modal-overlay').classList.remove('active');
+            document.getElementById('decision-question').value = '';
+            document.getElementById('decision-summary').value = '';
+            document.getElementById('decision-agents').value = '';
+        }
+
+        function logDecision() {
+            const question = document.getElementById('decision-question').value.trim();
+            const summary = document.getElementById('decision-summary').value.trim();
+            const agentsStr = document.getElementById('decision-agents').value.trim();
+            
+            if (!question || !summary) return;
+
+            decisions.unshift({
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                question,
+                summary,
+                agentsConsulted: agentsStr ? agentsStr.split(',').map(a => a.trim()).filter(a => a) : []
+            });
+
+            saveData();
+            renderDecisions();
+            closeDecisionModal();
+        }
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = timeStr;
+            
+            let greeting = 'Good morning';
+            if (hours >= 12 && hours < 17) greeting = 'Good afternoon';
+            else if (hours >= 17) greeting = 'Good evening';
+            
+            const greetingEl = document.getElementById('greeting');
+            if (greetingEl) greetingEl.textContent = greeting + ', Sidney';
+        }
+
+        // Notes auto-save
+        function initNotes() {
+            const notesArea = document.getElementById('notes-area');
+            const charCount = document.getElementById('char-count');
+            const lastSaved = document.getElementById('last-saved');
+            
+            if (!notesArea) return;
+            
+            // Load saved notes
+            const saved = localStorage.getItem('mc_notes');
+            if (saved) notesArea.value = saved;
+            
+            let saveTimeout;
+            notesArea.addEventListener('input', () => {
+                charCount.textContent = notesArea.value.length + ' characters';
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    localStorage.setItem('mc_notes', notesArea.value);
+                    lastSaved.textContent = 'Saved at ' + new Date().toLocaleTimeString();
+                }, 500);
+            });
+            
+            // Initial count
+            charCount.textContent = notesArea.value.length + ' characters';
+        }
+
+        // Override init to include clock and notes
+        const originalInit = init;
+        init = function() {
+            originalInit();
+            updateClock();
+            setInterval(updateClock, 1000);
+            initNotes();
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

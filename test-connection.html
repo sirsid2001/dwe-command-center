@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Server Connection Test</title>
+    <style>
+        body { font-family: system-ui; padding: 2rem; background: #050508; color: #fff; }
+        button { padding: 1rem 2rem; background: #00d4ff; border: none; border-radius: 8px; cursor: pointer; }
+        #result { margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Server Connection Test</h1>
+    <p>Testing fetch to: <code>http://127.0.0.1:8899/mc/status</code></p>
+    <button onclick="testConnection()">Test Connection</button>
+    <div id="result">Click button to test...</div>
+    
+    <script>
+        async function testConnection() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                // Attempt 1: Direct fetch
+                const start = Date.now();
+                const res = await fetch('http://127.0.0.1:8899/mc/status', {
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                const time = Date.now() - start;
+                const data = await res.json();
+                
+                result.innerHTML = `
+                    <div class="success">✅ SUCCESS (${time}ms)</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (err) {
+                result.innerHTML = `
+                    <div class="error">❌ FAILED</div>
+                    <p><strong>Error:</strong> ${err.name}</p>
+                    <p><strong>Message:</strong> ${err.message}</p>
+                    <p>This usually means:</p>
+                    <ul>
+                        <li>Server not running (port 8899)</li>
+                        <li>CORS policy blocking request</li>
+                        <li>Browser security restrictions</li>
+                    </ul>
+                `;
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', testConnection);
+    </script>
+</body>
+</html>

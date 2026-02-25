@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Environment variables
+.env
+
+# Mac files
+.DS_Store
+
+# Data files (generated at runtime)
+mc-data.json
+mc-activity.json

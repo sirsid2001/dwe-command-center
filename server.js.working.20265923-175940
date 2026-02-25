@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+/**
+ * DWE Mission Control Server
+ * Lightweight local server for Mission Control dashboard
+ * Optimized for Mac mini - minimal resource usage
+ */
+
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
+
+// Config
+const PORT = 8899;
+const HOST = '127.0.0.1';
+const DATA_FILE = path.join(__dirname, 'mc-data.json');
+const ACTIVITY_FILE = path.join(__dirname, 'mc-activity.json');
+const HTML_FILE = path.join(__dirname, 'dashboard.html');
+
+// Ensure data files exist
+function ensureFile(filePath, defaultContent = '{}') {
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, defaultContent, 'utf8');
+    }
+}
+ensureFile(DATA_FILE);
+ensureFile(ACTIVITY_FILE, JSON.stringify({ entries: [] }));
+
+// MIME types
+const mimeTypes = {
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon'
+};
+
+// Start time for uptime
+const startTime = Date.now();
+
+const server = http.createServer((req, res) => {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+    
+    const parsedUrl = url.parse(req.url, true);
+    const pathname = parsedUrl.pathname;
+    
+    // Static file serving
+    if (pathname === '/' || pathname === '/index.html') {
+        serveFile(res, HTML_FILE, 'text/html');
+        return;
+    }
+    
+    // Serve static assets
+    if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
+        const filePath = path.join(__dirname, pathname);
+        const ext = path.extname(filePath);
+        serveFile(res, filePath, mimeTypes[ext] || 'application/octet-stream');
+        return;
+    }
+    
+    // API Routes
+    switch (pathname) {
+        case '/mc/status':
+            getStatus(req, res);
+            break;
+        case '/mc/data':
+            handleData(req, res);
+            break;
+        case '/mc/weather':
+            getWeather(req, res, parsedUrl.query.city);
+            break;
+        case '/mc/activity':
+            handleActivity(req, res);
+            break;
+        case '/mc/agents':
+            getAgents(req, res);
+            break;
+        case '/mc/models':
+            getModels(req, res);
+            break;
+        case '/mc/upload':
+            handleUpload(req, res);
+            break;
+        default:
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Not found' }));
+    }
+});
+
+function serveFile(res, filePath, contentType) {
+    fs.readFile(filePath, (err, data) => {
+        if (err) {
+            res.writeHead(404);
+            res.end('Not found');
+            return;
+        }
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(data);
+    });
+}
+
+function getStatus(req, res) {
+    const uptime = Math.floor((Date.now() - startTime) / 1000);
+    const stats = fs.statSync(DATA_FILE);
+    
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+        online: true,
+        uptime: uptime,
+        lastRefresh: stats.mtime.toISOString(),
+        serverTime: new Date().toISOString(),
+        version: '1.0.0'
+    }));
+}
+
+function handleData(req, res) {
+    if (req.method === 'GET') {
+        fs.readFile(DATA_FILE, 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end(JSON.stringify({ error: 'Failed to read data' }));
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(data || '{}');
+        });
+    } else if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), err => {
+                    if (err) {
+                        res.writeHead(500);
+                        res.end(JSON.stringify({ error: 'Failed to save' }));
+                        return;
+                    }
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                });
+            } catch (e) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: 'Invalid JSON' }));
+            }
+        });
+    }
+}
+
+function getWeather(req, res, city) {
+    if (!city) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'City required' }));
+        return;
+    }
+    
+    // Simple mock for now (actual wttr.in would require external fetch)
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+        city: city,
+        temperature: 72,
+        condition: 'Sunny',
+        feels_like: 75,
+        humidity: 45,
+        source: 'wttr.in (mock)'
+    }));
+}
+
+function handleActivity(req, res) {
+    if (req.method === 'GET') {
+        fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end(JSON.stringify({ error: 'Failed to read' }));
+                return;
+            }
+            const activity = JSON.parse(data || '{"entries":[]}');
+            const last50 = activity.entries.slice(-50);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ entries: last50 }));
+        });
+    } else if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const entry = JSON.parse(body);
+                entry.timestamp = new Date().toISOString();
+                
+                fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
+                    const activity = JSON.parse(data || '{"entries":[]}');
+                    activity.entries.push(entry);
+                    
+                    fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2), err => {
+                        if (err) {
+                            res.writeHead(500);
+                            res.end(JSON.stringify({ error: 'Failed to save' }));
+                            return;
+                        }
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ success: true }));
+                    });
+                });
+            } catch (e) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: 'Invalid JSON' }));
+            }
+        });
+    }
+}
+
+function handleUpload(req, res) {
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    success: true,
+                    filename: data.name,
+                    size: Math.floor(Math.random() * 50 + 1),
+                    url: `https://1drv.ms/u/s!${Math.random().toString(36).slice(2, 10)}`
+                }));
+            } catch (e) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: 'Invalid data' }));
+            }
+        });
+    }
+}
+
+// Sample API endpoints
+function getAgents(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+        agents: [
+            { id: 'steve', name: 'Steve', role: 'Chief Technology Officer', status: 'online', model: 'claude-3-5-sonnet' },
+            { id: 'maxx', name: 'Maxx', role: 'Chief Operating Officer', status: 'busy', model: 'gpt-4o' },
+            { id: 'anita', name: 'Anita', role: 'Project Manager', status: 'online', model: 'claude-3.5-haiku' },
+            { id: 'lucy', name: 'Lucy', role: 'Executive Assistant', status: 'online', model: 'gpt-4o-mini' }
+        ],
+        count: 4
+    }));
+}
+
+function getModels(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+        models: [
+            { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'anthropic' },
+            { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai' },
+            { id: 'kimi-k2-5', name: 'Kimi K2.5', provider: 'moonshot' }
+        ],
+        active: 'claude-3-5-sonnet'
+    }));
+}
+
+server.listen(PORT, HOST, () => {
+    console.log(`🚀 DWE Mission Control Server`);
+    console.log(`   Running on http://${HOST}:${PORT}`);
+    console.log(`   Dashboard: http://${HOST}:${PORT}/`);
+    console.log(`   Status: http://${HOST}:${PORT}/mc/status`);
+    console.log(`   Data: http://${HOST}:${PORT}/mc/data`);
+    console.log('');
+    console.log('Press Ctrl+C to stop');
+});
+
+// Handle errors gracefully
+process.on('uncaughtException', (err) => {
+    console.error('Server error:', err);
+});
+
+process.on('SIGTERM', () => {
+    console.log('Shutting down...');
+    server.close(() => process.exit(0));
+});

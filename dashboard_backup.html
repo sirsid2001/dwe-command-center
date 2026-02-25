@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control v2 | DWE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050508;
+            --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.06);
+            --accent: #00d4ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #fff;
+            --text-secondary: rgba(255,255,255,0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text); min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.06) 0%, transparent 50%);
+            pointer-events: none; z-index: -1;
+        }
+        .header { position: sticky; top: 0; backdrop-filter: blur(20px); background: rgba(5,5,8,0.8); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; }
+        .header-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 1.25rem; }
+        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #6366f1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
+        .tab { padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 8px; transition: all 0.15s; }
+        .tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .tab.active { color: var(--text); background: var(--bg-card); }
+        .main { max-width: 1600px; margin: 0 auto; padding: 2.5rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } }
+        .welcome { margin-bottom: 2.5rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .welcome h1 { font-size: 1.75rem; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .time { font-size: 2rem; font-weight: 300; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; position: relative; animation: fadeIn 0.5s; }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
+        .metric-value { font-size: 2rem; font-weight: 700; }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+        .upload-zone.dragover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; background: var(--accent); color: #000; font-weight: 500; }
+        .btn:hover { filter: brightness(1.1); }
+        .status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+        .status.online { background: rgba(16,185,129,0.2); color: var(--success); }
+        .status.busy { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; }
+        .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .decision-item { background: var(--bg-card); border-left: 3px solid var(--accent); padding: 1rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0; }
+        .tag { display: inline-block; background: rgba(99,102,241,0.2); color: var(--accent); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <span>Mission Control v2</span>
+            </div>
+            <nav class="tabs">
+                <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="showTab('agents')">🏢 AI Team</button>
+                <button class="tab" onclick="showTab('upload')">📤 Upload</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="welcome">
+                <div>
+                    <h1 id="greeting">Good morning, Sidney</h1>
+                    <p style="color:var(--text-secondary);">CEO / Founder — Digital Wealth Ecosystem</p>
+                </div>
+                <div style="text-align:right;">
+                    <div class="time" id="clock">00:00</div>
+                    <div style="color:var(--text-secondary);font-size:0.875rem;" id="date">Loading...</div>
+                </div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric-card">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Server Status</div>
+                    <div class="metric-value" id="server-status" style="color:var(--success);">● Online</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--success);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Active Agents</div>
+                    <div class="metric-value" id="agent-count">4</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--warning);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Memory Usage</div>
+                    <div class="metric-value" id="memory-usage">8.8 MB</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--danger);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Uptime</div>
+                    <div class="metric-value" id="uptime">0s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agents Tab -->
+        <div id="agents" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>🤖 AI Team Members</h2>
+                <button class="btn" onclick="refreshAgents()">🔄 Refresh</button>
+            </div>
+            <div class="agent-grid" id="agent-grid"></div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="upload" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">📤 Upload to OneDrive</h2>
+            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Drag & drop files here</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">or click to browse</p>
+                <input type="file" id="file-input" style="display: none;" accept=".zip,.pdf" onchange="handleFileSelect(event)">
+            </div>
+            <div id="upload-status" style="margin-top: 1rem; display: none;">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span id="upload-filename">filename.zip</span>
+                        <span id="upload-progress">0%</span>
+                    </div>
+                    <div style="background: var(--bg-primary); height: 4px; border-radius: 2px; overflow: hidden;">
+                        <div id="upload-bar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8899/mc';
+        
+        // Tab switching
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            let greeting = 'Good morning';
+            if (hours >= 12 && hours < 17) greeting = 'Good afternoon';
+            else if (hours >= 17) greeting = 'Good evening';
+            document.getElementById('greeting').textContent = greeting + ', Sidney';
+        }
+
+        // Fetch server status
+        async function fetchStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/status`);
+                const data = await res.json();
+                document.getElementById('server-status').textContent = '● Online';
+                document.getElementById('server-status').style.color = 'var(--success)';
+                document.getElementById('memory-usage').textContent = data.memory.toFixed(1) + ' MB';
+                document.getElementById('uptime').textContent = Math.floor(data.uptime) + 's';
+            } catch (e) {
+                document.getElementById('server-status').textContent = '● Offline';
+                document.getElementById('server-status').style.color = 'var(--danger)';
+            }
+        }
+
+        // Fetch agents
+        async function fetchAgents() {
+            try {
+                const res = await fetch(`${API_BASE}/agents`);
+                const data = await res.json();
+                document.getElementById('agent-count').textContent = data.count;
+                
+                const grid = document.getElementById('agent-grid');
+                grid.innerHTML = data.agents.map(agent => `
+                    <div class="agent-card ${agent.status}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600;">${agent.name}</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">${agent.role}</div>
+                            </div>
+                            <span class="status ${agent.status}">${agent.status}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Model: ${agent.model}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to fetch agents:', e);
+            }
+        }
+
+        function refreshAgents() {
+            fetchAgents();
+        }
+
+        // File upload handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            uploadFile(file);
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        }
+
+        async function uploadFile(file) {
+            const statusDiv = document.getElementById('upload-status');
+            const filenameSpan = document.getElementById('upload-filename');
+            const progressSpan = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('upload-bar');
+            
+            statusDiv.style.display = 'block';
+            filenameSpan.textContent = file.name;
+            
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressSpan.textContent = Math.floor(progress) + '%';
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            try {
+                // Read file as base64
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+                const base64Data = await base64Promise;
+                
+                // Upload to server
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: file.name,
+                        size: file.size,
+                        data: base64Data
+                    })
+                });
+                
+                const result = await response.json();
+                
+                clearInterval(interval);
+                progress = 100;
+                progressSpan.textContent = '100%';
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    alert(`✅ Uploaded: ${result.filename}\nSize: ${result.size} MB\nURL: ${result.url}`);
+                }, 500);
+                
+            } catch (error) {
+                clearInterval(interval);
+                statusDiv.style.display = 'none';
+                alert('❌ Upload failed: ' + error.message);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            fetchStatus();
+            setInterval(fetchStatus, 5000);
+            fetchAgents();
+            
+            // Drag and drop
+            const dropzone = document.getElementById('upload-dropzone');
+            if (dropzone) {
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.classList.remove('dragover');
+                });
+                dropzone.addEventListener('drop', handleFileDrop);
+            }
+        });
+    </script>
+</body>
+</html>

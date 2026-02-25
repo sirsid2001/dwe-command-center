@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DWE Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050508;
+            --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.06);
+            --accent: #00d4ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #fff;
+            --text-secondary: rgba(255,255,255,0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text); min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(99,102,241,0.06) 0%, transparent 50%);
+            pointer-events: none; z-index: -1;
+        }
+        .header { position: sticky; top: 0; backdrop-filter: blur(20px); background: rgba(5,5,8,0.8); border-bottom: 1px solid var(--border); padding: 1rem 2.5rem; }
+        .header-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 1.25rem; }
+        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), #6366f1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; }
+        .tab { padding: 0.75rem 1rem; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 8px; transition: all 0.15s; }
+        .tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .tab.active { color: var(--text); background: var(--bg-card); }
+        .main { max-width: 1600px; margin: 0 auto; padding: 2.5rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } }
+        .welcome { margin-bottom: 2.5rem; padding: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .welcome h1 { font-size: 1.75rem; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .time { font-size: 2rem; font-weight: 300; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; position: relative; animation: fadeIn 0.5s; }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); }
+        .metric-value { font-size: 2rem; font-weight: 700; }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+        .upload-zone.dragover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; background: var(--accent); color: #000; font-weight: 500; }
+        .btn:hover { filter: brightness(1.1); }
+        .status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+        .status.online { background: rgba(16,185,129,0.2); color: var(--success); }
+        .status.busy { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; }
+        .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .decision-item { background: var(--bg-card); border-left: 3px solid var(--accent); padding: 1rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0; }
+        .tag { display: inline-block; background: rgba(99,102,241,0.2); color: var(--accent); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <span>DWE Command Center</span>
+            </div>
+            <nav class="tabs">
+                <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="showTab('agents')">🏢 AI Team</button>
+                <button class="tab" onclick="showTab('tasks')">✅ Tasks</button>
+                <button class="tab" onclick="showTab('decisions')">📋 Decisions</button>
+                <button class="tab" onclick="showTab('logs')">📜 Logs</button>
+                <button class="tab" onclick="showTab('upload')">📤 Upload</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="welcome">
+                <div>
+                    <h1 id="greeting">Good morning, Sidney</h1>
+                    <p style="color:var(--text-secondary);">CEO / Founder — Digital Wealth Ecosystem</p>
+                </div>
+                <div style="text-align:right;">
+                    <div class="time" id="clock">00:00</div>
+                    <div style="color:var(--text-secondary);font-size:0.875rem;" id="date">Loading...</div>
+                </div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric-card">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Server Status</div>
+                    <div class="metric-value" id="server-status" style="color:var(--success);">● Online</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--success);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Active Agents</div>
+                    <div class="metric-value" id="agent-count">4</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--warning);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Memory Usage</div>
+                    <div class="metric-value" id="memory-usage">8.8 MB</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--danger);">
+                    <div style="font-size:0.8125rem;color:var(--text-secondary);text-transform:uppercase;">Uptime</div>
+                    <div class="metric-value" id="uptime">0s</div>
+                </div>
+            </div>
+
+            <!-- Services Status Panel -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+                <!-- Services Column -->
+                <div class="metric-card" style="--accent: var(--accent);">
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🔌 Services</h3>
+                    <div id="services-list" style="font-size: 0.875rem; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>OpenClaw Gateway (port 3000)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>n8n Digital Ocean</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>MCporter Client</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Notion API</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Pinecone</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>Ollama M4 GPU (5 models)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>OpenRouter</span></div>
+                    </div>
+                </div>
+
+                <!-- Cron Jobs Column -->
+                <div class="metric-card" style="--accent: var(--warning);">
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">⏰ Cron Jobs (Next Run)</h3>
+                    <div id="cron-list" style="font-size: 0.875rem; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-001 Swarm Guardian (9:10a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-002 Ops Escalation (9:10a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-003 Log Cleanup (12:00a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-004 Lucy Email Sync (10:00a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>CRON-005 macOS Daily (3:00a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--warning);">🟡</span> <span>CRON-006 macOS Weekly (Sun 4am)</span></div>
+                    </div>
+                </div>
+
+                <!-- LaunchD Services Column -->
+                <div class="metric-card" style="--accent: #818cf8;">
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🚀 LaunchD Services (Next Run)</h3>
+                    <div id="launchd-list" style="font-size: 0.875rem; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-001 Ops Report (10:00a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-002 Ops Monitor (10:05a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-003 Project Monitor (10:00a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--success);">🟢</span> <span>DWE-007 COO Task Mgr (9:30a)</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;"><span style="color: var(--warning);">🟡</span> <span>DWE-008 Lucy Email (7:00a)</span></div>
+                    </div>
+                </div>
+
+                <!-- AI Agent Routing Column -->
+                <div class="metric-card" style="--accent: var(--success);">
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; text-transform: uppercase; color: var(--text-secondary);">🤖 AI Agent Routing (via COO Task Mgr)</h3>
+                    <div id="agent-routing" style="font-size: 0.875rem; line-height: 1.8;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>👨‍💼</span> <span><strong>COO</strong> — Task routing & coordination</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>💻</span> <span><strong>CTO</strong> — Technical & infrastructure</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>🔧</span> <span><strong>Chief</strong> — Systems & architecture</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🛡️</span> <span><strong>Security</strong> — Protection & compliance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agents Tab -->
+        <div id="agents" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>🤖 AI Team Members</h2>
+                <button class="btn" onclick="refreshAgents()">🔄 Refresh</button>
+            </div>
+            <div class="agent-grid" id="agent-grid"></div>
+        </div>
+
+        <!-- Upload Tab -->
+        <div id="upload" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">📤 Upload to OneDrive</h2>
+            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Drag & drop files here</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">or click to browse</p>
+                <input type="file" id="file-input" style="display: none;" accept=".zip,.pdf" onchange="handleFileSelect(event)">
+            </div>
+            <div id="upload-status" style="margin-top: 1rem; display: none;">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span id="upload-filename">filename.zip</span>
+                        <span id="upload-progress">0%</span>
+                    </div>
+                    <div style="background: var(--bg-primary); height: 4px; border-radius: 2px; overflow: hidden;">
+                        <div id="upload-bar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>✅ Tasks <span style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;">(from Notion)</span></h2>
+                <button class="btn" onclick="refreshTasks()">🔄 Refresh</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="metric-card">
+                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Total</div>
+                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-total">--</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--warning);">
+                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">To Do</div>
+                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-todo">--</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--success);">
+                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Done</div>
+                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-done">--</div>
+                </div>
+                <div class="metric-card" style="--accent:var(--danger);">
+                    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;">Overdue</div>
+                    <div style="font-size:1.75rem;font-weight:700;" id="tasks-overdue">--</div>
+                </div>
+            </div>
+            <div class="agent-grid" id="tasks-grid">
+                <div class="agent-card">
+                    <h3>🔄 Loading tasks from Notion...</h3>
+                    <p style="color:var(--text-secondary);">Connecting to database...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decisions Tab -->
+        <div id="decisions" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>📋 Decision Log</h2>
+                <button class="btn">➕ New Decision</button>
+            </div>
+            <div class="decision-item">
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+                    <span class="tag">System</span>
+                    <span style="font-size:0.75rem;color:var(--text-secondary);">Just now</span>
+                </div>
+                <h3>GitHub Backup Automation</h3>
+                <p style="color:var(--text-secondary);">Weekly automated backups enabled with rollback plan</p>
+            </div>
+            <div class="decision-item">
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+                    <span class="tag" style="background:rgba(16,185,129,0.2);color:var(--success);">Approved</span>
+                    <span style="font-size:0.75rem;color:var(--text-secondary);">2 min ago</span>
+                </div>
+                <h3>Rename to DWE Command Center</h3>
+                <p style="color:var(--text-secondary);">Mission Control v2 rebranded to DWE Command Center</p>
+            </div>
+            <div class="decision-item">
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+                    <span class="tag" style="background:rgba(99,102,241,0.2);color:#818cf8;">Config</span>
+                    <span style="font-size:0.75rem;color:var(--text-secondary);">10 min ago</span>
+                </div>
+                <h3>AirPods Pro Integration</h3>
+                <p style="color:var(--text-secondary);">Audio configured for Push-to-Talk</p>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>📜 System Logs</h2>
+                <button class="btn" onclick="refreshLogs()">🔄 Refresh</button>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1rem; font-family:monospace; font-size:0.8125rem; max-height:400px; overflow-y:auto; line-height:1.6;">
+                <div style="padding:0.25rem 0; color:var(--success);">[09:36:12] ✅ Server restarted successfully</div>
+                <div style="padding:0.25rem 0;">[09:36:10] 📝 Dashboard updated: Mission Control v2 → DWE Command Center</div>
+                <div style="padding:0.25rem 0;">[09:22:38] ✅ GitHub backup completed (1.3 MB)</div>
+                <div style="padding:0.25rem 0;">[09:22:35] 🔄 Starting GitHub backup...</div>
+                <div style="padding:0.25rem 0; color:var(--accent);">[09:15:00] 🎧 AirPods Pro configured for Push-to-Talk</div>
+                <div style="padding:0.25rem 0;">[09:14:22] 💬 Voice message received via Telegram</div>
+                <div style="padding:0.25rem 0;">[09:10:00] 🚨 Cron Guardian alert acknowledged</div>
+                <div style="padding:0.25rem 0; color:var(--text-secondary);">[09:00:00] ── DWE Command Center initialized ──</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8899/mc';
+        
+        // Tab switching
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            let greeting = 'Good morning';
+            if (hours >= 12 && hours < 17) greeting = 'Good afternoon';
+            else if (hours >= 17) greeting = 'Good evening';
+            document.getElementById('greeting').textContent = greeting + ', Sidney';
+        }
+
+        // Fetch server status
+        async function fetchStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/status`);
+                const data = await res.json();
+                document.getElementById('server-status').textContent = '● Online';
+                document.getElementById('server-status').style.color = 'var(--success)';
+                document.getElementById('memory-usage').textContent = data.memory.toFixed(1) + ' MB';
+                document.getElementById('uptime').textContent = Math.floor(data.uptime) + 's';
+            } catch (e) {
+                document.getElementById('server-status').textContent = '● Offline';
+                document.getElementById('server-status').style.color = 'var(--danger)';
+            }
+        }
+
+        // Fetch agents
+        async function fetchAgents() {
+            try {
+                const res = await fetch(`${API_BASE}/agents`);
+                const data = await res.json();
+                document.getElementById('agent-count').textContent = data.count;
+                
+                const grid = document.getElementById('agent-grid');
+                grid.innerHTML = data.agents.map(agent => `
+                    <div class="agent-card ${agent.status}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div>
+                                <div style="font-weight: 600;">${agent.name}</div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">${agent.role}</div>
+                            </div>
+                            <span class="status ${agent.status}">${agent.status}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Model: ${agent.model}</div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to fetch agents:', e);
+            }
+        }
+
+        function refreshAgents() {
+            fetchAgents();
+        }
+
+        // File upload handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            uploadFile(file);
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        }
+
+        async function uploadFile(file) {
+            const statusDiv = document.getElementById('upload-status');
+            const filenameSpan = document.getElementById('upload-filename');
+            const progressSpan = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('upload-bar');
+            
+            statusDiv.style.display = 'block';
+            filenameSpan.textContent = file.name;
+            
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressSpan.textContent = Math.floor(progress) + '%';
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            try {
+                // Read file as base64
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+                const base64Data = await base64Promise;
+                
+                // Upload to server
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: file.name,
+                        size: file.size,
+                        data: base64Data
+                    })
+                });
+                
+                const result = await response.json();
+                
+                clearInterval(interval);
+                progress = 100;
+                progressSpan.textContent = '100%';
+                progressBar.style.width = '100%';
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    alert(`✅ Uploaded: ${result.filename}\nSize: ${result.size} MB\nURL: ${result.url}`);
+                }, 500);
+                
+            } catch (error) {
+                clearInterval(interval);
+                statusDiv.style.display = 'none';
+                alert('❌ Upload failed: ' + error.message);
+            }
+        }
+
+        // Fetch services status
+        async function fetchServices() {
+            try {
+                const res = await fetch(`${API_BASE}/services`);
+                const data = await res.json();
+                const list = document.getElementById('services-list');
+                if (list && data.services) {
+                    list.innerHTML = data.services.map(s => `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: ${s.status === 'online' ? 'var(--success)' : 'var(--danger)'};">${s.status === 'online' ? '🟢' : '🔴'}</span>
+                            <span>${s.name}${s.port ? ` (port ${s.port})` : ''}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to fetch services:', e);
+            }
+        }
+
+        // Fetch cron jobs
+        async function fetchCrons() {
+            try {
+                const res = await fetch(`${API_BASE}/crons`);
+                const data = await res.json();
+                const list = document.getElementById('cron-list');
+                if (list && data.crons) {
+                    list.innerHTML = data.crons.map((c) => `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0;">
+                            <span style="color: ${c.status === 'active' ? 'var(--success)' : 'var(--warning)'};">${c.status === 'active' ? '🟢' : '🟡'}</span>
+                            <span style="flex: 1;">${c.id} ${c.command}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.75rem;">${c.nextRun}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to fetch crons:', e);
+            }
+        }
+
+        // Fetch launchd services
+        async function fetchLaunchd() {
+            try {
+                const res = await fetch(`${API_BASE}/launchd`);
+                const data = await res.json();
+                const list = document.getElementById('launchd-list');
+                if (list && data.services) {
+                    list.innerHTML = data.services.map(s => `
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: ${s.status === 'running' ? 'var(--success)' : 'var(--warning)'};">${s.status === 'running' ? '🟢' : '🟡'}</span>
+                            <span>${s.id} ${s.name} (${s.nextRun})</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to fetch launchd:', e);
+            }
+        }
+
+        // Fetch agent routing
+        async function fetchAgentRouting() {
+            try {
+                const res = await fetch(`${API_BASE}/agent-routing`);
+                const data = await res.json();
+                const list = document.getElementById('agent-routing');
+                if (list && data.agents) {
+                    list.innerHTML = data.agents.map(a => `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>${a.emoji}</span>
+                            <span><strong>${a.name}</strong> — ${a.role}</span>
+                            <span style="margin-left: auto; font-size: 0.75rem; color: ${a.status === 'online' ? 'var(--success)' : 'var(--text-secondary)'};">${a.tasks} tasks</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to fetch agent routing:', e);
+            }
+        }
+
+        // Fetch Notion tasks
+        async function fetchNotionTasks() {
+            try {
+                const res = await fetch(`${API_BASE}/notion-tasks`);
+                const data = await res.json();
+                
+                // Update stats
+                if (data.stats) {
+                    document.getElementById('tasks-total').textContent = data.stats.total || 0;
+                    document.getElementById('tasks-todo').textContent = data.stats.todo || 0;
+                    document.getElementById('tasks-done').textContent = data.stats.completed || 0;
+                    document.getElementById('tasks-overdue').textContent = data.tasks.filter(t => t.pastDue).length || 0;
+                }
+                
+                // Update task grid
+                const grid = document.getElementById('tasks-grid');
+                if (grid && data.tasks) {
+                    if (data.tasks.length === 0) {
+                        grid.innerHTML = `
+                            <div class="agent-card">
+                                <h3>📭 No tasks found</h3>
+                                <p style="color:var(--text-secondary);">Your Notion database is empty</p>
+                            </div>
+                        `;
+                    } else {
+                        grid.innerHTML = data.tasks.map(t => {
+                            const statusColor = t.status === 'Done' || t.status === 'Completed' ? 'var(--success)' :
+                                              t.status === 'In Progress' ? 'var(--warning)' :
+                                              t.pastDue ? 'var(--danger)' : 'var(--text-secondary)';
+                            const statusBg = t.status === 'Done' || t.status === 'Completed' ? 'rgba(16,185,129,0.2)' :
+                                           t.status === 'In Progress' ? 'rgba(245,158,11,0.2)' :
+                                           t.pastDue ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)';
+                            
+                            return `
+                            <div class="agent-card" style="${t.pastDue ? 'border-color: var(--danger);' : ''}">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                    <h3 style="font-size: 0.9375rem; line-height: 1.4; flex: 1;">${t.name}</h3>
+                                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.6875rem; text-transform: uppercase; margin-left: 0.5rem;">${t.status}</span>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span style="background: rgba(99,102,241,0.2); color: #818cf8; padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.role}</span>
+                                    <span style="background: rgba(255,255,255,0.1); color: var(--text-secondary); padding: 0.125rem 0.375rem; border-radius: 4px; font-size: 0.6875rem;">${t.priority}</span>
+                                </div>
+                                ${t.dueDate ? `<p style="color: ${t.pastDue ? 'var(--danger)' : 'var(--text-secondary)'}; font-size: 0.75rem;">📅 Due: ${new Date(t.dueDate).toLocaleDateString()}</p>` : ''}
+                                ${t.pastDue ? '<p style="color: var(--danger); font-size: 0.75rem; margin-top: 0.25rem;">⚠️ Past Due</p>' : ''}
+                            </div>
+                        `}).join('');
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to fetch Notion tasks:', e);
+                const grid = document.getElementById('tasks-grid');
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="agent-card">
+                            <h3>❌ Failed to load tasks</h3>
+                            <p style="color:var(--text-secondary);">Could not connect to Notion API</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function refreshTasks() {
+            fetchNotionTasks();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            fetchStatus();
+            setInterval(fetchStatus, 5000);
+            fetchAgents();
+            
+            // Fetch dynamic dashboard data
+            fetchServices();
+            fetchCrons();
+            fetchLaunchd();
+            fetchAgentRouting();
+            fetchNotionTasks();
+            
+            // Refresh dashboard data every 30 seconds
+            setInterval(() => {
+                fetchServices();
+                fetchCrons();
+                fetchLaunchd();
+                fetchAgentRouting();
+                fetchNotionTasks();
+            }, 30000);
+            
+            // Drag and drop
+            const dropzone = document.getElementById('upload-dropzone');
+            if (dropzone) {
+                dropzone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+                dropzone.addEventListener('dragleave', () => {
+                    dropzone.classList.remove('dragover');
+                });
+                dropzone.addEventListener('drop', handleFileDrop);
+            }
+        });
+    </script>
+</body>
+</html>
