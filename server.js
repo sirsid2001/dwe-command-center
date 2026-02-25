@@ -535,10 +535,18 @@ function getNotionTasks(req, res) {
                 const notionData = JSON.parse(data);
                 const tasks = notionData.results.map(task => {
                     const props = task.properties;
+                    // Handle both new 'status' type and legacy 'select' type
+                    let status = 'No Status';
+                    if (props.Status?.status?.name) {
+                        status = props.Status.status.name;
+                    } else if (props.Status?.select?.name) {
+                        status = props.Status.select.name;
+                    }
+                    
                     return {
                         id: task.id,
                         name: props['Task name']?.title?.[0]?.plain_text || 'Untitled',
-                        status: props.Status?.select?.name || 'No Status',
+                        status: status,
                         priority: props.Priority?.select?.name || 'Medium',
                         role: props.Role?.select?.name || 'Unassigned',
                         dueDate: props['Due date']?.date?.start || null,
@@ -550,9 +558,9 @@ function getNotionTasks(req, res) {
                 // Calculate stats
                 const stats = {
                     total: tasks.length,
-                    inProgress: tasks.filter(t => t.status === 'In Progress').length,
-                    completed: tasks.filter(t => t.status === 'Done' || t.status === 'Completed').length,
-                    todo: tasks.filter(t => t.status === 'To Do' || t.status === 'No Status').length
+                    inProgress: tasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
+                    completed: tasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete').length,
+                    todo: tasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length
                 };
 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
