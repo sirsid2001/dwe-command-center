@@ -525,7 +525,7 @@ async function getNotionTasks(req, res) {
         const stats = {
             total: allTasks.length,
             inProgress: allTasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
-            completed: allTasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete').length,
+            completed: allTasks.filter(t => t.status === 'Done' || t.status === 'Completed' || t.status === 'Complete' || t.status === 'Review').length,
             todo: allTasks.filter(t => t.status === 'To Do' || t.status === 'To do' || t.status === 'No Status' || t.status === 'Not started').length,
             maxIdNumber: allTasks.reduce((max, t) => Math.max(max, t.idNumber || 0), 0)
         };
