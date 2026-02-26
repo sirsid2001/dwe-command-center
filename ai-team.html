@@ -70,7 +70,7 @@
         .org-svg {
             width: 100%;
             min-width: 1800px;
-            height: 1100px;
+            height: 1200px;
         }
         
         .org-card {
@@ -277,7 +277,7 @@
     </div>
     
     <div class="org-container">
-        <svg class="org-svg" viewBox="0 0 1800 1100">
+        <svg class="org-svg" viewBox="0 0 1800 1200">
             <!-- Connection Lines -->
             <!-- CEO to Executives -->
             <line class="org-line online" x1="900" y1="120" x2="300" y2="320" />
@@ -297,10 +297,15 @@
             <!-- CTO to Chief Engineer -->
             <line class="org-line online" x1="900" y1="410" x2="900" y2="600" />
             
-            <!-- Chief Engineer to Swarm Team -->
-            <line class="org-line online" x1="900" y1="690" x2="800" y2="880" />
-            <line class="org-line online" x1="900" y1="690" x2="900" y2="880" />
-            <line class="org-line online" x1="900" y1="690" x2="1000" y2="880" />
+            <!-- Chief Engineer to Sentinel -->
+            <line class="org-line online" x1="900" y1="690" x2="900" y2="850" />
+            
+            <!-- Sentinel to Swarm Team -->
+            <line class="org-line online" x1="900" y1="940" x2="700" y2="1050" />
+            <line class="org-line online" x1="900" y1="940" x2="800" y2="1050" />
+            <line class="org-line online" x1="900" y1="940" x2="900" y2="1050" />
+            <line class="org-line online" x1="900" y1="940" x2="1000" y2="1050" />
+            <line class="org-line online" x1="900" y1="940" x2="1100" y2="1050" />
             
             <!-- Chief of Staff to Sub-agents -->
             <line class="org-line offline" x1="1500" y1="410" x2="1350" y2="600" />
@@ -402,26 +407,49 @@
                 <text class="org-card-status status-online" y="42">● Online</text>
             </g>
             
+            <!-- Sentinel - Main Swarm Agent -->
+            <g class="org-card" transform="translate(900, 850)" data-agent="sentinel">
+                <rect class="org-card-rect online" x="-75" y="-45" width="150" height="90" />
+                <text class="org-card-icon" y="-10">🛡️</text>
+                <text class="org-card-title" y="12">Sentinel</text>
+                <text class="org-card-role" y="28">Swarm Leader</text>
+                <text class="org-card-status status-online" y="42">● Online</text>
+            </g>
+            
             <!-- Swarm Team (Micro Agents) -->
-            <g class="org-card" transform="translate(800, 925)" data-agent="swarm-1">
-                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
-                <text class="org-card-icon" y="-8">🐝</text>
-                <text class="org-card-title" y="10">Swarm Bot 1</text>
-                <text class="org-card-status status-online" y="28">● Active</text>
+            <g class="org-card" transform="translate(700, 1050)" data-agent="swarm-1">
+                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
+                <text class="org-card-icon" y="-5">🐝</text>
+                <text class="org-card-title" y="8">Swarm Bot 1</text>
+                <text class="org-card-status status-online" y="24">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(900, 925)" data-agent="swarm-2">
-                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
-                <text class="org-card-icon" y="-8">🐝</text>
-                <text class="org-card-title" y="10">Swarm Bot 2</text>
-                <text class="org-card-status status-online" y="28">● Active</text>
+            <g class="org-card" transform="translate(800, 1050)" data-agent="swarm-2">
+                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
+                <text class="org-card-icon" y="-5">🐝</text>
+                <text class="org-card-title" y="8">Swarm Bot 2</text>
+                <text class="org-card-status status-online" y="24">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(1000, 925)" data-agent="swarm-3">
-                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
-                <text class="org-card-icon" y="-8">🐝</text>
-                <text class="org-card-title" y="10">Swarm Bot 3</text>
-                <text class="org-card-status status-online" y="28">● Active</text>
+            <g class="org-card" transform="translate(900, 1050)" data-agent="swarm-3">
+                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
+                <text class="org-card-icon" y="-5">🐝</text>
+                <text class="org-card-title" y="8">Swarm Bot 3</text>
+                <text class="org-card-status status-online" y="24">● Active</text>
+            </g>
+            
+            <g class="org-card" transform="translate(1000, 1050)" data-agent="swarm-4">
+                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
+                <text class="org-card-icon" y="-5">🐝</text>
+                <text class="org-card-title" y="8">Swarm Bot 4</text>
+                <text class="org-card-status status-online" y="24">● Active</text>
+            </g>
+            
+            <g class="org-card" transform="translate(1100, 1050)" data-agent="swarm-5">
+                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
+                <text class="org-card-icon" y="-5">🐝</text>
+                <text class="org-card-title" y="8">Swarm Bot 5</text>
+                <text class="org-card-status status-online" y="24">● Active</text>
             </g>
             
             <!-- Chief of Staff Sub-agents -->
@@ -565,26 +593,47 @@
                 responsibilities: "CI/CD, infrastructure, deployment, monitoring, system reliability",
                 reports: "Steve (CTO)"
             },
+            sentinel: {
+                name: "Sentinel",
+                role: "Swarm Team Leader",
+                status: "Online - Coordinating swarm",
+                responsibilities: "Swarm coordination, task distribution, micro-agent management, performance monitoring",
+                reports: "Chief Engineer → Steve (CTO)"
+            },
             "swarm-1": {
                 name: "Swarm Bot 1",
                 role: "Micro Agent",
                 status: "Active - Processing tasks",
                 responsibilities: "Automated task execution, data processing, background operations",
-                reports: "Chief Engineer → Steve (CTO)"
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
             "swarm-2": {
                 name: "Swarm Bot 2",
                 role: "Micro Agent",
                 status: "Active - Processing tasks",
                 responsibilities: "Automated task execution, data processing, background operations",
-                reports: "Chief Engineer → Steve (CTO)"
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
             "swarm-3": {
                 name: "Swarm Bot 3",
                 role: "Micro Agent",
                 status: "Active - Processing tasks",
                 responsibilities: "Automated task execution, data processing, background operations",
-                reports: "Chief Engineer → Steve (CTO)"
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
+            },
+            "swarm-4": {
+                name: "Swarm Bot 4",
+                role: "Micro Agent",
+                status: "Active - Processing tasks",
+                responsibilities: "Automated task execution, data processing, background operations",
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
+            },
+            "swarm-5": {
+                name: "Swarm Bot 5",
+                role: "Micro Agent",
+                status: "Active - Processing tasks",
+                responsibilities: "Automated task execution, data processing, background operations",
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
             kt: {
                 name: "KT Agent",
