@@ -1,5 +1,5 @@
 {
-  "name": "DWE Intelligence Gateway",
+  "name": "PROD | DWE Intelligence Gateway - OpenClaw → N8N → Pinecone Bridge",
   "nodes": [
     {
       "parameters": {
