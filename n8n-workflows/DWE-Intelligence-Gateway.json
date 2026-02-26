@@ -1,0 +1,439 @@
+{
+  "name": "DWE Intelligence Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clawdbot-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f710a69d-65a3-4763-9145-97fb4220bb41",
+      "name": "ClawdBot Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        224
+      ],
+      "webhookId": "clawdbot-bridge-001"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "extract-question",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            },
+            {
+              "id": "extract-user",
+              "name": "userId",
+              "value": "={{ $json.userId || 'anonymous' }}",
+              "type": "string"
+            },
+            {
+              "id": "extract-session",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6d3d9fa2-5e69-4447-8c05-b9d42eec6d07",
+      "name": "Extract ClawdBot Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.question }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2bbc0eb7-aa32-4a74-9e16-3d1cf37ed8bd",
+      "name": "Validate Question",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        800,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c2de939b-868b-4f81-abac-e153a1cf70b2",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('ClawdBot Webhook').item.json.body.question }}",
+        "options": {}
+      },
+      "id": "7ede1737-4ece-4ad0-a4d1-6b29989de329",
+      "name": "DWE Question Answer Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.3,
+      "position": [
+        1088,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-3.5-turbo",
+        "options": {}
+      },
+      "id": "878b59e5-aaa0-49ed-8b53-293d2568b8d8",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        144
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "IAW0Z1kT3UrRijkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "146403bc-1d4c-451e-8ca5-d02ef8b1a1f4",
+      "name": "Pinecone Retriever",
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "pineconeIndex": "dwe-v2",
+        "options": {}
+      },
+      "id": "6602ab9a-c5b9-4f32-a1e8-912d6f4cc765",
+      "name": "DWE Pinecone Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        976,
+        592
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "en82NeJvDVEShmlA",
+          "name": "PineconeApi account | dwe"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "153c2dc7-9821-4a8b-89c8-5bd92d7abeed",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        976,
+        800
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "IAW0Z1kT3UrRijkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "answer",
+              "name": "answer",
+              "value": "={{ $json.response.text }}",
+              "type": "string"
+            },
+            {
+              "id": "confidence",
+              "name": "confidence",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "executionTime",
+              "name": "executionTime",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3aee6f27-725c-4672-bd1b-cea8aede851f",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        -64
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4ab3b2fe-5424-44bd-970c-d8ab976932d2",
+      "name": "Log Query",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c58f1e72-e8f1-4754-b339-2a76a2892821",
+      "name": "Respond to ClawdBot",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# 🔗 DWE Intelligence Gateway\n\nThis workflow connects ClawdBot to the DWE knowledge base in Pinecone for semantic Q&A.\n\n## Webhook Endpoint\n`/webhook/clawdbot-query`\n\n## Expected Input\n```json\n{\n \"question\": \"What is DWE?\",\n \"userId\": \"optional-user-id\"\n}\n```\n\n## Flow\n1. ClawdBot sends question → Webhook\n2. Extract & validate question data\n3. Pinecone retrieves relevant context\n4. OpenAI generates answer using context\n5. Response returned to ClawdBot",
+        "height": 448,
+        "width": 772,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -288
+      ],
+      "id": "aa217efe-c549-4f37-a8e1-77eb8d9bd45b",
+      "name": "Workflow Documentation"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.microsoftOneDriveTool",
+      "typeVersion": 1.1,
+      "position": [
+        1776,
+        816
+      ],
+      "id": "6158d131-d8d9-453e-85a9-ae7ad9f66561",
+      "name": "Upload a file in Microsoft OneDrive",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "rnYhr0IjGsJq4GGw",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "operation": "search"
+      },
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1.1,
+      "position": [
+        1984,
+        816
+      ],
+      "id": "50098841-fb9a-4886-8582-6be0aa22beaf",
+      "name": "Search a folder",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "rnYhr0IjGsJq4GGw",
+          "name": "Microsoft Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ClawdBot Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract ClawdBot Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ClawdBot Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Question": {
+      "main": [
+        [
+          {
+            "node": "DWE Question Answer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to ClawdBot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DWE Question Answer Chain": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "DWE Question Answer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "DWE Question Answer Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DWE Pinecone Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Pinecone Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "DWE Pinecone Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Log Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Query": {
+      "main": [
+        [
+          {
+            "node": "Respond to ClawdBot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6ec3135c-aa03-4fec-8412-da13f8fe32db",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49d01b0fe89244f8c6a4f00b5471677c01a1bd4986987095c91e806f1b081cb1"
+  },
+  "id": "_04IxmEAjR1Jvt69DDGVc",
+  "tags": []
+}
