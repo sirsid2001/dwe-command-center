@@ -69,8 +69,8 @@
         
         .org-svg {
             width: 100%;
-            min-width: 1400px;
-            height: 900px;
+            min-width: 1600px;
+            height: 1000px;
         }
         
         .org-card {
@@ -277,32 +277,32 @@
     </div>
     
     <div class="org-container">
-        <svg class="org-svg" viewBox="0 0 1400 900">
+        <svg class="org-svg" viewBox="0 0 1600 1000">
             <!-- Connection Lines -->
             <!-- CEO to Executives -->
-            <line class="org-line online" x1="700" y1="120" x2="300" y2="280" />
-            <line class="org-line online" x1="700" y1="120" x2="700" y2="280" />
-            <line class="org-line idle" x1="700" y1="120" x2="1100" y2="280" />
+            <line class="org-line online" x1="800" y1="120" x2="300" y2="300" />
+            <line class="org-line online" x1="800" y1="120" x2="800" y2="300" />
+            <line class="org-line idle" x1="800" y1="120" x2="1300" y2="300" />
             
             <!-- COO to Sub-agents -->
-            <line class="org-line idle" x1="300" y1="360" x2="150" y2="520" />
-            <line class="org-line offline" x1="300" y1="360" x2="300" y2="520" />
-            <line class="org-line offline" x1="300" y1="360" x2="450" y2="520" />
+            <line class="org-line idle" x1="300" y1="390" x2="150" y2="580" />
+            <line class="org-line offline" x1="300" y1="390" x2="300" y2="580" />
+            <line class="org-line offline" x1="300" y1="390" x2="450" y2="580" />
             
             <!-- CTO to Chief Engineer -->
-            <line class="org-line online" x1="700" y1="360" x2="700" y2="520" />
+            <line class="org-line online" x1="800" y1="390" x2="800" y2="580" />
             
             <!-- Chief Engineer to Engineering Team -->
-            <line class="org-line online" x1="700" y1="600" x2="550" y2="760" />
-            <line class="org-line online" x1="700" y1="600" x2="700" y2="760" />
-            <line class="org-line online" x1="700" y1="600" x2="850" y2="760" />
+            <line class="org-line online" x1="800" y1="670" x2="600" y2="860" />
+            <line class="org-line online" x1="800" y1="670" x2="800" y2="860" />
+            <line class="org-line online" x1="800" y1="670" x2="1000" y2="860" />
             
             <!-- Chief of Staff to Sub-agents -->
-            <line class="org-line offline" x1="1100" y1="360" x2="1000" y2="520" />
-            <line class="org-line offline" x1="1100" y1="360" x2="1200" y2="520" />
+            <line class="org-line offline" x1="1300" y1="390" x2="1150" y2="580" />
+            <line class="org-line offline" x1="1300" y1="390" x2="1450" y2="580" />
             
             <!-- CEO - Sidney Garcia -->
-            <g class="org-card" transform="translate(700, 120)" data-agent="ceo">
+            <g class="org-card" transform="translate(800, 120)" data-agent="ceo">
                 <rect class="org-card-rect online" x="-90" y="-55" width="180" height="110" />
                 <text class="org-card-icon" y="-15">👑</text>
                 <text class="org-card-title" y="12">Sidney Garcia</text>
@@ -311,7 +311,7 @@
             </g>
             
             <!-- COO - Maxx -->
-            <g class="org-card" transform="translate(300, 315)" data-agent="coo">
+            <g class="org-card" transform="translate(300, 340)" data-agent="coo">
                 <rect class="org-card-rect idle" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">⚙️</text>
                 <text class="org-card-title" y="12">Maxx</text>
@@ -320,7 +320,7 @@
             </g>
             
             <!-- CTO - Steve -->
-            <g class="org-card" transform="translate(700, 315)" data-agent="cto">
+            <g class="org-card" transform="translate(800, 340)" data-agent="cto">
                 <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">💻</text>
                 <text class="org-card-title" y="12">Steve</text>
@@ -329,24 +329,24 @@
             </g>
             
             <!-- Chief of Staff - Nicole -->
-            <g class="org-card" transform="translate(1100, 315)" data-agent="cos">
+            <g class="org-card" transform="translate(1300, 340)" data-agent="cos">
                 <rect class="org-card-rect idle" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">📋</text>
                 <text class="org-card-title" y="12">Nicole</text>
                 <text class="org-card-role" y="28">Chief of Staff</text>
-                <text class="org-card-status status-idle" y="42">● Idle</text>
+                <text class="org-card-status status-idle" y="42">● Standby</text>
             </g>
             
             <!-- COO Sub-agents -->
-            <g class="org-card" transform="translate(150, 555)" data-agent="anita">
+            <g class="org-card" transform="translate(150, 625)" data-agent="anita">
                 <rect class="org-card-rect idle" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">📊</text>
                 <text class="org-card-title" y="12">Anita</text>
-                <text class="org-card-role" y="28">PM</text>
-                <text class="org-card-status status-idle" y="42">● Idle</text>
+                <text class="org-card-role" y="28">Project Manager</text>
+                <text class="org-card-status status-idle" y="42">● Standby</text>
             </g>
             
-            <g class="org-card" transform="translate(300, 555)" data-agent="hr">
+            <g class="org-card" transform="translate(300, 625)" data-agent="hr">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">👥</text>
                 <text class="org-card-title" y="12">HR Agent</text>
@@ -354,7 +354,7 @@
                 <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
-            <g class="org-card" transform="translate(450, 555)" data-agent="operations">
+            <g class="org-card" transform="translate(450, 625)" data-agent="operations">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔧</text>
                 <text class="org-card-title" y="12">Ops Agent</text>
@@ -363,7 +363,7 @@
             </g>
             
             <!-- Chief Engineer -->
-            <g class="org-card" transform="translate(700, 555)" data-agent="chief-engineer">
+            <g class="org-card" transform="translate(800, 625)" data-agent="chief-engineer">
                 <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">🔧</text>
                 <text class="org-card-title" y="12">Chief Engineer</text>
@@ -372,15 +372,15 @@
             </g>
             
             <!-- Engineering Team -->
-            <g class="org-card" transform="translate(550, 795)" data-agent="paul">
+            <g class="org-card" transform="translate(600, 905)" data-agent="paul">
                 <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔒</text>
                 <text class="org-card-title" y="12">Paul</text>
-                <text class="org-card-role" y="28">Security</text>
+                <text class="org-card-role" y="28">CISO - Security</text>
                 <text class="org-card-status status-online" y="42">● Online</text>
             </g>
             
-            <g class="org-card" transform="translate(700, 795)" data-agent="devops">
+            <g class="org-card" transform="translate(800, 905)" data-agent="devops">
                 <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">⚙️</text>
                 <text class="org-card-title" y="12">DevOps</text>
@@ -388,7 +388,7 @@
                 <text class="org-card-status status-online" y="42">● Online</text>
             </g>
             
-            <g class="org-card" transform="translate(850, 795)" data-agent="finance">
+            <g class="org-card" transform="translate(1000, 905)" data-agent="finance">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">💰</text>
                 <text class="org-card-title" y="12">Finance</text>
@@ -397,7 +397,7 @@
             </g>
             
             <!-- Chief of Staff Sub-agents -->
-            <g class="org-card" transform="translate(1000, 555)" data-agent="research">
+            <g class="org-card" transform="translate(1150, 625)" data-agent="research">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔬</text>
                 <text class="org-card-title" y="12">Research</text>
@@ -405,7 +405,7 @@
                 <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
-            <g class="org-card" transform="translate(1200, 555)" data-agent="strategy">
+            <g class="org-card" transform="translate(1450, 625)" data-agent="strategy">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">📈</text>
                 <text class="org-card-title" y="12">Strategy</text>
