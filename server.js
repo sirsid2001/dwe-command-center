@@ -110,6 +110,9 @@ const server = http.createServer((req, res) => {
         case '/mc/backup':
             if (req.method === 'POST') {
                 runBackup(req, res);
+            } else if (req.method === 'GET') {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ lastBackup: getLastBackupTime() }));
             } else {
                 res.writeHead(405, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Method not allowed' }));
@@ -663,6 +666,9 @@ async function fetchAllNotionTasks() {
     return allTasks;
 }
 
+// Track last backup time
+let lastBackupTime = new Date(Date.now() - 2 * 60 * 60 * 1000); // Default: 2 hours ago
+
 // Run GitHub backup
 function runBackup(req, res) {
     const { exec } = require('child_process');
@@ -675,9 +681,18 @@ function runBackup(req, res) {
             return;
         }
         console.log('Backup success:', stdout);
+        lastBackupTime = new Date();
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, message: 'Backup completed' }));
+        res.end(JSON.stringify({ 
+            success: true, 
+            message: 'Backup completed',
+            lastBackup: lastBackupTime.toISOString()
+        }));
     });
+}
+
+function getLastBackupTime() {
+    return lastBackupTime.toISOString();
 }
 
 server.listen(PORT, HOST, () => {
