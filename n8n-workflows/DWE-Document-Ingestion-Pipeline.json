@@ -1,5 +1,9 @@
 {
-  "name": "PROD | DWE Document Ingestion Pipeline - Drive → Pinecone → Archive",
+  "createdAt": "2026-02-26T10:00:00.000Z",
+  "updatedAt": "2026-02-26T10:00:00.000Z",
+  "id": "dwe-doc-ingestion-pipeline-v2",
+  "name": "PROD | DWE Document Ingestion - Drive → N8N → Pinecone",
+  "active": false,
   "nodes": [
     {
       "parameters": {
@@ -488,10 +492,13 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
+  "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "49d01b0fe89244f8c6a4f00b5471677c01a1bd4986987095c91e806f1b081cb1"
   },
-  "id": "dwe-doc-ingestion-pipeline",
+  "pinData": {},
+  "versionId": "dwe-ingestion-v1-2026-02-26",
+  "triggerCount": 0,
   "tags": ["dwe", "ingestion", "pinecone", "production"]
 }
