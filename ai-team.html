@@ -69,8 +69,8 @@
         
         .org-svg {
             width: 100%;
-            min-width: 1600px;
-            height: 1000px;
+            min-width: 1800px;
+            height: 1100px;
         }
         
         .org-card {
@@ -277,32 +277,38 @@
     </div>
     
     <div class="org-container">
-        <svg class="org-svg" viewBox="0 0 1600 1000">
+        <svg class="org-svg" viewBox="0 0 1800 1100">
             <!-- Connection Lines -->
             <!-- CEO to Executives -->
-            <line class="org-line online" x1="800" y1="120" x2="300" y2="300" />
-            <line class="org-line online" x1="800" y1="120" x2="800" y2="300" />
-            <line class="org-line idle" x1="800" y1="120" x2="1300" y2="300" />
+            <line class="org-line online" x1="900" y1="120" x2="300" y2="320" />
+            <line class="org-line online" x1="900" y1="120" x2="900" y2="320" />
+            <line class="org-line offline" x1="900" y1="120" x2="1500" y2="320" />
             
             <!-- COO to Sub-agents -->
-            <line class="org-line idle" x1="300" y1="390" x2="150" y2="580" />
-            <line class="org-line offline" x1="300" y1="390" x2="300" y2="580" />
-            <line class="org-line offline" x1="300" y1="390" x2="450" y2="580" />
+            <line class="org-line idle" x1="300" y1="410" x2="100" y2="600" />
+            <line class="org-line offline" x1="300" y1="410" x2="250" y2="600" />
+            <line class="org-line offline" x1="300" y1="410" x2="400" y2="600" />
+            <line class="org-line offline" x1="300" y1="410" x2="550" y2="600" />
+            
+            <!-- CTO to Direct Reports -->
+            <line class="org-line online" x1="900" y1="410" x2="750" y2="600" />
+            <line class="org-line online" x1="900" y1="410" x2="1050" y2="600" />
             
             <!-- CTO to Chief Engineer -->
-            <line class="org-line online" x1="800" y1="390" x2="800" y2="580" />
+            <line class="org-line online" x1="900" y1="410" x2="900" y2="600" />
             
-            <!-- Chief Engineer to Engineering Team -->
-            <line class="org-line online" x1="800" y1="670" x2="600" y2="860" />
-            <line class="org-line online" x1="800" y1="670" x2="800" y2="860" />
-            <line class="org-line online" x1="800" y1="670" x2="1000" y2="860" />
+            <!-- Chief Engineer to Swarm Team -->
+            <line class="org-line online" x1="900" y1="690" x2="800" y2="880" />
+            <line class="org-line online" x1="900" y1="690" x2="900" y2="880" />
+            <line class="org-line online" x1="900" y1="690" x2="1000" y2="880" />
             
             <!-- Chief of Staff to Sub-agents -->
-            <line class="org-line offline" x1="1300" y1="390" x2="1150" y2="580" />
-            <line class="org-line offline" x1="1300" y1="390" x2="1450" y2="580" />
+            <line class="org-line offline" x1="1500" y1="410" x2="1350" y2="600" />
+            <line class="org-line offline" x1="1500" y1="410" x2="1500" y2="600" />
+            <line class="org-line offline" x1="1500" y1="410" x2="1650" y2="600" />
             
             <!-- CEO - Sidney Garcia -->
-            <g class="org-card" transform="translate(800, 120)" data-agent="ceo">
+            <g class="org-card" transform="translate(900, 120)" data-agent="ceo">
                 <rect class="org-card-rect online" x="-90" y="-55" width="180" height="110" />
                 <text class="org-card-icon" y="-15">👑</text>
                 <text class="org-card-title" y="12">Sidney Garcia</text>
@@ -311,7 +317,7 @@
             </g>
             
             <!-- COO - Maxx -->
-            <g class="org-card" transform="translate(300, 340)" data-agent="coo">
+            <g class="org-card" transform="translate(300, 360)" data-agent="coo">
                 <rect class="org-card-rect idle" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">⚙️</text>
                 <text class="org-card-title" y="12">Maxx</text>
@@ -320,7 +326,7 @@
             </g>
             
             <!-- CTO - Steve -->
-            <g class="org-card" transform="translate(800, 340)" data-agent="cto">
+            <g class="org-card" transform="translate(900, 360)" data-agent="cto">
                 <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">💻</text>
                 <text class="org-card-title" y="12">Steve</text>
@@ -329,16 +335,16 @@
             </g>
             
             <!-- Chief of Staff - Nicole -->
-            <g class="org-card" transform="translate(1300, 340)" data-agent="cos">
-                <rect class="org-card-rect idle" x="-80" y="-50" width="160" height="100" />
+            <g class="org-card" transform="translate(1500, 360)" data-agent="cos">
+                <rect class="org-card-rect offline" x="-80" y="-50" width="160" height="100" />
                 <text class="org-card-icon" y="-12">📋</text>
                 <text class="org-card-title" y="12">Nicole</text>
                 <text class="org-card-role" y="28">Chief of Staff</text>
-                <text class="org-card-status status-idle" y="42">● Standby</text>
+                <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
             <!-- COO Sub-agents -->
-            <g class="org-card" transform="translate(150, 625)" data-agent="anita">
+            <g class="org-card" transform="translate(100, 645)" data-agent="anita">
                 <rect class="org-card-rect idle" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">📊</text>
                 <text class="org-card-title" y="12">Anita</text>
@@ -346,7 +352,15 @@
                 <text class="org-card-status status-idle" y="42">● Standby</text>
             </g>
             
-            <g class="org-card" transform="translate(300, 625)" data-agent="hr">
+            <g class="org-card" transform="translate(250, 645)" data-agent="cfo">
+                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
+                <text class="org-card-icon" y="-10">💰</text>
+                <text class="org-card-title" y="12">CFO</text>
+                <text class="org-card-role" y="28">Chief Financial Officer</text>
+                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            </g>
+            
+            <g class="org-card" transform="translate(400, 645)" data-agent="hr">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">👥</text>
                 <text class="org-card-title" y="12">HR Agent</text>
@@ -354,7 +368,7 @@
                 <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
-            <g class="org-card" transform="translate(450, 625)" data-agent="operations">
+            <g class="org-card" transform="translate(550, 645)" data-agent="operations">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔧</text>
                 <text class="org-card-title" y="12">Ops Agent</text>
@@ -362,17 +376,8 @@
                 <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
-            <!-- Chief Engineer -->
-            <g class="org-card" transform="translate(800, 625)" data-agent="chief-engineer">
-                <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
-                <text class="org-card-icon" y="-12">🔧</text>
-                <text class="org-card-title" y="12">Chief Engineer</text>
-                <text class="org-card-role" y="28">Engineering Lead</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
-            </g>
-            
-            <!-- Engineering Team -->
-            <g class="org-card" transform="translate(600, 905)" data-agent="paul">
+            <!-- CTO Direct Reports -->
+            <g class="org-card" transform="translate(750, 645)" data-agent="paul">
                 <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔒</text>
                 <text class="org-card-title" y="12">Paul</text>
@@ -380,7 +385,7 @@
                 <text class="org-card-status status-online" y="42">● Online</text>
             </g>
             
-            <g class="org-card" transform="translate(800, 905)" data-agent="devops">
+            <g class="org-card" transform="translate(1050, 645)" data-agent="devops">
                 <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">⚙️</text>
                 <text class="org-card-title" y="12">DevOps</text>
@@ -388,16 +393,47 @@
                 <text class="org-card-status status-online" y="42">● Online</text>
             </g>
             
-            <g class="org-card" transform="translate(1000, 905)" data-agent="finance">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">💰</text>
-                <text class="org-card-title" y="12">Finance</text>
-                <text class="org-card-role" y="28">Financial Analyst</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <!-- Chief Engineer -->
+            <g class="org-card" transform="translate(900, 645)" data-agent="chief-engineer">
+                <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
+                <text class="org-card-icon" y="-12">🔧</text>
+                <text class="org-card-title" y="12">Chief Engineer</text>
+                <text class="org-card-role" y="28">Engineering Lead</text>
+                <text class="org-card-status status-online" y="42">● Online</text>
+            </g>
+            
+            <!-- Swarm Team (Micro Agents) -->
+            <g class="org-card" transform="translate(800, 925)" data-agent="swarm-1">
+                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
+                <text class="org-card-icon" y="-8">🐝</text>
+                <text class="org-card-title" y="10">Swarm Bot 1</text>
+                <text class="org-card-status status-online" y="28">● Active</text>
+            </g>
+            
+            <g class="org-card" transform="translate(900, 925)" data-agent="swarm-2">
+                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
+                <text class="org-card-icon" y="-8">🐝</text>
+                <text class="org-card-title" y="10">Swarm Bot 2</text>
+                <text class="org-card-status status-online" y="28">● Active</text>
+            </g>
+            
+            <g class="org-card" transform="translate(1000, 925)" data-agent="swarm-3">
+                <rect class="org-card-rect online" x="-60" y="-40" width="120" height="80" />
+                <text class="org-card-icon" y="-8">🐝</text>
+                <text class="org-card-title" y="10">Swarm Bot 3</text>
+                <text class="org-card-status status-online" y="28">● Active</text>
             </g>
             
             <!-- Chief of Staff Sub-agents -->
-            <g class="org-card" transform="translate(1150, 625)" data-agent="research">
+            <g class="org-card" transform="translate(1350, 645)" data-agent="kt">
+                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
+                <text class="org-card-icon" y="-10">📚</text>
+                <text class="org-card-title" y="12">KT Agent</text>
+                <text class="org-card-role" y="28">Knowledge Transfer</text>
+                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            </g>
+            
+            <g class="org-card" transform="translate(1500, 645)" data-agent="research">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">🔬</text>
                 <text class="org-card-title" y="12">Research</text>
@@ -405,7 +441,7 @@
                 <text class="org-card-status status-offline" y="42">● Not Activated</text>
             </g>
             
-            <g class="org-card" transform="translate(1450, 625)" data-agent="strategy">
+            <g class="org-card" transform="translate(1650, 645)" data-agent="strategy">
                 <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
                 <text class="org-card-icon" y="-10">📈</text>
                 <text class="org-card-title" y="12">Strategy</text>
@@ -476,7 +512,7 @@
             cos: {
                 name: "Nicole",
                 role: "Chief of Staff",
-                status: "Idle - Available",
+                status: "Not yet activated",
                 responsibilities: "Executive coordination, strategic planning, cross-functional alignment, research oversight",
                 reports: "Sidney Garcia (CEO)"
             },
@@ -485,6 +521,13 @@
                 role: "Project Manager",
                 status: "Idle - Available for tasks",
                 responsibilities: "Project tracking, milestone management, team coordination, task assignment",
+                reports: "Maxx (COO)"
+            },
+            cfo: {
+                name: "CFO",
+                role: "Chief Financial Officer",
+                status: "Not yet activated",
+                responsibilities: "Financial strategy, budgeting, forecasting, financial reporting, cost management",
                 reports: "Maxx (COO)"
             },
             hr: {
@@ -505,7 +548,7 @@
                 name: "Chief Engineer",
                 role: "Engineering Lead",
                 status: "Online - Leading development",
-                responsibilities: "Technical leadership, code review, architecture decisions, engineering team management",
+                responsibilities: "Technical leadership, code review, architecture decisions, swarm team management",
                 reports: "Steve (CTO)"
             },
             paul: {
@@ -513,21 +556,42 @@
                 role: "Chief Information Security Officer",
                 status: "Online - Monitoring",
                 responsibilities: "Security protocols, compliance, threat monitoring, security audits",
-                reports: "Chief Engineer → Steve (CTO)"
+                reports: "Steve (CTO)"
             },
             devops: {
                 name: "DevOps Agent",
                 role: "Infrastructure Engineer",
                 status: "Online - Maintaining systems",
                 responsibilities: "CI/CD, infrastructure, deployment, monitoring, system reliability",
+                reports: "Steve (CTO)"
+            },
+            "swarm-1": {
+                name: "Swarm Bot 1",
+                role: "Micro Agent",
+                status: "Active - Processing tasks",
+                responsibilities: "Automated task execution, data processing, background operations",
                 reports: "Chief Engineer → Steve (CTO)"
             },
-            finance: {
-                name: "Finance Agent",
-                role: "Financial Analyst",
-                status: "Not yet activated",
-                responsibilities: "Financial analysis, budgeting, reporting, forecasting, cost optimization",
+            "swarm-2": {
+                name: "Swarm Bot 2",
+                role: "Micro Agent",
+                status: "Active - Processing tasks",
+                responsibilities: "Automated task execution, data processing, background operations",
                 reports: "Chief Engineer → Steve (CTO)"
+            },
+            "swarm-3": {
+                name: "Swarm Bot 3",
+                role: "Micro Agent",
+                status: "Active - Processing tasks",
+                responsibilities: "Automated task execution, data processing, background operations",
+                reports: "Chief Engineer → Steve (CTO)"
+            },
+            kt: {
+                name: "KT Agent",
+                role: "Knowledge Transfer Specialist",
+                status: "Not yet activated",
+                responsibilities: "Documentation, knowledge base management, training materials, onboarding support",
+                reports: "Nicole (Chief of Staff)"
             },
             research: {
                 name: "Research Agent",
