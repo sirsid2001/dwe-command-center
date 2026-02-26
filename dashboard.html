@@ -419,6 +419,40 @@
             flex: 1;
         }
         
+        .health-panel {
+            background: rgba(15, 20, 60, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .health-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.5rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .health-item:last-child {
+            border-bottom: none;
+        }
+        
+        .health-item span:nth-child(2) {
+            flex: 1;
+        }
+        
+        .health-status {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
+        
+        .health-status.warning {
+            color: #ff9500;
+        }
+        
         .panel-header {
             display: flex;
             align-items: center;
@@ -609,6 +643,33 @@
                         <div class="number" style="color: #ff00aa;">458</div>
                         <div class="stat-label">Left</div>
                     </div>
+                </div>
+            </div>
+            
+            <div class="health-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🏥</div>
+                    <div class="panel-title">System Health</div>
+                </div>
+                <div class="health-item">
+                    <span class="pulse-dot"></span>
+                    <span>OpenClaw Gateway</span>
+                    <span class="health-status">Running</span>
+                </div>
+                <div class="health-item">
+                    <span class="pulse-dot"></span>
+                    <span>Notion API</span>
+                    <span class="health-status">Connected</span>
+                </div>
+                <div class="health-item">
+                    <span class="pulse-dot"></span>
+                    <span>GitHub Backup</span>
+                    <span class="health-status">2 hrs ago</span>
+                </div>
+                <div class="health-item">
+                    <span class="pulse-dot warning"></span>
+                    <span>Disk Space</span>
+                    <span class="health-status warning">72% used</span>
                 </div>
             </div>
             
