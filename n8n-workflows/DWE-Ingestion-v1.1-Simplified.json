@@ -1,0 +1,280 @@
+{
+  "name": "PROD | DWE Ingestion v1.0 - Drive to Pinecone",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "list",
+        "limit": 100,
+        "filters": {
+          "trashed": false
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "19M1IXcP_tcjEiz8m2kbGOH6OcVWD0A6F"
+        }
+      },
+      "name": "Search Drive Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        300,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Process Each File",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "name": "Download Document",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        700,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Extract Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 1000,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "name": "Split Text",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "pineconeIndex": "dwe-v2",
+        "options": {
+          "metadata": "={{ JSON.stringify({ source: 'google-drive', filename: $('Download Document').item.json.name, processedAt: new Date().toISOString() }) }}"
+        }
+      },
+      "name": "Save to Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        300
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "en82NeJvDVEShmlA",
+          "name": "PineconeApi account | dwe"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "name": "Generate Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "IAW0Z1kT3UrRijkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Download Document').item.json.id }}"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1HuT57a7NtZL2DMSG3KtLNIHI13lx-5g_"
+        }
+      },
+      "name": "Move to Archive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Drive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Drive Folder": {
+      "main": [
+        [
+          {
+            "node": "Process Each File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each File": {
+      "main": [
+        [
+          {
+            "node": "Download Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Split Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Text": {
+      "main": [
+        [
+          {
+            "node": "Save to Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Save to Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Pinecone": {
+      "main": [
+        [
+          {
+            "node": "Move to Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["dwe", "ingestion", "v1.0"]
+}
