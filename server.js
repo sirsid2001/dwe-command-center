@@ -67,6 +67,12 @@ const server = http.createServer((req, res) => {
         return;
     }
     
+    // Ecosystem Map page
+    if (pathname === '/ecosystem' || pathname === '/ecosystem.html') {
+        serveFile(res, path.join(__dirname, 'ecosystem.html'), 'text/html');
+        return;
+    }
+    
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
         const filePath = path.join(__dirname, pathname);
