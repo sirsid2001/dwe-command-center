@@ -107,6 +107,14 @@ const server = http.createServer((req, res) => {
         case '/mc/launchd':
             getLaunchd(req, res);
             break;
+        case '/mc/backup':
+            if (req.method === 'POST') {
+                runBackup(req, res);
+            } else {
+                res.writeHead(405, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Method not allowed' }));
+            }
+            break;
         case '/mc/agent-routing':
             getAgentRouting(req, res);
             break;
@@ -653,6 +661,23 @@ async function fetchAllNotionTasks() {
     }
     
     return allTasks;
+}
+
+// Run GitHub backup
+function runBackup(req, res) {
+    const { exec } = require('child_process');
+    
+    exec('cd ~/mission-control-server && git add -A && git commit -m "Backup: $(date)" && git push', (error, stdout, stderr) => {
+        if (error) {
+            console.error('Backup error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: 'Backup failed' }));
+            return;
+        }
+        console.log('Backup success:', stdout);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: 'Backup completed' }));
+    });
 }
 
 server.listen(PORT, HOST, () => {
