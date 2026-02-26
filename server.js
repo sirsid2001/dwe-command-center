@@ -73,6 +73,12 @@ const server = http.createServer((req, res) => {
         return;
     }
     
+    // AI Team page
+    if (pathname === '/ai-team' || pathname === '/ai-team.html') {
+        serveFile(res, path.join(__dirname, 'ai-team.html'), 'text/html');
+        return;
+    }
+    
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
         const filePath = path.join(__dirname, pathname);
