@@ -673,21 +673,52 @@ let lastBackupTime = new Date(Date.now() - 2 * 60 * 60 * 1000); // Default: 2 ho
 function runBackup(req, res) {
     const { exec } = require('child_process');
     
-    exec('cd ~/mission-control-server && git add -A && git commit -m "Backup: $(date)" && git push', (error, stdout, stderr) => {
-        if (error) {
-            console.error('Backup error:', error);
+    console.log('Starting backup...');
+    
+    // Step 1: git add
+    exec('cd ~/mission-control-server && git add -A', (addError, addStdout, addStderr) => {
+        if (addError) {
+            console.error('Git add error:', addError);
             res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Backup failed' }));
+            res.end(JSON.stringify({ success: false, error: 'Git add failed', details: addError.message }));
             return;
         }
-        console.log('Backup success:', stdout);
-        lastBackupTime = new Date();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ 
-            success: true, 
-            message: 'Backup completed',
-            lastBackup: lastBackupTime.toISOString()
-        }));
+        console.log('Git add completed');
+        
+        // Step 2: git commit
+        exec('cd ~/mission-control-server && git commit -m "Backup: ' + new Date().toISOString() + '"', (commitError, commitStdout, commitStderr) => {
+            if (commitError) {
+                // Check if it's just "nothing to commit"
+                if (commitStderr && commitStderr.includes('nothing to commit')) {
+                    console.log('Nothing to commit, proceeding to push...');
+                } else {
+                    console.error('Git commit error:', commitError, commitStderr);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: 'Git commit failed', details: commitStderr || commitError.message }));
+                    return;
+                }
+            } else {
+                console.log('Git commit completed:', commitStdout);
+            }
+            
+            // Step 3: git push
+            exec('cd ~/mission-control-server && git push', (pushError, pushStdout, pushStderr) => {
+                if (pushError) {
+                    console.error('Git push error:', pushError, pushStderr);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: 'Git push failed', details: pushStderr || pushError.message }));
+                    return;
+                }
+                console.log('Git push completed:', pushStdout);
+                lastBackupTime = new Date();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                    success: true, 
+                    message: 'Backup completed',
+                    lastBackup: lastBackupTime.toISOString()
+                }));
+            });
+        });
     });
 }
 

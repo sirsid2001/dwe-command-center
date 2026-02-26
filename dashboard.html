@@ -797,9 +797,15 @@
             fetch('/mc/backup', { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
-                    btn.textContent = '✅ Backed up!';
-                    btn.style.background = 'rgba(0, 255, 136, 0.3)';
-                    document.getElementById('backupTime').textContent = 'Just now';
+                    if (data.success) {
+                        btn.textContent = '✅ Backed up!';
+                        btn.style.background = 'rgba(0, 255, 136, 0.3)';
+                        document.getElementById('backupTime').textContent = 'Just now';
+                    } else {
+                        btn.textContent = '❌ ' + (data.error || 'Failed');
+                        btn.style.background = 'rgba(255, 0, 0, 0.3)';
+                        console.error('Backup failed:', data.details);
+                    }
                     setTimeout(() => {
                         btn.textContent = '💾 Run Backup';
                         btn.style.background = 'rgba(100, 100, 100, 0.2)';
@@ -808,6 +814,7 @@
                 .catch(err => {
                     btn.textContent = '❌ Failed';
                     btn.style.background = 'rgba(255, 0, 0, 0.3)';
+                    console.error('Backup error:', err);
                     setTimeout(() => {
                         btn.textContent = '💾 Run Backup';
                         btn.style.background = 'rgba(100, 100, 100, 0.2)';
