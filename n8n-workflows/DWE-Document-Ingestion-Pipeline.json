@@ -1,0 +1,497 @@
+{
+  "name": "PROD | DWE Document Ingestion Pipeline - Drive → Pinecone → Archive",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger-001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "list",
+        "limit": 100,
+        "filters": {
+          "trashed": false
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "FOLDER_ID_4_READY_TO_SEED"
+        }
+      },
+      "id": "gdrive-search-001",
+      "name": "Search Ready to Seed",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        320,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-files",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-files-001",
+      "name": "Files Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        540,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# 🚫 No Files to Process\n\nChecked folder at:\n{{ new Date().toISOString() }}\n\nNo new files in 4_Ready_to_Seed folder."
+      },
+      "id": "no-op-end-001",
+      "name": "No Files End",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        540,
+        500
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "split-files-001",
+      "name": "Split Files",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "id": "gdrive-download-001",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        980,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "extract-text-001",
+      "name": "Extract Document Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 1000,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "text-splitter-001",
+      "name": "Split into Chunks",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "id": "openai-embeddings-001",
+      "name": "Create Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        100
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "IAW0Z1kT3UrRijkd",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pineconeIndex": "dwe-v2",
+        "options": {
+          "metadata": "={{ JSON.stringify({ source: 'google-drive', filename: $('Download File').item.json.name, folder: '4_Ready_to_Seed', processedAt: new Date().toISOString(), fileId: $('Download File').item.json.id }) }}"
+        }
+      },
+      "id": "pinecone-store-001",
+      "name": "Store in Pinecone",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        300
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "en82NeJvDVEShmlA",
+          "name": "PineconeApi account | dwe"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Download File').item.json.id }}"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "FOLDER_ID_5_ARCHIVED"
+        }
+      },
+      "id": "gdrive-move-001",
+      "name": "Move to Archived",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2080,
+        300
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "Ny5hgcuMH3lZSKav",
+          "name": "Google Sheets - DWE | Control (Service Account)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "log-status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "log-filename",
+              "name": "filename",
+              "value": "={{ $('Download File').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "log-timestamp",
+              "name": "processedAt",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "log-chunks",
+              "name": "chunksCreated",
+              "value": "={{ $json.length }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-success-001",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# 📄 DWE Document Ingestion Pipeline\n\n## Overview\nAutomatically processes documents from Google Drive → Pinecone → Archive\n\n## Flow\n1. ⏰ Schedule: Every 15 minutes\n2. 📁 Search: 4_Ready_to_Seed folder\n3. 📄 Download: Each new file\n4. ✂️ Chunk: Split into 1000-token chunks\n5. 🔢 Embed: Create OpenAI embeddings\n6. 🌲 Store: Upsert to Pinecone (dwe-v2 index)\n7. 📂 Archive: Move to 5_Archived folder\n8. ✍️ Log: Track processing results\n\n## Metadata Stored in Pinecone\n- source: 'google-drive'\n- filename: Original file name\n- folder: '4_Ready_to_Seed'\n- processedAt: ISO timestamp\n- fileId: Google Drive file ID\n\n## Required Setup\n1. Replace FOLDER_ID_4_READY_TO_SEED with actual folder ID\n2. Replace FOLDER_ID_5_ARCHIVED with actual archive folder ID\n3. Ensure service account has access to both folders",
+        "height": 600,
+        "width": 400,
+        "color": 3
+      },
+      "id": "documentation-001",
+      "name": "Pipeline Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "file-type-filter",
+              "leftValue": "={{ $('Download File').item.json.mimeType }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        }
+      },
+      "id": "filter-supported-types-001",
+      "name": "Supported File Type?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "skip-reason",
+              "name": "skipReason",
+              "value": "unsupported file type",
+              "type": "string"
+            },
+            {
+              "id": "skipped-file",
+              "name": "filename",
+              "value": "={{ $('Download File').item.json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-skip-001",
+      "name": "Log Skipped",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1420,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "content": "Supported: PDF, TXT, DOCX, MD\n\nSkipping: {{ $('Download File').item.json.mimeType }}"
+      },
+      "id": "skip-note-001",
+      "name": "Skip Note",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        600
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Ready to Seed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Ready to Seed": {
+      "main": [
+        [
+          {
+            "node": "Files Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Files Found?": {
+      "main": [
+        [
+          {
+            "node": "Split Files",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Files End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Files": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Extract Document Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Document Text": {
+      "main": [
+        [
+          {
+            "node": "Split into Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into Chunks": {
+      "main": [
+        [
+          {
+            "node": "Store in Pinecone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store in Pinecone",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in Pinecone": {
+      "main": [
+        [
+          {
+            "node": "Move to Archived",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move to Archived": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "49d01b0fe89244f8c6a4f00b5471677c01a1bd4986987095c91e806f1b081cb1"
+  },
+  "id": "dwe-doc-ingestion-pipeline",
+  "tags": ["dwe", "ingestion", "pinecone", "production"]
+}
