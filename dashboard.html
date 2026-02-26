@@ -467,6 +467,19 @@
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
         }
         
+        .health-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .health-grid .mini-ecosystem,
+        .health-grid .health-panel {
+            margin-bottom: 0;
+            height: 100%;
+        }
+        
         .mini-ecosystem-svg {
             width: 100%;
             overflow: visible;
@@ -697,55 +710,84 @@
                 </div>
             </div>
             
-            <a href="/ecosystem" style="text-decoration: none; display: block; margin-bottom: 1rem;">
-                <div class="mini-ecosystem" ondblclick="window.location.href='/ecosystem'">
-                    <div class="panel-header">
-                        <div class="panel-icon">🌐</div>
-                        <div class="panel-title">Ecosystem Map <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">(double-click for full view)</span></div>
+            <div class="health-grid">
+                <a href="/ecosystem" style="text-decoration: none;">
+                    <div class="mini-ecosystem" ondblclick="window.location.href='/ecosystem'">
+                        <div class="panel-header">
+                            <div class="panel-icon">🌐</div>
+                            <div class="panel-title">Ecosystem Map <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">(double-click for full view)</span></div>
+                        </div>
+                        <div class="mini-ecosystem-svg">
+                            <svg viewBox="0 0 400 200" style="width: 100%; height: 160px;">
+                                <!-- Connections -->
+                                <line class="mini-conn online" x1="200" y1="100" x2="100" y2="50" />
+                                <line class="mini-conn online" x1="200" y1="100" x2="300" y2="50" />
+                                <line class="mini-conn online" x1="200" y1="100" x2="100" y2="150" />
+                                <line class="mini-conn online" x1="200" y1="100" x2="300" y2="150" />
+                                <line class="mini-conn online" x1="100" y1="50" x2="50" y2="25" />
+                                <line class="mini-conn online" x1="300" y1="50" x2="350" y2="25" />
+                                
+                                <!-- Central Hub -->
+                                <circle cx="200" cy="100" r="25" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="200" y="105" text-anchor="middle" font-size="16">🖥️</text>
+                                
+                                <!-- Nodes -->
+                                <circle cx="100" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="100" y="55" text-anchor="middle" font-size="12">🎯</text>
+                                
+                                <circle cx="300" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="300" y="55" text-anchor="middle" font-size="12">⚡</text>
+                                
+                                <circle cx="100" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="100" y="155" text-anchor="middle" font-size="12">🦙</text>
+                                
+                                <circle cx="300" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="300" y="155" text-anchor="middle" font-size="12">🔌</text>
+                                
+                                <circle cx="50" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="50" y="29" text-anchor="middle" font-size="10">📝</text>
+                                
+                                <circle cx="350" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <text x="350" y="29" text-anchor="middle" font-size="10">🐙</text>
+                                
+                                <!-- Status indicator -->
+                                <rect x="320" y="170" width="70" height="24" rx="12" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="1" />
+                                <circle cx="335" cy="182" r="6" fill="#00ff88">
+                                    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+                                </circle>
+                                <text x="360" y="186" text-anchor="middle" font-size="11" fill="#00ff88" font-weight="600">10 Online</text>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="mini-ecosystem-svg">
-                        <svg viewBox="0 0 400 200" style="width: 100%; height: 180px;">
-                            <!-- Connections -->
-                            <line class="mini-conn online" x1="200" y1="100" x2="100" y2="50" />
-                            <line class="mini-conn online" x1="200" y1="100" x2="300" y2="50" />
-                            <line class="mini-conn online" x1="200" y1="100" x2="100" y2="150" />
-                            <line class="mini-conn online" x1="200" y1="100" x2="300" y2="150" />
-                            <line class="mini-conn online" x1="100" y1="50" x2="50" y2="25" />
-                            <line class="mini-conn online" x1="300" y1="50" x2="350" y2="25" />
-                            
-                            <!-- Central Hub -->
-                            <circle cx="200" cy="100" r="25" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="200" y="105" text-anchor="middle" font-size="16">🖥️</text>
-                            
-                            <!-- Nodes -->
-                            <circle cx="100" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="100" y="55" text-anchor="middle" font-size="12">🎯</text>
-                            
-                            <circle cx="300" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="300" y="55" text-anchor="middle" font-size="12">⚡</text>
-                            
-                            <circle cx="100" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="100" y="155" text-anchor="middle" font-size="12">🦙</text>
-                            
-                            <circle cx="300" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="300" y="155" text-anchor="middle" font-size="12">🔌</text>
-                            
-                            <circle cx="50" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="50" y="29" text-anchor="middle" font-size="10">📝</text>
-                            
-                            <circle cx="350" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                            <text x="350" y="29" text-anchor="middle" font-size="10">🐙</text>
-                            
-                            <!-- Status indicator -->
-                            <rect x="320" y="170" width="70" height="24" rx="12" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="1" />
-                            <circle cx="335" cy="182" r="6" fill="#00ff88">
-                                <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
-                            </circle>
-                            <text x="360" y="186" text-anchor="middle" font-size="11" fill="#00ff88" font-weight="600">10 Online</text>
-                        </svg>
+                </a>
+                
+                <div class="health-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">🏥</div>
+                        <div class="panel-title">System Health</div>
+                    </div>
+                    <div class="health-item">
+                        <span class="pulse-dot"></span>
+                        <span>OpenClaw Gateway</span>
+                        <span class="health-status">Running</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="pulse-dot"></span>
+                        <span>Notion API</span>
+                        <span class="health-status">Connected</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="pulse-dot"></span>
+                        <span>GitHub Backup</span>
+                        <span class="health-status" id="backupTime">2 hrs ago</span>
+                    </div>
+                    <div class="health-item">
+                        <span class="pulse-dot warning"></span>
+                        <span>Disk Space</span>
+                        <span class="health-status warning">72% used</span>
                     </div>
                 </div>
-            </a>
+            </div>
             
             <div class="services-grid">
                 <div class="service-panel">
