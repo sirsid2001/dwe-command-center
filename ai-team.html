@@ -26,7 +26,7 @@
             top: 0;
             left: 0;
             right: 0;
-            padding: 1.5rem 2rem;
+            padding: 1rem 1.5rem;
             background: rgba(15, 20, 60, 0.9);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -37,7 +37,7 @@
         }
         
         .header h1 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             background: linear-gradient(135deg, #00f5ff, #b829dd);
             -webkit-background-clip: text;
@@ -45,13 +45,13 @@
         }
         
         .back-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.875rem;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             color: #fff;
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             transition: all 0.2s;
         }
         
@@ -63,14 +63,17 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            padding-top: 80px;
-            overflow: auto;
+            padding-top: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .org-svg {
-            width: 100%;
-            min-width: 1800px;
-            height: 1200px;
+            width: 95%;
+            max-width: 1200px;
+            height: auto;
+            max-height: calc(100vh - 90px);
         }
         
         .org-card {
@@ -84,19 +87,19 @@
         
         .org-card-rect {
             fill: rgba(20, 25, 70, 0.95);
-            stroke-width: 3;
-            rx: 12;
-            filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+            stroke-width: 2;
+            rx: 8;
+            filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));
         }
         
         .org-card-rect.online {
             stroke: #00ff88;
-            filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.5));
+            filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.4));
         }
         
         .org-card-rect.idle {
             stroke: #ff9500;
-            filter: drop-shadow(0 0 20px rgba(255, 149, 0, 0.5));
+            filter: drop-shadow(0 0 15px rgba(255, 149, 0, 0.4));
         }
         
         .org-card-rect.offline {
@@ -105,13 +108,13 @@
         }
         
         .org-card-icon {
-            font-size: 28px;
+            font-size: 16px;
             text-anchor: middle;
             dominant-baseline: central;
         }
         
         .org-card-title {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: 700;
             text-anchor: middle;
             fill: #fff;
@@ -119,14 +122,14 @@
         }
         
         .org-card-role {
-            font-size: 11px;
+            font-size: 7px;
             text-anchor: middle;
             fill: rgba(255, 255, 255, 0.6);
             dominant-baseline: central;
         }
         
         .org-card-status {
-            font-size: 10px;
+            font-size: 6px;
             text-anchor: middle;
             font-weight: 600;
             dominant-baseline: central;
@@ -137,7 +140,7 @@
         .status-offline { fill: #666; }
         
         .org-line {
-            stroke-width: 2;
+            stroke-width: 1.5;
             fill: none;
             opacity: 0.6;
         }
@@ -149,7 +152,7 @@
         
         .org-line.idle {
             stroke: #ff9500;
-            stroke-dasharray: 5,5;
+            stroke-dasharray: 4,4;
         }
         
         .org-line.offline {
@@ -164,38 +167,38 @@
         
         .legend {
             position: fixed;
-            bottom: 2rem;
-            left: 2rem;
+            bottom: 1rem;
+            left: 1rem;
             background: rgba(15, 20, 60, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 8px;
+            padding: 0.75rem;
             z-index: 1000;
         }
         
         .legend-title {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.75rem;
+            gap: 0.375rem;
+            margin-bottom: 0.375rem;
+            font-size: 0.6875rem;
         }
         
         .legend-dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
         }
         
-        .legend-dot.online { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
-        .legend-dot.idle { background: #ff9500; box-shadow: 0 0 10px #ff9500; }
+        .legend-dot.online { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .legend-dot.idle { background: #ff9500; box-shadow: 0 0 8px #ff9500; }
         .legend-dot.offline { background: #666; }
         
         .agent-details {
@@ -206,9 +209,10 @@
             background: rgba(15, 20, 60, 0.98);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 2rem;
-            min-width: 400px;
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-width: 320px;
+            max-width: 90vw;
             z-index: 2000;
             display: none;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -220,38 +224,39 @@
         
         .agent-details-close {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
+            top: 0.75rem;
+            right: 0.75rem;
             background: none;
             border: none;
             color: #fff;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             cursor: pointer;
         }
         
         .agent-details h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.375rem;
         }
         
         .agent-details-role {
             color: rgba(255,255,255,0.6);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
         }
         
         .agent-details-section {
-            margin-bottom: 1rem;
+            margin-bottom: 0.875rem;
         }
         
         .agent-details-section h4 {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: rgba(255,255,255,0.5);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
         }
         
         .agent-details-section p {
-            font-size: 0.875rem;
-            line-height: 1.5;
+            font-size: 0.8125rem;
+            line-height: 1.4;
         }
         
         .overlay {
@@ -277,204 +282,197 @@
     </div>
     
     <div class="org-container">
-        <svg class="org-svg" viewBox="0 0 1800 1200">
+        <svg class="org-svg" viewBox="0 0 1200 750" preserveAspectRatio="xMidYMid meet">
             <!-- Connection Lines -->
             <!-- CEO to Executives -->
-            <line class="org-line online" x1="900" y1="120" x2="300" y2="320" />
-            <line class="org-line online" x1="900" y1="120" x2="900" y2="320" />
-            <line class="org-line offline" x1="900" y1="120" x2="1500" y2="320" />
+            <line class="org-line online" x1="600" y1="60" x2="200" y2="160" />
+            <line class="org-line online" x1="600" y1="60" x2="600" y2="160" />
+            <line class="org-line offline" x1="600" y1="60" x2="1000" y2="160" />
             
             <!-- COO to Sub-agents -->
-            <line class="org-line idle" x1="300" y1="410" x2="100" y2="600" />
-            <line class="org-line offline" x1="300" y1="410" x2="250" y2="600" />
-            <line class="org-line offline" x1="300" y1="410" x2="400" y2="600" />
-            <line class="org-line offline" x1="300" y1="410" x2="550" y2="600" />
+            <line class="org-line idle" x1="200" y1="220" x2="80" y2="320" />
+            <line class="org-line offline" x1="200" y1="220" x2="170" y2="320" />
+            <line class="org-line offline" x1="200" y1="220" x2="260" y2="320" />
+            <line class="org-line offline" x1="200" y1="220" x2="350" y2="320" />
             
             <!-- CTO to Direct Reports -->
-            <line class="org-line online" x1="900" y1="410" x2="750" y2="600" />
-            <line class="org-line online" x1="900" y1="410" x2="1050" y2="600" />
+            <line class="org-line online" x1="600" y1="220" x2="500" y2="320" />
+            <line class="org-line online" x1="600" y1="220" x2="700" y2="320" />
             
             <!-- CTO to Chief Engineer -->
-            <line class="org-line online" x1="900" y1="410" x2="900" y2="600" />
+            <line class="org-line online" x1="600" y1="220" x2="600" y2="320" />
             
             <!-- Chief Engineer to Sentinel -->
-            <line class="org-line online" x1="900" y1="690" x2="900" y2="850" />
+            <line class="org-line online" x1="600" y1="380" x2="600" y2="440" />
             
-            <!-- Sentinel to Swarm Team -->
-            <line class="org-line online" x1="900" y1="940" x2="700" y2="1050" />
-            <line class="org-line online" x1="900" y1="940" x2="800" y2="1050" />
-            <line class="org-line online" x1="900" y1="940" x2="900" y2="1050" />
-            <line class="org-line online" x1="900" y1="940" x2="1000" y2="1050" />
-            <line class="org-line online" x1="900" y1="940" x2="1100" y2="1050" />
-            
-            <!-- Chief of Staff to Sub-agents -->
-            <line class="org-line offline" x1="1500" y1="410" x2="1350" y2="600" />
-            <line class="org-line offline" x1="1500" y1="410" x2="1500" y2="600" />
-            <line class="org-line offline" x1="1500" y1="410" x2="1650" y2="600" />
+            <!-- Sentinel to Swarm Agents -->
+            <line class="org-line online" x1="600" y1="500" x2="280" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="400" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="520" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="640" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="760" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="880" y2="560" />
+            <line class="org-line online" x1="600" y1="500" x2="1000" y2="560" />
             
             <!-- CEO - Sidney Garcia -->
-            <g class="org-card" transform="translate(900, 120)" data-agent="ceo">
-                <rect class="org-card-rect online" x="-90" y="-55" width="180" height="110" />
-                <text class="org-card-icon" y="-15">👑</text>
-                <text class="org-card-title" y="12">Sidney Garcia</text>
-                <text class="org-card-role" y="28">CEO / Founder</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(600, 60)" data-agent="ceo">
+                <rect class="org-card-rect online" x="-60" y="-30" width="120" height="60" />
+                <text class="org-card-icon" y="-8">👑</text>
+                <text class="org-card-title" y="8">Sidney Garcia</text>
+                <text class="org-card-role" y="20">CEO / Founder</text>
+                <text class="org-card-status status-online" y="28">● Online</text>
             </g>
             
             <!-- COO - Maxx -->
-            <g class="org-card" transform="translate(300, 360)" data-agent="coo">
-                <rect class="org-card-rect idle" x="-80" y="-50" width="160" height="100" />
-                <text class="org-card-icon" y="-12">⚙️</text>
-                <text class="org-card-title" y="12">Maxx</text>
-                <text class="org-card-role" y="28">COO</text>
-                <text class="org-card-status status-idle" y="42">● Idle</text>
+            <g class="org-card" transform="translate(200, 190)" data-agent="coo">
+                <rect class="org-card-rect idle" x="-50" y="-28" width="100" height="56" />
+                <text class="org-card-icon" y="-6">⚙️</text>
+                <text class="org-card-title" y="8">Maxx</text>
+                <text class="org-card-role" y="18">COO</text>
+                <text class="org-card-status status-idle" y="26">● Idle</text>
             </g>
             
             <!-- CTO - Steve -->
-            <g class="org-card" transform="translate(900, 360)" data-agent="cto">
-                <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
-                <text class="org-card-icon" y="-12">💻</text>
-                <text class="org-card-title" y="12">Steve</text>
-                <text class="org-card-role" y="28">CTO</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(600, 190)" data-agent="cto">
+                <rect class="org-card-rect online" x="-50" y="-28" width="100" height="56" />
+                <text class="org-card-icon" y="-6">💻</text>
+                <text class="org-card-title" y="8">Steve</text>
+                <text class="org-card-role" y="18">CTO</text>
+                <text class="org-card-status status-online" y="26">● Online</text>
             </g>
             
             <!-- Chief of Staff - Nicole -->
-            <g class="org-card" transform="translate(1500, 360)" data-agent="cos">
-                <rect class="org-card-rect offline" x="-80" y="-50" width="160" height="100" />
-                <text class="org-card-icon" y="-12">📋</text>
-                <text class="org-card-title" y="12">Nicole</text>
-                <text class="org-card-role" y="28">Chief of Staff</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(1000, 190)" data-agent="cos">
+                <rect class="org-card-rect offline" x="-50" y="-28" width="100" height="56" />
+                <text class="org-card-icon" y="-6">📋</text>
+                <text class="org-card-title" y="8">Nicole</text>
+                <text class="org-card-role" y="18">Chief of Staff</text>
+                <text class="org-card-status status-offline" y="26">● Not Activated</text>
             </g>
             
             <!-- COO Sub-agents -->
-            <g class="org-card" transform="translate(100, 645)" data-agent="anita">
-                <rect class="org-card-rect idle" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">📊</text>
-                <text class="org-card-title" y="12">Anita</text>
-                <text class="org-card-role" y="28">Project Manager</text>
-                <text class="org-card-status status-idle" y="42">● Standby</text>
+            <g class="org-card" transform="translate(80, 350)" data-agent="anita">
+                <rect class="org-card-rect idle" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">📊</text>
+                <text class="org-card-title" y="8">Anita</text>
+                <text class="org-card-role" y="17">PM</text>
+                <text class="org-card-status status-idle" y="25">● Standby</text>
             </g>
             
-            <g class="org-card" transform="translate(250, 645)" data-agent="cfo">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">💰</text>
-                <text class="org-card-title" y="12">CFO</text>
-                <text class="org-card-role" y="28">Chief Financial Officer</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(170, 350)" data-agent="cfo">
+                <rect class="org-card-rect offline" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">💰</text>
+                <text class="org-card-title" y="8">CFO</text>
+                <text class="org-card-role" y="17">Finance</text>
+                <text class="org-card-status status-offline" y="25">● Not Active</text>
             </g>
             
-            <g class="org-card" transform="translate(400, 645)" data-agent="hr">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">👥</text>
-                <text class="org-card-title" y="12">HR Agent</text>
-                <text class="org-card-role" y="28">Human Resources</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(260, 350)" data-agent="hr">
+                <rect class="org-card-rect offline" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">👥</text>
+                <text class="org-card-title" y="8">HR</text>
+                <text class="org-card-role" y="17">Human Resources</text>
+                <text class="org-card-status status-offline" y="25">● Not Active</text>
             </g>
             
-            <g class="org-card" transform="translate(550, 645)" data-agent="operations">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">🔧</text>
-                <text class="org-card-title" y="12">Ops Agent</text>
-                <text class="org-card-role" y="28">Operations</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(350, 350)" data-agent="operations">
+                <rect class="org-card-rect offline" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">🔧</text>
+                <text class="org-card-title" y="8">Ops</text>
+                <text class="org-card-role" y="17">Operations</text>
+                <text class="org-card-status status-offline" y="25">● Not Active</text>
             </g>
             
             <!-- CTO Direct Reports -->
-            <g class="org-card" transform="translate(750, 645)" data-agent="paul">
-                <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">🔒</text>
-                <text class="org-card-title" y="12">Paul</text>
-                <text class="org-card-role" y="28">CISO - Security</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(500, 350)" data-agent="paul">
+                <rect class="org-card-rect online" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">🔒</text>
+                <text class="org-card-title" y="8">Paul</text>
+                <text class="org-card-role" y="17">CISO - Security</text>
+                <text class="org-card-status status-online" y="25">● Online</text>
             </g>
             
-            <g class="org-card" transform="translate(1050, 645)" data-agent="devops">
-                <rect class="org-card-rect online" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">⚙️</text>
-                <text class="org-card-title" y="12">DevOps</text>
-                <text class="org-card-role" y="28">Infrastructure</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(700, 350)" data-agent="devops">
+                <rect class="org-card-rect online" x="-45" y="-24" width="90" height="48" />
+                <text class="org-card-icon" y="-4">⚙️</text>
+                <text class="org-card-title" y="8">DevOps</text>
+                <text class="org-card-role" y="17">Infrastructure</text>
+                <text class="org-card-status status-online" y="25">● Online</text>
             </g>
             
             <!-- Chief Engineer -->
-            <g class="org-card" transform="translate(900, 645)" data-agent="chief-engineer">
-                <rect class="org-card-rect online" x="-80" y="-50" width="160" height="100" />
-                <text class="org-card-icon" y="-12">🔧</text>
-                <text class="org-card-title" y="12">Chief Engineer</text>
-                <text class="org-card-role" y="28">Engineering Lead</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(600, 350)" data-agent="chief-engineer">
+                <rect class="org-card-rect online" x="-50" y="-26" width="100" height="52" />
+                <text class="org-card-icon" y="-6">🔧</text>
+                <text class="org-card-title" y="8">Chief Engineer</text>
+                <text class="org-card-role" y="18">Engineering Lead</text>
+                <text class="org-card-status status-online" y="26">● Online</text>
             </g>
             
             <!-- Sentinel - Main Swarm Agent -->
-            <g class="org-card" transform="translate(900, 850)" data-agent="sentinel">
-                <rect class="org-card-rect online" x="-75" y="-45" width="150" height="90" />
-                <text class="org-card-icon" y="-10">🛡️</text>
-                <text class="org-card-title" y="12">Sentinel</text>
-                <text class="org-card-role" y="28">Swarm Leader</text>
-                <text class="org-card-status status-online" y="42">● Online</text>
+            <g class="org-card" transform="translate(600, 470)" data-agent="sentinel">
+                <rect class="org-card-rect online" x="-50" y="-26" width="100" height="52" />
+                <text class="org-card-icon" y="-6">🛡️</text>
+                <text class="org-card-title" y="8">Sentinel</text>
+                <text class="org-card-role" y="18">Watchdog / Dispatch</text>
+                <text class="org-card-status status-online" y="26">● Online</text>
             </g>
             
-            <!-- Swarm Team (Micro Agents) -->
-            <g class="org-card" transform="translate(700, 1050)" data-agent="swarm-1">
-                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
-                <text class="org-card-icon" y="-5">🐝</text>
-                <text class="org-card-title" y="8">Swarm Bot 1</text>
-                <text class="org-card-status status-online" y="24">● Active</text>
+            <!-- Swarm Agents (7 total) -->
+            <g class="org-card" transform="translate(280, 590)" data-agent="alpha">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">🔍</text>
+                <text class="org-card-title" y="6">Alpha</text>
+                <text class="org-card-role" y="14">Session Forensics</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(800, 1050)" data-agent="swarm-2">
-                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
-                <text class="org-card-icon" y="-5">🐝</text>
-                <text class="org-card-title" y="8">Swarm Bot 2</text>
-                <text class="org-card-status status-online" y="24">● Active</text>
+            <g class="org-card" transform="translate(400, 590)" data-agent="beta">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">🔍</text>
+                <text class="org-card-title" y="6">Beta</text>
+                <text class="org-card-role" y="14">Context Detective</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(900, 1050)" data-agent="swarm-3">
-                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
-                <text class="org-card-icon" y="-5">🐝</text>
-                <text class="org-card-title" y="8">Swarm Bot 3</text>
-                <text class="org-card-status status-online" y="24">● Active</text>
+            <g class="org-card" transform="translate(520, 590)" data-agent="gamma">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">🔍</text>
+                <text class="org-card-title" y="6">Gamma</text>
+                <text class="org-card-role" y="14">Infrastructure Scout</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(1000, 1050)" data-agent="swarm-4">
-                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
-                <text class="org-card-icon" y="-5">🐝</text>
-                <text class="org-card-title" y="8">Swarm Bot 4</text>
-                <text class="org-card-status status-online" y="24">● Active</text>
+            <g class="org-card" transform="translate(640, 590)" data-agent="recovery">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">🛠️</text>
+                <text class="org-card-title" y="6">Recovery</text>
+                <text class="org-card-role" y="14">The Fixer</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(1100, 1050)" data-agent="swarm-5">
-                <rect class="org-card-rect online" x="-55" y="-35" width="110" height="70" />
-                <text class="org-card-icon" y="-5">🐝</text>
-                <text class="org-card-title" y="8">Swarm Bot 5</text>
-                <text class="org-card-status status-online" y="24">● Active</text>
+            <g class="org-card" transform="translate(760, 590)" data-agent="persistence">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">⏰</text>
+                <text class="org-card-title" y="6">Persistence</text>
+                <text class="org-card-role" y="14">Retry Logic</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <!-- Chief of Staff Sub-agents -->
-            <g class="org-card" transform="translate(1350, 645)" data-agent="kt">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">📚</text>
-                <text class="org-card-title" y="12">KT Agent</text>
-                <text class="org-card-role" y="28">Knowledge Transfer</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(880, 590)" data-agent="logger">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">📊</text>
+                <text class="org-card-title" y="6">Logger</text>
+                <text class="org-card-role" y="14">Pattern Learner</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
             
-            <g class="org-card" transform="translate(1500, 645)" data-agent="research">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">🔬</text>
-                <text class="org-card-title" y="12">Research</text>
-                <text class="org-card-role" y="28">Research Analyst</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
-            </g>
-            
-            <g class="org-card" transform="translate(1650, 645)" data-agent="strategy">
-                <rect class="org-card-rect offline" x="-70" y="-45" width="140" height="90" />
-                <text class="org-card-icon" y="-10">📈</text>
-                <text class="org-card-title" y="12">Strategy</text>
-                <text class="org-card-role" y="28">Strategic Planner</text>
-                <text class="org-card-status status-offline" y="42">● Not Activated</text>
+            <g class="org-card" transform="translate(1000, 590)" data-agent="escalation">
+                <rect class="org-card-rect online" x="-40" y="-22" width="80" height="44" />
+                <text class="org-card-icon" y="-4">📢</text>
+                <text class="org-card-title" y="6">Escalation</text>
+                <text class="org-card-role" y="14">Decision Maker</text>
+                <text class="org-card-status status-online" y="21">● Active</text>
             </g>
         </svg>
     </div>
@@ -600,61 +598,54 @@
                 responsibilities: "Swarm coordination, task distribution, micro-agent management, performance monitoring",
                 reports: "Chief Engineer → Steve (CTO)"
             },
-            "swarm-1": {
-                name: "Swarm Bot 1",
-                role: "Micro Agent",
-                status: "Active - Processing tasks",
-                responsibilities: "Automated task execution, data processing, background operations",
+            alpha: {
+                name: "Alpha",
+                role: "Session Forensics Expert",
+                status: "Active - Analyzing sessions",
+                responsibilities: "Deep dive into fallen agent session state, log parsing, crash dump analysis, memory/CPU diagnostics",
                 reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            "swarm-2": {
-                name: "Swarm Bot 2",
-                role: "Micro Agent",
-                status: "Active - Processing tasks",
-                responsibilities: "Automated task execution, data processing, background operations",
+            beta: {
+                name: "Beta",
+                role: "Context Detective",
+                status: "Active - Finding patterns",
+                responsibilities: "Reviews what happened before failures, change detection, correlation identification, timeline reconstruction",
                 reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            "swarm-3": {
-                name: "Swarm Bot 3",
-                role: "Micro Agent",
-                status: "Active - Processing tasks",
-                responsibilities: "Automated task execution, data processing, background operations",
+            gamma: {
+                name: "Gamma",
+                role: "Infrastructure Scout",
+                status: "Active - Checking infrastructure",
+                responsibilities: "External dependency checks, API health, network diagnostics, auth token validation",
                 reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            "swarm-4": {
-                name: "Swarm Bot 4",
-                role: "Micro Agent",
-                status: "Active - Processing tasks",
-                responsibilities: "Automated task execution, data processing, background operations",
+            recovery: {
+                name: "Recovery",
+                role: "The Fixer",
+                status: "Active - Ready to fix",
+                responsibilities: "Automated fixes based on swarm findings, session restart, token refresh, cache clearing",
                 reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            "swarm-5": {
-                name: "Swarm Bot 5",
-                role: "Micro Agent",
-                status: "Active - Processing tasks",
-                responsibilities: "Automated task execution, data processing, background operations",
+            persistence: {
+                name: "Persistence",
+                role: "Retry Orchestrator",
+                status: "Active - Managing retries",
+                responsibilities: "Retry logic orchestration, exponential backoff, attempt tracking, escalation decision-making",
                 reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            kt: {
-                name: "KT Agent",
-                role: "Knowledge Transfer Specialist",
-                status: "Not yet activated",
-                responsibilities: "Documentation, knowledge base management, training materials, onboarding support",
-                reports: "Nicole (Chief of Staff)"
+            logger: {
+                name: "Logger",
+                role: "Pattern Learner",
+                status: "Active - Logging everything",
+                responsibilities: "Records all incidents, builds Failure Playbook, pattern recognition, knowledge base management",
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
             },
-            research: {
-                name: "Research Agent",
-                role: "Research Analyst",
-                status: "Not yet activated",
-                responsibilities: "Market research, trend analysis, competitive intelligence, innovation scouting",
-                reports: "Nicole (Chief of Staff)"
-            },
-            strategy: {
-                name: "Strategy Agent",
-                role: "Strategic Planner",
-                status: "Not yet activated",
-                responsibilities: "Strategic planning, OKR tracking, initiative coordination, growth planning",
-                reports: "Nicole (Chief of Staff)"
+            escalation: {
+                name: "Escalation",
+                role: "Decision Maker",
+                status: "Active - Ready to escalate",
+                responsibilities: "Executive summary compilation, GO/NO-GO decisions, CEO notification, human hand-off coordination",
+                reports: "Sentinel → Chief Engineer → Steve (CTO)"
             }
         };
         
