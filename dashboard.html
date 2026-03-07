@@ -20,34 +20,35 @@
             min-height: 100vh;
         }
 
-        .container { display: flex; }
+        .container { display: flex; position: relative; z-index: 1; }
 
         .sidebar {
             width: 220px;
             background: rgba(20, 25, 70, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 0 20px 20px 0;
-            padding: 1rem;
+            border-radius: 20px;
+            padding: 1.1rem 0.9rem 1rem;
             position: fixed;
-            height: auto;
-            max-height: calc(100vh - 4rem);
-            top: 2rem;
-            left: 0;
+            height: calc(100vh - 3.3rem);
+            top: 2.9rem;
+            left: 14px;
             display: flex;
             flex-direction: column;
-            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
             z-index: 100;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
         }
 
         .logo {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
+            margin-bottom: 0.85rem;
+            padding: 0.35rem 0.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1rem;
+            padding-bottom: 0.85rem;
+            flex-shrink: 0;
         }
 
         .logo-icon {
@@ -65,9 +66,10 @@
         .logo-value { font-size: 1rem; font-weight: 700; letter-spacing: 1px; }
 
         .nav-section {
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            flex-shrink: 0;
         }
         .nav-section:last-of-type { border-bottom: none; }
 
@@ -84,8 +86,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.625rem 0.75rem;
-            margin-bottom: 0.25rem;
+            padding: 0.5rem 0.65rem;
+            margin-bottom: 0.2rem;
             border-radius: 10px;
             color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
@@ -120,9 +122,10 @@
             margin-top: auto;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 12px;
-            padding: 0.875rem;
+            padding: 0.7rem;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
         }
         .help-icon {
             width: 32px; height: 32px;
@@ -144,7 +147,7 @@
         .main {
             margin-left: 240px;
             flex: 1;
-            padding: 2rem;
+            padding: 2rem 2rem 2rem 0.6rem;
             max-width: calc(100% - 240px);
             box-sizing: border-box;
             position: relative;
@@ -160,13 +163,14 @@
         .hero {
             background: rgba(20, 25, 70, 0.7);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(200, 200, 200, 0.18);
             border-radius: 20px;
             padding: 1.5rem 2rem;
             margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 0 0 1px rgba(200,200,200,0.08), 0 4px 24px rgba(0,0,0,0.4);
         }
         .hero h2 { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 1px; }
         .hero h1 { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #fff 0%, #00f5ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -188,15 +192,16 @@
             border-left: 3px solid #00f5ff;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            gap: 0.75rem;
         }
         .stat-card.success { border-left-color: #00ff88; }
         .stat-card.warning { border-left-color: #ff9500; }
         .stat-card.danger  { border-left-color: #ff00aa; }
         .stat-card.brain   { border-left-color: #b829dd; }
 
-        .stat-content { display: flex; flex-direction: column; }
-        .stat-label { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.25rem; }
+        .stat-content { display: flex; flex-direction: column; gap: 0.35rem; }
+        .stat-label { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 0; }
         .stat-value-row { display: flex; align-items: baseline; gap: 0.5rem; }
         .stat-value { font-size: 1.6rem; font-weight: 700; }
         .stat-change { font-size: 0.85rem; font-weight: 600; color: #00ff88; }
@@ -375,8 +380,358 @@
         }
         .footer-btn:hover { background: rgba(100,100,100,0.35); color: #fff; }
 
+        /* Brain Knowledge tile spacing */
+        .stat-card.brain { padding: 1.1rem 1rem 1.1rem; }
+        .stat-card.brain .stat-content { gap: 0.55rem; }
+        .brain-bar { margin: 0.1rem 0 0.25rem; height: 5px; border-radius: 3px; }
+        #stat-brain-detail { margin-top: 0 !important; font-size: 0.72rem !important; line-height: 1.5; }
+        #brain-btn-logs, #brain-btn-run, #brain-btn-restart { padding: 5px 0 !important; font-size: 0.7rem !important; border-radius: 6px !important; }
+
         @media (max-width: 1600px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .services-grid { grid-template-columns: 1fr; } }
+
+        /* ── Theme switcher sidebar section ────────────────────────────── */
+        .theme-section {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+        .theme-section-title {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        .theme-btns { display: flex; gap: 0.35rem; padding: 0 0.25rem; }
+        .theme-btn {
+            flex: 1;
+            padding: 0.45rem 0.25rem;
+            border-radius: 8px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            letter-spacing: 0.03em;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .theme-btn.active {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            color: #fff;
+        }
+    </style>
+
+    <!-- ── CSS2: Deep Neon ─────────────────────────────────────────── -->
+    <style id="theme-css2" disabled>
+        [data-theme="css2"] body {
+            background-color: #050814;
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(0,220,255,0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(255,0,200,0.06) 0%, transparent 55%),
+                linear-gradient(135deg, #050814 0%, #090d1f 50%, #050814 100%);
+        }
+        [data-theme="css2"] .sidebar {
+            background: rgba(5, 8, 25, 0.98);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,220,255,0.1);
+            border: 1px solid rgba(0,220,255,0.15);
+            border-radius: 20px;
+            left: 14px;
+            top: 2.9rem;
+            height: calc(100vh - 3.3rem);
+        }
+        [data-theme="css2"] .main {
+            padding-left: 0.6rem;
+        }
+        [data-theme="css2"] .hero {
+            background: rgba(5, 8, 25, 0.85);
+            border-color: rgba(200, 200, 200, 0.18);
+            box-shadow: 0 0 0 1px rgba(200,200,200,0.08), 0 4px 24px rgba(0,0,0,0.4);
+        }
+        [data-theme="css2"] .hero h1 {
+            background: linear-gradient(135deg, #fff 0%, #00dcff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        [data-theme="css2"] .stat-card {
+            background: rgba(5, 8, 30, 0.92);
+            border-color: rgba(0,220,255,0.08);
+            border-left-color: #00dcff;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,220,255,0.06);
+        }
+        [data-theme="css2"] .stat-card.success { border-left-color: #00ff9f; }
+        [data-theme="css2"] .stat-card.warning { border-left-color: #ff9900; }
+        [data-theme="css2"] .stat-card.danger  { border-left-color: #ff00cc; }
+        [data-theme="css2"] .stat-card.brain   { border-left-color: #cc00ff; }
+        [data-theme="css2"] .stat-icon {
+            background: linear-gradient(135deg, rgba(0,220,255,0.2) 0%, rgba(200,0,255,0.12) 100%);
+        }
+        [data-theme="css2"] .progress-section,
+        [data-theme="css2"] .health-panel,
+        [data-theme="css2"] .mini-ecosystem,
+        [data-theme="css2"] .service-panel {
+            background: rgba(5, 8, 30, 0.92);
+            border-color: rgba(0,220,255,0.08);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+        [data-theme="css2"] .nav-item.active {
+            background: linear-gradient(135deg, rgba(0,220,255,0.18) 0%, rgba(200,0,255,0.1) 100%);
+            box-shadow: 0 4px 15px rgba(0,220,255,0.2);
+        }
+        [data-theme="css2"] .nav-item.active .nav-icon { background: linear-gradient(135deg, #00dcff, #cc00ff); }
+        [data-theme="css2"] .bg-blob-1 { background: linear-gradient(135deg, #00dcff, #0066ff); }
+        [data-theme="css2"] .bg-blob-2 { background: linear-gradient(135deg, #cc00ff, #ff00aa); }
+        [data-theme="css2"] .panel-icon { background: linear-gradient(135deg, #00dcff, #cc00ff); }
+        [data-theme="css2"] .brain-bar-fill { background: linear-gradient(90deg, #cc00ff, #00dcff); }
+        [data-theme="css2"] .progress-text .percent {
+            background: linear-gradient(135deg, #00dcff, #cc00ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+    </style>
+
+    <!-- ── CSS4: Carbon — clean dark with equal tile spacing ──────── -->
+    <style id="theme-css4" disabled>
+        [data-theme="css4"] body {
+            background-color: #111418;
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(32,178,170,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(100,200,100,0.05) 0%, transparent 55%),
+                linear-gradient(135deg, #0d1014 0%, #111418 50%, #0d1014 100%);
+        }
+        [data-theme="css4"] .sidebar {
+            background: rgba(10, 12, 16, 0.98);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 20px;
+            left: 14px;
+            top: 2.9rem;
+            height: calc(100vh - 3.3rem);
+        }
+        [data-theme="css4"] .main {
+            padding-left: 0.6rem;
+        }
+        [data-theme="css4"] #main-container {
+            position: relative;
+            z-index: 1;
+        }
+        [data-theme="css4"] .hero {
+            background: rgba(10, 12, 16, 0.85);
+            border-color: rgba(200, 200, 200, 0.18);
+            box-shadow: 0 0 0 1px rgba(200,200,200,0.08), 0 4px 24px rgba(0,0,0,0.4);
+        }
+        [data-theme="css4"] .hero h1 {
+            background: linear-gradient(135deg, #fff 0%, #20b2aa 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        /* Equal-spacing tile reset */
+        [data-theme="css4"] .stat-card {
+            background: rgba(10, 12, 16, 0.95);
+            border-color: rgba(255,255,255,0.06);
+            border-left-color: #20b2aa;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem 1rem 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        }
+        [data-theme="css4"] .stat-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        [data-theme="css4"] .stat-label {
+            margin-bottom: 0;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+        }
+        [data-theme="css4"] .stat-value-row {
+            gap: 0.4rem;
+            align-items: baseline;
+        }
+        [data-theme="css4"] .stat-icon {
+            background: linear-gradient(135deg, rgba(32,178,170,0.2) 0%, rgba(100,200,100,0.12) 100%);
+            flex-shrink: 0;
+            margin-top: 0;
+        }
+        [data-theme="css4"] .stat-card.success { border-left-color: #4dcc88; }
+        [data-theme="css4"] .stat-card.warning { border-left-color: #e8a838; }
+        [data-theme="css4"] .stat-card.danger  { border-left-color: #cc4455; }
+        [data-theme="css4"] .stat-card.brain   { border-left-color: #7b68ee; }
+        [data-theme="css4"] .progress-section,
+        [data-theme="css4"] .health-panel,
+        [data-theme="css4"] .mini-ecosystem,
+        [data-theme="css4"] .service-panel {
+            background: rgba(10, 12, 16, 0.95);
+            border-color: rgba(255,255,255,0.06);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+        }
+        [data-theme="css4"] .progress-stat {
+            padding: 0.85rem 0.75rem;
+            gap: 0.35rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        [data-theme="css4"] .service-item {
+            padding: 0.5rem 0.6rem;
+            margin-bottom: 0.25rem;
+            gap: 0.6rem;
+        }
+        [data-theme="css4"] .health-item {
+            padding: 0.6rem 0.5rem;
+            gap: 0.7rem;
+        }
+        /* Brain Knowledge tile — better internal spacing */
+        [data-theme="css4"] .stat-card.brain {
+            padding: 1.1rem 1rem 1.1rem;
+        }
+        [data-theme="css4"] .stat-card.brain .stat-content {
+            gap: 0.55rem;
+        }
+        [data-theme="css4"] .stat-card.brain .stat-label {
+            margin-bottom: 0.1rem;
+        }
+        [data-theme="css4"] .stat-card.brain .stat-value-row {
+            margin-bottom: 0.1rem;
+        }
+        [data-theme="css4"] .brain-bar {
+            height: 5px;
+            border-radius: 3px;
+            margin: 0.1rem 0 0.25rem;
+        }
+        [data-theme="css4"] #stat-brain-detail {
+            margin-top: 0 !important;
+            font-size: 0.72rem !important;
+            line-height: 1.5;
+        }
+        [data-theme="css4"] #brain-btn-logs,
+        [data-theme="css4"] #brain-btn-run,
+        [data-theme="css4"] #brain-btn-restart {
+            padding: 5px 0 !important;
+            font-size: 0.7rem !important;
+            border-radius: 6px !important;
+        }
+        [data-theme="css4"] .nav-item.active {
+            background: linear-gradient(135deg, rgba(32,178,170,0.18) 0%, rgba(100,200,100,0.1) 100%);
+            box-shadow: 0 4px 12px rgba(32,178,170,0.15);
+        }
+        [data-theme="css4"] .nav-item.active .nav-icon { background: linear-gradient(135deg, #20b2aa, #4dcc88); }
+        [data-theme="css4"] .bg-blob-1 { background: linear-gradient(135deg, #20b2aa, #4dcc88); }
+        [data-theme="css4"] .bg-blob-2 { background: linear-gradient(135deg, #7b68ee, #20b2aa); }
+        [data-theme="css4"] .bg-blob-3 { background: linear-gradient(135deg, #e8a838, #20b2aa); }
+        [data-theme="css4"] .panel-icon { background: linear-gradient(135deg, #20b2aa, #4dcc88); }
+        [data-theme="css4"] .brain-bar-fill { background: linear-gradient(90deg, #7b68ee, #20b2aa); }
+        [data-theme="css4"] .progress-text .percent {
+            background: linear-gradient(135deg, #20b2aa, #7b68ee);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        [data-theme="css4"] .pulse-dot { background: #20b2aa; box-shadow: 0 0 6px #20b2aa; }
+        [data-theme="css4"] .pulse-dot.warning { background: #e8a838; box-shadow: 0 0 6px #e8a838; }
+        [data-theme="css4"] .pulse-dot.error { background: #cc4455; box-shadow: 0 0 6px #cc4455; }
+        [data-theme="css4"] .health-status.ok { color: #4dcc88; }
+        [data-theme="css4"] .mini-conn.online { stroke: #20b2aa; }
+    </style>
+
+    <!-- ── CSS3: Amber Terminal ─────────────────────────────────────── -->
+    <style id="theme-css3" disabled>
+        [data-theme="css3"] body {
+            background-color: #0f0a00;
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(255,160,0,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(255,80,0,0.05) 0%, transparent 55%),
+                linear-gradient(135deg, #0a0800 0%, #120e01 50%, #0a0800 100%);
+        }
+        [data-theme="css3"] .sidebar {
+            background: rgba(12, 9, 0, 0.98);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,160,0,0.1);
+            border: 1px solid rgba(255,160,0,0.13);
+            border-radius: 20px;
+            left: 14px;
+            top: 2.9rem;
+            height: calc(100vh - 3.3rem);
+        }
+        [data-theme="css3"] .main {
+            padding-left: 0.6rem;
+        }
+        [data-theme="css3"] .hero {
+            background: rgba(12, 9, 0, 0.85);
+            border-color: rgba(200, 200, 200, 0.18);
+            box-shadow: 0 0 0 1px rgba(200,200,200,0.08), 0 4px 24px rgba(0,0,0,0.4);
+        }
+        [data-theme="css3"] .hero h1 {
+            background: linear-gradient(135deg, #fff 0%, #ffaa00 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        [data-theme="css3"] .stat-card {
+            background: rgba(15, 10, 0, 0.92);
+            border-color: rgba(255,160,0,0.08);
+            border-left-color: #ffaa00;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,160,0,0.05);
+        }
+        [data-theme="css3"] .stat-card.success { border-left-color: #aaff44; }
+        [data-theme="css3"] .stat-card.warning { border-left-color: #ff6600; }
+        [data-theme="css3"] .stat-card.danger  { border-left-color: #ff3300; }
+        [data-theme="css3"] .stat-card.brain   { border-left-color: #ff9900; }
+        [data-theme="css3"] .stat-icon {
+            background: linear-gradient(135deg, rgba(255,160,0,0.18) 0%, rgba(255,80,0,0.1) 100%);
+        }
+        [data-theme="css3"] .progress-section,
+        [data-theme="css3"] .health-panel,
+        [data-theme="css3"] .mini-ecosystem,
+        [data-theme="css3"] .service-panel {
+            background: rgba(15, 10, 0, 0.92);
+            border-color: rgba(255,160,0,0.08);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+        }
+        [data-theme="css3"] .nav-item.active {
+            background: linear-gradient(135deg, rgba(255,160,0,0.18) 0%, rgba(255,80,0,0.1) 100%);
+            box-shadow: 0 4px 15px rgba(255,160,0,0.18);
+        }
+        [data-theme="css3"] .nav-item.active .nav-icon { background: linear-gradient(135deg, #ffaa00, #ff4400); }
+        [data-theme="css3"] .bg-blob-1 { background: linear-gradient(135deg, #ffaa00, #ff6600); }
+        [data-theme="css3"] .bg-blob-2 { background: linear-gradient(135deg, #ff6600, #cc2200); }
+        [data-theme="css3"] .bg-blob-3 { background: linear-gradient(135deg, #ffcc00, #ff6600); }
+        [data-theme="css3"] .panel-icon { background: linear-gradient(135deg, #ffaa00, #ff4400); }
+        [data-theme="css3"] .brain-bar-fill { background: linear-gradient(90deg, #ff6600, #ffcc00); }
+        [data-theme="css3"] .progress-text .percent {
+            background: linear-gradient(135deg, #ffaa00, #ff4400);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        [data-theme="css3"] .pulse-dot { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+        [data-theme="css3"] .pulse-dot.warning { background: #ff6600; box-shadow: 0 0 6px #ff6600; }
+        [data-theme="css3"] .pulse-dot.error { background: #ff3300; box-shadow: 0 0 6px #ff3300; }
+        [data-theme="css3"] .health-status.ok { color: #aaff44; }
+        [data-theme="css3"] .mini-conn.online { stroke: #ffaa00; }
+        /* Equal tile spacing */
+        [data-theme="css3"] .stat-card {
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        [data-theme="css3"] .stat-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        [data-theme="css3"] .stat-label { margin-bottom: 0; }
+        [data-theme="css3"] .stat-icon { flex-shrink: 0; margin-top: 0; }
+        [data-theme="css3"] .progress-stat {
+            padding: 0.85rem 0.75rem;
+            display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+        }
+        [data-theme="css3"] .service-item { padding: 0.5rem 0.6rem; margin-bottom: 0.25rem; gap: 0.6rem; }
+        [data-theme="css3"] .health-item { padding: 0.6rem 0.5rem; gap: 0.7rem; }
+        /* Brain Knowledge tile */
+        [data-theme="css3"] .stat-card.brain { padding: 1.1rem 1rem 1.1rem; }
+        [data-theme="css3"] .stat-card.brain .stat-content { gap: 0.55rem; }
+        [data-theme="css3"] .stat-card.brain .stat-label { margin-bottom: 0.1rem; }
+        [data-theme="css3"] .stat-card.brain .stat-value-row { margin-bottom: 0.1rem; }
+        [data-theme="css3"] .brain-bar { height: 5px; border-radius: 3px; margin: 0.1rem 0 0.25rem; }
+        [data-theme="css3"] #stat-brain-detail { margin-top: 0 !important; font-size: 0.72rem !important; line-height: 1.5; }
+        [data-theme="css3"] #brain-btn-logs,
+        [data-theme="css3"] #brain-btn-run,
+        [data-theme="css3"] #brain-btn-restart { padding: 5px 0 !important; font-size: 0.7rem !important; border-radius: 6px !important; }
     </style>
 </head>
 <body>
@@ -389,7 +744,12 @@
         </defs>
     </svg>
 
-    <div class="container">
+    <!-- CSS1 sea life background -->
+    <canvas id="css1-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; display:block; opacity:0.65;"></canvas>
+    <!-- CSS4 animated neural background -->
+    <canvas id="css4-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none; opacity:0.55;"></canvas>
+
+    <div class="container" id="main-container">
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-icon">🚀</div>
@@ -419,6 +779,16 @@
                     <div class="nav-icon">🌐</div>
                     <span>Ecosystem</span>
                 </a>
+            </div>
+
+            <div class="theme-section">
+                <div class="theme-section-title">Theme</div>
+                <div class="theme-btns">
+                    <button class="theme-btn active" id="theme-btn-css1" onclick="setTheme('css1')">CSS1</button>
+                    <button class="theme-btn" id="theme-btn-css2" onclick="setTheme('css2')">CSS2</button>
+                    <button class="theme-btn" id="theme-btn-css3" onclick="setTheme('css3')">CSS3</button>
+                    <button class="theme-btn" id="theme-btn-css4" onclick="setTheme('css4')">CSS4</button>
+                </div>
             </div>
 
             <div class="help-box">
@@ -741,6 +1111,25 @@
     </div>
 
     <script>
+        // ── Theme switcher ────────────────────────────────────────────────────
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme === 'css1' ? '' : theme);
+            ['css2','css3','css4'].forEach(t => {
+                document.getElementById('theme-' + t).disabled = (theme !== t);
+            });
+            ['css1','css2','css3','css4'].forEach(t => {
+                document.getElementById('theme-btn-' + t).classList.toggle('active', t === theme);
+            });
+            localStorage.setItem('dwe-theme', theme);
+            if (theme === 'css1') startCSS1Bg(); else stopCSS1Bg();
+            if (theme === 'css4') startCSS4Bg(); else stopCSS4Bg();
+        }
+        // Restore saved theme on load — always call setTheme so bg starts correctly
+        (function() {
+            const saved = localStorage.getItem('dwe-theme') || 'css1';
+            setTheme(saved);
+        })();
+
         // ── Clock ─────────────────────────────────────────────────────────────
         function updateClock() {
             const now = new Date();
@@ -1150,6 +1539,423 @@
                 updateBackupTime()
             ]);
             document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        // ── CSS1 Sea Life Background ──────────────────────────────────────────
+        let _css1AnimFrame = null;
+
+        function startCSS1Bg() {
+            const canvas = document.getElementById('css1-bg');
+            if (!canvas) return;
+            canvas.style.display = 'block';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+
+            const FISH_PALETTES = [
+                ['#ff6b35','#ff9f1c'],['#ffd700','#ff8c00'],['#00d4ff','#0077b6'],
+                ['#ff69b4','#ff1493'],['#7cfc00','#32cd32'],['#ff4500','#dc143c'],
+                ['#da70d6','#9400d3'],['#00ffcc','#009977'],['#ff7f50','#e25822'],
+                ['#87ceeb','#1e90ff'],['#ffb347','#ff8c00'],['#98fb98','#228b22']
+            ];
+            const SQUID_COLORS = ['#e040fb','#ab47bc','#7e57c2','#ff80ab','#ea80fc','#40c4ff','#f06292'];
+
+            // Fish
+            const fish = Array.from({ length: 20 }, (_, i) => {
+                const size = 12 + Math.random() * 32;
+                const dir = Math.random() > 0.5 ? 1 : -1;
+                return {
+                    x: Math.random() * canvas.width,
+                    y: 60 + Math.random() * (canvas.height - 120),
+                    vx: (0.35 + Math.random() * 0.7) * dir,
+                    vy: (Math.random() - 0.5) * 0.12,
+                    size, phase: Math.random() * Math.PI * 2,
+                    wiggleSpeed: 0.04 + Math.random() * 0.03,
+                    palette: FISH_PALETTES[i % FISH_PALETTES.length],
+                    stripes: Math.floor(Math.random() * 3),
+                    spots: Math.random() > 0.6
+                };
+            });
+
+            // Squids
+            const squids = Array.from({ length: 5 }, () => {
+                const size = 18 + Math.random() * 28;
+                return {
+                    x: Math.random() * canvas.width,
+                    y: 80 + Math.random() * (canvas.height - 160),
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.25,
+                    size, color: SQUID_COLORS[Math.floor(Math.random() * SQUID_COLORS.length)],
+                    tPhase: Math.random() * Math.PI * 2
+                };
+            });
+
+            // Bubbles
+            const bubbles = Array.from({ length: 30 }, () => ({
+                x: Math.random() * canvas.width,
+                y: canvas.height + Math.random() * canvas.height,
+                r: 1.5 + Math.random() * 5,
+                speed: 0.25 + Math.random() * 0.45,
+                drift: (Math.random() - 0.5) * 0.15
+            }));
+
+            // Seaweed
+            const weeds = Array.from({ length: 7 }, () => ({
+                x: 80 + Math.random() * (canvas.width - 160),
+                h: 50 + Math.random() * 90,
+                phase: Math.random() * Math.PI * 2,
+                segs: 5 + Math.floor(Math.random() * 4),
+                color: `hsl(${130 + Math.random() * 40}, 70%, ${35 + Math.random() * 20}%)`
+            }));
+
+            function drawFish(f, t) {
+                const { x, y, size, palette, phase, wiggleSpeed, stripes, spots } = f;
+                const wag = Math.sin(t * wiggleSpeed + phase) * 0.38;
+                ctx.save();
+                ctx.translate(x, y);
+                if (f.vx < 0) ctx.scale(-1, 1);
+
+                // Tail
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.72, wag * size * 0.3);
+                ctx.lineTo(-size * 1.45, -size * 0.5 + wag * size * 0.6);
+                ctx.lineTo(-size * 1.45,  size * 0.5 + wag * size * 0.6);
+                ctx.closePath();
+                ctx.fillStyle = palette[1]; ctx.fill();
+
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
+                ctx.fillStyle = palette[0]; ctx.fill();
+
+                // Stripes (clipped to body)
+                if (stripes > 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
+                    ctx.clip();
+                    for (let s = 0; s < stripes; s++) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+                        ctx.fillRect(-size * 0.25 + s * size * 0.3, -size * 0.5, size * 0.1, size);
+                    }
+                    ctx.restore();
+                }
+
+                // Spots
+                if (spots) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
+                    ctx.clip();
+                    for (let s = 0; s < 4; s++) {
+                        ctx.beginPath();
+                        ctx.arc(-size * 0.3 + s * size * 0.22, Math.sin(s * 1.5) * size * 0.15, size * 0.08, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Dorsal fin
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.15, -size * 0.43);
+                ctx.quadraticCurveTo(size * 0.1, -size * 0.85, size * 0.38, -size * 0.43);
+                ctx.fillStyle = palette[1]; ctx.fill();
+
+                // Pectoral fin
+                ctx.beginPath();
+                ctx.moveTo(size * 0.1, size * 0.2);
+                ctx.quadraticCurveTo(size * 0.35, size * 0.62, -size * 0.1, size * 0.42);
+                ctx.closePath();
+                ctx.fillStyle = palette[1]; ctx.globalAlpha = 0.7; ctx.fill(); ctx.globalAlpha = 1;
+
+                // Eye white
+                ctx.beginPath();
+                ctx.arc(size * 0.46, -size * 0.08, size * 0.13, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+                // Pupil
+                ctx.beginPath();
+                ctx.arc(size * 0.48, -size * 0.08, size * 0.07, 0, Math.PI * 2);
+                ctx.fillStyle = '#111'; ctx.fill();
+                // Eye shine
+                ctx.beginPath();
+                ctx.arc(size * 0.44, -size * 0.11, size * 0.03, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+
+                // Mouth
+                ctx.beginPath();
+                ctx.arc(size * 0.83, size * 0.06, size * 0.07, 0.3, Math.PI * 0.85);
+                ctx.strokeStyle = palette[1]; ctx.lineWidth = 1.5; ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawSquid(s, t) {
+                const { x, y, size, color, tPhase } = s;
+                ctx.save();
+                ctx.translate(x, y);
+                if (s.vx < 0) ctx.scale(-1, 1);
+
+                // Tentacles
+                for (let i = 0; i < 8; i++) {
+                    const tx = (i - 3.5) * size * 0.17;
+                    const wag = Math.sin(t * 0.05 + tPhase + i * 0.7) * size * 0.38;
+                    const len = i % 3 === 0 ? 1.7 : 1.4; // longer tentacles
+                    ctx.beginPath();
+                    ctx.moveTo(tx, size * 0.62);
+                    ctx.quadraticCurveTo(tx + wag * 0.5, size * 1.1, tx + wag, size * len);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = Math.max(1, size * (i % 3 === 0 ? 0.09 : 0.06));
+                    ctx.lineCap = 'round'; ctx.stroke();
+                }
+
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.38, size * 0.65, 0, 0, Math.PI * 2);
+                ctx.fillStyle = color; ctx.globalAlpha = 0.88; ctx.fill(); ctx.globalAlpha = 1;
+
+                // Body highlight
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.1, -size * 0.15, size * 0.14, size * 0.22, -0.4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+
+                // Side fins
+                for (const side of [-1, 1]) {
+                    ctx.beginPath();
+                    ctx.moveTo(side * size * 0.36, -size * 0.15);
+                    ctx.quadraticCurveTo(side * size * 0.68, size * 0.1, side * size * 0.36, size * 0.25);
+                    ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
+                }
+
+                // Pointed top
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.22, -size * 0.6);
+                ctx.lineTo(0, -size * 1.02);
+                ctx.lineTo(size * 0.22, -size * 0.6);
+                ctx.fillStyle = color; ctx.fill();
+
+                // Eyes
+                for (const side of [-1, 1]) {
+                    ctx.beginPath();
+                    ctx.arc(side * size * 0.17, size * 0.06, size * 0.11, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(side * size * 0.17, size * 0.06, size * 0.055, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+                }
+                ctx.restore();
+            }
+
+            let t = 0;
+            function css1Frame() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                t++;
+
+                // Seaweed
+                for (const w of weeds) {
+                    w.phase += 0.018;
+                    ctx.beginPath();
+                    ctx.moveTo(w.x, canvas.height);
+                    for (let i = 1; i <= w.segs; i++) {
+                        const sy = canvas.height - (i / w.segs) * w.h;
+                        const sx = w.x + Math.sin(w.phase + i * 0.9) * 14 * (i / w.segs);
+                        ctx.lineTo(sx, sy);
+                    }
+                    ctx.strokeStyle = w.color; ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.stroke();
+                }
+
+                // Bubbles
+                for (const b of bubbles) {
+                    b.y -= b.speed; b.x += b.drift;
+                    if (b.y < -20) { b.y = canvas.height + 20; b.x = Math.random() * canvas.width; }
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(160,215,255,0.55)'; ctx.lineWidth = 1; ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.35, b.r * 0.28, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+                }
+
+                // Squids
+                for (const s of squids) {
+                    s.x += s.vx; s.y += s.vy;
+                    s.tPhase += 0.035;
+                    if (s.x < -80) s.x = canvas.width + 80;
+                    if (s.x > canvas.width + 80) s.x = -80;
+                    if (s.y < 50) s.vy = Math.abs(s.vy);
+                    if (s.y > canvas.height - 50) s.vy = -Math.abs(s.vy);
+                    drawSquid(s, t);
+                }
+
+                // Fish
+                for (const f of fish) {
+                    f.x += f.vx; f.y += f.vy;
+                    f.vy += (Math.random() - 0.5) * 0.018;
+                    f.vy = Math.max(-0.28, Math.min(0.28, f.vy));
+                    if (f.vx > 0 && f.x > canvas.width + f.size * 2) f.x = -f.size * 2;
+                    if (f.vx < 0 && f.x < -f.size * 2) f.x = canvas.width + f.size * 2;
+                    if (f.y < 35) f.vy = Math.abs(f.vy);
+                    if (f.y > canvas.height - 35) f.vy = -Math.abs(f.vy);
+                    drawFish(f, t);
+                }
+
+                _css1AnimFrame = requestAnimationFrame(css1Frame);
+            }
+            css1Frame();
+
+            window._css1Resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+            window.addEventListener('resize', window._css1Resize);
+        }
+
+        function stopCSS1Bg() {
+            if (_css1AnimFrame) { cancelAnimationFrame(_css1AnimFrame); _css1AnimFrame = null; }
+            const canvas = document.getElementById('css1-bg');
+            if (canvas) canvas.style.display = 'none';
+            if (window._css1Resize) { window.removeEventListener('resize', window._css1Resize); window._css1Resize = null; }
+        }
+
+        // ── CSS4 Neural Network Background ────────────────────────────────────
+        let _css4AnimFrame = null;
+
+        function startCSS4Bg() {
+            const canvas = document.getElementById('css4-bg');
+            if (!canvas) return;
+            canvas.style.display = 'block';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+
+            const WHITE     = [255, 255, 255];
+            const ICE       = [200, 240, 255];
+            const LTEAL     = [120, 230, 225];
+            const LVIOLET   = [200, 190, 255];
+            const COLORS = [WHITE, WHITE, ICE, ICE, LTEAL, LVIOLET];
+            const N = 75;
+
+            const pts = Array.from({ length: N }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.35,
+                vy: (Math.random() - 0.5) * 0.35,
+                r: Math.random() * 1.8 + 0.8,
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.015 + Math.random() * 0.02,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                depth: 0.4 + Math.random() * 0.6   // simulated Z depth
+            }));
+
+            // A few larger "hub" nodes
+            for (let i = 0; i < 6; i++) {
+                pts[i].r = 3 + Math.random() * 2;
+                pts[i].speed = 0.008;
+                pts[i].depth = 0.9;
+            }
+
+            // Slowly rotating hexagonal grid overlay
+            let gridAngle = 0;
+
+            function drawHexGrid(ctx, w, h, angle) {
+                ctx.save();
+                ctx.translate(w / 2, h / 2);
+                ctx.rotate(angle);
+                ctx.strokeStyle = 'rgba(32,178,170,0.03)';
+                ctx.lineWidth = 0.5;
+                const size = 60;
+                const cols = Math.ceil(w / size / 0.866) + 4;
+                const rows = Math.ceil(h / size / 1.5) + 4;
+                for (let row = -rows; row < rows; row++) {
+                    for (let col = -cols; col < cols; col++) {
+                        const cx = col * size * 1.732 + (row % 2) * size * 0.866;
+                        const cy = row * size * 1.5;
+                        ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const a = (Math.PI / 3) * i;
+                            const px = cx + size * Math.cos(a);
+                            const py = cy + size * Math.sin(a);
+                            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                    }
+                }
+                ctx.restore();
+            }
+
+            function frame() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                gridAngle += 0.00015;
+                drawHexGrid(ctx, canvas.width, canvas.height, gridAngle);
+
+                // Update positions
+                for (const p of pts) {
+                    p.x += p.vx * p.depth;
+                    p.y += p.vy * p.depth;
+                    p.phase += p.speed;
+                    if (p.x < -20) p.x = canvas.width + 20;
+                    if (p.x > canvas.width + 20) p.x = -20;
+                    if (p.y < -20) p.y = canvas.height + 20;
+                    if (p.y > canvas.height + 20) p.y = -20;
+                }
+
+                // Connection lines
+                for (let i = 0; i < pts.length; i++) {
+                    for (let j = i + 1; j < pts.length; j++) {
+                        const dx = pts[i].x - pts[j].x;
+                        const dy = pts[i].y - pts[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const maxDist = 140;
+                        if (dist < maxDist) {
+                            const alpha = (1 - dist / maxDist) * 0.35 * Math.min(pts[i].depth, pts[j].depth);
+                            const [r, g, b] = pts[i].color;
+                            ctx.beginPath();
+                            ctx.moveTo(pts[i].x, pts[i].y);
+                            ctx.lineTo(pts[j].x, pts[j].y);
+                            ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+                            ctx.lineWidth = 0.6 * pts[i].depth;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Nodes
+                for (const p of pts) {
+                    const pulse = 0.5 + 0.5 * Math.sin(p.phase);
+                    const alpha = (0.55 + 0.4 * pulse) * p.depth;
+                    const radius = p.r * (1 + 0.3 * pulse) * p.depth;
+                    const [r, g, b] = p.color;
+
+                    // Outer glow
+                    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 6);
+                    grd.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.5})`);
+                    grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius * 6, 0, Math.PI * 2);
+                    ctx.fillStyle = grd;
+                    ctx.fill();
+
+                    // Core dot — bright white center
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(alpha + 0.45, 1)})`;
+                    ctx.fill();
+                }
+
+                _css4AnimFrame = requestAnimationFrame(frame);
+            }
+
+            frame();
+
+            window._css4Resize = () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', window._css4Resize);
+        }
+
+        function stopCSS4Bg() {
+            if (_css4AnimFrame) { cancelAnimationFrame(_css4AnimFrame); _css4AnimFrame = null; }
+            const canvas = document.getElementById('css4-bg');
+            if (canvas) canvas.style.display = 'none';
+            if (window._css4Resize) { window.removeEventListener('resize', window._css4Resize); window._css4Resize = null; }
         }
 
         // Initial load + 60s auto-refresh
