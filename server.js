@@ -133,6 +133,62 @@ const server = http.createServer((req, res) => {
         case '/mc/agent-routing':
             getAgentRouting(req, res);
             break;
+        case '/mc/brain':
+            getBrainStatus(req, res);
+            break;
+        case '/mc/brain-run':
+            exec('launchctl start ai.dwe.brain-trainer', (err) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
+            });
+            break;
+        case '/mc/brain-restart':
+            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.dwe.brain-trainer`, (err) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
+            });
+            break;
+        case '/mc/brain-query':
+            if (req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => body += chunk);
+                req.on('end', () => {
+                    try {
+                        const { question } = JSON.parse(body);
+                        if (!question) { res.writeHead(400); res.end(JSON.stringify({ error: 'No question' })); return; }
+                        // Apply same DWE expansion as brain_query.sh
+                        const expanded = question
+                            .replace(/\bDWE\b/g, 'DWE (Digital Wealth Ecosystem)')
+                            .replace(/currently working on/gi, 'currently working on Phase 4 agent autonomy active projects')
+                            .replace(/4_Ready_to_Seed/g, 'Ready to Seed folder seed-watcher auto-ingest DWE Brain Pinecone');
+                        const https = require('https');
+                        const payload = JSON.stringify({ question: expanded, botId: 'main' });
+                        const opts = {
+                            hostname: 'n8n.tvcpulse.com',
+                            path: '/webhook/openclaw-query',
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+                        };
+                        const preq = https.request(opts, pres => {
+                            let data = '';
+                            pres.on('data', c => data += c);
+                            pres.on('end', () => {
+                                res.setHeader('Content-Type', 'application/json');
+                                try { res.end(data); } catch(e) { res.end(JSON.stringify({ error: 'Parse error' })); }
+                            });
+                        });
+                        preq.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
+                        preq.write(payload);
+                        preq.end();
+                    } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
+                });
+            } else {
+                res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
+            }
+            break;
+        case '/mc/system':
+            getSystemHealth(req, res);
+            break;
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
             break;
@@ -323,16 +379,19 @@ function handleUpload(req, res) {
 }
 
 function getAgents(req, res) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-        agents: [
-            { id: 'steve', name: 'Steve', role: 'Chief Technology Officer', status: 'online', model: 'claude-3-5-sonnet' },
-            { id: 'maxx', name: 'Maxx', role: 'Chief Operating Officer', status: 'busy', model: 'gpt-4o' },
-            { id: 'anita', name: 'Anita', role: 'Project Manager', status: 'online', model: 'claude-3.5-haiku' },
-            { id: 'lucy', name: 'Lucy', role: 'Executive Assistant', status: 'online', model: 'gpt-4o-mini' }
-        ],
-        count: 4
-    }));
+    // Check if gateway is up — determines if agents can receive messages
+    exec('nc -z 127.0.0.1 3000 && echo "open" || echo "closed"', (err, out) => {
+        const gatewayUp = (out || '').trim() === 'open';
+        const agents = [
+            { id: 'cto',            name: 'Steve',          role: 'Chief Technology Officer', telegram: '@DWE_CTO_Bot',    status: gatewayUp ? 'online' : 'offline' },
+            { id: 'anita',          name: 'Anita',          role: 'Chief Operating Officer',  telegram: 'anita-coo',       status: gatewayUp ? 'online' : 'offline' },
+            { id: 'nicole',         name: 'Nicole',         role: 'Chief of Staff',           telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
+            { id: 'chief-engineer', name: 'Chief Engineer', role: 'Engineering Lead',         telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'main',           name: 'Main',           role: 'Primary Assistant',        telegram: null,              status: gatewayUp ? 'online' : 'offline' }
+        ];
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ agents, count: agents.length, gatewayUp }));
+    });
 }
 
 function getModels(req, res) {
@@ -519,47 +578,63 @@ function getCrons(req, res) {
 }
 
 function getLaunchd(req, res) {
-    exec('launchctl list | grep com.dwe', (error, stdout) => {
-        const services = [
-            { id: 'DWE-001', name: 'Ops Report', status: 'waiting', nextRun: '10:00a' },
-            { id: 'DWE-002', name: 'Ops Monitor', status: 'waiting', nextRun: '10:05a' },
-            { id: 'DWE-003', name: 'Project Monitor', status: 'waiting', nextRun: '10:00a' },
-            { id: 'DWE-007', name: 'COO Task Mgr', status: 'running', nextRun: 'Active' },
-            { id: 'DWE-008', name: 'Lucy Email', status: 'waiting', nextRun: '7:00a' }
-        ];
+    const DAEMON_NAMES = {
+        'ai.openclaw.gateway':           { name: 'OpenClaw Gateway',    group: 'core' },
+        'ai.openclaw.relay-daemon':      { name: 'Relay Daemon',        group: 'core' },
+        'ai.dwe.seed-watcher':           { name: 'Seed Watcher',        group: 'brain' },
+        'ai.dwe.notion-sync':            { name: 'Notion Sync',         group: 'brain' },
+        'ai.dwe.brain-trainer':          { name: 'Brain Trainer',       group: 'brain' },
+        'ai.dwe.morning-briefing':       { name: 'Morning Briefing',    group: 'autonomy' },
+        'ai.dwe.overdue-monitor':        { name: 'Overdue Monitor',     group: 'autonomy' },
+        'ai.dwe.health-monitor':         { name: 'Health Monitor',      group: 'autonomy' },
+        'ai.dwe.agent-heartbeat-cto':    { name: 'CTO Heartbeat',       group: 'autonomy' },
+        'ai.dwe.agent-heartbeat-anita':  { name: 'Anita Heartbeat',     group: 'autonomy' },
+        'ai.dwe.agent-heartbeat-ce':     { name: 'CE Heartbeat',        group: 'autonomy' },
+        'ai.dwe.nightly-review':         { name: 'Nightly Review',      group: 'brain' },
+        'com.dwe.ops-monitor':           { name: 'Ops Monitor',         group: 'ops' },
+        'com.dwe.ops-report':            { name: 'Ops Report',          group: 'ops' },
+        'com.dwe.command-center':        { name: 'Command Center',      group: 'ops' },
+        'com.missioncontrol.server':     { name: 'Mission Control',     group: 'core' }
+    };
 
+    exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', (error, stdout) => {
+        const services = [];
         if (!error && stdout) {
-            stdout.split('\n').forEach(line => {
-                if (line.includes('com.dwe')) {
-                    const parts = line.trim().split(/\s+/);
-                    if (parts.length >= 3) {
-                        const pid = parts[0];
-                        const name = parts[2];
-                        const service = services.find(s => name.toLowerCase().includes(s.name.toLowerCase().replace(/\s/g, '')));
-                        if (service && pid !== '-') {
-                            service.status = 'running';
-                            service.pid = pid;
-                        }
-                    }
+            stdout.trim().split('\n').forEach(line => {
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 3) {
+                    const pid = parts[0];
+                    const exitCode = parts[1];
+                    const label = parts[2];
+                    const running = pid !== '-';
+                    const hasError = exitCode !== '0' && exitCode !== '-';
+                    const meta = DAEMON_NAMES[label] || { name: label.split('.').pop(), group: 'other' };
+                    services.push({
+                        id: label,
+                        name: meta.name,
+                        group: meta.group,
+                        status: running ? 'running' : (hasError ? 'error' : 'waiting'),
+                        pid: running ? pid : null,
+                        exitCode
+                    });
                 }
             });
         }
-
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ services: services, timestamp: new Date().toISOString() }));
+        res.end(JSON.stringify({ services, count: services.length, timestamp: new Date().toISOString() }));
     });
 }
 
 function getAgentRouting(req, res) {
     const agents = [
-        { id: 'coo', name: 'COO', emoji: '👨‍💼', role: 'Task routing & coordination', status: 'online', tasks: 12 },
-        { id: 'cto', name: 'CTO', emoji: '💻', role: 'Technical & infrastructure', status: 'online', tasks: 8 },
-        { id: 'chief', name: 'Chief', emoji: '🔧', role: 'Systems & architecture', status: 'idle', tasks: 3 },
-        { id: 'security', name: 'Security', emoji: '🛡️', role: 'Protection & compliance', status: 'online', tasks: 5 }
+        { id: 'cto',            name: 'Steve',          emoji: '💻', role: 'Technical & infrastructure',     channel: 'Telegram @DWE_CTO_Bot' },
+        { id: 'anita',          name: 'Anita',          emoji: '⚙️', role: 'Operations & task coordination', channel: 'Telegram anita-coo' },
+        { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Chief of Staff & briefings',     channel: 'Telegram nicole-cos' },
+        { id: 'chief-engineer', name: 'Chief Engineer', emoji: '🔧', role: 'Infrastructure & daemons',       channel: 'OpenClaw session' },
+        { id: 'main',           name: 'Main',           emoji: '🚀', role: 'Primary assistant (web chat)',   channel: 'OpenClaw webchat' }
     ];
-
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ agents: agents, timestamp: new Date().toISOString() }));
+    res.end(JSON.stringify({ agents, timestamp: new Date().toISOString() }));
 }
 
 // Notion API integration - loaded from environment or config file
@@ -736,6 +811,153 @@ function runBackup(req, res) {
 
 function getLastBackupTime() {
     return lastBackupTime.toISOString();
+}
+
+function getBrainStatus(req, res) {
+    const PASSED_FILE = '/Users/elf-6/openclaw/logs/brain_trainer_passed.json';
+    const STATE_FILE  = '/Users/elf-6/openclaw/logs/brain_trainer_state.json';
+    const LOG_FILE    = '/Users/elf-6/openclaw/logs/brain-trainer.log';
+    const TOTAL = 90;
+    try {
+        const passed = fs.existsSync(PASSED_FILE) ? JSON.parse(fs.readFileSync(PASSED_FILE, 'utf8')) : [];
+        const state  = fs.existsSync(STATE_FILE)  ? JSON.parse(fs.readFileSync(STATE_FILE,  'utf8')) : {};
+        const passedCount = Array.isArray(passed) ? passed.length : 0;
+        const score = Math.round((passedCount / TOTAL) * 100);
+
+        // Get failures from the most recent run only
+        let recentFailures = [];
+        if (fs.existsSync(LOG_FILE)) {
+            const lines = fs.readFileSync(LOG_FILE, 'utf8').split('\n');
+            // Find start of last run
+            let lastRunStart = 0;
+            lines.forEach((l, i) => { if (l.includes('=== Brain Trainer run')) lastRunStart = i; });
+            recentFailures = lines
+                .slice(lastRunStart)
+                .filter(l => l.includes('FAIL:'))
+                .map(l => { const m = l.match(/FAIL: '(.+?)'/); return m ? m[1] : null; })
+                .filter(Boolean);
+        }
+
+        let lastLines = [];
+        if (fs.existsSync(LOG_FILE)) {
+            const allLines = fs.readFileSync(LOG_FILE, 'utf8').split('\n').filter(l => l.trim());
+            lastLines = allLines.slice(-8);
+        }
+
+        // Check if trainer process is actively running right now
+        const { execSync } = require('child_process');
+        let isRunning = false;
+        try { isRunning = execSync('pgrep -f brain_trainer.py 2>/dev/null', { stdio: 'pipe' }).toString().trim().length > 0; } catch(e) {}
+
+        const exploredPages = (state.explored_pages || []).length;
+        const pagesValidated = state.pages_validated || 0;
+        const totalNotionPages = state.total_notion_pages || 0;
+        // Coverage = validated / total if known, else explored / 600 estimate
+        const coverageDenom = totalNotionPages || 600;
+        const coveragePct = Math.round((pagesValidated / coverageDenom) * 100);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            // Fixed Q&A score (secondary — sanity check)
+            passed: passedCount,
+            total: TOTAL,
+            score,
+            failed: TOTAL - passedCount,
+            // Page coverage (primary metric)
+            pagesValidated,
+            exploredPages,
+            totalNotionPages,
+            coveragePct,
+            pendingValidation: (state.pending_validation || []).length,
+            runs: state.runs || 0,
+            expansionSeeds: state.expansion_seeds || 0,
+            sweepNum: state.sweep_num || 1,
+            hasSweepCursor: !!state.sweep_cursor,
+            mode: score >= 90 ? 'expansion' : 'remediation',
+            recentFailures,
+            lastLines,
+            isRunning,
+            timestamp: new Date().toISOString()
+        }));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+async function getSystemHealth(req, res) {
+    const run = (cmd) => new Promise((resolve) => {
+        exec(cmd, (err, stdout) => resolve(stdout ? stdout.trim() : ''));
+    });
+
+    try {
+        const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut] = await Promise.all([
+            run("ps -A -o %cpu | awk '{s+=$1} END {printf \"%.1f\", s}'"),
+            run("vm_stat"),
+            run("sysctl -n hw.memsize"),
+            run("df -k / | tail -1"),
+            run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
+            run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
+            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | grep -oE '[0-9]+'")
+        ]);
+
+        // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
+        const logicalCPU = 10; // M4 Mac mini: 10 cores
+        const cpuRaw = parseFloat(cpuOut) || 0;
+        const cpuPct = Math.min(Math.round(cpuRaw / logicalCPU), 100);
+
+        // Memory — parse vm_stat page size + page counts
+        const pageSizeMatch = vmstatOut.match(/page size of (\d+) bytes/);
+        const pageSize = pageSizeMatch ? parseInt(pageSizeMatch[1]) : 16384;
+        const getPages = (key) => {
+            const m = vmstatOut.match(new RegExp(key + ':\\s+(\\d+)'));
+            return m ? parseInt(m[1]) : 0;
+        };
+        const active  = getPages('Pages active');
+        const wired   = getPages('Pages wired down');
+        const inactive = getPages('Pages inactive');
+        const totalBytes = parseInt(memsizeOut) || 0;
+        const totalGB = totalBytes / (1024 ** 3);
+        const usedGB  = ((active + wired) * pageSize) / (1024 ** 3);
+        const memPct  = Math.round((usedGB / totalGB) * 100);
+
+        // Disk — df output: filesystem totalK usedK availK pct mount
+        const dp = diskOut.split(/\s+/);
+        const diskTotalKB = parseInt(dp[1]) || 0;
+        const diskUsedKB  = parseInt(dp[2]) || 0;
+        const diskFreeKB  = parseInt(dp[3]) || 0;
+        const diskTotalGB = Math.round(diskTotalKB / (1024 ** 2));
+        const diskUsedGB  = Math.round(diskUsedKB  / (1024 ** 2));
+        const diskFreeGB  = Math.round(diskFreeKB  / (1024 ** 2));
+        const diskPct     = Math.round((diskUsedKB / diskTotalKB) * 100);
+
+        // Mac mini boot time
+        const bootSec = parseInt(bootOut) || 0;
+        const bootISO = bootSec ? new Date(bootSec * 1000).toISOString() : null;
+
+        // Gateway start time from PID
+        let gatewayStartISO = null;
+        const gatewayPid = (gatewayPidOut || '').trim();
+        if (gatewayPid) {
+            const lstart = await run(`ps -o lstart= -p ${gatewayPid} 2>/dev/null`);
+            if (lstart) gatewayStartISO = new Date(lstart).toISOString();
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            chip: chipOut || 'Apple M4',
+            cores: logicalCPU,
+            cpu:    { percent: cpuPct, raw: cpuRaw },
+            memory: { totalGB: parseFloat(totalGB.toFixed(1)), usedGB: parseFloat(usedGB.toFixed(1)), percent: memPct },
+            disk:   { totalGB: diskTotalGB, usedGB: diskUsedGB, freeGB: diskFreeGB, percent: diskPct },
+            bootTime: bootISO,
+            gatewayStartTime: gatewayStartISO,
+            timestamp: new Date().toISOString()
+        }));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+    }
 }
 
 server.listen(PORT, HOST, () => {
