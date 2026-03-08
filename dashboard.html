@@ -1250,13 +1250,30 @@
         // ── /mc/services → external service health ────────────────────────────
         async function fetchServices() {
             try {
-                const d = await fetch('/mc/services').then(r => r.json());
+                const [d, cr] = await Promise.all([
+                    fetch('/mc/services').then(r => r.json()),
+                    fetch('/mc/openrouter-credits').then(r => r.json()).catch(() => null)
+                ]);
                 const list = document.getElementById('services-list');
                 list.innerHTML = '';
                 d.services.forEach(s => {
                     const ok = s.status === 'online';
                     const dotClass = ok ? '' : ' error';
                     const badgeClass = ok ? 'running' : 'error';
+
+                    // OpenRouter: show credit balance instead of generic OK/Down
+                    if (s.name === 'OpenRouter' && cr && cr.remaining !== undefined && cr.remaining !== null) {
+                        const rem = cr.remaining;
+                        const creditColor = rem >= 2 ? '#22c55e' : rem >= 1 ? '#f59e0b' : '#ef4444';
+                        const dotCls = rem >= 2 ? '' : rem >= 1 ? ' warning' : ' error';
+                        list.innerHTML += `<div class="service-item">
+                            <span class="pulse-dot${dotCls}"></span>
+                            <span class="label">OpenRouter</span>
+                            <span style="margin-left:auto;font-size:0.65rem;font-weight:700;color:${creditColor};font-family:monospace;">$${rem.toFixed(2)} left</span>
+                        </div>`;
+                        return;
+                    }
+
                     list.innerHTML += `<div class="service-item">
                         <span class="pulse-dot${dotClass}"></span>
                         <span class="label">${s.name}</span>
@@ -1364,12 +1381,16 @@
                 const d = await fetch('/mc/brain').then(r => r.json());
 
                 // Primary metric: explored pages / total (explored = seeded into Pinecone)
-                const totalKnown = d.totalNotionPages || 600;
-                const totalLabel = d.totalNotionPages ? d.totalNotionPages : '~600';
-                const exploredPct = Math.round((d.exploredPages / totalKnown) * 100);
+                const explored = d.exploredPages || 0;
+                // totalNotionPages may be unknown; always ensure denominator >= explored
+                const totalKnown = d.totalNotionPages
+                    ? Math.max(d.totalNotionPages, explored)
+                    : Math.max(1000, Math.ceil(explored / 500) * 500);
+                const totalLabel = d.totalNotionPages ? totalKnown : `~${totalKnown}`;
+                const exploredPct = totalKnown > 0 ? Math.round((explored / totalKnown) * 100) : 0;
                 document.getElementById('stat-brain-score').textContent = exploredPct + '%';
                 document.getElementById('brain-bar-fill').style.width = Math.min(exploredPct, 100) + '%';
-                document.getElementById('stat-brain-pages').textContent = `${d.exploredPages} / ${totalLabel} pages`;
+                document.getElementById('stat-brain-pages').textContent = `${explored} / ${totalLabel} pages`;
 
                 // Detail line
                 const runningTag = d.isRunning ? ' · ⚡ Training now' : '';
@@ -1742,7 +1763,8 @@
                             </div>`;
                         }).join('');
                         const overdueHtml = t.overdue > 0
-                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${t.overdue} overdue</div>` : '';
+                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${t.overdue} overdue</div>`
+                            : `<div style="font-size:0.58rem;color:rgba(255,255,255,0.18);margin-top:3px;">✓ no overdue</div>`;
                         tasksHtml = `
                             <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">${taskLabel}</div>
                             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;text-align:center;margin-bottom:4px;">
@@ -1768,6 +1790,35 @@
                             <div style="font-size:0.62rem;color:rgba(255,255,255,0.2);">None in Notion</div>`;
                     }
 
+                    // ── Model row ──────────────────────────────────────
+                    let modelHtml = '';
+                    function modelColorFor(m) {
+                        if (!m) return '#22c55e';
+                        if (m.startsWith('anthropic/') || m.startsWith('openclaw/') || m.toLowerCase().includes('sonic')) return '#ef4444';
+                        if (m.includes('auto')) return '#22c55e';
+                        if (m.startsWith('openrouter/') || m.startsWith('openai/')) return '#f59e0b';
+                        return '#f59e0b';
+                    }
+                    function modelDisplayFor(m) {
+                        if (!m) return 'or/auto';
+                        return m.replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
+                    }
+                    if (!agent.isHuman) {
+                        const modelFull = s?.model || 'openrouter/auto';
+                        modelHtml = `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:4px;">
+                            <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
+                            <span style="font-size:0.58rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
+                        </div>`;
+                    } else {
+                        // Sidney: show main agent's model with same color logic
+                        const mainSess = sessionById['main'];
+                        const mainFull = mainSess?.model || 'openrouter/auto';
+                        modelHtml = `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,215,0,0.1);display:flex;align-items:center;gap:4px;">
+                            <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
+                            <span style="font-size:0.58rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
+                        </div>`;
+                    }
+
                     const bg     = agent.isHuman ? 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.05))' : 'rgba(255,255,255,0.025)';
                     const border = agent.isHuman ? 'rgba(255,215,0,0.22)' : 'rgba(255,255,255,0.07)';
 
@@ -1782,6 +1833,7 @@
                         </div>
                         ${sessStatusHtml}
                         ${tasksHtml}
+                        ${modelHtml}
                     </div>`;
                 }).join('');
 

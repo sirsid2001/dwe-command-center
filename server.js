@@ -192,6 +192,9 @@ const server = http.createServer((req, res) => {
         case '/mc/internet':
             getInternetStatus(req, res);
             break;
+        case '/mc/openrouter-credits':
+            getOpenRouterCredits(req, res);
+            break;
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
             break;
@@ -430,7 +433,6 @@ function getServices(req, res) {
     const services = [
         { name: 'OpenClaw Gateway', port: 3000, check: 'http://127.0.0.1:3000/status' },
         { name: 'n8n Digital Ocean', url: 'https://n8n.tvcpulse.com', type: 'external' },
-        { name: 'MCporter Client', port: 8080 },
         { name: 'Notion API', url: 'https://api.notion.com/v1', type: 'external' },
         { name: 'Pinecone', url: 'https://api.pinecone.io', type: 'external' },
         { name: 'Ollama M4 GPU', port: 11434 },
@@ -614,7 +616,6 @@ function getLaunchd(req, res) {
         'ai.dwe.nightly-review':                { name: 'Nightly Review',      group: 'brain',     scheduled: true  },
         'com.dwe.ops-monitor':                  { name: 'Ops Monitor',         group: 'ops',       scheduled: false },
         'com.dwe.ops-report':                   { name: 'Ops Report',          group: 'ops',       scheduled: true  },
-        'com.dwe.command-center':               { name: 'Mission Control (old plist — retire)', group: 'ops', scheduled: false, retired: true },
         'com.missioncontrol.server':            { name: 'Mission Control',     group: 'core',      scheduled: false }
     };
 
@@ -941,8 +942,8 @@ function getBrainStatus(req, res) {
         const exploredPages = (state.explored_pages || []).length;
         const pagesValidated = state.pages_validated || 0;
         const totalNotionPages = state.total_notion_pages || 0;
-        // Coverage = validated / total if known, else explored / 600 estimate
-        const coverageDenom = totalNotionPages || 600;
+        // Denominator: use real total if known, otherwise round up from explored to nearest 500
+        const coverageDenom = totalNotionPages || Math.max(1000, Math.ceil(exploredPages / 500) * 500);
         const coveragePct = Math.round((pagesValidated / coverageDenom) * 100);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -972,6 +973,50 @@ function getBrainStatus(req, res) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
     }
+}
+
+// OpenRouter credits — cached, refreshed every 5 minutes
+const OPENROUTER_API_KEY = (() => {
+    if (process.env.OPENROUTER_API_KEY && !process.env.OPENROUTER_API_KEY.startsWith('your_')) return process.env.OPENROUTER_API_KEY;
+    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/agents/cto/.env`, 'utf8').match(/OPENROUTER_API_KEY=(.+)/)?.[1]?.trim() || ''; } catch(e) { return ''; }
+})();
+
+let orCreditsCache = null;
+const OR_CREDITS_TTL = 5 * 60 * 1000;
+
+function fetchOpenRouterCredits() {
+    if (!OPENROUTER_API_KEY) return;
+    const opts = {
+        hostname: 'openrouter.ai',
+        path: '/api/v1/credits',
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}` }
+    };
+    const req = https.request(opts, ores => {
+        let data = '';
+        ores.on('data', c => data += c);
+        ores.on('end', () => {
+            try {
+                const j = JSON.parse(data);
+                const d = j.data || j;
+                // total_credits and total_usage are in USD cents (credits units)
+                const total = typeof d.total_credits === 'number' ? d.total_credits : null;
+                const usage = typeof d.total_usage === 'number' ? d.total_usage : 0;
+                const remaining = total !== null ? Math.max(0, total - usage) : null;
+                orCreditsCache = { remaining, usage, total, fetchedAt: Date.now() };
+            } catch(e) {}
+        });
+    });
+    req.on('error', () => {});
+    req.end();
+}
+fetchOpenRouterCredits();
+setInterval(fetchOpenRouterCredits, OR_CREDITS_TTL);
+
+function getOpenRouterCredits(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (!OPENROUTER_API_KEY) { res.end(JSON.stringify({ error: 'No API key', remaining: null })); return; }
+    res.end(JSON.stringify(orCreditsCache || { remaining: null, fetchedAt: null }));
 }
 
 // Internet connectivity — ping 1.1.1.1 every 60s, track last success
@@ -1173,6 +1218,23 @@ function getAgentSessions(req, res) {
         'chief-engineer': 'Chief Engineer',
         'main':           'Main',
     };
+
+    // Read agent models from openclaw.json
+    let defaultModel = 'openrouter/auto';
+    const agentModels = {};
+    try {
+        const cfg = JSON.parse(fs.readFileSync(`${process.env.HOME}/.openclaw/openclaw.json`, 'utf8'));
+        defaultModel = cfg.agents?.defaults?.model?.primary || 'openrouter/auto';
+        (cfg.agents?.list || []).forEach(a => {
+            agentModels[a.id] = a.model?.primary || defaultModel;
+        });
+    } catch(e) {}
+
+    // Return full model string for dashboard color-coding
+    function shortModel(m) {
+        if (!m) return defaultModel;
+        return m; // keep full string so dashboard can detect provider prefix
+    }
     try {
         const raw = execSync('/opt/homebrew/bin/node /opt/homebrew/bin/openclaw sessions --all-agents --json', {
             timeout: 10000,
@@ -1198,6 +1260,7 @@ function getAgentSessions(req, res) {
                     contextTokens: 0,
                     contextPct: 0,
                     sessionKey: null,
+                    model: shortModel(agentModels[agentId] || defaultModel),
                 };
             }
             // Sort by updatedAt descending, take most recent
@@ -1221,6 +1284,7 @@ function getAgentSessions(req, res) {
                 contextTokens: s.contextTokens || 0,
                 contextPct,
                 sessionKey: s.key || null,
+                model: shortModel(agentModels[agentId] || defaultModel),
             };
         });
 
