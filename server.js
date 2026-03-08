@@ -865,8 +865,9 @@ function runBackup(req, res) {
         // Step 2: git commit
         exec('cd ~/mission-control-server && git commit -m "Backup: ' + new Date().toISOString() + '"', (commitError, commitStdout, commitStderr) => {
             if (commitError) {
-                // Check if it's just "nothing to commit"
-                if (commitStderr && commitStderr.includes('nothing to commit')) {
+                // git exits 1 when nothing to commit — message appears in stdout
+                const combined = (commitStdout || '') + (commitStderr || '') + (commitError.message || '');
+                if (combined.includes('nothing to commit') || combined.includes('nothing added')) {
                     console.log('Nothing to commit, proceeding to push...');
                 } else {
                     console.error('Git commit error:', commitError, commitStderr);
