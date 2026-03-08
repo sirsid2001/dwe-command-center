@@ -327,9 +327,10 @@
             border-radius: 4px;
             font-weight: 600;
         }
-        .badge.running { background: rgba(0,255,136,0.2); color: #00ff88; }
-        .badge.waiting { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
-        .badge.error   { background: rgba(255,0,170,0.2);  color: #ff00aa; }
+        .badge.running  { background: rgba(0,255,136,0.2);  color: #00ff88; }
+        .badge.waiting  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+        .badge.warning  { background: rgba(255,149,0,0.2);   color: #ff9500; }
+        .badge.error    { background: rgba(255,0,170,0.2);   color: #ff00aa; }
 
         .pulse-dot {
             width: 6px; height: 6px;
@@ -956,8 +957,15 @@
                 </div>
             </div>
 
-            <!-- Progress Section (Notion Tasks) -->
-            <div class="progress-section">
+            <!-- Notion Task Management -->
+            <div class="service-panel" style="margin-bottom:1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-icon">✅</div>
+                    <div class="panel-title">Notion Task Management</div>
+                    <div style="margin-left:auto;font-size:0.65rem;color:rgba(255,255,255,0.35);padding-right:0.75rem;" id="notion-updated">Loading...</div>
+                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c" target="_blank" style="font-size:0.7rem;color:#00f5ff;text-decoration:none;white-space:nowrap;">Open Notion ↗</a>
+                </div>
+            <div class="progress-section" style="margin:0;border-radius:0;background:transparent;border:none;padding:0.75rem 1rem 1rem;">
                 <div class="progress-circle">
                     <svg width="140" height="140" viewBox="0 0 140 140">
                         <circle class="progress-bg" cx="70" cy="70" r="60"/>
@@ -982,11 +990,23 @@
                         <div class="stat-label">Remaining</div>
                     </div>
                 </div>
-                <div style="text-align: right; flex-shrink: 0;">
-                    <div style="font-size:0.7rem; color:rgba(255,255,255,0.4);" id="notion-updated">Notion</div>
-                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c" target="_blank" style="font-size:0.75rem; color:#00f5ff; text-decoration:none;">Open Notion ↗</a>
+            </div>
+            </div>
+
+            <!-- ═══ TEAM OVERVIEW — per-agent combined column ═══ -->
+            <div style="margin-bottom:1.5rem;">
+                <div class="service-panel" style="overflow:visible;">
+                    <div class="panel-header">
+                        <div class="panel-icon">🏢</div>
+                        <div class="panel-title">DWE Team Overview</div>
+                        <div style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.3);padding-right:0.75rem;">Tasks · Heartbeat · Session</div>
+                    </div>
+                    <div id="team-overview-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.6rem;padding:0.5rem 0;overflow-x:auto;">
+                        <div style="grid-column:1/-1;color:rgba(255,255,255,0.3);font-size:0.72rem;padding:0.5rem;">Loading team data...</div>
+                    </div>
                 </div>
             </div>
+            <!-- ═══════════════════════════════════════════════ -->
 
             <!-- Ecosystem + Health -->
             <div class="health-grid">
@@ -1035,7 +1055,7 @@
                     </div>
                     <div class="health-item">
                         <span class="pulse-dot" id="dot-gateway"></span>
-                        <span>OpenClaw Gateway</span>
+                        <span>Internet Connectivity</span>
                         <span class="health-status" id="health-gateway">Checking...</span>
                     </div>
                     <div class="health-item">
@@ -1058,6 +1078,30 @@
                         <span>GitHub Backup</span>
                         <span class="health-status" id="backupTime">Loading...</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- CSO Pipeline + Financial Pulse -->
+            <div class="services-grid" style="margin-bottom:1.5rem;grid-template-columns:1fr 1fr;">
+                <div class="service-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">📈</div>
+                        <div class="panel-title">CSO Pipeline</div>
+                    </div>
+                    <div id="cso-pipeline-list" style="flex:1;">
+                        <div class="service-item"><span class="pulse-dot offline"></span><span>Loading...</span></div>
+                    </div>
+                    <div class="panel-footer" style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:0.5rem 0.75rem;" id="cso-last-report">—</div>
+                </div>
+                <div class="service-panel">
+                    <div class="panel-header">
+                        <div class="panel-icon">💰</div>
+                        <div class="panel-title">Financial Pulse</div>
+                    </div>
+                    <div id="financial-pulse-list" style="flex:1;">
+                        <div class="service-item"><span class="pulse-dot offline"></span><span>Loading...</span></div>
+                    </div>
+                    <div class="panel-footer" style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:0.5rem 0.75rem;" id="financial-last-pulse">—</div>
                 </div>
             </div>
 
@@ -1124,6 +1168,10 @@
             if (theme === 'css1') startCSS1Bg(); else stopCSS1Bg();
             if (theme === 'css4') startCSS4Bg(); else stopCSS4Bg();
         }
+        // Animation frame handles — must be declared before setTheme IIFE runs
+        let _css1AnimFrame = null;
+        let _css4AnimFrame = null;
+
         // Restore saved theme on load — always call setTheme so bg starts correctly
         (function() {
             const saved = localStorage.getItem('dwe-theme') || 'css1';
@@ -1207,11 +1255,12 @@
                 list.innerHTML = '';
                 d.services.forEach(s => {
                     const ok = s.status === 'online';
-                    const dot = ok ? '' : ' offline';
+                    const dotClass = ok ? '' : ' error';
+                    const badgeClass = ok ? 'running' : 'error';
                     list.innerHTML += `<div class="service-item">
-                        <span class="pulse-dot${dot}"></span>
+                        <span class="pulse-dot${dotClass}"></span>
                         <span class="label">${s.name}</span>
-                        <span class="badge ${ok ? 'running' : 'waiting'}">${ok ? 'OK' : 'Down'}</span>
+                        <span class="badge ${badgeClass}">${ok ? 'OK' : 'Down'}</span>
                     </div>`;
 
                     // Update n8n health dot
@@ -1235,12 +1284,6 @@
 
                 // Update health dots for core services
                 d.services.forEach(s => {
-                    if (s.id === 'ai.openclaw.gateway') {
-                        const ok = s.status === 'running';
-                        setDot('dot-gateway', ok ? 'ok' : 'error');
-                        document.getElementById('health-gateway').textContent = ok ? 'Running' : 'Down';
-                        document.getElementById('health-gateway').className = 'health-status ' + (ok ? 'ok' : 'error');
-                    }
                     if (s.id === 'ai.openclaw.relay-daemon') {
                         const ok = s.status === 'running';
                         setDot('dot-relay', ok ? 'ok' : 'error');
@@ -1251,12 +1294,24 @@
 
                 // Render list
                 d.services.forEach(s => {
-                    const dotClass = s.status === 'running' ? '' : s.status === 'error' ? ' error' : ' offline';
-                    const badge = s.status === 'running' ? 'running' : s.status === 'error' ? 'error' : 'waiting';
-                    list.innerHTML += `<div class="service-item">
+                    if (s.retired) {
+                        // Retired/dead plists: show greyed out with a note
+                        list.innerHTML += `<div class="service-item" style="opacity:0.4;">
+                            <span class="pulse-dot offline"></span>
+                            <span class="label" style="text-decoration:line-through;">${s.name}</span>
+                            <span class="badge" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);font-size:0.6rem;">retired</span>
+                        </div>`;
+                        return;
+                    }
+                    // dot: running=green, warning=yellow, error=red, waiting=gray
+                    const dotClass = s.status === 'running' ? '' : s.status === 'error' ? ' error' : s.status === 'warning' ? ' warning' : ' offline';
+                    const badge    = s.status === 'running' ? 'running' : s.status === 'error' ? 'error' : s.status === 'warning' ? 'warning' : 'waiting';
+                    const label    = s.status === 'running' ? '▶' : s.status === 'error' ? '✕' : s.status === 'warning' ? '⚠' : '⏸';
+                    const hint     = s.scheduled && s.status !== 'running' ? ' style="opacity:0.75;"' : '';
+                    list.innerHTML += `<div class="service-item"${hint}>
                         <span class="pulse-dot${dotClass}"></span>
                         <span class="label">${s.name}</span>
-                        <span class="badge ${badge}">${s.status === 'running' ? '▶' : s.status === 'error' ? '!' : '⏸'}</span>
+                        <span class="badge ${badge}">${label}</span>
                     </div>`;
                 });
 
@@ -1429,16 +1484,39 @@
         }
 
         // ── /mc/backup ─────────────────────────────────────────────────────────
+        // ── /mc/internet → ping-based connectivity ────────────────────────────
+        async function fetchInternet() {
+            try {
+                const d = await fetch('/mc/internet').then(r => r.json());
+                const dotState = d.status === 'ok' ? 'ok' : d.status === 'warn' ? 'warn' : 'error';
+                const textClass = d.status === 'ok' ? 'ok' : d.status === 'warn' ? 'warning' : 'error';
+                setDot('dot-gateway', dotState);
+                const el = document.getElementById('health-gateway');
+                el.textContent = d.status === 'ok' ? `Online · ${d.label}` : d.status === 'warn' ? `Degraded · ${d.label}` : `Offline · ${d.label}`;
+                el.className = 'health-status ' + textClass;
+            } catch(e) {
+                setDot('dot-gateway', 'error');
+                document.getElementById('health-gateway').textContent = 'Error';
+            }
+        }
+
         async function updateBackupTime() {
             try {
                 const d = await fetch('/mc/backup').then(r => r.json());
                 const el = document.getElementById('backupTime');
-                if (d.lastBackup) {
+                if (d.lastBackup && new Date(d.lastBackup).getFullYear() > 2000) {
+                    const dt = new Date(d.lastBackup);
                     const ago = timeAgo(d.lastBackup);
-                    el.textContent = ago;
-                    const isRecent = (Date.now() - new Date(d.lastBackup)) < 3600000;
+                    const dateStr = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+                    const timeStr = dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+                    const isRecent = (Date.now() - dt) < 3600000;
+                    el.innerHTML = `<span style="color:rgba(255,255,255,0.35);font-size:0.7em;">${dateStr} ${timeStr}</span> ${ago}`;
                     el.className = 'health-status ' + (isRecent ? 'ok' : 'warning');
                     setDot('dot-backup', isRecent ? 'ok' : 'warn');
+                } else {
+                    el.textContent = 'Never';
+                    el.className = 'health-status warning';
+                    setDot('dot-backup', 'warn');
                 }
             } catch(e) {}
         }
@@ -1524,6 +1602,348 @@
             } catch(e) {}
         }
 
+        // ── /mc/heartbeat → agent schedule status ─────────────────────────────
+        async function fetchHeartbeats() {
+            try {
+                const d = await fetch('/mc/heartbeat').then(r => r.json());
+                const list = document.getElementById('heartbeat-list');
+                list.innerHTML = '';
+                d.agents.forEach(a => {
+                    const dotClass = a.status === 'ok' ? '' : a.status === 'stale' ? ' error' : ' offline';
+                    const sinceText = a.minutesSince !== null
+                        ? (a.minutesSince < 60 ? `${a.minutesSince}m ago` : `${Math.floor(a.minutesSince/60)}h ago`)
+                        : 'Never';
+                    list.innerHTML += `<div class="service-item" style="flex-direction:column;align-items:flex-start;gap:2px;padding:0.5rem 0.75rem;">
+                        <div style="display:flex;align-items:center;gap:0.4rem;width:100%;">
+                            <span class="pulse-dot${dotClass}"></span>
+                            <span class="label" style="font-weight:600;">${a.name}</span>
+                        </div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.45);padding-left:1.1rem;">
+                            Last: ${a.lastRunDisplay} (${sinceText}) &nbsp;|&nbsp; Next: ${a.nextRunDisplay}
+                        </div>
+                    </div>`;
+                });
+            } catch(e) {
+                document.getElementById('heartbeat-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
+        // ── Team Overview — combined tasks + heartbeat + session per agent ────
+        async function fetchTeamOverview() {
+            try {
+                const [tasksData, hbData, sessionData] = await Promise.all([
+                    fetch('/mc/agent-tasks').then(r => r.json()).catch(() => ({ agents: [] })),
+                    fetch('/mc/heartbeat').then(r => r.json()).catch(() => ({ agents: [] })),
+                    fetch('/mc/acp').then(r => r.json()).catch(() => ({ agents: [], userPresence: null })),
+                ]);
+
+                const tasksByRole = {};
+                for (const a of (tasksData.agents || [])) tasksByRole[a.id] = a;
+                const hbById = {};
+                for (const a of (hbData.agents || [])) hbById[a.id] = a;
+                const sessionById = {};
+                for (const a of (sessionData.agents || [])) sessionById[a.agentId] = a;
+                const userPresence = sessionData.userPresence || null;
+
+                const AGENTS = [
+                    { id: 'ceo',   label: 'Sidney',         title: 'CEO',         icon: '👑', taskId: 'ceo',   hbId: null,    sessId: null,            isHuman: true  },
+                    { id: 'cto',   label: 'Steve',          title: 'CTO',         icon: '⚙️', taskId: 'cto',   hbId: 'cto',   sessId: 'cto',           isHuman: false },
+                    { id: 'anita', label: 'Anita',          title: 'COO',         icon: '📋', taskId: 'anita', hbId: 'anita', sessId: 'anita',         isHuman: false },
+                    { id: 'nicole',label: 'Nicole',         title: 'CSO',         icon: '📈', taskId: 'nicole',hbId: 'nicole',sessId: 'nicole',        isHuman: false },
+                    { id: 'ce',    label: 'Chief Engineer', title: 'Engineering', icon: '🔧', taskId: 'ce',    hbId: 'ce',    sessId: 'chief-engineer', isHuman: false },
+                    { id: 'main',  label: 'Unassigned',     title: 'Needs Owner', icon: '📥', taskId: 'main',  hbId: null,    sessId: 'main',          isHuman: false },
+                ];
+
+                // Priority config — always show all 4 levels
+                const PRIO_ACTIVE = {
+                    'Critical': { bg:'rgba(239,68,68,0.18)',   border:'rgba(239,68,68,0.35)',   text:'#f87171' },
+                    'High':     { bg:'rgba(249,115,22,0.15)',  border:'rgba(249,115,22,0.3)',   text:'#fb923c' },
+                    'Medium':   { bg:'rgba(59,130,246,0.12)',  border:'rgba(59,130,246,0.28)',  text:'#60a5fa' },
+                    'Low':      { bg:'rgba(34,197,94,0.10)',   border:'rgba(34,197,94,0.22)',   text:'#4ade80' },
+                };
+                const PRIO_GHOST = { bg:'transparent', border:'rgba(255,255,255,0.07)', text:'rgba(255,255,255,0.2)' };
+                const PRIO_4 = ['Critical', 'High', 'Medium', 'Low'];
+
+                const miniAge = (min) => min == null ? '—'
+                    : min < 60 ? `${min}m` : min < 1440 ? `${Math.round(min/60)}h` : `${Math.round(min/1440)}d`;
+                const miniNext = (iso) => {
+                    if (!iso) return '—';
+                    const diff = Math.round((new Date(iso) - Date.now()) / 60000);
+                    return diff < 0 ? 'now' : diff < 60 ? `${diff}m` : diff < 1440 ? `${Math.round(diff/60)}h` : `${Math.round(diff/1440)}d`;
+                };
+
+                const grid = document.getElementById('team-overview-grid');
+                grid.innerHTML = AGENTS.map(agent => {
+                    const t  = agent.taskId ? tasksByRole[agent.taskId] : null;
+                    const hb = agent.hbId   ? hbById[agent.hbId]       : null;
+                    const s  = agent.sessId ? sessionById[agent.sessId] : null;
+
+                    // ── Heartbeat in header (right-justified) ──────────
+                    let hbHeaderHtml = '';
+                    if (hb) {
+                        const hbDot = hb.status === 'ok' ? '#22c55e' : '#f59e0b';
+                        hbHeaderHtml = `<div style="text-align:right;flex-shrink:0;line-height:1.3;">
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.55);">
+                                <span style="color:${hbDot};">●</span> ${miniAge(hb.minutesSince)} ago
+                            </div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.28);">→ ${miniNext(hb.nextRun)}</div>
+                        </div>`;
+                    }
+
+                    // ── Session status (between header and tasks) ───────
+                    let sessStatusHtml = '';
+                    if (agent.isHuman && userPresence) {
+                        // Sidney: use Mac idle time as presence signal
+                        const idleMin = userPresence.idleMin || 0;
+                        const presStatus = userPresence.status;
+                        const dot = presStatus === 'active' ? '#22c55e' : presStatus === 'idle' ? '#f59e0b' : '#6b7280';
+                        const label = presStatus === 'active'
+                            ? `active · ${idleMin < 1 ? 'just now' : idleMin + 'm idle'}`
+                            : presStatus === 'idle' ? `idle · ${idleMin}m`
+                            : `away · ${Math.round(idleMin/60)}h`;
+                        sessStatusHtml = `
+                            <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.12);border-radius:5px;">
+                                <div style="width:7px;height:7px;border-radius:50%;background:${dot};box-shadow:0 0 5px ${dot};flex-shrink:0;"></div>
+                                <span style="font-size:0.62rem;color:rgba(255,255,255,0.65);">${label}</span>
+                            </div>`;
+                    } else if (s) {
+                        const dot   = s.status === 'online' ? '#22c55e' : s.status === 'idle' ? '#f59e0b' : '#6b7280';
+                        const ctxPct = s.contextPct || 0;
+                        const ctxC  = ctxPct > 80 ? '#ef4444' : ctxPct > 50 ? '#f59e0b' : '#22c55e';
+                        sessStatusHtml = `
+                            <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:5px;">
+                                <div style="width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;"></div>
+                                <span style="font-size:0.62rem;color:rgba(255,255,255,0.6);flex:1;">${s.status} · ${miniAge(s.minutesSince)} ago</span>
+                                <div style="width:28px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;">
+                                    <div style="height:2px;width:${Math.min(ctxPct,100)}%;background:${ctxC};border-radius:2px;"></div>
+                                </div>
+                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.3);">${ctxPct}%</span>
+                            </div>`;
+                    } else if (!agent.isHuman) {
+                        sessStatusHtml = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,255,255,0.02);border-radius:5px;">
+                            <div style="width:6px;height:6px;border-radius:50%;background:#374151;flex-shrink:0;"></div>
+                            <span style="font-size:0.62rem;color:rgba(255,255,255,0.2);">no session</span>
+                        </div>`;
+                    }
+
+                    // ── Tasks — always show all 4 priority rows ─────────
+                    let tasksHtml = '';
+                    if (t) {
+                        const donePct  = t.total > 0 ? Math.round((t.done / t.total) * 100) : 0;
+                        const barColor = donePct >= 75 ? '#22c55e' : donePct >= 40 ? '#f59e0b' : '#60a5fa';
+                        const taskLabel = agent.id === 'main' ? 'Needs Assignment' : 'Tasks';
+                        // Always render all 4 — colored if > 0, ghost if 0
+                        const prioBadges = PRIO_4.map(p => {
+                            const count = t.byPriority[p] || 0;
+                            const c = count > 0 ? PRIO_ACTIVE[p] : PRIO_GHOST;
+                            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 5px;background:${c.bg};border:1px solid ${c.border};border-radius:4px;margin-top:2px;">
+                                <span style="font-size:0.58rem;color:${c.text};">${p}</span>
+                                <span style="font-size:0.7rem;font-weight:${count>0?'700':'400'};color:${c.text};">${count > 0 ? count : '—'}</span>
+                            </div>`;
+                        }).join('');
+                        const overdueHtml = t.overdue > 0
+                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${t.overdue} overdue</div>` : '';
+                        tasksHtml = `
+                            <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">${taskLabel}</div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;text-align:center;margin-bottom:4px;">
+                                <div style="background:rgba(0,245,255,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#00f5ff;">${t.total}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Total</div>
+                                </div>
+                                <div style="background:rgba(255,0,170,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#ff69b4;">${t.open}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Open</div>
+                                </div>
+                                <div style="background:rgba(0,255,136,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#00ff88;">${t.done}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Done</div>
+                                </div>
+                            </div>
+                            <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:3px;">
+                                <div style="height:2px;width:${donePct}%;background:${barColor};border-radius:2px;"></div>
+                            </div>
+                            ${prioBadges}${overdueHtml}`;
+                    } else {
+                        tasksHtml = `<div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Tasks</div>
+                            <div style="font-size:0.62rem;color:rgba(255,255,255,0.2);">None in Notion</div>`;
+                    }
+
+                    const bg     = agent.isHuman ? 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.05))' : 'rgba(255,255,255,0.025)';
+                    const border = agent.isHuman ? 'rgba(255,215,0,0.22)' : 'rgba(255,255,255,0.07)';
+
+                    return `<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:0.6rem 0.65rem;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+                            <span style="font-size:1rem;">${agent.icon}</span>
+                            <div style="min-width:0;flex:1;">
+                                <div style="font-weight:700;font-size:0.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${agent.label}</div>
+                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.32);">${agent.title}</div>
+                            </div>
+                            ${hbHeaderHtml}
+                        </div>
+                        ${sessStatusHtml}
+                        ${tasksHtml}
+                    </div>`;
+                }).join('');
+
+            } catch(e) {
+                document.getElementById('team-overview-grid').innerHTML =
+                    `<div style="grid-column:1/-1;color:#f87171;font-size:0.72rem;padding:0.5rem;">Failed: ${e.message}</div>`;
+            }
+        }
+
+        // ── /mc/agent-tasks → per-agent Notion task breakdown ─────────────────
+        async function fetchAgentTasks() {
+            try {
+                const d = await fetch('/mc/agent-tasks').then(r => r.json());
+                const grid = document.getElementById('agent-tasks-grid');
+                if (!d.agents || !d.agents.length || d.error) {
+                    grid.innerHTML = `<div class="service-item"><span class="pulse-dot error"></span><span>${d.error || 'No data'}</span></div>`;
+                    return;
+                }
+                const PRIO_COLORS = {
+                    'Critical':    { bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.4)',  text: '#f87171', label: 'Critical' },
+                    'High':        { bg: 'rgba(249,115,22,0.12)', border: 'rgba(249,115,22,0.35)', text: '#fb923c', label: 'High'     },
+                    'Medium':      { bg: 'rgba(59,130,246,0.10)', border: 'rgba(59,130,246,0.3)',  text: '#60a5fa', label: 'Medium'   },
+                    'Low':         { bg: 'rgba(34,197,94,0.08)',  border: 'rgba(34,197,94,0.25)',  text: '#4ade80', label: 'Low'      },
+                    'No Priority': { bg: 'rgba(255,255,255,0.04)',border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.35)', label: 'None' },
+                };
+                const PRIO_ORDER = ['Critical', 'High', 'Medium', 'Low', 'No Priority'];
+
+                grid.innerHTML = d.agents.map(a => {
+                    const prioBadges = PRIO_ORDER
+                        .filter(p => (a.byPriority[p] || 0) > 0)
+                        .map(p => {
+                            const c = PRIO_COLORS[p];
+                            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.3rem 0.5rem;background:${c.bg};border:1px solid ${c.border};border-radius:5px;margin-top:4px;">
+                                <span style="font-size:0.68rem;color:${c.text};font-weight:500;">${c.label}</span>
+                                <span style="font-size:0.8rem;font-weight:700;color:${c.text};">${a.byPriority[p]}</span>
+                            </div>`;
+                        }).join('');
+
+                    const overdueHtml = a.overdue > 0
+                        ? `<div style="font-size:0.65rem;color:#f87171;margin-top:6px;">⚠ ${a.overdue} overdue</div>`
+                        : '';
+
+                    const donePct = a.total > 0 ? Math.round((a.done / a.total) * 100) : 0;
+                    const barColor = donePct >= 75 ? '#22c55e' : donePct >= 40 ? '#f59e0b' : '#60a5fa';
+
+                    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.75rem 0.85rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                            <span style="font-size:1rem;">${a.icon}</span>
+                            <span style="font-weight:600;font-size:0.82rem;">${a.name}</span>
+                            <span style="margin-left:auto;font-size:0.7rem;color:rgba(255,255,255,0.35);">${a.role}</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.3rem;text-align:center;margin-bottom:0.5rem;">
+                            <div style="background:rgba(0,245,255,0.08);border-radius:5px;padding:0.25rem 0;">
+                                <div style="font-size:1rem;font-weight:700;color:#00f5ff;">${a.total}</div>
+                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Total</div>
+                            </div>
+                            <div style="background:rgba(255,0,170,0.08);border-radius:5px;padding:0.25rem 0;">
+                                <div style="font-size:1rem;font-weight:700;color:#ff69b4;">${a.open}</div>
+                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Open</div>
+                            </div>
+                            <div style="background:rgba(0,255,136,0.08);border-radius:5px;padding:0.25rem 0;">
+                                <div style="font-size:1rem;font-weight:700;color:#00ff88;">${a.done}</div>
+                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Done</div>
+                            </div>
+                        </div>
+                        <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:0.5rem;">
+                            <div style="height:3px;width:${donePct}%;background:${barColor};border-radius:2px;transition:width 0.6s;"></div>
+                        </div>
+                        ${prioBadges}
+                        ${overdueHtml}
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                document.getElementById('agent-tasks-grid').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
+        // ── /mc/acp → AI Team Protocol (live agent sessions) ──────────────────
+        async function fetchAgentSessions() {
+            try {
+                const d = await fetch('/mc/acp').then(r => r.json());
+                const list = document.getElementById('acp-agent-list');
+                if (!d.agents || !d.agents.length) {
+                    list.innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span>No session data</span></div>';
+                    return;
+                }
+                list.innerHTML = d.agents.map(a => {
+                    const dotClass = a.status === 'online' ? 'active' : a.status === 'idle' ? 'offline' : 'error';
+                    const lastSeen = a.minutesSince === null ? 'never'
+                                   : a.minutesSince < 60 ? `${a.minutesSince}m ago`
+                                   : a.minutesSince < 1440 ? `${Math.round(a.minutesSince/60)}h ago`
+                                   : `${Math.round(a.minutesSince/1440)}d ago`;
+                    const ctxBar = a.contextPct > 0
+                        ? `<div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;"><div style="height:3px;width:${Math.min(a.contextPct,100)}%;background:${a.contextPct>80?'#ef4444':a.contextPct>50?'#f59e0b':'#22c55e'};border-radius:2px;"></div></div>`
+                        : '';
+                    const tokStr = a.totalTokens > 0 ? ` · ${(a.totalTokens/1000).toFixed(0)}k tok${a.contextPct>0?' ('+a.contextPct+'%)':''}` : '';
+                    return `<div class="service-item" style="flex-direction:column;align-items:flex-start;gap:2px;padding:0.55rem 0.75rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;width:100%;">
+                            <span class="pulse-dot ${dotClass}"></span>
+                            <span style="font-weight:500;font-size:0.78rem;">${a.name}</span>
+                        </div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding-left:1.1rem;">${a.status} · ${lastSeen}${tokStr}</div>
+                        ${ctxBar}
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                document.getElementById('acp-agent-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
+        // ── /mc/cso → Nicole CSO opportunity pipeline ─────────────────────────
+        async function fetchCSoPipeline() {
+            try {
+                const d = await fetch('/mc/cso').then(r => r.json());
+                const list = document.getElementById('cso-pipeline-list');
+                list.innerHTML = '';
+                if (!d.opportunities || d.opportunities.length === 0) {
+                    list.innerHTML = `<div class="service-item" style="font-size:0.72rem;color:rgba(255,255,255,0.4);padding:0.75rem;">${d.note || 'No opportunities in pipeline yet.'}</div>`;
+                } else {
+                    d.opportunities.slice(0,5).forEach(o => {
+                        const scoreColor = o.score >= 7 ? '#22c55e' : o.score >= 4 ? '#f59e0b' : '#ef4444';
+                        list.innerHTML += `<div class="service-item">
+                            <span class="label">${o.name}</span>
+                            <span style="font-size:0.7rem;color:${scoreColor};font-weight:700;">${o.score}/10</span>
+                            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);">${o.status || ''}</span>
+                        </div>`;
+                    });
+                }
+                document.getElementById('cso-last-report').textContent = d.lastReport
+                    ? `Last report: ${new Date(d.lastReport).toLocaleString()}`
+                    : 'No report yet';
+            } catch(e) {
+                document.getElementById('cso-pipeline-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
+        // ── /mc/financial → Anita financial pulse ─────────────────────────────
+        async function fetchFinancialPulse() {
+            try {
+                const d = await fetch('/mc/financial').then(r => r.json());
+                const list = document.getElementById('financial-pulse-list');
+                list.innerHTML = '';
+                if (!d.incomeStreams || d.incomeStreams.length === 0) {
+                    list.innerHTML = `<div class="service-item" style="font-size:0.72rem;color:rgba(255,255,255,0.4);padding:0.75rem;">${d.note || 'No financial data yet.'}</div>`;
+                } else {
+                    d.incomeStreams.slice(0,5).forEach(s => {
+                        const statusColor = s.status === 'active' ? '#22c55e' : '#f59e0b';
+                        list.innerHTML += `<div class="service-item">
+                            <span class="label">${s.name}</span>
+                            <span style="font-size:0.7rem;color:${statusColor};">${s.status || ''}</span>
+                            ${s.risk ? `<span style="font-size:0.65rem;color:#ef4444;">⚠ ${s.risk}</span>` : ''}
+                        </div>`;
+                    });
+                }
+                document.getElementById('financial-last-pulse').textContent = d.lastPulse
+                    ? `Last pulse: ${new Date(d.lastPulse).toLocaleString()}`
+                    : 'No pulse yet — runs Monday 7:30am';
+            } catch(e) {
+                document.getElementById('financial-pulse-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
         // ── Master refresh ────────────────────────────────────────────────────
         async function refreshAll() {
             document.getElementById('lastRefresh').textContent = 'Refreshing...';
@@ -1536,14 +1956,19 @@
                 fetchAgents(),
                 fetchBrain(),
                 fetchSystem(),
-                updateBackupTime()
+                fetchTeamOverview(),
+                fetchHeartbeats(),
+                fetchAgentTasks(),
+                fetchAgentSessions(),
+                fetchCSoPipeline(),
+                fetchFinancialPulse(),
+                updateBackupTime(),
+                fetchInternet()
             ]);
             document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         }
 
         // ── CSS1 Sea Life Background ──────────────────────────────────────────
-        let _css1AnimFrame = null;
-
         function startCSS1Bg() {
             const canvas = document.getElementById('css1-bg');
             if (!canvas) return;
@@ -1552,195 +1977,311 @@
             canvas.height = window.innerHeight;
             const ctx = canvas.getContext('2d');
 
-            const FISH_PALETTES = [
-                ['#ff6b35','#ff9f1c'],['#ffd700','#ff8c00'],['#00d4ff','#0077b6'],
-                ['#ff69b4','#ff1493'],['#7cfc00','#32cd32'],['#ff4500','#dc143c'],
-                ['#da70d6','#9400d3'],['#00ffcc','#009977'],['#ff7f50','#e25822'],
-                ['#87ceeb','#1e90ff'],['#ffb347','#ff8c00'],['#98fb98','#228b22']
+            // Realistic reef fish species palettes
+            // [backTop, backMid, belly, finColor, stripeColor, stripeCount, tailColor]
+            const SPECIES = [
+                { bT:'#e85d04', bM:'#f48c06', bV:'#ffd166', fin:'#b84000', sc:'#ffffff', sn:2, tc:'#c1440e' }, // clownfish
+                { bT:'#0077b6', bM:'#00b4d8', bV:'#caf0f8', fin:'#023e8a', sc:null,      sn:0, tc:'#ffd166' }, // blue tang
+                { bT:'#2d6a4f', bM:'#52b788', bV:'#b7e4c7', fin:'#1b4332', sc:null,      sn:0, tc:'#40916c' }, // parrotfish
+                { bT:'#f9c74f', bM:'#f8961e', bV:'#fffcf0', fin:'#1d3557', sc:'#1d3557', sn:3, tc:'#f9c74f' }, // angelfish
+                { bT:'#3a0ca3', bM:'#4361ee', bV:'#a8baff', fin:'#240046', sc:null,      sn:0, tc:'#7209b7' }, // surgeonfish
+                { bT:'#d62828', bM:'#f77f00', bV:'#ffd166', fin:'#9d0208', sc:null,      sn:0, tc:'#d62828' }, // wrasse
+                { bT:'#023e8a', bM:'#0096c7', bV:'#ade8f4', fin:'#03045e', sc:'#ffd166', sn:1, tc:'#0096c7' }, // damsel
+                { bT:'#ffe566', bM:'#fff740', bV:'#fffde7', fin:'#ff9500', sc:'#111111', sn:2, tc:'#ff9500' }, // butterflyfish
+                { bT:'#6a0572', bM:'#b5179e', bV:'#ff84c4', fin:'#480060', sc:null,      sn:0, tc:'#b5179e' }, // dottyback
+                { bT:'#006400', bM:'#2dc653', bV:'#a8f5b8', fin:'#004b23', sc:'#ffffff', sn:1, tc:'#2dc653' }, // lionfish-green
             ];
-            const SQUID_COLORS = ['#e040fb','#ab47bc','#7e57c2','#ff80ab','#ea80fc','#40c4ff','#f06292'];
 
             // Fish
-            const fish = Array.from({ length: 20 }, (_, i) => {
-                const size = 12 + Math.random() * 32;
+            const fish = Array.from({ length: 18 }, (_, i) => {
+                const sp = SPECIES[i % SPECIES.length];
+                const size = 18 + Math.random() * 28;
                 const dir = Math.random() > 0.5 ? 1 : -1;
                 return {
                     x: Math.random() * canvas.width,
-                    y: 60 + Math.random() * (canvas.height - 120),
-                    vx: (0.35 + Math.random() * 0.7) * dir,
-                    vy: (Math.random() - 0.5) * 0.12,
-                    size, phase: Math.random() * Math.PI * 2,
-                    wiggleSpeed: 0.04 + Math.random() * 0.03,
-                    palette: FISH_PALETTES[i % FISH_PALETTES.length],
-                    stripes: Math.floor(Math.random() * 3),
-                    spots: Math.random() > 0.6
+                    y: 70 + Math.random() * (canvas.height * 0.62),
+                    vx: (0.28 + Math.random() * 0.5) * dir,
+                    vy: (Math.random() - 0.5) * 0.1,
+                    size, sp,
+                    phase: Math.random() * Math.PI * 2,
+                    ws: 0.032 + Math.random() * 0.022
                 };
             });
 
-            // Squids
-            const squids = Array.from({ length: 5 }, () => {
-                const size = 18 + Math.random() * 28;
+            // Squids (cuttlefish style)
+            const squids = Array.from({ length: 4 }, () => {
+                const size = 20 + Math.random() * 24;
+                const hue = [280, 310, 200, 260][Math.floor(Math.random() * 4)];
+                // Pre-generate chromatophore spot positions
+                const spots = Array.from({ length: 10 }, () => ({
+                    ox: (Math.random() - 0.5) * size * 0.55,
+                    oy: -size * 0.5 + Math.random() * size * 0.9,
+                    r: size * 0.03 + Math.random() * size * 0.025,
+                    ph: Math.random() * Math.PI * 2
+                }));
                 return {
                     x: Math.random() * canvas.width,
-                    y: 80 + Math.random() * (canvas.height - 160),
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.25,
-                    size, color: SQUID_COLORS[Math.floor(Math.random() * SQUID_COLORS.length)],
-                    tPhase: Math.random() * Math.PI * 2
+                    y: 100 + Math.random() * (canvas.height * 0.5),
+                    vx: (Math.random() - 0.5) * 0.32,
+                    vy: (Math.random() - 0.5) * 0.18,
+                    size, hue, spots,
+                    tPhase: Math.random() * Math.PI * 2,
+                    pPhase: Math.random() * Math.PI * 2
                 };
             });
 
             // Bubbles
-            const bubbles = Array.from({ length: 30 }, () => ({
+            const bubbles = Array.from({ length: 28 }, () => ({
                 x: Math.random() * canvas.width,
                 y: canvas.height + Math.random() * canvas.height,
-                r: 1.5 + Math.random() * 5,
-                speed: 0.25 + Math.random() * 0.45,
-                drift: (Math.random() - 0.5) * 0.15
+                r: 1 + Math.random() * 4,
+                speed: 0.2 + Math.random() * 0.38,
+                drift: (Math.random() - 0.5) * 0.12,
+                wobble: Math.random() * Math.PI * 2
             }));
 
-            // Seaweed
-            const weeds = Array.from({ length: 7 }, () => ({
-                x: 80 + Math.random() * (canvas.width - 160),
-                h: 50 + Math.random() * 90,
-                phase: Math.random() * Math.PI * 2,
-                segs: 5 + Math.floor(Math.random() * 4),
-                color: `hsl(${130 + Math.random() * 40}, 70%, ${35 + Math.random() * 20}%)`
+            // Coral reef formations
+            const corals = [];
+            const W = canvas.width, H = canvas.height;
+            // Brain corals
+            for (let i = 0; i < 4; i++)
+                corals.push({ type:'brain', x: W*(0.06+i*0.24+Math.random()*0.06), y: H-18-Math.random()*22, r: 22+Math.random()*32, c1:'#d4622a', c2:'#a03a18' });
+            // Branching coral
+            for (let i = 0; i < 5; i++)
+                corals.push({ type:'branch', x: W*(0.04+i*0.19+Math.random()*0.09), y: H-8, h: 55+Math.random()*75, col:'#ff6b6b', ph: Math.random()*Math.PI*2 });
+            // Sea anemones
+            for (let i = 0; i < 7; i++) {
+                const hues = [0,25,300,270,190,50,330];
+                corals.push({ type:'anem', x: W*(0.03+i*0.14+Math.random()*0.07), y: H-4, tn: 8+Math.floor(Math.random()*6), r: 14+Math.random()*18, col:`hsl(${hues[i]},80%,62%)`, ph: Math.random()*Math.PI*2 });
+            }
+            // Fan coral
+            for (let i = 0; i < 3; i++)
+                corals.push({ type:'fan', x: W*(0.08+i*0.38+Math.random()*0.08), y: H-12, h: 55+Math.random()*60, col:'#9b2226', ph: Math.random()*Math.PI*2 });
+
+            // Light rays
+            const rays = Array.from({ length: 7 }, (_, i) => ({
+                x: W * (0.08 + i * 0.13 + Math.random() * 0.05),
+                spread: 55 + Math.random() * 75,
+                ph: Math.random() * Math.PI * 2,
+                spd: 0.0025 + Math.random() * 0.003
             }));
+
+            // ── Helper: draw a body bezier path (reused for fill + clip)
+            function fishBodyPath(size) {
+                ctx.beginPath();
+                ctx.moveTo( size*0.88,  0);
+                ctx.bezierCurveTo( size*0.88, -size*0.4,  size*0.15, -size*0.46, -size*0.62, -size*0.2);
+                ctx.bezierCurveTo(-size*0.88, -size*0.08, -size*0.88,  size*0.08, -size*0.62,  size*0.2);
+                ctx.bezierCurveTo( size*0.15,  size*0.46,  size*0.88,  size*0.4,   size*0.88,  0);
+                ctx.closePath();
+            }
 
             function drawFish(f, t) {
-                const { x, y, size, palette, phase, wiggleSpeed, stripes, spots } = f;
-                const wag = Math.sin(t * wiggleSpeed + phase) * 0.38;
+                const { x, y, size, sp, phase, ws } = f;
+                const wag = Math.sin(t * ws + phase) * 0.32;
                 ctx.save();
                 ctx.translate(x, y);
                 if (f.vx < 0) ctx.scale(-1, 1);
 
-                // Tail
+                // Forked tail with wag
+                ctx.save();
+                ctx.translate(-size*0.65, 0);
+                ctx.rotate(wag * 0.7);
                 ctx.beginPath();
-                ctx.moveTo(-size * 0.72, wag * size * 0.3);
-                ctx.lineTo(-size * 1.45, -size * 0.5 + wag * size * 0.6);
-                ctx.lineTo(-size * 1.45,  size * 0.5 + wag * size * 0.6);
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(-size*0.28, -size*0.52, -size*0.62, -size*0.48, -size*0.68, -size*0.08);
+                ctx.bezierCurveTo(-size*0.62,  size*0.48, -size*0.28,  size*0.52, 0, 0);
+                const tg = ctx.createLinearGradient(0,0,-size*0.68,0);
+                tg.addColorStop(0, sp.bM); tg.addColorStop(1, sp.tc);
+                ctx.fillStyle = tg; ctx.fill();
+                ctx.restore();
+
+                // Body fill with dorsal-to-belly gradient
+                const bg = ctx.createLinearGradient(0, -size*0.46, 0, size*0.46);
+                bg.addColorStop(0,   sp.bT);
+                bg.addColorStop(0.45, sp.bM);
+                bg.addColorStop(1,   sp.bV);
+                fishBodyPath(size);
+                ctx.fillStyle = bg; ctx.fill();
+
+                // Stripes clipped to body
+                if (sp.sn > 0 && sp.sc) {
+                    ctx.save();
+                    fishBodyPath(size); ctx.clip();
+                    const isWhite = sp.sc === '#ffffff';
+                    for (let i = 0; i < sp.sn; i++) {
+                        const sx = size*0.55 - i*(size*0.52/sp.sn);
+                        const sw = size * 0.1;
+                        ctx.fillStyle = isWhite ? 'rgba(255,255,255,0.82)' : 'rgba(0,0,0,0.32)';
+                        ctx.fillRect(sx - sw/2, -size*0.5, sw, size);
+                    }
+                    ctx.restore();
+                }
+
+                // Subtle belly sheen
+                const sg = ctx.createLinearGradient(0, size*0.05, 0, size*0.4);
+                sg.addColorStop(0, 'rgba(255,255,255,0.18)');
+                sg.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.beginPath();
+                ctx.ellipse(0, size*0.22, size*0.48, size*0.2, 0, 0, Math.PI*2);
+                ctx.fillStyle = sg; ctx.fill();
+
+                // Dorsal fin (semi-transparent)
+                ctx.beginPath();
+                ctx.moveTo(-size*0.1, -size*0.43);
+                ctx.bezierCurveTo(size*0.05, -size*0.82, size*0.32, -size*0.78, size*0.48, -size*0.43);
                 ctx.closePath();
-                ctx.fillStyle = palette[1]; ctx.fill();
-
-                // Body
-                ctx.beginPath();
-                ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
-                ctx.fillStyle = palette[0]; ctx.fill();
-
-                // Stripes (clipped to body)
-                if (stripes > 0) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
-                    ctx.clip();
-                    for (let s = 0; s < stripes; s++) {
-                        ctx.fillStyle = 'rgba(0,0,0,0.18)';
-                        ctx.fillRect(-size * 0.25 + s * size * 0.3, -size * 0.5, size * 0.1, size);
-                    }
-                    ctx.restore();
-                }
-
-                // Spots
-                if (spots) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, size * 0.88, size * 0.44, 0, 0, Math.PI * 2);
-                    ctx.clip();
-                    for (let s = 0; s < 4; s++) {
-                        ctx.beginPath();
-                        ctx.arc(-size * 0.3 + s * size * 0.22, Math.sin(s * 1.5) * size * 0.15, size * 0.08, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fill();
-                    }
-                    ctx.restore();
-                }
-
-                // Dorsal fin
-                ctx.beginPath();
-                ctx.moveTo(-size * 0.15, -size * 0.43);
-                ctx.quadraticCurveTo(size * 0.1, -size * 0.85, size * 0.38, -size * 0.43);
-                ctx.fillStyle = palette[1]; ctx.fill();
+                ctx.fillStyle = sp.fin; ctx.globalAlpha = 0.72; ctx.fill(); ctx.globalAlpha = 1;
 
                 // Pectoral fin
                 ctx.beginPath();
-                ctx.moveTo(size * 0.1, size * 0.2);
-                ctx.quadraticCurveTo(size * 0.35, size * 0.62, -size * 0.1, size * 0.42);
+                ctx.moveTo(size*0.18, size*0.12);
+                ctx.bezierCurveTo(size*0.42, size*0.58, size*0.02, size*0.65, -size*0.12, size*0.38);
                 ctx.closePath();
-                ctx.fillStyle = palette[1]; ctx.globalAlpha = 0.7; ctx.fill(); ctx.globalAlpha = 1;
+                ctx.fillStyle = sp.fin; ctx.globalAlpha = 0.58; ctx.fill(); ctx.globalAlpha = 1;
 
-                // Eye white
+                // Lateral line
                 ctx.beginPath();
-                ctx.arc(size * 0.46, -size * 0.08, size * 0.13, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff'; ctx.fill();
+                ctx.moveTo( size*0.75, -size*0.07);
+                ctx.bezierCurveTo(size*0.2, -size*0.13, -size*0.18, -size*0.08, -size*0.6, size*0.0);
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.8; ctx.stroke();
+
+                // Eye — iris
+                const ex = size*0.62, ey = -size*0.1;
+                ctx.beginPath(); ctx.arc(ex, ey, size*0.13, 0, Math.PI*2);
+                ctx.fillStyle = '#c8a84b'; ctx.fill();
                 // Pupil
-                ctx.beginPath();
-                ctx.arc(size * 0.48, -size * 0.08, size * 0.07, 0, Math.PI * 2);
-                ctx.fillStyle = '#111'; ctx.fill();
-                // Eye shine
-                ctx.beginPath();
-                ctx.arc(size * 0.44, -size * 0.11, size * 0.03, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(ex+size*0.02, ey, size*0.075, 0, Math.PI*2);
+                ctx.fillStyle = '#0a0a0a'; ctx.fill();
+                // Eye ring
+                ctx.beginPath(); ctx.arc(ex, ey, size*0.13, 0, Math.PI*2);
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.7; ctx.stroke();
+                // Catchlight
+                ctx.beginPath(); ctx.arc(ex-size*0.04, ey-size*0.04, size*0.032, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
 
                 // Mouth
                 ctx.beginPath();
-                ctx.arc(size * 0.83, size * 0.06, size * 0.07, 0.3, Math.PI * 0.85);
-                ctx.strokeStyle = palette[1]; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.arc(size*0.85, size*0.05, size*0.065, 0.35, Math.PI*0.8);
+                ctx.strokeStyle = sp.fin; ctx.lineWidth = 1.4; ctx.stroke();
 
                 ctx.restore();
             }
 
+            function drawBranch(x, y, angle, len, depth, col, t, ph) {
+                if (depth <= 0 || len < 4) return;
+                const sway = Math.sin(t*0.018 + ph + depth*0.4) * 0.04;
+                const ex = x + len * Math.cos(angle + sway);
+                const ey = y + len * Math.sin(angle + sway);
+                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey);
+                ctx.strokeStyle = col; ctx.lineWidth = depth * 0.9; ctx.lineCap = 'round'; ctx.stroke();
+                drawBranch(ex, ey, angle-0.48, len*0.67, depth-1, col, t, ph+0.3);
+                drawBranch(ex, ey, angle+0.42, len*0.67, depth-1, col, t, ph-0.3);
+            }
+
+            function drawCoral(c, t) {
+                if (c.type === 'brain') {
+                    ctx.beginPath(); ctx.arc(c.x, c.y, c.r, Math.PI, 0);
+                    ctx.fillStyle = c.c1; ctx.fill();
+                    ctx.strokeStyle = c.c2; ctx.lineWidth = 1.4;
+                    for (let a = Math.PI+0.2; a <= 2*Math.PI-0.2; a += 0.28) {
+                        ctx.beginPath();
+                        ctx.arc(c.x + c.r*0.82*Math.cos(a), c.y + c.r*0.75*Math.sin(a), c.r*0.14, 0, Math.PI*2);
+                        ctx.stroke();
+                    }
+                } else if (c.type === 'branch') {
+                    drawBranch(c.x, c.y, -Math.PI/2, c.h*0.52, 5, c.col, t, c.ph);
+                } else if (c.type === 'anem') {
+                    for (let i = 0; i < c.tn; i++) {
+                        const a = (i/c.tn)*Math.PI*2;
+                        const w = Math.sin(t*0.028 + c.ph + i*0.85) * 0.28;
+                        const tx = c.x + c.r*Math.sin(a+w);
+                        const ty = c.y - c.r*0.65*Math.cos(a);
+                        ctx.beginPath();
+                        ctx.moveTo(c.x, c.y);
+                        ctx.quadraticCurveTo(c.x*0.3+tx*0.7, c.y*0.4+ty*0.6, tx, ty);
+                        ctx.strokeStyle = c.col; ctx.lineWidth = 2.8; ctx.lineCap = 'round'; ctx.stroke();
+                        ctx.beginPath(); ctx.arc(tx, ty, 2.8, 0, Math.PI*2);
+                        ctx.fillStyle = c.col; ctx.fill();
+                    }
+                    ctx.beginPath(); ctx.ellipse(c.x, c.y, c.r*0.35, 7, 0, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fill();
+                } else if (c.type === 'fan') {
+                    const sw = Math.sin(t*0.018 + c.ph) * 0.07;
+                    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(sw);
+                    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-c.h*0.28);
+                    ctx.strokeStyle = c.col; ctx.lineWidth = 4; ctx.stroke();
+                    for (let i = -6; i <= 6; i++) {
+                        ctx.beginPath(); ctx.moveTo(0,-c.h*0.28); ctx.lineTo(i*c.h*0.095, -c.h);
+                        ctx.strokeStyle = `rgba(155,34,38,0.65)`; ctx.lineWidth = 1.4; ctx.stroke();
+                    }
+                    for (let j = 0; j < 5; j++) {
+                        const ly = -c.h*(0.35+j*0.14);
+                        const sp2 = Math.abs(ly+c.h*0.28)*0.5;
+                        ctx.beginPath(); ctx.moveTo(-sp2,ly); ctx.lineTo(sp2,ly);
+                        ctx.strokeStyle = `rgba(155,34,38,0.4)`; ctx.lineWidth = 1; ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+            }
+
             function drawSquid(s, t) {
-                const { x, y, size, color, tPhase } = s;
-                ctx.save();
-                ctx.translate(x, y);
+                const { x, y, size, hue, tPhase, pPhase, spots } = s;
+                const pulse = 0.86 + 0.14*Math.sin(t*0.055+pPhase);
+                ctx.save(); ctx.translate(x, y);
                 if (s.vx < 0) ctx.scale(-1, 1);
 
-                // Tentacles
-                for (let i = 0; i < 8; i++) {
-                    const tx = (i - 3.5) * size * 0.17;
-                    const wag = Math.sin(t * 0.05 + tPhase + i * 0.7) * size * 0.38;
-                    const len = i % 3 === 0 ? 1.7 : 1.4; // longer tentacles
+                // Tentacles (10: 2 long feeding, 8 shorter)
+                for (let i = 0; i < 10; i++) {
+                    const tp = (i-4.5)*size*0.14;
+                    const wg = Math.sin(t*0.038+tPhase+i*0.62)*size*0.36;
+                    const ln = (i===4||i===5) ? 1.95 : 1.42;
+                    const lw = (i===4||i===5) ? size*0.085 : size*0.052;
                     ctx.beginPath();
-                    ctx.moveTo(tx, size * 0.62);
-                    ctx.quadraticCurveTo(tx + wag * 0.5, size * 1.1, tx + wag, size * len);
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = Math.max(1, size * (i % 3 === 0 ? 0.09 : 0.06));
-                    ctx.lineCap = 'round'; ctx.stroke();
+                    ctx.moveTo(tp, size*0.58);
+                    ctx.quadraticCurveTo(tp+wg*0.45, size*1.05, tp+wg, size*ln);
+                    ctx.strokeStyle = `hsla(${hue},68%,58%,0.88)`;
+                    ctx.lineWidth = Math.max(1, lw); ctx.lineCap = 'round'; ctx.stroke();
                 }
 
-                // Body
-                ctx.beginPath();
-                ctx.ellipse(0, 0, size * 0.38, size * 0.65, 0, 0, Math.PI * 2);
-                ctx.fillStyle = color; ctx.globalAlpha = 0.88; ctx.fill(); ctx.globalAlpha = 1;
-
-                // Body highlight
-                ctx.beginPath();
-                ctx.ellipse(-size * 0.1, -size * 0.15, size * 0.14, size * 0.22, -0.4, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fill();
+                // Mantle with pulse
+                ctx.save(); ctx.scale(pulse, 1/pulse*0.96+0.04);
+                const mg = ctx.createRadialGradient(-size*0.1,-size*0.2,0, 0,0,size*0.62);
+                mg.addColorStop(0, `hsla(${hue},55%,82%,0.92)`);
+                mg.addColorStop(0.55, `hsla(${hue},68%,55%,0.86)`);
+                mg.addColorStop(1, `hsla(${hue},78%,32%,0.72)`);
+                ctx.beginPath(); ctx.ellipse(0,0,size*0.34,size*0.58,0,0,Math.PI*2);
+                ctx.fillStyle = mg; ctx.fill();
+                // Chromatophores (pre-generated stable positions)
+                for (const sp2 of spots) {
+                    const a = 0.35 + 0.35*Math.sin(t*0.07+sp2.ph);
+                    ctx.beginPath(); ctx.arc(sp2.ox, sp2.oy, sp2.r, 0, Math.PI*2);
+                    ctx.fillStyle = `hsla(${hue+45},88%,38%,${a})`; ctx.fill();
+                }
+                ctx.restore();
 
                 // Side fins
-                for (const side of [-1, 1]) {
+                for (const sd of [-1,1]) {
                     ctx.beginPath();
-                    ctx.moveTo(side * size * 0.36, -size * 0.15);
-                    ctx.quadraticCurveTo(side * size * 0.68, size * 0.1, side * size * 0.36, size * 0.25);
-                    ctx.fillStyle = color; ctx.globalAlpha = 0.6; ctx.fill(); ctx.globalAlpha = 1;
+                    ctx.moveTo(sd*size*0.3,-size*0.28);
+                    ctx.bezierCurveTo(sd*size*0.62,-size*0.08,sd*size*0.58,size*0.18,sd*size*0.3,size*0.22);
+                    ctx.fillStyle = `hsla(${hue},62%,62%,0.52)`; ctx.fill();
                 }
-
-                // Pointed top
+                // Pointed apex
                 ctx.beginPath();
-                ctx.moveTo(-size * 0.22, -size * 0.6);
-                ctx.lineTo(0, -size * 1.02);
-                ctx.lineTo(size * 0.22, -size * 0.6);
-                ctx.fillStyle = color; ctx.fill();
+                ctx.moveTo(-size*0.17,-size*0.56); ctx.lineTo(0,-size*0.96); ctx.lineTo(size*0.17,-size*0.56);
+                ctx.fillStyle = `hsla(${hue},70%,48%,0.92)`; ctx.fill();
 
-                // Eyes
-                for (const side of [-1, 1]) {
-                    ctx.beginPath();
-                    ctx.arc(side * size * 0.17, size * 0.06, size * 0.11, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(side * size * 0.17, size * 0.06, size * 0.055, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+                // Eyes with slit pupil
+                for (const sd of [-1,1]) {
+                    ctx.beginPath(); ctx.arc(sd*size*0.17,size*0.06,size*0.12,0,Math.PI*2);
+                    ctx.fillStyle = 'rgba(8,8,8,0.88)'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(sd*size*0.17,size*0.06,size*0.062,0,Math.PI*2);
+                    ctx.fillStyle = `hsla(${hue+55},75%,68%,0.9)`; ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(sd*size*0.17,size*0.06,size*0.068,size*0.022,0,0,Math.PI*2);
+                    ctx.fillStyle = 'rgba(0,0,0,0.95)'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(sd*size*0.14,size*0.03,size*0.02,0,Math.PI*2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fill();
                 }
                 ctx.restore();
             }
@@ -1750,51 +2291,73 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 t++;
 
-                // Seaweed
-                for (const w of weeds) {
-                    w.phase += 0.018;
+                // Underwater depth overlay
+                const depthG = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                depthG.addColorStop(0,    'rgba(0,18,55,0.55)');
+                depthG.addColorStop(0.55, 'rgba(0,38,85,0.28)');
+                depthG.addColorStop(0.88, 'rgba(8,55,72,0.18)');
+                depthG.addColorStop(1,    'rgba(25,72,50,0.38)');
+                ctx.fillStyle = depthG;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Light rays from surface
+                ctx.save();
+                for (const r of rays) {
+                    const alpha = 0.018 + 0.012*Math.sin(t*r.spd+r.ph);
+                    const sp2 = r.spread*(0.78+0.28*Math.sin(t*r.spd*0.72+r.ph));
+                    const rg = ctx.createLinearGradient(r.x,0,r.x,canvas.height);
+                    rg.addColorStop(0, `rgba(120,195,255,${alpha})`);
+                    rg.addColorStop(0.7, `rgba(80,160,220,${alpha*0.4})`);
+                    rg.addColorStop(1, 'rgba(80,160,220,0)');
                     ctx.beginPath();
-                    ctx.moveTo(w.x, canvas.height);
-                    for (let i = 1; i <= w.segs; i++) {
-                        const sy = canvas.height - (i / w.segs) * w.h;
-                        const sx = w.x + Math.sin(w.phase + i * 0.9) * 14 * (i / w.segs);
-                        ctx.lineTo(sx, sy);
-                    }
-                    ctx.strokeStyle = w.color; ctx.lineWidth = 4.5; ctx.lineCap = 'round'; ctx.stroke();
+                    ctx.moveTo(r.x, 0);
+                    ctx.lineTo(r.x-sp2, canvas.height);
+                    ctx.lineTo(r.x+sp2, canvas.height);
+                    ctx.closePath();
+                    ctx.fillStyle = rg; ctx.fill();
                 }
+                ctx.restore();
+
+                // Sandy seafloor
+                const sfG = ctx.createLinearGradient(0, canvas.height-45, 0, canvas.height);
+                sfG.addColorStop(0, 'rgba(175,138,75,0.28)');
+                sfG.addColorStop(1, 'rgba(155,118,55,0.48)');
+                ctx.fillStyle = sfG;
+                ctx.fillRect(0, canvas.height-45, canvas.width, 45);
+
+                // Coral reef
+                for (const c of corals) drawCoral(c, t);
 
                 // Bubbles
                 for (const b of bubbles) {
-                    b.y -= b.speed; b.x += b.drift;
-                    if (b.y < -20) { b.y = canvas.height + 20; b.x = Math.random() * canvas.width; }
-                    ctx.beginPath();
-                    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(160,215,255,0.55)'; ctx.lineWidth = 1; ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.35, b.r * 0.28, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.fill();
+                    b.y -= b.speed;
+                    b.x += b.drift + Math.sin(t*0.025+b.wobble)*0.1;
+                    if (b.y < -20) { b.y = canvas.height+20; b.x = Math.random()*canvas.width; }
+                    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+                    ctx.strokeStyle = 'rgba(140,200,255,0.42)'; ctx.lineWidth = 0.8; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(b.x-b.r*0.32, b.y-b.r*0.32, b.r*0.26, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.48)'; ctx.fill();
                 }
 
                 // Squids
                 for (const s of squids) {
-                    s.x += s.vx; s.y += s.vy;
-                    s.tPhase += 0.035;
-                    if (s.x < -80) s.x = canvas.width + 80;
-                    if (s.x > canvas.width + 80) s.x = -80;
-                    if (s.y < 50) s.vy = Math.abs(s.vy);
-                    if (s.y > canvas.height - 50) s.vy = -Math.abs(s.vy);
+                    s.x += s.vx; s.y += s.vy; s.tPhase += 0.032; s.pPhase += 0.04;
+                    if (s.x < -80) s.x = canvas.width+80;
+                    if (s.x > canvas.width+80) s.x = -80;
+                    if (s.y < 60) s.vy = Math.abs(s.vy);
+                    if (s.y > canvas.height-85) s.vy = -Math.abs(s.vy);
                     drawSquid(s, t);
                 }
 
                 // Fish
                 for (const f of fish) {
                     f.x += f.vx; f.y += f.vy;
-                    f.vy += (Math.random() - 0.5) * 0.018;
-                    f.vy = Math.max(-0.28, Math.min(0.28, f.vy));
-                    if (f.vx > 0 && f.x > canvas.width + f.size * 2) f.x = -f.size * 2;
-                    if (f.vx < 0 && f.x < -f.size * 2) f.x = canvas.width + f.size * 2;
-                    if (f.y < 35) f.vy = Math.abs(f.vy);
-                    if (f.y > canvas.height - 35) f.vy = -Math.abs(f.vy);
+                    f.vy += (Math.random()-0.5)*0.014;
+                    f.vy = Math.max(-0.24, Math.min(0.24, f.vy));
+                    if (f.vx > 0 && f.x > canvas.width+f.size*2) f.x = -f.size*2;
+                    if (f.vx < 0 && f.x < -f.size*2) f.x = canvas.width+f.size*2;
+                    if (f.y < 45) f.vy = Math.abs(f.vy);
+                    if (f.y > canvas.height-75) f.vy = -Math.abs(f.vy);
                     drawFish(f, t);
                 }
 
@@ -1814,8 +2377,6 @@
         }
 
         // ── CSS4 Neural Network Background ────────────────────────────────────
-        let _css4AnimFrame = null;
-
         function startCSS4Bg() {
             const canvas = document.getElementById('css4-bg');
             if (!canvas) return;
@@ -1964,6 +2525,30 @@
         // Dedicated 60s refresh for Brain Knowledge + Mac mini Health
         setInterval(fetchBrain, 60000);
         setInterval(fetchSystem, 60000);
+        setInterval(fetchInternet, 60000);
+
+        // ── 5-minute idle → full page reload ─────────────────────────────────
+        const IDLE_RELOAD_MS = 5 * 60 * 1000;
+        let idleTimer = null;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => location.reload(), IDLE_RELOAD_MS);
+        }
+        ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(evt =>
+            document.addEventListener(evt, resetIdleTimer, { passive: true })
+        );
+        // Also reload when tab becomes visible again after being hidden for >5 min
+        let hiddenAt = null;
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                hiddenAt = Date.now();
+            } else if (hiddenAt && (Date.now() - hiddenAt) >= IDLE_RELOAD_MS) {
+                location.reload();
+            } else {
+                hiddenAt = null;
+            }
+        });
+        resetIdleTimer();
     </script>
 </body>
 </html>

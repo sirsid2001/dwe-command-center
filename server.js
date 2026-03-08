@@ -189,8 +189,26 @@ const server = http.createServer((req, res) => {
         case '/mc/system':
             getSystemHealth(req, res);
             break;
+        case '/mc/internet':
+            getInternetStatus(req, res);
+            break;
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
+            break;
+        case '/mc/heartbeat':
+            getHeartbeats(req, res);
+            break;
+        case '/mc/cso':
+            getCSoPipeline(req, res);
+            break;
+        case '/mc/financial':
+            getFinancialPulse(req, res);
+            break;
+        case '/mc/agent-tasks':
+            getAgentTasks(req, res);
+            break;
+        case '/mc/acp':
+            getAgentSessions(req, res);
             break;
         case '/dwe/status':
             handleDWEStatus(req, res);
@@ -385,7 +403,7 @@ function getAgents(req, res) {
         const agents = [
             { id: 'cto',            name: 'Steve',          role: 'Chief Technology Officer', telegram: '@DWE_CTO_Bot',    status: gatewayUp ? 'online' : 'offline' },
             { id: 'anita',          name: 'Anita',          role: 'Chief Operating Officer',  telegram: 'anita-coo',       status: gatewayUp ? 'online' : 'offline' },
-            { id: 'nicole',         name: 'Nicole',         role: 'Chief of Staff',           telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
+            { id: 'nicole',         name: 'Nicole',         role: 'Chief Strategic Officer',  telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
             { id: 'chief-engineer', name: 'Chief Engineer', role: 'Engineering Lead',         telegram: null,              status: gatewayUp ? 'online' : 'offline' },
             { id: 'main',           name: 'Main',           role: 'Primary Assistant',        telegram: null,              status: gatewayUp ? 'online' : 'offline' }
         ];
@@ -427,7 +445,7 @@ function getServices(req, res) {
             // For external services, check if we can resolve them
             exec(`curl -s -o /dev/null -w "%{http_code}" "${service.url}" --max-time 3`, (error, stdout) => {
                 const statusCode = stdout.trim();
-                const online = statusCode === '200' || statusCode === '401' || statusCode === '403';
+                const online = ['200','400','401','403','404'].includes(statusCode);
                 results.push({
                     name: service.name,
                     status: online ? 'online' : 'offline',
@@ -578,23 +596,26 @@ function getCrons(req, res) {
 }
 
 function getLaunchd(req, res) {
+    // scheduled:true = runs and exits on a timer; not running is normal (green if exit 0, yellow if exit non-zero)
+    // scheduled:false = should always be running; not running = error
     const DAEMON_NAMES = {
-        'ai.openclaw.gateway':           { name: 'OpenClaw Gateway',    group: 'core' },
-        'ai.openclaw.relay-daemon':      { name: 'Relay Daemon',        group: 'core' },
-        'ai.dwe.seed-watcher':           { name: 'Seed Watcher',        group: 'brain' },
-        'ai.dwe.notion-sync':            { name: 'Notion Sync',         group: 'brain' },
-        'ai.dwe.brain-trainer':          { name: 'Brain Trainer',       group: 'brain' },
-        'ai.dwe.morning-briefing':       { name: 'Morning Briefing',    group: 'autonomy' },
-        'ai.dwe.overdue-monitor':        { name: 'Overdue Monitor',     group: 'autonomy' },
-        'ai.dwe.health-monitor':         { name: 'Health Monitor',      group: 'autonomy' },
-        'ai.dwe.agent-heartbeat-cto':    { name: 'CTO Heartbeat',       group: 'autonomy' },
-        'ai.dwe.agent-heartbeat-anita':  { name: 'Anita Heartbeat',     group: 'autonomy' },
-        'ai.dwe.agent-heartbeat-ce':     { name: 'CE Heartbeat',        group: 'autonomy' },
-        'ai.dwe.nightly-review':         { name: 'Nightly Review',      group: 'brain' },
-        'com.dwe.ops-monitor':           { name: 'Ops Monitor',         group: 'ops' },
-        'com.dwe.ops-report':            { name: 'Ops Report',          group: 'ops' },
-        'com.dwe.command-center':        { name: 'Command Center',      group: 'ops' },
-        'com.missioncontrol.server':     { name: 'Mission Control',     group: 'core' }
+        'ai.openclaw.gateway':                  { name: 'OpenClaw Gateway',    group: 'core',      scheduled: false },
+        'ai.openclaw.relay-daemon':             { name: 'Relay Daemon',        group: 'core',      scheduled: false },
+        'ai.dwe.seed-watcher':                  { name: 'Seed Watcher',        group: 'brain',     scheduled: false },
+        'ai.dwe.notion-sync':                   { name: 'Notion Sync',         group: 'brain',     scheduled: false },
+        'ai.dwe.brain-trainer':                 { name: 'Brain Trainer',       group: 'brain',     scheduled: true  },
+        'ai.dwe.health-monitor':                { name: 'Health Monitor',      group: 'autonomy',  scheduled: false },
+        'ai.dwe.agent-heartbeat-cto':           { name: 'CTO Heartbeat',       group: 'autonomy',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-anita':         { name: 'Anita Heartbeat',     group: 'autonomy',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-anita-finance': { name: 'Anita Finance Pulse', group: 'autonomy',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-ce':            { name: 'CE Heartbeat',        group: 'autonomy',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole':        { name: 'Nicole CSO Heartbeat',group: 'autonomy',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'Nicole Weekly',       group: 'autonomy',  scheduled: true  },
+        'ai.dwe.nightly-review':                { name: 'Nightly Review',      group: 'brain',     scheduled: true  },
+        'com.dwe.ops-monitor':                  { name: 'Ops Monitor',         group: 'ops',       scheduled: false },
+        'com.dwe.ops-report':                   { name: 'Ops Report',          group: 'ops',       scheduled: true  },
+        'com.dwe.command-center':               { name: 'Mission Control (old plist — retire)', group: 'ops', scheduled: false, retired: true },
+        'com.missioncontrol.server':            { name: 'Mission Control',     group: 'core',      scheduled: false }
     };
 
     exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', (error, stdout) => {
@@ -608,12 +629,26 @@ function getLaunchd(req, res) {
                     const label = parts[2];
                     const running = pid !== '-';
                     const hasError = exitCode !== '0' && exitCode !== '-';
-                    const meta = DAEMON_NAMES[label] || { name: label.split('.').pop(), group: 'other' };
+                    const meta = DAEMON_NAMES[label] || { name: label.split('.').pop(), group: 'other', scheduled: false };
+
+                    let status;
+                    if (running) {
+                        status = 'running';
+                    } else if (meta.scheduled) {
+                        // Scheduled daemons: not running is normal. Status = last exit code
+                        status = hasError ? 'warning' : 'waiting';
+                    } else {
+                        // Continuous daemons: must always run
+                        status = hasError ? 'error' : 'waiting';
+                    }
+
                     services.push({
                         id: label,
                         name: meta.name,
                         group: meta.group,
-                        status: running ? 'running' : (hasError ? 'error' : 'waiting'),
+                        scheduled: meta.scheduled || false,
+                        retired: meta.retired || false,
+                        status,
                         pid: running ? pid : null,
                         exitCode
                     });
@@ -629,7 +664,7 @@ function getAgentRouting(req, res) {
     const agents = [
         { id: 'cto',            name: 'Steve',          emoji: '💻', role: 'Technical & infrastructure',     channel: 'Telegram @DWE_CTO_Bot' },
         { id: 'anita',          name: 'Anita',          emoji: '⚙️', role: 'Operations & task coordination', channel: 'Telegram anita-coo' },
-        { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Chief of Staff & briefings',     channel: 'Telegram nicole-cos' },
+        { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Strategy & revenue discovery',   channel: 'Telegram nicole-cos' },
         { id: 'chief-engineer', name: 'Chief Engineer', emoji: '🔧', role: 'Infrastructure & daemons',       channel: 'OpenClaw session' },
         { id: 'main',           name: 'Main',           emoji: '🚀', role: 'Primary assistant (web chat)',   channel: 'OpenClaw webchat' }
     ];
@@ -638,7 +673,8 @@ function getAgentRouting(req, res) {
 }
 
 // Notion API integration - loaded from environment or config file
-const NOTION_API_KEY = process.env.NOTION_API_KEY || '';
+const NOTION_API_KEY = process.env.NOTION_API_KEY ||
+    (() => { try { return require('fs').readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return ''; } })();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 async function getNotionTasks(req, res) {
@@ -753,8 +789,61 @@ async function fetchAllNotionTasks() {
     return allTasks;
 }
 
-// Track last backup time
-let lastBackupTime = new Date(Date.now() - 2 * 60 * 60 * 1000); // Default: 2 hours ago
+async function getAgentTasks(req, res) {
+    if (!NOTION_API_KEY) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Notion API key not configured', agents: [] }));
+        return;
+    }
+    try {
+        const allTasks = await fetchAllNotionTasks();
+
+        // Role → agent display config
+        const AGENTS = [
+            { role: 'CEO',            name: 'Sidney',         icon: '👑',  id: 'ceo' },
+            { role: 'CTO',            name: 'Steve',          icon: '⚙️',  id: 'cto' },
+            { role: 'COO',            name: 'Anita',          icon: '📋',  id: 'anita' },
+            { role: 'CSO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
+            { role: 'Chief Engineer', name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
+            { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
+        ];
+        const DONE_STATUSES = new Set(['Done', 'Completed', 'Complete', 'Review', 'Archived']);
+        const PRIORITY_ORDER = ['Critical', 'High', 'Medium', 'Low', 'No Priority'];
+
+        const KNOWN_ROLES = new Set(AGENTS.map(a => a.role));
+        const agentStats = AGENTS.map(({ role, name, icon, id }) => {
+            // For 'Unassigned': tasks with role not in any known agent role
+            const tasks = role === 'Unassigned'
+                ? allTasks.filter(t => !KNOWN_ROLES.has(t.role))
+                : allTasks.filter(t => t.role === role);
+            const open  = tasks.filter(t => !DONE_STATUSES.has(t.status));
+            const done  = tasks.filter(t => DONE_STATUSES.has(t.status));
+            const byPriority = {};
+            for (const p of PRIORITY_ORDER) byPriority[p] = 0;
+            for (const t of open) {
+                const p = t.priority || 'No Priority';
+                byPriority[p] = (byPriority[p] || 0) + 1;
+            }
+            const overdue = open.filter(t => t.pastDue || (t.dueDate && new Date(t.dueDate) < new Date())).length;
+            return { id, role, name, icon, total: tasks.length, open: open.length, done: done.length, overdue, byPriority };
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ agents: agentStats, fetchedAt: new Date().toISOString() }));
+    } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message, agents: [] }));
+    }
+}
+
+// Track last backup time — read actual last git commit on startup
+let lastBackupTime = (() => {
+    try {
+        const { execSync } = require('child_process');
+        const iso = execSync('git -C ' + __dirname + ' log -1 --format=%cI 2>/dev/null').toString().trim();
+        return iso ? new Date(iso) : new Date(0);
+    } catch(e) { return new Date(0); }
+})();
 
 // Run GitHub backup
 function runBackup(req, res) {
@@ -885,6 +974,35 @@ function getBrainStatus(req, res) {
     }
 }
 
+// Internet connectivity — ping 1.1.1.1 every 60s, track last success
+let lastPingSuccess = null;
+function runInternetPing() {
+    exec('ping -c 1 -W 3 1.1.1.1 > /dev/null 2>&1 && echo ok || echo fail', (err, stdout) => {
+        if ((stdout || '').trim() === 'ok') lastPingSuccess = Date.now();
+    });
+}
+runInternetPing();
+setInterval(runInternetPing, 60000);
+
+function getInternetStatus(req, res) {
+    const now = Date.now();
+    const secsSince = lastPingSuccess ? Math.round((now - lastPingSuccess) / 1000) : null;
+    let status, label;
+    if (secsSince === null) {
+        status = 'unknown'; label = 'No ping yet';
+    } else if (secsSince <= 90) {
+        status = 'ok';      label = `${secsSince}s ago`;
+    } else if (secsSince <= 300) {
+        status = 'warn';    label = `${Math.round(secsSince/60)}m ago`;
+    } else if (secsSince <= 600) {
+        status = 'warn';    label = `${Math.round(secsSince/60)}m ago`;
+    } else {
+        status = 'error';   label = `${Math.round(secsSince/60)}m ago`;
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status, label, lastPingSuccess, secsSince }));
+}
+
 async function getSystemHealth(req, res) {
     const run = (cmd) => new Promise((resolve) => {
         exec(cmd, (err, stdout) => resolve(stdout ? stdout.trim() : ''));
@@ -898,7 +1016,7 @@ async function getSystemHealth(req, res) {
             run("df -k / | tail -1"),
             run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
             run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
-            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | grep -oE '[0-9]+'")
+            run("lsof -ti :3000 2>/dev/null | head -1")
         ]);
 
         // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
@@ -957,6 +1075,174 @@ async function getSystemHealth(req, res) {
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+function getHeartbeats(req, res) {
+    const LOG_FILE = `${process.env.HOME}/openclaw/logs/agent-heartbeat.log`;
+    const now = new Date();
+
+    // Known schedule definitions (launchd plist schedules)
+    const AGENTS = [
+        { id: 'cto',            name: 'Steve (CTO)',        pattern: /Starting CTO morning briefing/,          nextFn: () => { const d = new Date(now); d.setHours(7,5,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
+        { id: 'anita',          name: 'Anita (COO)',         pattern: /Starting Anita overdue task check/,      nextFn: () => { const d = new Date(now); d.setHours(8,5,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
+        { id: 'anita-finance',  name: 'Anita Finance',      pattern: /Starting Anita.*finance/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilMon = (1 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilMon); d.setHours(7,30,0,0); return d; } },
+        { id: 'ce',             name: 'Chief Engineer',     pattern: /Starting CE health check/,               nextFn: () => { const d = new Date(now); const mins = d.getHours()*60 + d.getMinutes(); const nextSlot = [36, 276, 516, 756, 996, 1236].find(s => s > mins) || 36+1440; d.setHours(Math.floor(nextSlot/60), nextSlot%60, 0, 0); if (nextSlot > 1440) d.setDate(d.getDate()+1); return d; } },
+        { id: 'nicole',         name: 'Nicole (CSO)',       pattern: /Starting Nicole CSO daily/,              nextFn: () => { const d = new Date(now); d.setHours(17,0,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
+        { id: 'nicole-weekly',  name: 'Nicole Weekly',      pattern: /Starting Nicole.*weekly/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilSun = (0 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilSun); d.setHours(18,0,0,0); return d; } }
+    ];
+
+    let logLines = [];
+    try {
+        const content = fs.readFileSync(LOG_FILE, 'utf8');
+        logLines = content.split('\n').filter(l => l.match(/^\[2\d{3}-\d{2}-\d{2}/));
+    } catch (e) {}
+
+    const agents = AGENTS.map(agent => {
+        // Find last line matching this agent's pattern
+        let lastRun = null;
+        for (let i = logLines.length - 1; i >= 0; i--) {
+            if (agent.pattern.test(logLines[i])) {
+                const m = logLines[i].match(/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/);
+                if (m) { lastRun = new Date(m[1].replace(' ', 'T')); break; }
+            }
+        }
+        const nextRun = agent.nextFn();
+        const minutesSince = lastRun ? Math.floor((now - lastRun) / 60000) : null;
+        return {
+            id: agent.id,
+            name: agent.name,
+            lastRun: lastRun ? lastRun.toISOString() : null,
+            lastRunDisplay: lastRun ? `${lastRun.getHours() % 12 || 12}:${String(lastRun.getMinutes()).padStart(2,'0')}${lastRun.getHours() >= 12 ? 'pm':'am'}` : 'Never',
+            minutesSince,
+            nextRun: nextRun.toISOString(),
+            nextRunDisplay: (() => {
+                const h = nextRun.getHours(); const m = nextRun.getMinutes();
+                const isToday = nextRun.toDateString() === now.toDateString();
+                const label = isToday ? '' : (nextRun.getDate() === now.getDate()+1 ? 'Tomorrow ' : nextRun.toLocaleDateString('en-US',{weekday:'short'})+' ');
+                return `${label}${h%12||12}:${String(m).padStart(2,'0')}${h>=12?'pm':'am'}`;
+            })(),
+            status: lastRun ? (minutesSince < 1440 ? 'ok' : 'stale') : 'never'
+        };
+    });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ agents, timestamp: now.toISOString() }));
+}
+
+function getCSoPipeline(req, res) {
+    const PIPELINE_FILE = `${process.env.HOME}/openclaw/logs/cso_pipeline.json`;
+    try {
+        if (fs.existsSync(PIPELINE_FILE)) {
+            const data = JSON.parse(fs.readFileSync(PIPELINE_FILE, 'utf8'));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+        } else {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ opportunities: [], count: 0, lastReport: null, note: 'No pipeline data yet — Nicole CSO will populate this file during sessions.' }));
+        }
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+function getFinancialPulse(req, res) {
+    const PULSE_FILE = `${process.env.HOME}/openclaw/logs/financial_pulse.json`;
+    try {
+        if (fs.existsSync(PULSE_FILE)) {
+            const data = JSON.parse(fs.readFileSync(PULSE_FILE, 'utf8'));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(data));
+        } else {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ incomeStreams: [], count: 0, lastPulse: null, note: 'No financial data yet — Anita Monday finance heartbeat will populate this file.' }));
+        }
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+function getAgentSessions(req, res) {
+    const { execSync } = require('child_process');
+    const AGENT_NAMES = {
+        'cto':            'Steve (CTO)',
+        'anita':          'Anita (COO)',
+        'nicole':         'Nicole (CSO)',
+        'chief-engineer': 'Chief Engineer',
+        'main':           'Main',
+    };
+    try {
+        const raw = execSync('/opt/homebrew/bin/node /opt/homebrew/bin/openclaw sessions --all-agents --json', {
+            timeout: 10000,
+            env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' }
+        }).toString();
+        const data = JSON.parse(raw);
+        const sessions = data.sessions || [];
+        const now = Date.now();
+
+        // For each agent, find most recent main/direct session
+        const agentStatus = Object.keys(AGENT_NAMES).map(agentId => {
+            const agentSessions = sessions.filter(s =>
+                s.agentId === agentId && s.kind === 'direct'
+            );
+            if (!agentSessions.length) {
+                return {
+                    agentId,
+                    name: AGENT_NAMES[agentId],
+                    status: 'offline',
+                    lastActiveMs: null,
+                    minutesSince: null,
+                    totalTokens: 0,
+                    contextTokens: 0,
+                    contextPct: 0,
+                    sessionKey: null,
+                };
+            }
+            // Sort by updatedAt descending, take most recent
+            agentSessions.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            const s = agentSessions[0];
+            const minutesSince = s.updatedAt ? Math.round((now - s.updatedAt) / 60000) : null;
+            const status = minutesSince === null ? 'offline'
+                         : minutesSince < 60    ? 'online'
+                         : minutesSince < 1440  ? 'idle'
+                         : 'offline';
+            const contextPct = s.contextTokens && s.totalTokens
+                ? Math.round((s.totalTokens / s.contextTokens) * 100)
+                : 0;
+            return {
+                agentId,
+                name: AGENT_NAMES[agentId],
+                status,
+                lastActiveMs: s.updatedAt || null,
+                minutesSince,
+                totalTokens: s.totalTokens || 0,
+                contextTokens: s.contextTokens || 0,
+                contextPct,
+                sessionKey: s.key || null,
+            };
+        });
+
+        // User presence — Mac idle time as Sidney's "session" signal
+        let userPresence = { status: 'unknown', idleSec: null };
+        try {
+            const { execSync: es2 } = require('child_process');
+            const idleRaw = es2("ioreg -n IOHIDSystem | awk '/HIDIdleTime/{print $NF/1000000000; exit}'",
+                { timeout: 3000, env: { ...process.env, PATH: '/usr/bin:/bin' } }).toString().trim();
+            const idleSec = parseFloat(idleRaw) || 0;
+            userPresence = {
+                status: idleSec < 300 ? 'active' : idleSec < 1800 ? 'idle' : 'away',
+                idleSec: Math.round(idleSec),
+                idleMin: Math.round(idleSec / 60),
+            };
+        } catch(e) {}
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ agents: agentStatus, userPresence, fetchedAt: new Date().toISOString() }));
+    } catch (err) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ agents: [], error: err.message }));
     }
 }
 

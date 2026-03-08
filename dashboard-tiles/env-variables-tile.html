@@ -1,0 +1,222 @@
+<!-- Environment Variables Dashboard Tile -->
+<div class="env-tile glass-card">
+    <div class="tile-header">
+        <h3>🔐 Environment Variables</h3>
+        <span class="status-pulse online"></span>
+    </div>
+    
+    <div class="env-list">
+        <div class="env-category">
+            <h4>🔄 n8n</h4>
+            <div class="env-row">
+                <code>N8N_API_KEY</code>
+                <span class="env-mask">ntn_••••••••••</span>
+                <span class="status-badge active">Configured</span>
+            </div>
+            <div class="env-row">
+                <code>N8N_BASE_URL</code>
+                <span>https://n8n.tvcpulse.com</span>
+                <span class="status-badge active">Active</span>
+            </div>
+        </div>
+        
+        <div class="env-category">
+            <h4>📝 Notion</h4>
+            <div class="env-row">
+                <code>NOTION_API_KEY</code>
+                <span class="env-mask">ntn_••••••••••</span>
+                <span class="status-badge active">Configured</span>
+            </div>
+            <div class="env-row">
+                <code>NOTION_DATABASE_ID</code>
+                <span>2f797f89-80••</span>
+                <span class="status-badge active">Connected</span>
+            </div>
+        </div>
+        
+        <div class="env-category">
+            <h4>🌲 Pinecone</h4>
+            <div class="env-row">
+                <code>PINECONE_API_KEY</code>
+                <span class="env-mask">••••••••••••</span>
+                <span class="status-badge active">Configured</span>
+            </div>
+            <div class="env-row">
+                <code>PINECONE_INDEX</code>
+                <span>dwe-v2</span>
+                <span class="status-badge active">Active</span>
+            </div>
+        </div>
+        
+        <div class="env-category">
+            <h4>🧠 OpenRouter</h4>
+            <div class="env-row">
+                <code>OPENROUTER_API_KEY</code>
+                <span class="env-mask">sk-or-••••••</span>
+                <span class="status-badge active">Configured</span>
+            </div>
+        </div>
+        
+        <div class="env-category">
+            <h4>🤖 OpenClaw</h4>
+            <div class="env-row">
+                <code>OPENCLAW_CONFIG</code>
+                <span>~/.openclaw</span>
+                <span class="status-badge active">Active</span>
+            </div>
+        </div>
+        
+        <div class="env-category">
+            <h4>🦙 Ollama</h4>
+            <div class="env-row">
+                <code>OLLAMA_HOST</code>
+                <span>localhost:11434</span>
+                <span class="status-badge active">Local</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tile-actions">
+        <button onclick="refreshEnvVars()" class="btn-glow">
+            <span>🔄 Refresh</span>
+        </button>
+        <button onclick="testAllAPIs()" class="btn-glow primary">
+            <span>🧪 Test APIs</span>
+        </button>
+    </div>
+    <div class="last-check">
+        Last check: <span id="env-check-time">Just now</span>
+    </div>
+</div>
+
+<style>
+.env-tile {
+    padding: 1.5rem;
+    background: rgba(58, 65, 204, 0.1);
+    border-radius: 12px;
+}
+
+.tile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.tile-header h3 {
+    margin: 0;
+    color: #00ff88;
+    font-size: 1.2rem;
+}
+
+.env-category {
+    margin-bottom: 1.2rem;
+}
+
+.env-category h4 {
+    color: #00d4ff;
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.env-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.env-row code {
+    color: #8b949e;
+    font-family: monospace;
+    min-width: 180px;
+}
+
+.env-row span:nth-child(2) {
+    flex: 1;
+    color: #fff;
+    font-family: monospace;
+}
+
+.env-mask {
+    filter: blur(2px);
+}
+
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #00ff88;
+    color: #000;
+}
+
+.tile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.btn-glow {
+    flex: 1;
+    padding: 0.75rem;
+    background: transparent;
+    border: 1px solid #3A41CC;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-glow:hover {
+    background: #3A41CC;
+    box-shadow: 0 0 20px rgba(58, 65, 204, 0.5);
+}
+
+.btn-glow.primary {
+    background: linear-gradient(135deg, #3A41CC, #00d4ff);
+    border: none;
+}
+
+.last-check {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #8b949e;
+}
+</style>
+
+<script>
+function refreshEnvVars() {
+    fetch('/mc/env-status')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('env-check-time').textContent = new Date().toLocaleTimeString();
+            // Update UI with status
+            console.log('Environment vars refreshed', data);
+        });
+}
+
+function testAllAPIs() {
+    const services = ['n8n', 'notion', 'pinecone', 'openrouter'];
+    services.forEach(svc => {
+        fetch(`/mc/test-api/${svc}`, {method: 'POST'})
+            .then(r => r.json())
+            .then(result => {
+                console.log(`${svc}:`, result.status);
+            });
+    });
+    document.getElementById('env-check-time').textContent = new Date().toLocaleTimeString();
+}
+</script>

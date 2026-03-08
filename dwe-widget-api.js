@@ -4,13 +4,15 @@
  */
 
 const https = require('https');
-const NOTION_API_KEY = process.env.NOTION_API_KEY || '';
+const fs = require('fs');
+const NOTION_API_KEY = process.env.NOTION_API_KEY ||
+    (() => { try { return fs.readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return ''; } })();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 // Cache for 5 minutes
 let cachedStats = null;
 let cacheTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 60 * 1000; // 1 minute
 
 async function fetchAllNotionTasks() {
     const allTasks = [];
@@ -90,11 +92,10 @@ async function getDWEStats() {
     if (!NOTION_API_KEY) {
         return {
             error: 'Notion API key not configured',
-            total: 1020,
-            completed: 562,
-            inProgress: 4,
-            remaining: 458,
-            maxId: 1020,
+            total: 0,
+            completed: 0,
+            inProgress: 0,
+            remaining: 0,
             lastUpdated: new Date().toISOString()
         };
     }
@@ -117,12 +118,10 @@ async function getDWEStats() {
         const maxId = allTasks.reduce((max, t) => Math.max(max, t.idNumber || 0), 0);
         
         cachedStats = {
-            total: maxId, // Use max ID as total
+            total: total,
             completed: completed,
             inProgress: inProgress,
-            remaining: maxId - completed,
-            maxId: maxId,
-            activeTasks: total,
+            remaining: total - completed,
             lastUpdated: new Date().toISOString()
         };
         cacheTime = now;
@@ -132,11 +131,10 @@ async function getDWEStats() {
         console.error('[DWE Widget] Error:', e);
         // Return cached or fallback
         return cachedStats || {
-            total: 1020,
-            completed: 562,
-            inProgress: 4,
-            remaining: 458,
-            maxId: 1020,
+            total: 0,
+            completed: 0,
+            inProgress: 0,
+            remaining: 0,
             error: e.message,
             lastUpdated: new Date().toISOString()
         };
