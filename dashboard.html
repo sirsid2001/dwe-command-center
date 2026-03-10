@@ -780,6 +780,10 @@
                     <div class="nav-icon">🌐</div>
                     <span>Ecosystem</span>
                 </a>
+                <button class="nav-item" onclick="toggleOpportunities()">
+                    <div class="nav-icon">💰</div>
+                    <span>Opportunities</span>
+                </button>
             </div>
 
             <div class="theme-section">
@@ -887,9 +891,32 @@
                 <!-- Brain Answer tile -->
                 <div class="stat-card" style="border-left-color:#b829dd;">
                     <div class="stat-content" style="width:100%;">
-                        <div class="stat-label" style="margin-bottom:0.5rem;">Brain Response</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <div class="stat-label" style="margin-bottom:0;">DWE Brain Response</div>
+                            <div style="display:flex; gap:0.35rem;">
+                                <button onclick="openDriveInFinder()"
+                                    style="font-size:0.65rem; padding:3px 8px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.25); border-radius:4px; color:#00f5ff; cursor:pointer;">
+                                    📁 Browse Drive
+                                </button>
+                                <button onclick="toggleDriveBrowser()" id="drive-browse-btn"
+                                    style="font-size:0.65rem; padding:3px 8px; background:rgba(184,41,221,0.1); border:1px solid rgba(184,41,221,0.25); border-radius:4px; color:#b829dd; cursor:pointer;">
+                                    🔍 Search Files
+                                </button>
+                            </div>
+                        </div>
                         <div id="brain-query-answer" style="font-size:0.7rem; color:rgba(255,255,255,0.8); line-height:1.6; min-height:80px; max-height:140px; overflow-y:auto; white-space:pre-wrap;">
                             <span style="color:rgba(255,255,255,0.2); font-style:italic;">Waiting for a question...</span>
+                        </div>
+                        <!-- Drive File Browser (hidden by default) -->
+                        <div id="drive-browser" style="display:none; margin-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.75rem;">
+                            <div style="display:flex; gap:0.4rem; margin-bottom:0.5rem;">
+                                <input type="text" id="drive-search" placeholder="Search files..."
+                                    onkeyup="debounceDriveSearch()"
+                                    style="flex:1; padding:5px 8px; font-size:0.7rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:5px; color:#fff; outline:none; font-family:inherit;">
+                                <button onclick="searchDriveFiles()" style="padding:5px 10px; font-size:0.65rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.3); border-radius:5px; color:#00f5ff; cursor:pointer;">Search</button>
+                            </div>
+                            <div id="drive-status" style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-bottom:0.4rem;"></div>
+                            <div id="drive-file-list" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:2px;"></div>
                         </div>
                     </div>
                     <div class="stat-icon" style="background:linear-gradient(135deg,rgba(184,41,221,0.2),rgba(0,245,255,0.1)); align-self:flex-start;">🧬</div>
@@ -1105,6 +1132,35 @@
                 </div>
             </div>
 
+            <!-- Document Pipeline — File Manager -->
+            <div style="background:rgba(255,255,255,0.018);border:1px solid rgba(255,255,255,0.07);border-radius:14px;margin-bottom:1.5rem;overflow:hidden;">
+                <div class="panel-header" style="border-radius:14px 14px 0 0;padding:0.55rem 0.85rem;">
+                    <div class="panel-icon" style="font-size:0.9rem;">🗂️</div>
+                    <div class="panel-title">Document Pipeline</div>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
+                        <span style="font-size:0.58rem;color:rgba(255,255,255,0.25);">click file to read · click → to move</span>
+                        <button onclick="fetchPipeline()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:0.6rem;padding:2px 8px;border-radius:4px;cursor:pointer;">↻</button>
+                    </div>
+                </div>
+                <div id="pipeline-board" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;min-height:180px;max-height:320px;">
+                    <!-- injected by fetchPipeline() -->
+                </div>
+            </div>
+
+            <!-- File Reader Modal -->
+            <div id="pipeline-modal" onclick="if(event.target===this)closePipelineModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+                <div style="background:#13131f;border:1px solid rgba(255,255,255,0.11);border-radius:14px;width:min(800px,92vw);max-height:82vh;display:flex;flex-direction:column;box-shadow:0 28px 90px rgba(0,0,0,0.85);">
+                    <div style="display:flex;align-items:center;gap:8px;padding:0.7rem 0.9rem;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+                        <span style="font-size:0.9rem;">📄</span>
+                        <span id="modal-filename" style="font-weight:700;font-size:0.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;"></span>
+                        <span id="modal-stage-badge" style="font-size:0.58rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-family:monospace;flex-shrink:0;"></span>
+                        <button onclick="closePipelineModal()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:0.65rem;padding:3px 10px;border-radius:4px;cursor:pointer;flex-shrink:0;">✕</button>
+                    </div>
+                    <pre id="modal-content" style="flex:1;overflow:auto;padding:0.9rem 1rem;font-size:0.7rem;line-height:1.65;color:rgba(255,255,255,0.78);white-space:pre-wrap;word-break:break-word;font-family:'Courier New',monospace;margin:0;"></pre>
+                    <div id="modal-footer" style="padding:0.55rem 0.9rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;flex-shrink:0;"></div>
+                </div>
+            </div>
+
             <!-- Services / LaunchD / Crons -->
             <div class="services-grid">
                 <div class="service-panel">
@@ -1151,10 +1207,130 @@
                     </div>
                 </div>
             </div>
+            <!-- Opportunities Panel (toggled via sidebar) -->
+            <div id="opportunities-panel" style="display: none; margin-top: 2rem;">
+                <div class="panel" style="background: var(--card-bg, rgba(20,20,40,0.6)); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; overflow: hidden;">
+                    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="panel-icon">💰</div>
+                            <div class="panel-title">Opportunity Capture</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit" target="_blank" style="font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: none; padding: 0.25rem 0.5rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 0.375rem;">↗ Open in Sheets</a>
+                            <button onclick="toggleOpportunities()" style="font-size: 0.75rem; color: rgba(255,255,255,0.5); background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 0.375rem; padding: 0.25rem 0.5rem; cursor: pointer;">✕ Close</button>
+                        </div>
+                    </div>
+                    <div style="padding: 0 1.25rem 0.5rem;">
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.75rem; margin-bottom: 0.75rem;">Live feed from 6 ingestion workflows: RSS, Reddit, Email, Google Search, Twitter, Telegram</p>
+                    </div>
+                    <iframe
+                        src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQrp71fA3RafPPAwhLoFIYD3a3XuiNUuA6ZuOMsptKTBlNv12cHDI5XZ-NDZafVa9a_DPcsiU7QftRQ/pubhtml?gid=600103938&single=true"
+                        style="width: 100%; height: 500px; border: none; border-top: 1px solid rgba(255,255,255,0.08);"
+                        loading="lazy"
+                        title="Opportunity Capture Spreadsheet">
+                    </iframe>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <script>
+        // ── Opportunities panel toggle ───────────────────────────────────────
+        function toggleOpportunities() {
+            const panel = document.getElementById('opportunities-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ── Drive File Browser ───────────────────────────────────────────────
+        let driveFilesCache = [];
+
+        async function openDriveInFinder() {
+            try { await fetch('/mc/drive-open', { method: 'POST' }); } catch(e) {}
+        }
+
+        function toggleDriveBrowser() {
+            const browser = document.getElementById('drive-browser');
+            const isVisible = browser.style.display !== 'none';
+            browser.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible && driveFilesCache.length === 0) searchDriveFiles();
+        }
+
+        async function searchDriveFiles() {
+            const search = document.getElementById('drive-search').value.trim();
+            const status = document.getElementById('drive-status');
+            const list = document.getElementById('drive-file-list');
+            status.textContent = 'Searching...';
+            try {
+                const url = '/mc/drive-files' + (search ? '?search=' + encodeURIComponent(search) : '');
+                const d = await fetch(url).then(r => r.json());
+                driveFilesCache = d.files || [];
+                status.textContent = driveFilesCache.length + ' document(s) found';
+                renderDriveFiles(driveFilesCache);
+            } catch(e) {
+                status.textContent = 'Error loading files';
+                list.innerHTML = '';
+            }
+        }
+
+        const extIcons = { gsheet:'📊', gdoc:'📝', gslides:'📽️', xlsx:'📊', pdf:'📕', csv:'📋', md:'📄', docx:'📝', txt:'📄' };
+        let driveSearchTimer = null;
+
+        function debounceDriveSearch() {
+            clearTimeout(driveSearchTimer);
+            driveSearchTimer = setTimeout(searchDriveFiles, 300);
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function renderDriveFiles(files) {
+            const list = document.getElementById('drive-file-list');
+            if (!files.length) { list.innerHTML = '<div style="color:rgba(255,255,255,0.3); font-size:0.7rem; padding:0.5rem;">No files found</div>'; return; }
+            list.innerHTML = '';
+            files.forEach((f, i) => {
+                const icon = extIcons[f.ext] || '📄';
+                const date = f.modified ? new Date(f.modified).toLocaleDateString() : '';
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; gap:0.5rem; padding:4px 6px; border-radius:4px; background:rgba(255,255,255,0.02); font-size:0.68rem;';
+                row.onmouseover = () => row.style.background = 'rgba(0,245,255,0.06)';
+                row.onmouseout = () => row.style.background = 'rgba(255,255,255,0.02)';
+                row.innerHTML = '<span>' + icon + '</span>'
+                    + '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:rgba(255,255,255,0.8);" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</span>'
+                    + '<span style="color:rgba(255,255,255,0.25); font-size:0.6rem; white-space:nowrap;">' + date + '</span>';
+                const btn = document.createElement('button');
+                btn.textContent = '📋 Copy';
+                btn.title = 'Copy to CEO Review';
+                btn.style.cssText = 'padding:2px 6px; font-size:0.6rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:3px; color:#10b981; cursor:pointer; white-space:nowrap;';
+                btn.onclick = () => copyToReview(f.name);
+                row.appendChild(btn);
+                list.appendChild(row);
+            });
+        }
+
+        async function copyToReview(filename) {
+            const status = document.getElementById('drive-status');
+            status.textContent = 'Copying ' + filename + '...';
+            try {
+                const d = await fetch('/mc/drive-copy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ file: filename })
+                }).then(r => r.json());
+                if (d.success) {
+                    status.innerHTML = '<span style="color:#10b981;">Copied ' + filename + ' to CEO Review</span>';
+                } else {
+                    status.innerHTML = '<span style="color:#ef4444;">Error: ' + (d.error || 'Unknown') + '</span>';
+                }
+            } catch(e) {
+                status.innerHTML = '<span style="color:#ef4444;">Copy failed</span>';
+            }
+            setTimeout(() => { status.textContent = driveFilesCache.length + ' document(s) found'; }, 4000);
+        }
+
         // ── Theme switcher ────────────────────────────────────────────────────
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme === 'css1' ? '' : theme);
@@ -1997,6 +2173,151 @@
         }
 
         // ── Master refresh ────────────────────────────────────────────────────
+        // ── Document Pipeline — File Manager ──────────────────────────────────
+        const PIPELINE_ORDER = ['1_New','2_CEO_review','3_Approved','4_Ready_to_Seed','5_Failed_Seed'];
+        const PIPELINE_META = {
+            '1_New':           { color:'rgba(255,255,255,0.55)', accent:'rgba(255,255,255,0.06)' },
+            '2_CEO_review':    { color:'#f59e0b',               accent:'rgba(245,158,11,0.08)'  },
+            '3_Approved':      { color:'#22c55e',               accent:'rgba(34,197,94,0.08)'   },
+            '4_Ready_to_Seed': { color:'#a78bfa',               accent:'rgba(167,139,250,0.08)' },
+            '5_Failed_Seed':   { color:'#ef4444',               accent:'rgba(239,68,68,0.08)'   }
+        };
+        const PIPELINE_NEXT = { '1_New':'2_CEO_review', '2_CEO_review':'3_Approved', '3_Approved':'4_Ready_to_Seed', '5_Failed_Seed':'4_Ready_to_Seed' };
+
+        async function movePipelineFile(file, from, to) {
+            try {
+                const r = await fetch('/mc/pipeline/move', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ file, from, to })
+                }).then(r => r.json());
+                if (r.ok) fetchPipeline();
+                else alert('Move failed: ' + (r.error || 'unknown'));
+            } catch(e) { alert('Move failed: ' + e.message); }
+        }
+
+        async function openPipelineFile(file, stage) {
+            const modal = document.getElementById('pipeline-modal');
+            document.getElementById('modal-filename').textContent = file;
+            document.getElementById('modal-stage-badge').textContent = stage;
+            document.getElementById('modal-content').textContent = 'Loading…';
+            document.getElementById('modal-footer').innerHTML = '';
+            modal.style.display = 'flex';
+            try {
+                const r = await fetch(`/mc/pipeline/read?stage=${encodeURIComponent(stage)}&file=${encodeURIComponent(file)}`).then(r => r.json());
+                document.getElementById('modal-content').textContent = r.content || '(empty)';
+                const next = PIPELINE_NEXT[stage];
+                const nm = next ? PIPELINE_META[next] : null;
+                let btns = '';
+                if (next) {
+                    btns += `<button onclick="movePipelineFile(${JSON.stringify(file)},${JSON.stringify(stage)},${JSON.stringify(next)});closePipelineModal();" style="background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:0.68rem;padding:4px 14px;border-radius:5px;cursor:pointer;">→ Move to ${next}</button>`;
+                }
+                btns += `<button onclick="fetch('/mc/pipeline/open-finder?stage=${encodeURIComponent(stage)}')" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);font-size:0.65rem;padding:4px 12px;border-radius:5px;cursor:pointer;">🔍 Open in Finder</button>`;
+                btns += `<button onclick="closePipelineModal()" style="margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);font-size:0.65rem;padding:4px 12px;border-radius:5px;cursor:pointer;">Close</button>`;
+                document.getElementById('modal-footer').innerHTML = btns;
+            } catch(e) {
+                document.getElementById('modal-content').textContent = 'Error: ' + e.message;
+            }
+        }
+
+        function closePipelineModal() { document.getElementById('pipeline-modal').style.display = 'none'; }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closePipelineModal(); });
+
+        async function fetchPipeline() {
+            try {
+                const d = await fetch('/mc/pipeline').then(r => r.json());
+                const board = document.getElementById('pipeline-board');
+                if (!board) return;
+                const ext2icon = e => e==='md'?'📝':e==='json'?'{}':e==='txt'?'📄':'📎';
+
+                board.innerHTML = PIPELINE_ORDER.map(stage => {
+                    const files = d.stages[stage] || [];
+                    const meta = PIPELINE_META[stage];
+                    const next = PIPELINE_NEXT[stage];
+                    const isReady = stage === '4_Ready_to_Seed';
+
+                    let col = `<div data-stage="${stage}" style="border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;overflow:hidden;transition:background 0.12s;">`;
+
+                    // Title bar
+                    col += `<div style="padding:5px 7px;background:${meta.accent};border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                        <span style="font-size:0.62rem;font-weight:700;color:${meta.color};font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${stage}">${stage}</span>
+                        <button onclick="fetch('/mc/pipeline/open-finder?stage=${encodeURIComponent(stage)}')" title="Open in Finder" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.55rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">🔍</button>
+                        ${next && files.length > 0 ? `<button onclick="(async()=>{for(const f of ${JSON.stringify(files)})await movePipelineFile(f,${JSON.stringify(stage)},${JSON.stringify(next)});fetchPipeline();})()" title="Move all to next" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.55rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">→ all</button>` : ''}
+                    </div>`;
+
+                    // Count subheader
+                    col += `<div style="padding:2px 7px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.52rem;color:rgba(255,255,255,0.28);">${files.length} item${files.length!==1?'s':''}${isReady?' · ⚡ seeding':''}</div>`;
+
+                    // File rows
+                    col += `<div style="flex:1;overflow-y:auto;">`;
+                    if (files.length === 0) {
+                        col += `<div style="padding:12px 8px;font-size:0.58rem;color:rgba(255,255,255,0.15);text-align:center;">(empty — drop files here)</div>`;
+                    } else {
+                        files.forEach((f, i) => {
+                            const ext = (f.split('.').pop() || '').toLowerCase();
+                            const icon = ext2icon(ext);
+                            const rowBg = i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)';
+                            col += `<div
+                                draggable="true"
+                                data-file="${f.replace(/"/g,'&quot;')}"
+                                data-stage="${stage}"
+                                style="display:flex;align-items:center;gap:4px;padding:3px 5px 3px 6px;background:${rowBg};border-bottom:1px solid rgba(255,255,255,0.025);cursor:grab;"
+                                onmouseenter="this.style.background='rgba(255,255,255,0.08)'"
+                                onmouseleave="this.style.background='${rowBg}'">
+                                <span style="font-size:0.62rem;flex-shrink:0;pointer-events:none;">${icon}</span>
+                                <span onclick="openPipelineFile(${JSON.stringify(f)},${JSON.stringify(stage)})" title="${f}" style="font-size:0.6rem;color:rgba(255,255,255,0.72);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f}</span>
+                                ${next && !isReady ? `<button onclick="movePipelineFile(${JSON.stringify(f)},${JSON.stringify(stage)},${JSON.stringify(next)})" title="Move to ${next}" style="background:transparent;border:none;color:rgba(255,255,255,0.3);font-size:0.75rem;padding:0 3px;cursor:pointer;flex-shrink:0;" onmouseenter="this.style.color='${meta.color}'" onmouseleave="this.style.color='rgba(255,255,255,0.3)'">›</button>` : ''}
+                            </div>`;
+                        });
+                    }
+                    col += `</div></div>`;
+                    return col;
+                }).join('');
+
+                // Wire up drag-and-drop via JS event listeners (not inline handlers)
+                // This avoids the render-time interpolation bug
+                board.querySelectorAll('[data-file]').forEach(row => {
+                    row.addEventListener('dragstart', e => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', JSON.stringify({
+                            file: row.dataset.file,
+                            from: row.dataset.stage
+                        }));
+                        row.style.opacity = '0.4';
+                    });
+                    row.addEventListener('dragend', e => { row.style.opacity = '1'; });
+                });
+
+                board.querySelectorAll('[data-stage]').forEach(col => {
+                    const toStage = col.dataset.stage;
+                    col.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        col.style.background = 'rgba(255,255,255,0.06)';
+                    });
+                    col.addEventListener('dragleave', e => {
+                        if (!col.contains(e.relatedTarget)) col.style.background = '';
+                    });
+                    col.addEventListener('drop', e => {
+                        e.preventDefault();
+                        col.style.background = '';
+                        try {
+                            const { file, from } = JSON.parse(e.dataTransfer.getData('text/plain'));
+                            if (file && from && from !== toStage) {
+                                movePipelineFile(file, from, toStage);
+                            }
+                        } catch(err) {}
+                    });
+                });
+
+            } catch(e) {
+                const b = document.getElementById('pipeline-board');
+                if (b) b.innerHTML = `<div style="padding:1rem;color:#ef4444;font-size:0.7rem;">Failed to load pipeline</div>`;
+            }
+        }
+
+        // Auto-refresh pipeline every 30s
+        setInterval(fetchPipeline, 30000);
+
         async function refreshAll() {
             document.getElementById('lastRefresh').textContent = 'Refreshing...';
             await Promise.all([
@@ -2014,6 +2335,7 @@
                 fetchAgentSessions(),
                 fetchCSoPipeline(),
                 fetchFinancialPulse(),
+                fetchPipeline(),
                 updateBackupTime(),
                 fetchInternet()
             ]);

@@ -213,6 +213,18 @@ const server = http.createServer((req, res) => {
         case '/mc/acp':
             getAgentSessions(req, res);
             break;
+        case '/mc/pipeline':
+            getPipeline(req, res);
+            break;
+        case '/mc/pipeline/move':
+            movePipelineFile(req, res);
+            break;
+        case '/mc/pipeline/read':
+            readPipelineFile(req, res);
+            break;
+        case '/mc/pipeline/open-finder':
+            openPipelineInFinder(req, res);
+            break;
         case '/dwe/status':
             handleDWEStatus(req, res);
             break;
@@ -220,6 +232,34 @@ const server = http.createServer((req, res) => {
         case '/dwe/':
         case '/dwe/widget':
             serveFile(res, path.join(__dirname, 'dwe-widget.html'), 'text/html');
+            break;
+        case '/mc/drive-files':
+            getDriveFiles(req, res, parsedUrl.query);
+            break;
+        case '/mc/drive-open':
+            if (req.method === 'POST') {
+                const { exec: execDriveOpen } = require('child_process');
+                execDriveOpen(`open "${DRIVE_PATH}"`, (err) => {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: !err }));
+                });
+            } else {
+                res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
+            }
+            break;
+        case '/mc/drive-copy':
+            if (req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => body += chunk);
+                req.on('end', () => {
+                    try {
+                        const { file } = JSON.parse(body);
+                        copyDriveFile(res, file);
+                    } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
+                });
+            } else {
+                res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
+            }
             break;
         default:
             res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -1311,6 +1351,91 @@ function getAgentSessions(req, res) {
     }
 }
 
+// ── Document Pipeline ─────────────────────────────────────────────────────────
+const PIPELINE_BASE = `${process.env.HOME}/openclaw/shared`;
+const PIPELINE_STAGES = ['1_New', '2_CEO_review', '3_Approved', '4_Ready_to_Seed', '5_Failed_Seed'];
+
+function getPipeline(req, res) {
+    const result = {};
+    PIPELINE_STAGES.forEach(stage => {
+        try {
+            const files = fs.readdirSync(`${PIPELINE_BASE}/${stage}`)
+                .filter(f => !f.startsWith('.') && f !== 'placeholder.txt' && f !== '.gitkeep');
+            result[stage] = files.sort();
+        } catch(e) { result[stage] = []; }
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ stages: result, timestamp: new Date().toISOString() }));
+}
+
+function movePipelineFile(req, res) {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+        try {
+            const { file, from, to } = JSON.parse(body);
+            // Validate inputs
+            if (!file || !from || !to) { res.writeHead(400); res.end(JSON.stringify({ ok: false, error: 'Missing file, from, or to' })); return; }
+            if (!PIPELINE_STAGES.includes(from)) { res.writeHead(400); res.end(JSON.stringify({ ok: false, error: 'Invalid from stage' })); return; }
+            if (!PIPELINE_STAGES.includes(to)) { res.writeHead(400); res.end(JSON.stringify({ ok: false, error: 'Invalid to stage' })); return; }
+            // Prevent path traversal
+            const safeName = path.basename(file);
+            const src = path.join(PIPELINE_BASE, from, safeName);
+            const dst = path.join(PIPELINE_BASE, to, safeName);
+            if (!fs.existsSync(src)) { res.writeHead(404); res.end(JSON.stringify({ ok: false, error: 'File not found' })); return; }
+            fs.renameSync(src, dst);
+            console.log(`[pipeline] Moved ${safeName}: ${from} → ${to}`);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, file: safeName, from, to }));
+        } catch(e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
+}
+
+function openPipelineInFinder(req, res) {
+    const u = new url.URL(req.url, `http://localhost`);
+    const stage = u.searchParams.get('stage');
+    if (!stage || !PIPELINE_STAGES.includes(stage)) {
+        res.writeHead(400); res.end(JSON.stringify({ ok: false })); return;
+    }
+    const folderPath = path.join(PIPELINE_BASE, stage);
+    exec(`open "${folderPath}"`, () => {});
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+}
+
+function readPipelineFile(req, res) {
+    const u = new url.URL(req.url, `http://localhost`);
+    const stage = u.searchParams.get('stage');
+    const file  = u.searchParams.get('file');
+    if (!stage || !file || !PIPELINE_STAGES.includes(stage)) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Invalid stage or file' }));
+        return;
+    }
+    const safeName = path.basename(file);
+    const filePath = path.join(PIPELINE_BASE, stage, safeName);
+    if (!filePath.startsWith(PIPELINE_BASE)) {
+        res.writeHead(403); res.end(JSON.stringify({ ok: false, error: 'Forbidden' })); return;
+    }
+    try {
+        const stat = fs.statSync(filePath);
+        if (stat.size > 500 * 1024) { // 500KB cap for display
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, content: '[File too large to display — ' + Math.round(stat.size/1024) + 'KB]', truncated: true }));
+            return;
+        }
+        const content = fs.readFileSync(filePath, 'utf8');
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, content, size: stat.size }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
 server.listen(PORT, HOST, () => {
     console.log(`🚀 DWE Mission Control Server`);
     console.log(`   Running on http://${HOST}:${PORT}`);
@@ -1320,6 +1445,65 @@ server.listen(PORT, HOST, () => {
     console.log('');
     console.log('Press Ctrl+C to stop');
 });
+
+// ── Google Drive File Browser ────────────────────────────────────────────────
+const DRIVE_PATH = '/Users/elf-6/Library/CloudStorage/GoogleDrive-sirsid2001@gmail.com/My Drive/';
+const CEO_REVIEW_PATH = '/Users/elf-6/openclaw/shared/2_CEO_review/';
+const DOC_EXTENSIONS = new Set(['.gsheet', '.gdoc', '.gslides', '.xlsx', '.pdf', '.csv', '.md', '.docx', '.txt']);
+
+function getDriveFiles(req, res, query) {
+    const search = (query.search || '').toLowerCase();
+    try {
+        const files = fs.readdirSync(DRIVE_PATH)
+            .filter(name => {
+                const ext = path.extname(name).toLowerCase();
+                if (!DOC_EXTENSIONS.has(ext)) return false;
+                if (search && !name.toLowerCase().includes(search)) return false;
+                return true;
+            })
+            .map(name => {
+                let stat;
+                try { stat = fs.statSync(path.join(DRIVE_PATH, name)); } catch(e) { stat = null; }
+                return {
+                    name,
+                    ext: path.extname(name).replace('.', ''),
+                    size: stat ? stat.size : 0,
+                    modified: stat ? stat.mtime.toISOString() : null
+                };
+            })
+            .sort((a, b) => (b.modified || '').localeCompare(a.modified || ''));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ files, total: files.length }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message, files: [] }));
+    }
+}
+
+function copyDriveFile(res, filename) {
+    if (!filename) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'No filename provided' }));
+        return;
+    }
+    // Sanitize: prevent path traversal
+    const safe = path.basename(filename);
+    const src = path.join(DRIVE_PATH, safe);
+    const dest = path.join(CEO_REVIEW_PATH, safe);
+    if (!fs.existsSync(src)) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'File not found in Drive' }));
+        return;
+    }
+    try {
+        fs.copyFileSync(src, dest);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, destination: dest }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+    }
+}
 
 // Handle errors gracefully
 process.on('uncaughtException', (err) => {
