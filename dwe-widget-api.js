@@ -5,8 +5,7 @@
 
 const https = require('https');
 const fs = require('fs');
-const NOTION_API_KEY = process.env.NOTION_API_KEY ||
-    (() => { try { return fs.readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return ''; } })();
+const NOTION_API_KEY = (() => { try { return fs.readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return process.env.NOTION_API_KEY || ''; } })();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 // Cache for 5 minutes

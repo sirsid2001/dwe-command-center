@@ -365,19 +365,27 @@
             padding-top: 0.75rem;
             border-top: 1px solid rgba(255,255,255,0.1);
             display: flex;
+            align-items: stretch;
             justify-content: space-between;
             gap: 0.5rem;
         }
         .footer-btn {
-            flex: 1; text-align: center;
-            padding: 0.5rem 0.25rem;
+            flex: 1;
+            min-height: 2.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.4rem 0.35rem;
             background: rgba(100, 100, 100, 0.2);
             border: 1px solid rgba(100, 100, 100, 0.3);
             border-radius: 6px;
             color: #aaa;
             font-size: 0.7rem;
+            line-height: 1.2;
             text-decoration: none;
             cursor: pointer;
+            box-sizing: border-box;
         }
         .footer-btn:hover { background: rgba(100,100,100,0.35); color: #fff; }
 
@@ -809,6 +817,23 @@
             <div class="bg-blob bg-blob-2"></div>
             <div class="bg-blob bg-blob-3"></div>
 
+            <!-- OpenClaw Update Banner (hidden by default) -->
+            <div id="oc-update-banner" style="display:none;margin:0.6rem 0;padding:0.65rem 1rem;background:linear-gradient(135deg,rgba(255,170,0,0.15),rgba(255,100,0,0.1));border:1px solid rgba(255,170,0,0.35);border-radius:12px;backdrop-filter:blur(10px);align-items:center;gap:0.8rem;">
+                <div style="font-size:1.1rem;">🦞</div>
+                <div style="flex:1;">
+                    <div style="font-weight:700;font-size:0.8rem;color:#ffaa00;">OpenClaw Update Available</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6);margin-top:2px;">
+                        <span id="oc-banner-current"></span> → <span id="oc-banner-target" style="color:#00ff88;font-weight:600;"></span>
+                        <span id="oc-banner-notes" style="margin-left:0.5rem;"></span>
+                    </div>
+                    <div id="oc-banner-impact" style="font-size:0.65rem;color:rgba(255,255,255,0.45);margin-top:3px;"></div>
+                </div>
+                <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+                    <a id="oc-banner-link" href="#" target="_blank" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,170,0,0.2);border:1px solid rgba(255,170,0,0.4);border-radius:6px;color:#ffaa00;text-decoration:none;cursor:pointer;">Release Notes</a>
+                    <button onclick="dismissUpdateBanner()" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.5);cursor:pointer;">Dismiss</button>
+                </div>
+            </div>
+
             <div class="hero">
                 <div>
                     <h2>Welcome Back</h2>
@@ -873,50 +898,50 @@
                 </div>
 
                 <!-- Ask the DWE Brain — question tile -->
-                <div class="stat-card" style="border-left-color:#00f5ff;">
+                <div class="stat-card" style="border-left-color:#00f5ff; padding:1.15rem 1.2rem;">
                     <div class="stat-content" style="width:100%;">
-                        <div class="stat-label">Ask the DWE Brain</div>
-                        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+                        <div class="stat-label" style="margin-bottom:0.65rem;">Ask the DWE Brain</div>
+                        <div style="display:flex; flex-direction:column; gap:0.6rem;">
                             <textarea id="brain-query-input" placeholder="Ask anything about DWE..."
                                 onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); brainQuery(); }"
                                 rows="4"
-                                style="width:100%; padding:7px 9px; font-size:0.7rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:6px; color:#fff; outline:none; resize:none; line-height:1.5; box-sizing:border-box; font-family:inherit;"></textarea>
+                                style="width:100%; padding:9px 11px; font-size:0.72rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:6px; color:#fff; outline:none; resize:none; line-height:1.55; box-sizing:border-box; font-family:inherit;"></textarea>
                             <button onclick="brainQuery()" id="brain-query-btn"
-                                style="width:100%; padding:6px 0; font-size:0.72rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.35); border-radius:5px; color:#00f5ff; cursor:pointer; letter-spacing:0.03em;">Ask the Brain ↵</button>
+                                style="width:100%; padding:8px 0; font-size:0.74rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.35); border-radius:5px; color:#00f5ff; cursor:pointer; letter-spacing:0.03em;">Ask the Brain ↵</button>
                         </div>
                     </div>
                     <div class="stat-icon" style="background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(184,41,221,0.1)); align-self:flex-start;">💬</div>
                 </div>
 
                 <!-- Brain Answer tile -->
-                <div class="stat-card" style="border-left-color:#b829dd;">
+                <div class="stat-card" style="border-left-color:#b829dd; padding:1.15rem 1.2rem;">
                     <div class="stat-content" style="width:100%;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem;">
                             <div class="stat-label" style="margin-bottom:0;">DWE Brain Response</div>
-                            <div style="display:flex; gap:0.35rem;">
+                            <div style="display:flex; gap:0.45rem;">
                                 <button onclick="openDriveInFinder()"
-                                    style="font-size:0.65rem; padding:3px 8px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.25); border-radius:4px; color:#00f5ff; cursor:pointer;">
+                                    style="font-size:0.65rem; padding:5px 10px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.25); border-radius:4px; color:#00f5ff; cursor:pointer;">
                                     📁 Browse Drive
                                 </button>
                                 <button onclick="toggleDriveBrowser()" id="drive-browse-btn"
-                                    style="font-size:0.65rem; padding:3px 8px; background:rgba(184,41,221,0.1); border:1px solid rgba(184,41,221,0.25); border-radius:4px; color:#b829dd; cursor:pointer;">
+                                    style="font-size:0.65rem; padding:5px 10px; background:rgba(184,41,221,0.1); border:1px solid rgba(184,41,221,0.25); border-radius:4px; color:#b829dd; cursor:pointer;">
                                     🔍 Search Files
                                 </button>
                             </div>
                         </div>
-                        <div id="brain-query-answer" style="font-size:0.7rem; color:rgba(255,255,255,0.8); line-height:1.6; min-height:80px; max-height:140px; overflow-y:auto; white-space:pre-wrap;">
+                        <div id="brain-query-answer" style="font-size:0.72rem; color:rgba(255,255,255,0.8); line-height:1.65; min-height:80px; max-height:140px; overflow-y:auto; white-space:pre-wrap;">
                             <span style="color:rgba(255,255,255,0.2); font-style:italic;">Waiting for a question...</span>
                         </div>
                         <!-- Drive File Browser (hidden by default) -->
-                        <div id="drive-browser" style="display:none; margin-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.75rem;">
-                            <div style="display:flex; gap:0.4rem; margin-bottom:0.5rem;">
+                        <div id="drive-browser" style="display:none; margin-top:0.85rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.85rem;">
+                            <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem;">
                                 <input type="text" id="drive-search" placeholder="Search files..."
                                     onkeyup="debounceDriveSearch()"
-                                    style="flex:1; padding:5px 8px; font-size:0.7rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:5px; color:#fff; outline:none; font-family:inherit;">
-                                <button onclick="searchDriveFiles()" style="padding:5px 10px; font-size:0.65rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.3); border-radius:5px; color:#00f5ff; cursor:pointer;">Search</button>
+                                    style="flex:1; padding:7px 10px; font-size:0.72rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:5px; color:#fff; outline:none; font-family:inherit;">
+                                <button onclick="searchDriveFiles()" style="padding:7px 12px; font-size:0.67rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.3); border-radius:5px; color:#00f5ff; cursor:pointer;">Search</button>
                             </div>
-                            <div id="drive-status" style="font-size:0.65rem; color:rgba(255,255,255,0.4); margin-bottom:0.4rem;"></div>
-                            <div id="drive-file-list" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:2px;"></div>
+                            <div id="drive-status" style="font-size:0.67rem; color:rgba(255,255,255,0.4); margin-bottom:0.5rem;"></div>
+                            <div id="drive-file-list" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:3px;"></div>
                         </div>
                     </div>
                     <div class="stat-icon" style="background:linear-gradient(135deg,rgba(184,41,221,0.2),rgba(0,245,255,0.1)); align-self:flex-start;">🧬</div>
@@ -926,30 +951,40 @@
                 <div class="stat-card" style="border-left-color:#7b61ff; grid-column: span 3;">
                     <div class="stat-content" style="width:100%;">
                         <div class="stat-label" style="margin-bottom:0.6rem;">System Uptime</div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.6rem 1.2rem;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem 1.2rem;">
                             <!-- Mac mini uptime -->
-                            <div style="background:rgba(123,97,255,0.08); border:1px solid rgba(123,97,255,0.2); border-radius:8px; padding:0.55rem 0.7rem;">
+                            <div style="background:rgba(123,97,255,0.08); border:1px solid rgba(123,97,255,0.2); border-radius:8px; padding:0.75rem 0.85rem;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Mac mini</span>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#a78bff; letter-spacing:0.02em;"><span class="heartbeat">💓</span> <span id="mac-uptime-counter">—</span></div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;" id="mac-boot-time">—</div>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="mac-boot-time">—</div>
+                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
+                                    <button onclick="openTerminal()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(123,97,255,0.15); border:1px solid rgba(123,97,255,0.35); border-radius:4px; color:#a78bff; cursor:pointer;">Terminal CLI</button>
+                                </div>
                             </div>
-                            <!-- Gateway uptime -->
-                            <div style="background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.18); border-radius:8px; padding:0.55rem 0.7rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                            <!-- OpenClaw Gateway -->
+                            <div style="background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
                                     <span style="font-size:0.75rem;">⚡</span>
-                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Gateway</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">OpenClaw Gateway</span>
+                                    <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:monospace;font-weight:500;">v...</span>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;" id="gateway-start-time">—</div>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
+                                <div style="display:flex; gap:0.45rem; margin-top:0.65rem;">
+                                    <button id="gateway-restart-btn" onclick="restartGateway()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,80,80,0.12); border:1px solid rgba(255,80,80,0.3); border-radius:4px; color:#ff9090; cursor:pointer;">Restart</button>
+                                    <button id="oc-update-check-btn" onclick="checkOpenclawUpdate()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); border-radius:4px; color:rgba(0,255,136,0.7); cursor:pointer;">Check Updates</button>
+                                    <a href="http://127.0.0.1:3000" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">OpenClaw Web</a>
+                                </div>
                             </div>
                             <!-- Mac mini Health -->
                             <div style="background:rgba(0,191,255,0.06); border:1px solid rgba(0,191,255,0.18); border-radius:8px; padding:0.55rem 0.7rem;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                     <span style="font-size:0.75rem;">📊</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;" id="mac-chip">Apple M4 · 10 cores</span>
+                                    <button onclick="openSystemSettings()" style="margin-left:auto;padding:2px 6px;font-size:0.6rem;background:rgba(0,191,255,0.1);border:1px solid rgba(0,191,255,0.25);border-radius:3px;color:rgba(0,191,255,0.7);cursor:pointer;" title="System Settings">⚙️</button>
                                 </div>
                                 <div style="display:flex; flex-direction:column; gap:0.35rem;">
                                     <div>
@@ -976,6 +1011,50 @@
                                             <div id="mac-disk-bar" style="height:100%; width:0%; background:#ff9500; border-radius:3px; transition:width 0.6s;"></div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            <!-- Row 2: External Services -->
+                            <!-- n8n -->
+                            <div style="background:rgba(255,100,0,0.06); border:1px solid rgba(255,100,0,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                                    <span style="font-size:0.75rem;">⚙️</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">n8n</span>
+                                    <span id="n8n-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
+                                </div>
+                                <div style="display:flex; align-items:center; margin-bottom:0.15rem;">
+                                    <span style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="n8n-status-text">Checking...</span>
+                                    <span style="margin-left:auto; font-size:0.6rem; color:rgba(255,255,255,0.35);">n8n Digital Ocean</span>
+                                </div>
+                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">n8n.tvcpulse.com</div>
+                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
+                                    <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DigitalOcean</a>
+                                    <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n</a>
+                                </div>
+                            </div>
+                            <!-- Notion -->
+                            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.75rem 0.85rem;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                                    <span style="font-size:0.75rem;">📋</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Notion</span>
+                                    <span id="notion-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
+                                </div>
+                                <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
+                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;">api.notion.com</div>
+                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
+                                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Tasks DB ↗</a>
+                                </div>
+                            </div>
+                            <!-- Pinecone -->
+                            <div style="background:rgba(0,200,150,0.06); border:1px solid rgba(0,200,150,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                                    <span style="font-size:0.75rem;">🌲</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Pinecone</span>
+                                    <span id="pinecone-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
+                                </div>
+                                <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
+                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;">DWE Brain Vector DB</div>
+                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
+                                    <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
                                 </div>
                             </div>
                         </div>
@@ -1034,6 +1113,21 @@
                 </div>
             </div>
             <!-- ═══════════════════════════════════════════════ -->
+
+            <!-- n8n Workflow Manager -->
+            <div class="service-panel" style="margin-bottom:1.5rem;">
+                <div class="panel-header" style="padding:0.65rem 1rem;">
+                    <div class="panel-icon">⚙️</div>
+                    <div class="panel-title">n8n Workflow Manager</div>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
+                        <button id="n8n-toggle-btn" onclick="toggleN8nFrame()" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,100,0,0.12);border:1px solid rgba(255,100,0,0.3);border-radius:4px;color:#ff8c42;cursor:pointer;">Show</button>
+                        <a href="https://n8n.tvcpulse.com/" target="_blank" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:rgba(255,255,255,0.7);text-decoration:none;cursor:pointer;">Open in Tab ↗</a>
+                    </div>
+                </div>
+                <div id="n8n-frame-container" style="display:none;">
+                    <iframe id="n8n-iframe" src="" style="width:100%;height:600px;border:none;border-radius:0 0 14px 14px;background:#1a1a2e;" allow="clipboard-read; clipboard-write"></iframe>
+                </div>
+            </div>
 
             <!-- Ecosystem + Health -->
             <div class="health-grid">
@@ -1105,6 +1199,11 @@
                         <span>GitHub Backup</span>
                         <span class="health-status" id="backupTime">Loading...</span>
                     </div>
+                    <div class="health-item">
+                        <span class="pulse-dot" id="dot-oc-backup"></span>
+                        <span>OpenClaw Backup</span>
+                        <span class="health-status" id="ocBackupTime">Loading...</span>
+                    </div>
                 </div>
             </div>
 
@@ -1173,8 +1272,6 @@
                     </div>
                     <div class="panel-footer">
                         <button class="footer-btn" onclick="refreshAll()">🔍 Refresh</button>
-                        <a href="https://n8n.tvcpulse.com/" target="_blank" class="footer-btn">n8n ↗</a>
-                        <a href="http://127.0.0.1:3000" target="_blank" class="footer-btn">OpenClaw ↗</a>
                     </div>
                 </div>
 
@@ -1188,7 +1285,6 @@
                     </div>
                     <div class="panel-footer">
                         <button class="footer-btn" onclick="refreshAll()">🔄 Refresh</button>
-                        <a href="http://127.0.0.1:3000" target="_blank" class="footer-btn">🌐 OpenClaw</a>
                     </div>
                 </div>
 
@@ -1202,7 +1298,8 @@
                     </div>
                     <div class="panel-footer">
                         <a href="https://github.com/sirsid2001/dwe-command-center" target="_blank" class="footer-btn">🐙 GitHub</a>
-                        <button class="footer-btn" onclick="runBackup()" id="backupBtn">💾 Backup</button>
+                        <button class="footer-btn" onclick="runGitBackup()" id="gitBackupBtn">💾 Git Backup</button>
+                        <button class="footer-btn" onclick="runOCBackup()" id="ocBackupBtn">📦 OC Backup</button>
                         <button class="footer-btn" onclick="refreshAll()">🔄 Refresh</button>
                     </div>
                 </div>
@@ -1437,6 +1534,19 @@
                     const dotClass = ok ? '' : ' error';
                     const badgeClass = ok ? 'running' : 'error';
 
+                    // Skip n8n from External Services list — it has its own tile in System Uptime
+                    if (s.name.includes('n8n')) {
+                        // Still update the System Uptime n8n tile
+                        document.getElementById('n8n-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const n8nText = document.getElementById('n8n-status-text');
+                        n8nText.textContent = ok ? 'Online' : 'Offline';
+                        n8nText.style.color = ok ? '#00ff88' : '#ff4444';
+                        setDot('dot-n8n', ok ? 'ok' : 'error');
+                        document.getElementById('health-n8n').textContent = ok ? 'Online' : 'Unreachable';
+                        document.getElementById('health-n8n').className = 'health-status ' + (ok ? 'ok' : 'error');
+                        return;
+                    }
+
                     // OpenRouter: show credit balance instead of generic OK/Down
                     if (s.name === 'OpenRouter' && cr && cr.remaining !== undefined && cr.remaining !== null) {
                         const rem = cr.remaining;
@@ -1456,11 +1566,18 @@
                         <span class="badge ${badgeClass}">${ok ? 'OK' : 'Down'}</span>
                     </div>`;
 
-                    // Update n8n health dot
-                    if (s.name.includes('n8n')) {
-                        setDot('dot-n8n', ok ? 'ok' : 'error');
-                        document.getElementById('health-n8n').textContent = ok ? 'Online' : 'Unreachable';
-                        document.getElementById('health-n8n').className = 'health-status ' + (ok ? 'ok' : 'error');
+                    // Update Notion/Pinecone status tiles
+                    if (s.name.includes('Notion')) {
+                        document.getElementById('notion-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const notionText = document.getElementById('notion-status-text');
+                        notionText.textContent = ok ? 'Online' : 'Offline';
+                        notionText.style.color = ok ? '#00ff88' : '#ff4444';
+                    }
+                    if (s.name.includes('Pinecone')) {
+                        document.getElementById('pinecone-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const pcText = document.getElementById('pinecone-status-text');
+                        pcText.textContent = ok ? 'Online' : 'Offline';
+                        pcText.style.color = ok ? '#00ff88' : '#ff4444';
                     }
                 });
             } catch(e) {
@@ -1685,6 +1802,119 @@
             setTimeout(() => { btn.textContent = 'Reboot'; }, 4000);
         }
 
+        async function restartGateway() {
+            const btn = document.getElementById('gateway-restart-btn');
+            btn.textContent = '⏳';
+            try {
+                const d = await fetch('/mc/gateway-restart', { method: 'POST' }).then(r => r.json());
+                if (d.ok) {
+                    btn.textContent = '✅ Restarted';
+                } else {
+                    btn.textContent = '❌ Error';
+                }
+            } catch(e) {
+                btn.textContent = '❌ Error';
+            }
+            setTimeout(() => { btn.textContent = 'Restart'; }, 4000);
+        }
+
+        // ── OpenClaw Version Management ──────────────────────────────────────
+        async function fetchOpenclawVersion() {
+            try {
+                const d = await fetch('/mc/openclaw-version').then(r => r.json());
+                if (d.ok) {
+                    const badge = document.getElementById('oc-version-badge');
+                    badge.textContent = 'v' + d.currentVersion;
+                    if (d.updateAvailable) {
+                        badge.style.background = 'rgba(255,170,0,0.2)';
+                        badge.style.color = '#ffaa00';
+                        badge.textContent = 'v' + d.currentVersion + ' → ' + d.latestVersion;
+                        showUpdateBanner(d);
+                    } else {
+                        badge.style.background = 'rgba(0,255,136,0.1)';
+                        badge.style.color = 'rgba(0,255,136,0.6)';
+                    }
+                }
+            } catch(e) { /* silent */ }
+        }
+
+        function showUpdateBanner(data) {
+            const banner = document.getElementById('oc-update-banner');
+            document.getElementById('oc-banner-current').textContent = data.currentVersion;
+            document.getElementById('oc-banner-target').textContent = data.latestVersion;
+            if (data.releaseNotes) {
+                document.getElementById('oc-banner-notes').textContent = '— ' + data.releaseNotes;
+            }
+            if (data.dweImpact) {
+                document.getElementById('oc-banner-impact').textContent = 'DWE Impact: ' + data.dweImpact;
+            }
+            if (data.releaseUrl) {
+                document.getElementById('oc-banner-link').href = data.releaseUrl;
+            }
+            banner.style.display = 'flex';
+        }
+
+        function dismissUpdateBanner() {
+            document.getElementById('oc-update-banner').style.display = 'none';
+        }
+
+        async function checkOpenclawUpdate() {
+            const btn = document.getElementById('oc-update-check-btn');
+            btn.textContent = '⏳';
+            try {
+                const d = await fetch('/mc/openclaw-update-check', { method: 'POST' }).then(r => r.json());
+                if (d.ok) {
+                    const badge = document.getElementById('oc-version-badge');
+                    badge.textContent = 'v' + d.currentVersion;
+                    if (d.updateAvailable) {
+                        badge.style.background = 'rgba(255,170,0,0.2)';
+                        badge.style.color = '#ffaa00';
+                        badge.textContent = 'v' + d.currentVersion + ' → ' + d.latestVersion;
+                        btn.textContent = '🆕 Update!';
+                        showUpdateBanner(d);
+                    } else {
+                        badge.style.background = 'rgba(0,255,136,0.1)';
+                        badge.style.color = 'rgba(0,255,136,0.6)';
+                        btn.textContent = '✅ Latest';
+                    }
+                } else {
+                    btn.textContent = '❌ Error';
+                }
+            } catch(e) {
+                btn.textContent = '❌ Error';
+            }
+            setTimeout(() => { btn.textContent = 'Check Updates'; }, 5000);
+        }
+
+        // ── Open System Settings ─────────────────────────────────────────
+        function openSystemSettings() {
+            fetch('/mc/open-settings', { method: 'POST' });
+        }
+
+        // ── Open Terminal ─────────────────────────────────────────────────
+        function openTerminal() {
+            fetch('/mc/open-terminal', { method: 'POST' });
+        }
+
+        // ── n8n Iframe Toggle ─────────────────────────────────────────────
+        let n8nLoaded = false;
+        function toggleN8nFrame() {
+            const container = document.getElementById('n8n-frame-container');
+            const btn = document.getElementById('n8n-toggle-btn');
+            const iframe = document.getElementById('n8n-iframe');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                btn.textContent = 'Hide';
+                if (!n8nLoaded) {
+                    iframe.src = '/n8n/';
+                    n8nLoaded = true;
+                }
+            } else {
+                container.style.display = 'none';
+                btn.textContent = 'Show';
+            }
+        }
+
         async function brainQuery() {
             const input  = document.getElementById('brain-query-input');
             const btn    = document.getElementById('brain-query-btn');
@@ -1747,19 +1977,56 @@
             } catch(e) {}
         }
 
-        function runBackup() {
-            const btn = document.getElementById('backupBtn');
+        async function updateOCBackupTime() {
+            try {
+                const d = await fetch('/mc/openclaw-backup').then(r => r.json());
+                const el = document.getElementById('ocBackupTime');
+                if (d.lastBackup && new Date(d.lastBackup).getFullYear() > 2000) {
+                    const dt = new Date(d.lastBackup);
+                    const ago = timeAgo(d.lastBackup);
+                    const dateStr = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+                    const timeStr = dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+                    const isRecent = (Date.now() - dt) < 604800000; // 7 days for weekly backup
+                    el.innerHTML = `<span style="color:rgba(255,255,255,0.35);font-size:0.7em;">${dateStr} ${timeStr}</span> ${ago}`;
+                    el.className = 'health-status ' + (isRecent ? 'ok' : 'warning');
+                    setDot('dot-oc-backup', isRecent ? 'ok' : 'warn');
+                } else {
+                    el.textContent = 'Never';
+                    el.className = 'health-status warning';
+                    setDot('dot-oc-backup', 'warn');
+                }
+            } catch(e) {}
+        }
+
+        function runGitBackup() {
+            const btn = document.getElementById('gitBackupBtn');
             btn.textContent = '⏳ Backing up...';
             fetch('/mc/backup', { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
                     btn.textContent = data.success ? '✅ Done!' : '❌ Failed';
                     if (data.success) updateBackupTime();
-                    setTimeout(() => { btn.textContent = '💾 Backup'; }, 3000);
+                    setTimeout(() => { btn.textContent = '💾 Git Backup'; }, 3000);
                 })
                 .catch(() => {
                     btn.textContent = '❌ Error';
-                    setTimeout(() => { btn.textContent = '💾 Backup'; }, 3000);
+                    setTimeout(() => { btn.textContent = '💾 Git Backup'; }, 3000);
+                });
+        }
+
+        function runOCBackup() {
+            const btn = document.getElementById('ocBackupBtn');
+            btn.textContent = '⏳ Backing up...';
+            fetch('/mc/openclaw-backup', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    btn.textContent = data.success ? '✅ Done!' : '❌ Failed';
+                    if (data.success) updateOCBackupTime();
+                    setTimeout(() => { btn.textContent = '📦 OC Backup'; }, 3000);
+                })
+                .catch(() => {
+                    btn.textContent = '❌ Error';
+                    setTimeout(() => { btn.textContent = '📦 OC Backup'; }, 3000);
                 });
         }
 
@@ -2366,7 +2633,9 @@
                 fetchFinancialPulse(),
                 fetchPipeline(),
                 updateBackupTime(),
-                fetchInternet()
+                updateOCBackupTime(),
+                fetchInternet(),
+                fetchOpenclawVersion()
             ]);
             document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         }

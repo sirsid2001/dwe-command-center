@@ -1,0 +1,16 @@
+{
+  "currentVersion": "2026.3.8",
+  "latestVersion": "2026.3.8",
+  "updateAvailable": false,
+  "lastChecked": "2026-03-10T20:49:30.743Z",
+  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.3.8",
+  "releaseNotes": null,
+  "dweImpact": null,
+  "actions": [
+    "Run global package manager update with spec openclaw@latest",
+    "Run plugin update sync after core update",
+    "Refresh shell completion cache (if needed)",
+    "Restart gateway service and run doctor checks"
+  ],
+  "channel": "stable"
+}

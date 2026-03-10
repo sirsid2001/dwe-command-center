@@ -86,6 +86,38 @@ const server = http.createServer((req, res) => {
         serveFile(res, filePath, mimeTypes[ext] || 'application/octet-stream');
         return;
     }
+
+    // n8n reverse proxy — solves mixed-content (HTTP dashboard → HTTPS n8n)
+    if (pathname.startsWith('/n8n/') || pathname === '/n8n') {
+        const targetPath = pathname.replace(/^\/n8n/, '') || '/';
+        const targetUrl = 'https://n8n.tvcpulse.com' + targetPath + (parsedUrl.search || '');
+        const proxyOpts = {
+            hostname: 'n8n.tvcpulse.com',
+            path: targetPath + (parsedUrl.search || ''),
+            method: req.method,
+            headers: { ...req.headers, host: 'n8n.tvcpulse.com' }
+        };
+        delete proxyOpts.headers['host'];
+        proxyOpts.headers['host'] = 'n8n.tvcpulse.com';
+        const proxyReq = https.request(proxyOpts, (proxyRes) => {
+            // Rewrite Location headers for redirects
+            const headers = { ...proxyRes.headers };
+            if (headers.location && headers.location.includes('n8n.tvcpulse.com')) {
+                headers.location = headers.location.replace('https://n8n.tvcpulse.com', '/n8n');
+            }
+            // Remove frame-blocking headers if any
+            delete headers['x-frame-options'];
+            delete headers['content-security-policy'];
+            res.writeHead(proxyRes.statusCode, headers);
+            proxyRes.pipe(res, { end: true });
+        });
+        proxyReq.on('error', (e) => {
+            res.writeHead(502, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'n8n proxy error: ' + e.message }));
+        });
+        req.pipe(proxyReq, { end: true });
+        return;
+    }
     
     // API Routes
     switch (pathname) {
@@ -130,6 +162,17 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ error: 'Method not allowed' }));
             }
             break;
+        case '/mc/openclaw-backup':
+            if (req.method === 'POST') {
+                runOpenclawBackup(req, res);
+            } else if (req.method === 'GET') {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ lastBackup: getLastOpenclawBackupTime() }));
+            } else {
+                res.writeHead(405, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Method not allowed' }));
+            }
+            break;
         case '/mc/agent-routing':
             getAgentRouting(req, res);
             break;
@@ -147,6 +190,30 @@ const server = http.createServer((req, res) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
             });
+            break;
+        case '/mc/gateway-restart':
+            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.openclaw.gateway`, (err) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
+            });
+            break;
+        case '/mc/open-terminal':
+            exec('open -a Terminal', (err) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ ok: !err }));
+            });
+            break;
+        case '/mc/open-settings':
+            exec('open "x-apple.systempreferences:"', (err) => {
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ ok: !err }));
+            });
+            break;
+        case '/mc/openclaw-version':
+            getOpenclawVersion(req, res);
+            break;
+        case '/mc/openclaw-update-check':
+            runOpenclawUpdateCheck(req, res);
             break;
         case '/mc/brain-query':
             if (req.method === 'POST') {
@@ -683,6 +750,7 @@ function getLaunchd(req, res) {
         'ai.dwe.clawhub-check':                 { name: 'ClawHub Check',        group: 'routine',    scheduled: true  },
         'ai.dwe.soul-calibration':              { name: 'Soul Calibration',     group: 'routine',    scheduled: true  },
         'ai.dwe.night-mode-heartbeat':          { name: 'Night Mode',           group: 'routine',    scheduled: true  },
+        'ai.dwe.openclaw-backup':               { name: 'OpenClaw Backup',      group: 'routine',    scheduled: true  },
     };
 
     exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', (error, stdout) => {
@@ -742,8 +810,7 @@ function getAgentRouting(req, res) {
 }
 
 // Notion API integration - loaded from environment or config file
-const NOTION_API_KEY = process.env.NOTION_API_KEY ||
-    (() => { try { return require('fs').readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return ''; } })();
+const NOTION_API_KEY = (() => { try { return require('fs').readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return process.env.NOTION_API_KEY || ''; } })();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 async function getNotionTasks(req, res) {
@@ -972,6 +1039,64 @@ function getLastBackupTime() {
     return lastBackupTime.toISOString();
 }
 
+// ── OpenClaw Backup ─────────────────────────────────────────────────────────
+let lastOpenclawBackupTime = (() => {
+    try {
+        const { execSync } = require('child_process');
+        const newest = execSync('ls -t ~/openclaw/backups/*.tar.gz 2>/dev/null | head -1').toString().trim();
+        if (newest) {
+            const stats = require('fs').statSync(newest);
+            return stats.mtime;
+        }
+        return new Date(0);
+    } catch(e) { return new Date(0); }
+})();
+
+function getLastOpenclawBackupTime() {
+    return lastOpenclawBackupTime.toISOString();
+}
+
+function runOpenclawBackup(req, res) {
+    const { exec } = require('child_process');
+    const SCRIPT = '/Users/elf-6/openclaw/agents/cto/skills/backup/backup.sh';
+
+    console.log('Starting OpenClaw backup...');
+
+    exec(SCRIPT, {
+        timeout: 120000,
+        env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin', HOME: '/Users/elf-6' }
+    }, (error, stdout, stderr) => {
+        if (error) {
+            console.error('OpenClaw backup error:', error.message);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: 'Backup failed', details: stderr || error.message }));
+            return;
+        }
+
+        // Parse JSON from last line of stdout (log lines go to tee, JSON is final line)
+        try {
+            const lines = stdout.trim().split('\n');
+            const result = JSON.parse(lines[lines.length - 1]);
+            if (result.success) {
+                lastOpenclawBackupTime = new Date();
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                success: result.success,
+                message: result.success ? 'OpenClaw backup completed' : 'Backup failed',
+                lastBackup: lastOpenclawBackupTime.toISOString(),
+                archive: result.archive || null,
+                totalBackups: result.totalBackups || 0
+            }));
+        } catch(e) {
+            // Fallback: if JSON parsing fails but script exited 0, treat as success
+            lastOpenclawBackupTime = new Date();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, message: 'Backup completed', lastBackup: lastOpenclawBackupTime.toISOString() }));
+        }
+    });
+}
+
 function getBrainStatus(req, res) {
     const PASSED_FILE = '/Users/elf-6/openclaw/logs/brain_trainer_passed.json';
     const STATE_FILE  = '/Users/elf-6/openclaw/logs/brain_trainer_state.json';
@@ -1130,7 +1255,7 @@ async function getSystemHealth(req, res) {
             run("df -k / | tail -1"),
             run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
             run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
-            run("lsof -ti :3000 2>/dev/null | head -1")
+            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'")
         ]);
 
         // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
@@ -1462,6 +1587,75 @@ function readPipelineFile(req, res) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: e.message }));
     }
+}
+
+// ── OpenClaw Version Management ──────────────────────────────────────────
+const OC_VERSION_STATE = path.join(__dirname, '.openclaw-version-state.json');
+
+function getOpenclawVersion(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    // Read current version from openclaw.json
+    try {
+        const ocConfig = JSON.parse(fs.readFileSync(path.join(process.env.HOME, '.openclaw/openclaw.json'), 'utf8'));
+        const currentVersion = ocConfig.meta?.lastTouchedVersion || 'unknown';
+        // Read cached update state if it exists
+        let updateState = {};
+        try {
+            updateState = JSON.parse(fs.readFileSync(OC_VERSION_STATE, 'utf8'));
+        } catch(e) { /* no cached state yet */ }
+        res.end(JSON.stringify({
+            ok: true,
+            currentVersion,
+            latestVersion: updateState.latestVersion || null,
+            updateAvailable: updateState.updateAvailable || false,
+            lastChecked: updateState.lastChecked || null,
+            releaseUrl: updateState.releaseUrl || null,
+            releaseNotes: updateState.releaseNotes || null,
+            dweImpact: updateState.dweImpact || null
+        }));
+    } catch(e) {
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+function runOpenclawUpdateCheck(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    exec('npx openclaw update --dry-run --json 2>/dev/null', { timeout: 30000 }, (err, stdout) => {
+        if (err) {
+            res.end(JSON.stringify({ ok: false, error: err.message }));
+            return;
+        }
+        try {
+            const data = JSON.parse(stdout.trim());
+            const current = data.currentVersion || 'unknown';
+            const target = data.targetVersion || current;
+            const updateAvailable = current !== target;
+            const state = {
+                currentVersion: current,
+                latestVersion: target,
+                updateAvailable,
+                lastChecked: new Date().toISOString(),
+                releaseUrl: `https://www.npmjs.com/package/openclaw/v/${target}`,
+                releaseNotes: null,
+                dweImpact: null,
+                actions: data.actions || [],
+                channel: data.effectiveChannel || 'stable'
+            };
+            // If update available, fetch npm info for release summary
+            if (updateAvailable) {
+                exec(`npm view openclaw@${target} description 2>/dev/null`, { timeout: 10000 }, (e2, desc) => {
+                    if (!e2 && desc) state.releaseNotes = desc.trim();
+                    fs.writeFileSync(OC_VERSION_STATE, JSON.stringify(state, null, 2));
+                    res.end(JSON.stringify({ ok: true, ...state }));
+                });
+            } else {
+                fs.writeFileSync(OC_VERSION_STATE, JSON.stringify(state, null, 2));
+                res.end(JSON.stringify({ ok: true, ...state }));
+            }
+        } catch(e) {
+            res.end(JSON.stringify({ ok: false, error: 'Failed to parse update check output' }));
+        }
+    });
 }
 
 server.listen(PORT, HOST, () => {
