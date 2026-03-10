@@ -640,23 +640,49 @@ function getCrons(req, res) {
 function getLaunchd(req, res) {
     // scheduled:true = runs and exits on a timer; not running is normal (green if exit 0, yellow if exit non-zero)
     // scheduled:false = should always be running; not running = error
+    // Groups (render order): core, heartbeat, followup, anita-pm, brain, monitoring, routine
     const DAEMON_NAMES = {
-        'ai.openclaw.gateway':                  { name: 'OpenClaw Gateway',    group: 'core',      scheduled: false },
-        'ai.openclaw.relay-daemon':             { name: 'Relay Daemon',        group: 'core',      scheduled: false },
-        'ai.dwe.seed-watcher':                  { name: 'Seed Watcher',        group: 'brain',     scheduled: false },
-        'ai.dwe.notion-sync':                   { name: 'Notion Sync',         group: 'brain',     scheduled: false },
-        'ai.dwe.brain-trainer':                 { name: 'Brain Trainer',       group: 'brain',     scheduled: true  },
-        'ai.dwe.health-monitor':                { name: 'Health Monitor',      group: 'autonomy',  scheduled: false },
-        'ai.dwe.agent-heartbeat-cto':           { name: 'CTO Heartbeat',       group: 'autonomy',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-anita':         { name: 'Anita Heartbeat',     group: 'autonomy',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-anita-finance': { name: 'Anita Finance Pulse', group: 'autonomy',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-ce':            { name: 'CE Heartbeat',        group: 'autonomy',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-nicole':        { name: 'Nicole CSO Heartbeat',group: 'autonomy',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'Nicole Weekly',       group: 'autonomy',  scheduled: true  },
-        'ai.dwe.nightly-review':                { name: 'Nightly Review',      group: 'brain',     scheduled: true  },
-        'com.dwe.ops-monitor':                  { name: 'Ops Monitor',         group: 'ops',       scheduled: false },
-        'com.dwe.ops-report':                   { name: 'Ops Report',          group: 'ops',       scheduled: true  },
-        'com.missioncontrol.server':            { name: 'Mission Control',     group: 'core',      scheduled: false }
+        // ── Core Infrastructure (always-on services) ──
+        'ai.openclaw.gateway':                  { name: 'OpenClaw Gateway',     group: 'core',       scheduled: false },
+        'ai.openclaw.relay-daemon':             { name: 'Relay Daemon',         group: 'core',       scheduled: false },
+        'com.missioncontrol.server':            { name: 'Mission Control',      group: 'core',       scheduled: false },
+
+        // ── Agent Heartbeats (scheduled check-ins) ──
+        'ai.dwe.agent-heartbeat-cto':           { name: 'CTO Heartbeat',        group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-anita':         { name: 'COO Heartbeat',        group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-ce':            { name: 'CE Heartbeat',         group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole':        { name: 'CSO Heartbeat',        group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'CSO Weekly Review',    group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-anita-finance': { name: 'COO Finance Review',   group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-anita-email-digest': { name: 'COO Email Digest', group: 'heartbeat', scheduled: true },
+
+        // ── Task Follow-Up (2h cycles) ──
+        'ai.dwe.ce-task-followup':              { name: 'CE Follow-Up',         group: 'followup',   scheduled: true  },
+        'ai.dwe.cto-task-followup':             { name: 'CTO Follow-Up',        group: 'followup',   scheduled: true  },
+        'ai.dwe.nicole-task-followup':          { name: 'CSO Follow-Up',        group: 'followup',   scheduled: true  },
+
+        // ── COO PM (operations & triage) ──
+        'ai.dwe.anita-email-batch':             { name: 'Email Batch',          group: 'coo-pm',     scheduled: true  },
+        'ai.dwe.anita-notion-triage':           { name: 'Notion Triage',        group: 'coo-pm',     scheduled: true  },
+        'ai.dwe.morning-digest':                { name: 'Morning Digest',       group: 'coo-pm',     scheduled: true  },
+
+        // ── Brain & Knowledge (Pinecone/RAG pipeline) ──
+        'ai.dwe.seed-watcher':                  { name: 'Seed Watcher',         group: 'brain',      scheduled: false },
+        'ai.dwe.notion-sync':                   { name: 'Notion Sync',          group: 'brain',      scheduled: false },
+        'ai.dwe.brain-trainer':                 { name: 'Brain Trainer',        group: 'brain',      scheduled: true  },
+        'ai.dwe.nightly-review':                { name: 'Nightly Review',       group: 'brain',      scheduled: true  },
+        'ai.dwe.memory-decay':                  { name: 'Memory Decay',         group: 'brain',      scheduled: true  },
+
+        // ── Monitoring & Health ──
+        'ai.dwe.health-monitor':                { name: 'Health Monitor',       group: 'monitoring', scheduled: false },
+        'ai.dwe.anomaly-check':                 { name: 'Anomaly Check',        group: 'monitoring', scheduled: true  },
+        'ai.dwe.ralphy-monitor':                { name: 'Ralph Monitor',        group: 'monitoring', scheduled: true  },
+        'com.dwe.ops-monitor':                  { name: 'Ops Monitor',          group: 'monitoring', scheduled: false },
+
+        // ── Weekly Routines & Maintenance ──
+        'ai.dwe.clawhub-check':                 { name: 'ClawHub Check',        group: 'routine',    scheduled: true  },
+        'ai.dwe.soul-calibration':              { name: 'Soul Calibration',     group: 'routine',    scheduled: true  },
+        'ai.dwe.night-mode-heartbeat':          { name: 'Night Mode',           group: 'routine',    scheduled: true  },
     };
 
     exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', (error, stdout) => {
@@ -670,6 +696,8 @@ function getLaunchd(req, res) {
                     const label = parts[2];
                     const running = pid !== '-';
                     const hasError = exitCode !== '0' && exitCode !== '-';
+                    // Skip OpenClaw app internals (updater, sparkle, app instance)
+                    if (label.includes('sparkle') || label.startsWith('application.')) return;
                     const meta = DAEMON_NAMES[label] || { name: label.split('.').pop(), group: 'other', scheduled: false };
 
                     let status;

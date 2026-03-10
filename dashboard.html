@@ -1485,30 +1485,59 @@
                     }
                 });
 
-                // Render list
+                // Group services by category and render with section headers
+                const groupOrder = [
+                    { key: 'core',       label: 'Core Infrastructure',  icon: '⚡' },
+                    { key: 'heartbeat',  label: 'Agent Heartbeats',     icon: '💓' },
+                    { key: 'followup',   label: 'Task Follow-Up',       icon: '🔄' },
+                    { key: 'coo-pm',     label: 'COO Operations',       icon: '📋' },
+                    { key: 'brain',      label: 'Brain & Knowledge',    icon: '🧠' },
+                    { key: 'monitoring', label: 'Monitoring & Health',   icon: '📡' },
+                    { key: 'routine',    label: 'Routines & Maintenance',icon: '🔧' },
+                    { key: 'other',      label: 'Other',                icon: '📦' },
+                ];
+                const grouped = {};
                 d.services.forEach(s => {
-                    if (s.retired) {
-                        // Retired/dead plists: show greyed out with a note
-                        list.innerHTML += `<div class="service-item" style="opacity:0.4;">
-                            <span class="pulse-dot offline"></span>
-                            <span class="label" style="text-decoration:line-through;">${s.name}</span>
-                            <span class="badge" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);font-size:0.6rem;">retired</span>
-                        </div>`;
-                        return;
-                    }
-                    // dot: running=green, warning=yellow, error=red, waiting=gray
-                    const dotClass = s.status === 'running' ? '' : s.status === 'error' ? ' error' : s.status === 'warning' ? ' warning' : ' offline';
-                    const badge    = s.status === 'running' ? 'running' : s.status === 'error' ? 'error' : s.status === 'warning' ? 'warning' : 'waiting';
-                    const label    = s.status === 'running' ? '▶' : s.status === 'error' ? '✕' : s.status === 'warning' ? '⚠' : '⏸';
-                    const hint     = s.scheduled && s.status !== 'running' ? ' style="opacity:0.75;"' : '';
-                    list.innerHTML += `<div class="service-item"${hint}>
-                        <span class="pulse-dot${dotClass}"></span>
-                        <span class="label">${s.name}</span>
-                        <span class="badge ${badge}">${label}</span>
-                    </div>`;
+                    const g = s.group || 'other';
+                    if (!grouped[g]) grouped[g] = [];
+                    grouped[g].push(s);
                 });
 
-                if (d.services.length === 0) {
+                let hasContent = false;
+                groupOrder.forEach(grp => {
+                    const items = grouped[grp.key];
+                    if (!items || items.length === 0) return;
+                    hasContent = true;
+                    // Count running vs total for the group
+                    const running = items.filter(s => s.status === 'running').length;
+                    const total = items.length;
+                    const allOk = items.every(s => s.status === 'running' || (s.scheduled && s.status === 'waiting'));
+                    const headerColor = allOk ? 'rgba(0,255,136,0.7)' : 'rgba(255,200,50,0.7)';
+                    list.innerHTML += `<div style="margin:0.75rem 0 0.35rem 0;padding:0.25rem 0.5rem;border-left:3px solid ${headerColor};font-size:0.75rem;font-weight:600;color:${headerColor};letter-spacing:0.03em;text-transform:uppercase;">
+                        ${grp.icon} ${grp.label}
+                    </div>`;
+                    items.forEach(s => {
+                        if (s.retired) {
+                            list.innerHTML += `<div class="service-item" style="opacity:0.4;">
+                                <span class="pulse-dot offline"></span>
+                                <span class="label" style="text-decoration:line-through;">${s.name}</span>
+                                <span class="badge" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);font-size:0.6rem;">retired</span>
+                            </div>`;
+                            return;
+                        }
+                        const dotClass = s.status === 'running' ? '' : s.status === 'error' ? ' error' : s.status === 'warning' ? ' warning' : ' offline';
+                        const badge    = s.status === 'running' ? 'running' : s.status === 'error' ? 'error' : s.status === 'warning' ? 'warning' : 'waiting';
+                        const label    = s.status === 'running' ? '▶' : s.status === 'error' ? '✕' : s.status === 'warning' ? '⚠' : '⏸';
+                        const hint     = s.scheduled && s.status !== 'running' ? ' style="opacity:0.75;"' : '';
+                        list.innerHTML += `<div class="service-item"${hint}>
+                            <span class="pulse-dot${dotClass}"></span>
+                            <span class="label">${s.name}</span>
+                            <span class="badge ${badge}">${label}</span>
+                        </div>`;
+                    });
+                });
+
+                if (!hasContent) {
                     list.innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span>No daemons found</span></div>';
                 }
 
