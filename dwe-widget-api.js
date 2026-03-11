@@ -5,7 +5,10 @@
 
 const https = require('https');
 const fs = require('fs');
-const NOTION_API_KEY = (() => { try { return fs.readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return process.env.NOTION_API_KEY || ''; } })();
+const NOTION_API_KEY = (() => {
+    try { const k = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/NOTION_API_KEY="?([^"\n]+)"?/)?.[1]?.trim(); if (k) return k; } catch(e) {}
+    return process.env.NOTION_API_KEY || '';
+})();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 // Cache for 5 minutes
@@ -121,6 +124,7 @@ async function getDWEStats() {
             completed: completed,
             inProgress: inProgress,
             remaining: total - completed,
+            maxId: maxId,
             lastUpdated: new Date().toISOString()
         };
         cacheTime = now;

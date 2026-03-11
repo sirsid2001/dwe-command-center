@@ -262,6 +262,12 @@ const server = http.createServer((req, res) => {
         case '/mc/openrouter-credits':
             getOpenRouterCredits(req, res);
             break;
+        case '/mc/digitalocean-status':
+            getDigitalOceanStatus(req, res);
+            break;
+        case '/mc/sidney-devices':
+            getSidneyDevices(req, res);
+            break;
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
             break;
@@ -810,7 +816,10 @@ function getAgentRouting(req, res) {
 }
 
 // Notion API integration - loaded from environment or config file
-const NOTION_API_KEY = (() => { try { return require('fs').readFileSync(`${process.env.HOME}/.config/notion/api_key`, 'utf8').trim(); } catch(e) { return process.env.NOTION_API_KEY || ''; } })();
+const NOTION_API_KEY = (() => {
+    try { const k = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/NOTION_API_KEY="?([^"\n]+)"?/)?.[1]?.trim(); if (k) return k; } catch(e) {}
+    return process.env.NOTION_API_KEY || '';
+})();
 const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 async function getNotionTasks(req, res) {
@@ -1172,7 +1181,7 @@ function getBrainStatus(req, res) {
 // OpenRouter credits — cached, refreshed every 5 minutes
 const OPENROUTER_API_KEY = (() => {
     if (process.env.OPENROUTER_API_KEY && !process.env.OPENROUTER_API_KEY.startsWith('your_')) return process.env.OPENROUTER_API_KEY;
-    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/agents/cto/.env`, 'utf8').match(/OPENROUTER_API_KEY=(.+)/)?.[1]?.trim() || ''; } catch(e) { return ''; }
+    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/OPENROUTER_API_KEY="?([^"\n]+)"?/)?.[1]?.trim() || ''; } catch(e) { return ''; }
 })();
 
 let orCreditsCache = null;
@@ -1213,6 +1222,154 @@ function getOpenRouterCredits(req, res) {
     res.end(JSON.stringify(orCreditsCache || { remaining: null, fetchedAt: null }));
 }
 
+// DigitalOcean droplet monitoring — cached, refreshed every 2 minutes
+const DO_API_TOKEN = (() => {
+    if (process.env.DIGITALOCEAN_TOKEN && !process.env.DIGITALOCEAN_TOKEN.startsWith('your_')) return process.env.DIGITALOCEAN_TOKEN;
+    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/DIGITALOCEAN_TOKEN="?([^"\n]+)"?/)?.[1]?.trim() || ''; } catch(e) { return ''; }
+})();
+
+let doMetricsCache = null;
+let doDropletId = null;
+const DO_METRICS_TTL = 2 * 60 * 1000;
+
+function doApiGet(path) {
+    return new Promise((resolve, reject) => {
+        const req = https.request({
+            hostname: 'api.digitalocean.com',
+            path: path,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${DO_API_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        }, res => {
+            let data = '';
+            res.on('data', c => data += c);
+            res.on('end', () => {
+                try { resolve(JSON.parse(data)); }
+                catch(e) { reject(e); }
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+function getLatestValue(metricsResponse) {
+    try {
+        const results = metricsResponse?.data?.result;
+        if (!results || results.length === 0) return null;
+        // Get the last value from the first result series
+        const values = results[0].values;
+        if (!values || values.length === 0) return null;
+        return parseFloat(values[values.length - 1][1]);
+    } catch(e) { return null; }
+}
+
+async function fetchDigitalOceanMetrics() {
+    if (!DO_API_TOKEN) return;
+    try {
+        // Step 1: Get droplet ID if we don't have it
+        if (!doDropletId) {
+            const droplets = await doApiGet('/v2/droplets?per_page=10');
+            if (droplets.droplets && droplets.droplets.length > 0) {
+                // Use first droplet (or find n8n one)
+                const d = droplets.droplets.find(d => d.name.includes('n8n')) || droplets.droplets[0];
+                doDropletId = d.id;
+                doMetricsCache = doMetricsCache || {};
+                doMetricsCache.dropletName = d.name;
+                doMetricsCache.region = d.region?.slug || '';
+                doMetricsCache.size = d.size_slug || '';
+                doMetricsCache.ip = d.networks?.v4?.find(n => n.type === 'public')?.ip_address || '';
+                doMetricsCache.dropletStatus = d.status;
+            } else {
+                doMetricsCache = { error: 'No droplets found', fetchedAt: Date.now() };
+                return;
+            }
+        }
+
+        // Step 2: Fetch metrics (last 5 minutes)
+        const end = Math.floor(Date.now() / 1000);
+        const start = end - 300;
+        const base = `/v2/monitoring/metrics/droplet`;
+        const qs = `host_id=${doDropletId}&start=${start}&end=${end}`;
+
+        const [cpuData, memAvail, memTotal, diskFree, diskSize, load1] = await Promise.all([
+            doApiGet(`${base}/cpu?${qs}`),
+            doApiGet(`${base}/memory_available?${qs}`),
+            doApiGet(`${base}/memory_total?${qs}`),
+            doApiGet(`${base}/filesystem_free?${qs}`),
+            doApiGet(`${base}/filesystem_size?${qs}`),
+            doApiGet(`${base}/load_1?${qs}`)
+        ]);
+
+        // CPU: sum non-idle modes or compute from idle
+        let cpuPct = null;
+        try {
+            const cpuResults = cpuData?.data?.result || [];
+            const idleSeries = cpuResults.find(r => r.metric?.mode === 'idle');
+            if (idleSeries && idleSeries.values && idleSeries.values.length > 0) {
+                const idleVal = parseFloat(idleSeries.values[idleSeries.values.length - 1][1]);
+                cpuPct = Math.max(0, Math.min(100, 100 - idleVal));
+            }
+        } catch(e) {}
+
+        const memAvailVal = getLatestValue(memAvail);
+        const memTotalVal = getLatestValue(memTotal);
+        const diskFreeVal = getLatestValue(diskFree);
+        const diskSizeVal = getLatestValue(diskSize);
+        const load1Val = getLatestValue(load1);
+
+        const agentInstalled = memTotalVal !== null;
+
+        const cache = {
+            dropletName: doMetricsCache?.dropletName || '',
+            region: doMetricsCache?.region || '',
+            size: doMetricsCache?.size || '',
+            ip: doMetricsCache?.ip || '',
+            dropletStatus: doMetricsCache?.dropletStatus || '',
+            cpu: cpuPct !== null ? Math.round(cpuPct * 10) / 10 : null,
+            memFreeMB: memAvailVal !== null ? Math.round(memAvailVal / 1024 / 1024) : null,
+            memTotalMB: memTotalVal !== null ? Math.round(memTotalVal / 1024 / 1024) : null,
+            memUsedPct: (memAvailVal !== null && memTotalVal !== null && memTotalVal > 0)
+                ? Math.round((1 - memAvailVal / memTotalVal) * 1000) / 10 : null,
+            diskFreeMB: diskFreeVal !== null ? Math.round(diskFreeVal / 1024 / 1024) : null,
+            diskTotalMB: diskSizeVal !== null ? Math.round(diskSizeVal / 1024 / 1024) : null,
+            diskUsedPct: (diskFreeVal !== null && diskSizeVal !== null && diskSizeVal > 0)
+                ? Math.round((1 - diskFreeVal / diskSizeVal) * 1000) / 10 : null,
+            load1: load1Val !== null ? Math.round(load1Val * 100) / 100 : null,
+            agentInstalled,
+            fetchedAt: Date.now()
+        };
+
+        doMetricsCache = cache;
+        console.log(`[DO Metrics] CPU: ${cache.cpu}%, MEM: ${cache.memUsedPct}%, DISK: ${cache.diskUsedPct}%, LOAD: ${cache.load1}`);
+    } catch(e) {
+        console.error('[DO Metrics] Error:', e.message);
+        if (!doMetricsCache) doMetricsCache = { error: e.message, fetchedAt: Date.now() };
+    }
+}
+
+if (DO_API_TOKEN) {
+    fetchDigitalOceanMetrics();
+    setInterval(fetchDigitalOceanMetrics, DO_METRICS_TTL);
+}
+
+async function getDigitalOceanStatus(req, res) {
+    if (!DO_API_TOKEN) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'No DigitalOcean API token. Add DIGITALOCEAN_TOKEN to ~/.openclaw/.env', configured: false }));
+        return;
+    }
+    // Force refresh if ?refresh=1
+    const parsedReq = url.parse(req.url, true);
+    if (parsedReq.query.refresh === '1') {
+        await fetchDigitalOceanMetrics();
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(doMetricsCache || { configured: true, loading: true, fetchedAt: null }));
+}
+
 // Internet connectivity — ping 1.1.1.1 every 60s, track last success
 let lastPingSuccess = null;
 function runInternetPing() {
@@ -1248,14 +1405,16 @@ async function getSystemHealth(req, res) {
     });
 
     try {
-        const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut] = await Promise.all([
+        const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut, ipOut, gwOut] = await Promise.all([
             run("ps -A -o %cpu | awk '{s+=$1} END {printf \"%.1f\", s}'"),
             run("vm_stat"),
             run("sysctl -n hw.memsize"),
             run("df -k / | tail -1"),
             run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
             run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
-            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'")
+            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'"),
+            run("ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo ''"),
+            run("route -n get default 2>/dev/null | awk '/gateway:/{print $2}'")
         ]);
 
         // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
@@ -1309,12 +1468,73 @@ async function getSystemHealth(req, res) {
             disk:   { totalGB: diskTotalGB, usedGB: diskUsedGB, freeGB: diskFreeGB, percent: diskPct },
             bootTime: bootISO,
             gatewayStartTime: gatewayStartISO,
+            localIP: ipOut || null,
+            defaultGateway: gwOut || null,
             timestamp: new Date().toISOString()
         }));
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
     }
+}
+
+// --- Sidney Device Presence (iPhone + Apple Watch) ---
+let sidneyDevicesCache = { iphone: null, watch: null, fetchedAt: null };
+
+// Known device identifiers
+const IPHONE_MAC = 'c4:5b:ac:a3:d3:dd';
+const WATCH_BONJOUR = 'OverWatch-P';
+
+async function pollSidneyDevices() {
+    const run = (cmd, timeoutMs = 5000) => new Promise((resolve) => {
+        exec(cmd, { timeout: timeoutMs }, (err, stdout) => resolve(stdout ? stdout.trim() : ''));
+    });
+
+    try {
+        // Strategy: send a targeted ping to refresh ARP cache, then check ARP table by MAC.
+        // Apple devices throttle ICMP but ARP entries persist if device is on WiFi.
+        await run('/sbin/ping -c 1 -t 1 192.168.1.114 2>/dev/null', 3000);
+
+        // iPhone: check ARP table for known MAC (-n skips slow DNS lookups)
+        const arpTable = await run('/usr/sbin/arp -an');
+        let iphoneOnline = false, iphoneIP = null;
+        const iphoneLine = arpTable.split('\n').find(l => l.includes(IPHONE_MAC));
+        if (iphoneLine && !iphoneLine.includes('(incomplete)')) {
+            iphoneOnline = true;
+            const m = iphoneLine.match(/\(([0-9.]+)\)/);
+            iphoneIP = m ? m[1] : null;
+        }
+
+        // Apple Watch: resolve mDNS hostname via ping, then verify in ARP table.
+        // Ping may fail (watchOS throttles ICMP) but mDNS resolution populates ARP.
+        let watchOnline = false, watchIP = null;
+        const watchPingOut = await run(`/sbin/ping -c 1 -t 2 ${WATCH_BONJOUR}.local 2>&1 || true`, 5000);
+        const watchIpMatch = watchPingOut.match(/\((\d+\.\d+\.\d+\.\d+)\)/);
+        if (watchIpMatch) {
+            watchIP = watchIpMatch[1];
+            // Re-check ARP (may have been updated by the ping attempt)
+            const arpRefresh = await run('/usr/sbin/arp -an');
+            const watchArp = arpRefresh.split('\n').find(l => l.includes(watchIP));
+            watchOnline = !!(watchArp && !watchArp.includes('(incomplete)'));
+        }
+
+        sidneyDevicesCache = {
+            iphone: { online: iphoneOnline, ip: iphoneIP, name: 'iPhone' },
+            watch:  { online: watchOnline,  ip: watchIP,  name: 'Apple Watch' },
+            fetchedAt: Date.now()
+        };
+    } catch (e) {
+        console.error('Sidney device poll error:', e.message);
+    }
+}
+
+// Poll every 30 seconds
+pollSidneyDevices();
+setInterval(pollSidneyDevices, 30000);
+
+function getSidneyDevices(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(sidneyDevicesCache));
 }
 
 function getHeartbeats(req, res) {

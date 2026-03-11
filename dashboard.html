@@ -46,7 +46,8 @@
             gap: 0.5rem;
             margin-bottom: 0.85rem;
             padding: 0.35rem 0.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 200, 0, 0.35);
+            border-radius: 10px;
             padding-bottom: 0.85rem;
             flex-shrink: 0;
         }
@@ -253,7 +254,7 @@
 
         .health-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 1rem;
             margin-bottom: 1rem;
         }
@@ -862,7 +863,7 @@
                     <div class="stat-content">
                         <div class="stat-label">Active Agents</div>
                         <div class="stat-value-row">
-                            <div class="stat-value" id="stat-agents">5</div>
+                            <div class="stat-value" id="stat-agents">6</div>
                         </div>
                         <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.2rem;" id="stat-gateway">Checking...</div>
                     </div>
@@ -952,43 +953,26 @@
                     <div class="stat-content" style="width:100%;">
                         <div class="stat-label" style="margin-bottom:0.6rem;">System Uptime</div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem 1.2rem;">
-                            <!-- Mac mini uptime -->
-                            <div style="background:rgba(123,97,255,0.08); border:1px solid rgba(123,97,255,0.2); border-radius:8px; padding:0.75rem 0.85rem;">
+                            <!-- Mac mini (uptime + health merged) -->
+                            <div style="background:rgba(123,97,255,0.08); border:1px solid rgba(123,97,255,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Mac mini</span>
+                                    <span style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35);" id="mac-chip">Apple M4 · 10 cores</span>
+                                    <button onclick="openSystemSettings()" style="padding:2px 5px;font-size:0.55rem;background:rgba(123,97,255,0.15);border:1px solid rgba(123,97,255,0.25);border-radius:3px;color:#a78bff;cursor:pointer;" title="System Settings">⚙️</button>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#a78bff; letter-spacing:0.02em;"><span class="heartbeat">💓</span> <span id="mac-uptime-counter">—</span></div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="mac-boot-time">—</div>
-                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
-                                    <button onclick="openTerminal()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(123,97,255,0.15); border:1px solid rgba(123,97,255,0.35); border-radius:4px; color:#a78bff; cursor:pointer;">Terminal CLI</button>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem; margin-bottom:0.45rem;" id="mac-boot-time">—</div>
+                                <!-- Ollama -->
+                                <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <span id="mac-ollama-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Ollama GPU</span>
+                                    <span id="mac-ollama-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                 </div>
-                            </div>
-                            <!-- OpenClaw Gateway -->
-                            <div style="background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
-                                    <span style="font-size:0.75rem;">⚡</span>
-                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">OpenClaw Gateway</span>
-                                    <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:monospace;font-weight:500;">v...</span>
-                                </div>
-                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
-                                <div style="display:flex; gap:0.45rem; margin-top:0.65rem;">
-                                    <button id="gateway-restart-btn" onclick="restartGateway()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,80,80,0.12); border:1px solid rgba(255,80,80,0.3); border-radius:4px; color:#ff9090; cursor:pointer;">Restart</button>
-                                    <button id="oc-update-check-btn" onclick="checkOpenclawUpdate()" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); border-radius:4px; color:rgba(0,255,136,0.7); cursor:pointer;">Check Updates</button>
-                                    <a href="http://127.0.0.1:3000" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">OpenClaw Web</a>
-                                </div>
-                            </div>
-                            <!-- Mac mini Health -->
-                            <div style="background:rgba(0,191,255,0.06); border:1px solid rgba(0,191,255,0.18); border-radius:8px; padding:0.55rem 0.7rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
-                                    <span style="font-size:0.75rem;">📊</span>
-                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;" id="mac-chip">Apple M4 · 10 cores</span>
-                                    <button onclick="openSystemSettings()" style="margin-left:auto;padding:2px 6px;font-size:0.6rem;background:rgba(0,191,255,0.1);border:1px solid rgba(0,191,255,0.25);border-radius:3px;color:rgba(0,191,255,0.7);cursor:pointer;" title="System Settings">⚙️</button>
-                                </div>
-                                <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                                <!-- CPU / RAM / Disk bars -->
+                                <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div>
-                                        <div style="display:flex; justify-content:space-between; font-size:0.63rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
+                                        <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
                                             <span>CPU</span><span id="mac-cpu-pct">—%</span>
                                         </div>
                                         <div style="height:4px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
@@ -996,7 +980,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="display:flex; justify-content:space-between; font-size:0.63rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
+                                        <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
                                             <span>RAM</span><span id="mac-ram-pct">—</span>
                                         </div>
                                         <div style="height:4px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
@@ -1004,7 +988,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <div style="display:flex; justify-content:space-between; font-size:0.63rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
+                                        <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:rgba(255,255,255,0.5); margin-bottom:3px;">
                                             <span>Disk /</span><span id="mac-disk-pct">—</span>
                                         </div>
                                         <div style="height:4px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;">
@@ -1012,49 +996,203 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
+                                    <button onclick="openTerminal()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(123,97,255,0.15); border:1px solid rgba(123,97,255,0.35); border-radius:4px; color:#a78bff; cursor:pointer;">Terminal</button>
+                                </div>
+                            </div>
+                            <!-- OpenClaw -->
+                            <div style="background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.18); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+                                    <span style="font-size:0.75rem;">⚡</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">OpenClaw</span>
+                                    <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:monospace;font-weight:500;">v...</span>
+                                </div>
+                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
+                                <!-- OpenRouter credit balance -->
+                                <div id="oc-openrouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.5rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <span id="oc-openrouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenRouter</span>
+                                    <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                </div>
+                                <!-- Daemon statuses -->
+                                <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="oc-gateway-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Gateway</span>
+                                        <span id="oc-gateway-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="oc-relay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
+                                        <span id="oc-relay-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="oc-backup-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Backup</span>
+                                        <span id="oc-backup-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="oc-clawhub-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">ClawHub Check</span>
+                                        <span id="oc-clawhub-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="oc-constitution-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Constitution Monitor</span>
+                                        <span id="oc-constitution-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
+                                    <button id="gateway-restart-btn" onclick="restartGateway()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,80,80,0.12); border:1px solid rgba(255,80,80,0.3); border-radius:4px; color:#ff9090; cursor:pointer;">Restart</button>
+                                    <button id="oc-update-check-btn" onclick="checkOpenclawUpdate()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); border-radius:4px; color:rgba(0,255,136,0.7); cursor:pointer;">Updates</button>
+                                    <a href="http://127.0.0.1:3000" target="_blank" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Web UI</a>
+                                </div>
+                            </div>
+                            <!-- System Health -->
+                            <div style="background:rgba(255,80,80,0.06); border:1px solid rgba(255,80,80,0.18); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
+                                    <span style="font-size:0.75rem;">🏥</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">System Health</span>
+                                    <a href="http://192.168.1.254/cgi-bin/home.ha" target="_blank" style="margin-left:auto;padding:2px 5px;font-size:0.55rem;background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.25);border-radius:3px;color:#ff6b6b;cursor:pointer;text-decoration:none;" title="Router Admin">⚙️</a>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <div>
+                                        <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-ip-line">—</div>
+                                        <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="sh-ip-label">Mac mini · en0</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-gw-line">—</div>
+                                        <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">Gateway</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-gateway" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Internet</span>
+                                        <span class="health-status" id="health-gateway" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-relay" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
+                                        <span class="health-status" id="health-relay" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-n8n" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Webhook</span>
+                                        <span class="health-status" id="health-n8n" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-notion" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion API</span>
+                                        <span class="health-status" id="health-notion" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">GitHub Backup</span>
+                                        <span class="health-status" id="backupTime" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Loading...</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span class="pulse-dot" id="dot-oc-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenClaw Backup</span>
+                                        <span class="health-status" id="ocBackupTime" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Loading...</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
+                                    <button onclick="runGitBackup()" id="gitBackupBtn" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">Git Backup</button>
+                                    <button onclick="runOCBackup()" id="ocBackupBtn" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">OC Backup</button>
+                                </div>
                             </div>
                             <!-- Row 2: External Services -->
                             <!-- n8n -->
-                            <div style="background:rgba(255,100,0,0.06); border:1px solid rgba(255,100,0,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                            <div style="background:rgba(255,100,0,0.06); border:1px solid rgba(255,100,0,0.18); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                     <span style="font-size:0.75rem;">⚙️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">n8n</span>
                                     <span id="n8n-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
                                 </div>
-                                <div style="display:flex; align-items:center; margin-bottom:0.15rem;">
+                                <div style="display:flex; align-items:center; margin-bottom:0.25rem;">
                                     <span style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="n8n-status-text">Checking...</span>
                                     <span style="margin-left:auto; font-size:0.6rem; color:rgba(255,255,255,0.35);">n8n Digital Ocean</span>
                                 </div>
-                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">n8n.tvcpulse.com</div>
-                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
-                                    <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DigitalOcean</a>
-                                    <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n</a>
+                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin-bottom:0.4rem;">n8n.tvcpulse.com</div>
+                                <!-- DO Droplet Metrics -->
+                                <div id="do-metrics-panel" style="padding:0.45rem 0.55rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-top:auto; margin-bottom:0.5rem;">
+                                    <div id="do-metrics-content" style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Loading metrics...</div>
+                                </div>
+                                <div style="display:flex; gap:0.25rem;">
+                                    <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DigitalOcean</a>
+                                    <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n</a>
+                                    <button onclick="fetchDOMetrics(true)" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">🔄 Refresh</button>
                                 </div>
                             </div>
                             <!-- Notion -->
-                            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.75rem 0.85rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                     <span style="font-size:0.75rem;">📋</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Notion</span>
                                     <span id="notion-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
                                 </div>
-                                <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
-                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;">api.notion.com</div>
-                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
-                                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Tasks DB ↗</a>
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
+                                    <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
+                                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">api.notion.com</div>
+                                </div>
+                                <!-- Daemon statuses -->
+                                <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; margin-bottom:0.5rem; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="notion-triage-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Triage</span>
+                                        <span id="notion-triage-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="notion-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Sync</span>
+                                        <span id="notion-sync-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                </div>
+                                <!-- Buttons -->
+                                <div style="display:flex; gap:0.3rem;">
+                                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Tasks DB ↗</a>
+                                    <a href="https://www.notion.so/27897f8991298064ad7ed60e382ebae4" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(100,200,100,0.1); border:1px solid rgba(100,200,100,0.25); border-radius:4px; color:#7dcea0; cursor:pointer; text-decoration:none; text-align:center;">Blueprint 💰</a>
+                                    <a href="https://www.notion.so/2df97f89912981d99e9dd111c0eb1f0a" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(180,130,255,0.1); border:1px solid rgba(180,130,255,0.25); border-radius:4px; color:#b482ff; cursor:pointer; text-decoration:none; text-align:center;">Docs 📚</a>
                                 </div>
                             </div>
                             <!-- Pinecone -->
-                            <div style="background:rgba(0,200,150,0.06); border:1px solid rgba(0,200,150,0.18); border-radius:8px; padding:0.75rem 0.85rem;">
-                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                            <div style="background:rgba(0,200,150,0.06); border:1px solid rgba(0,200,150,0.18); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                     <span style="font-size:0.75rem;">🌲</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Pinecone</span>
                                     <span id="pinecone-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
                                 </div>
-                                <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
-                                <div style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin-top:0.2rem;">DWE Brain Vector DB</div>
-                                <div style="display:flex; gap:0.45rem; margin-top:0.5rem;">
-                                    <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:5px 0; font-size:0.65rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
+                                    <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
+                                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">DWE Brain</div>
+                                </div>
+                                <!-- Brain/Pinecone daemon statuses -->
+                                <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; margin-bottom:0.5rem; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="pc-seed-watcher-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Seed Watcher</span>
+                                        <span id="pc-seed-watcher-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="pc-brain-trainer-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Brain Trainer</span>
+                                        <span id="pc-brain-trainer-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="pc-nightly-review-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Nightly Review</span>
+                                        <span id="pc-nightly-review-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                                        <span id="pc-memory-decay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Memory Decay</span>
+                                        <span id="pc-memory-decay-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.3rem;">
+                                    <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
                                 </div>
                             </div>
                         </div>
@@ -1064,36 +1202,58 @@
             </div>
 
             <!-- Notion Task Management -->
-            <div class="service-panel" style="margin-bottom:1.5rem;">
+            <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(200,200,200,0.25);">
                 <div class="panel-header">
                     <div class="panel-icon">✅</div>
                     <div class="panel-title">Notion Task Management</div>
                     <div style="margin-left:auto;font-size:0.65rem;color:rgba(255,255,255,0.35);padding-right:0.75rem;" id="notion-updated">Loading...</div>
                     <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c" target="_blank" style="font-size:0.7rem;color:#00f5ff;text-decoration:none;white-space:nowrap;">Open Notion ↗</a>
                 </div>
-            <div class="progress-section" style="margin:0;border-radius:0;background:transparent;border:none;padding:0.75rem 1rem 1rem;">
-                <div class="progress-circle">
-                    <svg width="140" height="140" viewBox="0 0 140 140">
-                        <circle class="progress-bg" cx="70" cy="70" r="60"/>
-                        <circle class="progress-bar" id="progress-ring" cx="70" cy="70" r="60"/>
+            <div style="padding:0.75rem 1rem 1rem;display:flex;align-items:stretch;gap:1.5rem;">
+                <!-- Left: Large progress ring spanning full height -->
+                <div style="position:relative;width:160px;height:160px;flex-shrink:0;align-self:center;">
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                        <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10"/>
+                        <circle id="progress-ring" cx="80" cy="80" r="68" fill="none" stroke="url(#gradient)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="190" style="transition:stroke-dashoffset 0.8s ease;"/>
                     </svg>
-                    <div class="progress-text">
-                        <div class="percent" id="progress-pct">—%</div>
-                        <div style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">Complete</div>
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+                        <div id="progress-pct" style="font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#00f5ff,#b829dd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">—%</div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);letter-spacing:0.04em;text-transform:uppercase;">Complete</div>
                     </div>
                 </div>
-                <div class="progress-stats">
-                    <div class="progress-stat">
-                        <div class="number" id="prog-total" style="color: #00f5ff;">—</div>
-                        <div class="stat-label">Total Tasks</div>
+                <!-- Right: Stats stacked over Needs Assignment -->
+                <div style="flex:1;display:flex;flex-direction:column;gap:0.75rem;justify-content:center;">
+                    <!-- Top: Total / Done / Remaining -->
+                    <div style="display:flex;gap:0.6rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+                        <div style="flex:1;text-align:center;padding:0.7rem 0.4rem;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);border-radius:10px;">
+                            <div id="prog-total" style="font-size:1.6rem;font-weight:700;color:#00f5ff;">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);">Total</div>
+                        </div>
+                        <div style="flex:1;text-align:center;padding:0.7rem 0.4rem;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);border-radius:10px;">
+                            <div id="prog-done" style="font-size:1.6rem;font-weight:700;color:#00ff88;">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);">Done</div>
+                        </div>
+                        <div style="flex:1;text-align:center;padding:0.7rem 0.4rem;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.25);border-radius:10px;">
+                            <div id="prog-left" style="font-size:1.6rem;font-weight:700;color:#ff00aa;">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);">Remaining</div>
+                        </div>
                     </div>
-                    <div class="progress-stat">
-                        <div class="number" id="prog-done" style="color: #00ff88;">—</div>
-                        <div class="stat-label">Done</div>
-                    </div>
-                    <div class="progress-stat">
-                        <div class="number" id="prog-left" style="color: #ff00aa;">—</div>
-                        <div class="stat-label">Remaining</div>
+                    <!-- Bottom: Needs Assignment -->
+                    <div id="unassigned-tasks-panel" style="background:linear-gradient(135deg,rgba(255,165,0,0.06),rgba(255,100,50,0.03));border:1px solid rgba(255,165,0,0.1);border-left:3px solid rgba(255,165,0,0.5);border-radius:4px 8px 8px 4px;padding:0.6rem 1rem;">
+                        <div style="display:flex;align-items:center;gap:0.85rem;">
+                            <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+                                <span style="font-size:1.1rem;">📥</span>
+                                <span style="font-weight:700;font-size:0.95rem;color:rgba(255,255,255,0.85);letter-spacing:0.01em;">Needs Assignment</span>
+                            </div>
+                            <div style="width:1px;height:28px;background:rgba(255,165,0,0.2);flex-shrink:0;"></div>
+                            <div id="unassigned-total-slot" style="text-align:center;padding:2px 10px;background:rgba(255,255,255,0.03);border-radius:6px;flex-shrink:0;">
+                                <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.04em;">Total</div>
+                                <div id="unassigned-total-num" style="font-size:1.1rem;font-weight:700;color:#00f5ff;">—</div>
+                            </div>
+                            <div id="unassigned-tasks-content" style="flex:1;display:flex;align-items:center;justify-content:space-evenly;gap:0.4rem;">
+                                <span style="font-size:0.85rem;color:rgba(255,255,255,0.3);">Loading...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1134,8 +1294,8 @@
                 <a href="/ecosystem" style="text-decoration: none;">
                     <div class="mini-ecosystem">
                         <div class="panel-header">
-                            <div class="panel-icon">🌐</div>
-                            <div class="panel-title">Ecosystem Map</div>
+                            <div class="panel-icon" style="background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));">🌐</div>
+                            <div class="panel-title" style="color:#ffffff;">Ecosystem Map</div>
                         </div>
                         <div class="mini-ecosystem-svg">
                             <svg viewBox="0 0 400 200" style="width: 100%; height: 160px;">
@@ -1163,48 +1323,12 @@
                                 <circle cx="330" cy="182" r="6" fill="#00ff88">
                                     <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
                                 </circle>
-                                <text x="362" y="186" text-anchor="middle" font-size="11" fill="#00ff88" font-weight="600">5 Agents</text>
+                                <text x="362" y="186" text-anchor="middle" font-size="11" fill="#00ff88" font-weight="600">6 Agents</text>
                             </svg>
                         </div>
                     </div>
                 </a>
 
-                <div class="health-panel">
-                    <div class="panel-header">
-                        <div class="panel-icon">🏥</div>
-                        <div class="panel-title">System Health</div>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-gateway"></span>
-                        <span>Internet Connectivity</span>
-                        <span class="health-status" id="health-gateway">Checking...</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-relay"></span>
-                        <span>Relay Daemon</span>
-                        <span class="health-status" id="health-relay">Checking...</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-n8n"></span>
-                        <span>n8n Brain Webhook</span>
-                        <span class="health-status" id="health-n8n">Checking...</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-notion"></span>
-                        <span>Notion API</span>
-                        <span class="health-status" id="health-notion">Checking...</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-backup"></span>
-                        <span>GitHub Backup</span>
-                        <span class="health-status" id="backupTime">Loading...</span>
-                    </div>
-                    <div class="health-item">
-                        <span class="pulse-dot" id="dot-oc-backup"></span>
-                        <span>OpenClaw Backup</span>
-                        <span class="health-status" id="ocBackupTime">Loading...</span>
-                    </div>
-                </div>
             </div>
 
             <!-- CSO Pipeline + Financial Pulse -->
@@ -1261,19 +1385,9 @@
             </div>
 
             <!-- Services / LaunchD / Crons -->
-            <div class="services-grid">
-                <div class="service-panel">
-                    <div class="panel-header">
-                        <div class="panel-icon">🔌</div>
-                        <div class="panel-title">External Services</div>
-                    </div>
-                    <div id="services-list" style="flex:1;">
-                        <div class="service-item"><span class="pulse-dot offline"></span><span class="label">Loading...</span></div>
-                    </div>
-                    <div class="panel-footer">
-                        <button class="footer-btn" onclick="refreshAll()">🔍 Refresh</button>
-                    </div>
-                </div>
+            <div class="services-grid" style="grid-template-columns:1fr 1fr;">
+                <!-- services-list hidden (all services moved to tiles) -->
+                <div id="services-list" style="display:none;"></div>
 
                 <div class="service-panel">
                     <div class="panel-header">
@@ -1298,8 +1412,6 @@
                     </div>
                     <div class="panel-footer">
                         <a href="https://github.com/sirsid2001/dwe-command-center" target="_blank" class="footer-btn">🐙 GitHub</a>
-                        <button class="footer-btn" onclick="runGitBackup()" id="gitBackupBtn">💾 Git Backup</button>
-                        <button class="footer-btn" onclick="runOCBackup()" id="ocBackupBtn">📦 OC Backup</button>
                         <button class="footer-btn" onclick="refreshAll()">🔄 Refresh</button>
                     </div>
                 </div>
@@ -1506,8 +1618,8 @@
                 document.getElementById('stat-overdue').textContent = 'Tasks in progress';
                 document.getElementById('notion-updated').textContent = 'Updated ' + timeAgo(d.lastUpdated);
 
-                // Progress ring: circumference = 377, full = 0 offset, empty = 377
-                const offset = 377 - (377 * pct / 100);
+                // Progress ring: circumference = 427 (r=68), full = 0 offset, empty = 427
+                const offset = 427 - (427 * pct / 100);
                 document.getElementById('progress-ring').style.strokeDashoffset = offset;
 
                 // Health dot for Notion
@@ -1547,16 +1659,59 @@
                         return;
                     }
 
-                    // OpenRouter: show credit balance instead of generic OK/Down
-                    if (s.name === 'OpenRouter' && cr && cr.remaining !== undefined && cr.remaining !== null) {
-                        const rem = cr.remaining;
-                        const creditColor = rem >= 2 ? '#22c55e' : rem >= 1 ? '#f59e0b' : '#ef4444';
-                        const dotCls = rem >= 2 ? '' : rem >= 1 ? ' warning' : ' error';
-                        list.innerHTML += `<div class="service-item">
-                            <span class="pulse-dot${dotCls}"></span>
-                            <span class="label">OpenRouter</span>
-                            <span style="margin-left:auto;font-size:0.65rem;font-weight:700;color:${creditColor};font-family:monospace;">$${rem.toFixed(2)} left</span>
-                        </div>`;
+                    // Skip OpenRouter from External Services — now in OpenClaw tile
+                    if (s.name === 'OpenRouter') {
+                        const orDot = document.getElementById('oc-openrouter-dot');
+                        const orCredit = document.getElementById('oc-openrouter-credit');
+                        if (cr && cr.remaining !== undefined && cr.remaining !== null) {
+                            const rem = cr.remaining;
+                            const creditColor = rem >= 2 ? '#22c55e' : rem >= 0.50 ? '#f59e0b' : '#ef4444';
+                            const dotColor = rem >= 2 ? '#00ff88' : rem >= 0.50 ? '#f59e0b' : '#ff4444';
+                            orDot.style.background = dotColor;
+                            orCredit.textContent = `$${rem.toFixed(2)}`;
+                            orCredit.style.color = creditColor;
+                        } else {
+                            orDot.style.background = ok ? '#00ff88' : '#ff4444';
+                            orCredit.textContent = ok ? 'Online' : 'Down';
+                            orCredit.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                        }
+                        return;
+                    }
+                    // Skip OpenClaw Gateway from External Services — now in OpenClaw tile
+                    if (s.name === 'OpenClaw Gateway') {
+                        const gwDot = document.getElementById('oc-gateway-dot');
+                        const gwSt = document.getElementById('oc-gateway-status');
+                        gwDot.style.background = ok ? '#00ff88' : '#ff4444';
+                        gwSt.textContent = ok ? 'Online' : 'Down';
+                        gwSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                        return;
+                    }
+
+                    // Skip Notion from External Services — has its own tile
+                    if (s.name.includes('Notion')) {
+                        document.getElementById('notion-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const notionText = document.getElementById('notion-status-text');
+                        notionText.textContent = ok ? 'Online' : 'Offline';
+                        notionText.style.color = ok ? '#00ff88' : '#ff4444';
+                        setDot('dot-notion', ok ? 'ok' : 'error');
+                        document.getElementById('health-notion').textContent = ok ? 'Online' : 'Unreachable';
+                        document.getElementById('health-notion').className = 'health-status ' + (ok ? 'ok' : 'error');
+                        return;
+                    }
+                    // Skip Ollama from External Services — now in Mac mini tile
+                    if (s.name.includes('Ollama')) {
+                        document.getElementById('mac-ollama-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const olSt = document.getElementById('mac-ollama-status');
+                        olSt.textContent = ok ? 'Running' : 'Down';
+                        olSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                        return;
+                    }
+                    // Skip Pinecone from External Services — has its own tile
+                    if (s.name.includes('Pinecone')) {
+                        document.getElementById('pinecone-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const pcText = document.getElementById('pinecone-status-text');
+                        pcText.textContent = ok ? 'Online' : 'Offline';
+                        pcText.style.color = ok ? '#00ff88' : '#ff4444';
                         return;
                     }
 
@@ -1565,20 +1720,6 @@
                         <span class="label">${s.name}</span>
                         <span class="badge ${badgeClass}">${ok ? 'OK' : 'Down'}</span>
                     </div>`;
-
-                    // Update Notion/Pinecone status tiles
-                    if (s.name.includes('Notion')) {
-                        document.getElementById('notion-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
-                        const notionText = document.getElementById('notion-status-text');
-                        notionText.textContent = ok ? 'Online' : 'Offline';
-                        notionText.style.color = ok ? '#00ff88' : '#ff4444';
-                    }
-                    if (s.name.includes('Pinecone')) {
-                        document.getElementById('pinecone-status-dot').style.background = ok ? '#00ff88' : '#ff4444';
-                        const pcText = document.getElementById('pinecone-status-text');
-                        pcText.textContent = ok ? 'Online' : 'Offline';
-                        pcText.style.color = ok ? '#00ff88' : '#ff4444';
-                    }
                 });
             } catch(e) {
                 document.getElementById('services-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
@@ -1592,13 +1733,76 @@
                 const list = document.getElementById('launchd-list');
                 list.innerHTML = '';
 
-                // Update health dots for core services
+                // Update health dots for core services + tile daemons
                 d.services.forEach(s => {
                     if (s.id === 'ai.openclaw.relay-daemon') {
                         const ok = s.status === 'running';
                         setDot('dot-relay', ok ? 'ok' : 'error');
                         document.getElementById('health-relay').textContent = ok ? 'Running' : 'Down';
                         document.getElementById('health-relay').className = 'health-status ' + (ok ? 'ok' : 'error');
+                        // Also update OpenClaw tile
+                        document.getElementById('oc-relay-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const rlSt = document.getElementById('oc-relay-status');
+                        rlSt.textContent = ok ? 'Running' : 'Down';
+                        rlSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // OpenClaw Gateway daemon → OpenClaw tile
+                    if (s.id === 'ai.openclaw.gateway') {
+                        const ok = s.status === 'running';
+                        document.getElementById('oc-gateway-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const gwSt = document.getElementById('oc-gateway-status');
+                        gwSt.textContent = ok ? 'Running' : 'Down';
+                        gwSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // OpenClaw Backup → OpenClaw tile
+                    if (s.id === 'ai.dwe.openclaw-backup') {
+                        const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
+                        document.getElementById('oc-backup-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const bkSt = document.getElementById('oc-backup-status');
+                        bkSt.textContent = s.status === 'running' ? 'Running' : s.status === 'waiting' ? 'Scheduled' : 'Down';
+                        bkSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // ClawHub Check → OpenClaw tile
+                    if (s.id === 'ai.dwe.clawhub-check') {
+                        const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
+                        document.getElementById('oc-clawhub-dot').style.background = ok ? '#00ff88' : '#ff4444';
+                        const chSt = document.getElementById('oc-clawhub-status');
+                        chSt.textContent = s.status === 'running' ? 'Running' : s.status === 'waiting' ? 'Scheduled' : 'Down';
+                        chSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // Notion Triage daemon → Notion tile
+                    if (s.id === 'ai.dwe.anita-notion-triage') {
+                        const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
+                        const color = ok ? '#00ff88' : '#ff4444';
+                        document.getElementById('notion-triage-dot').style.background = color;
+                        const st = document.getElementById('notion-triage-status');
+                        st.textContent = s.status === 'running' ? 'Running' : s.status === 'waiting' ? 'Scheduled' : 'Down';
+                        st.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // Notion Sync daemon → Notion tile
+                    if (s.id === 'ai.dwe.notion-sync') {
+                        const ok = s.status === 'running';
+                        const color = ok ? '#00ff88' : '#ff4444';
+                        document.getElementById('notion-sync-dot').style.background = color;
+                        const st = document.getElementById('notion-sync-status');
+                        st.textContent = ok ? 'Running' : 'Down';
+                        st.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                    }
+                    // Brain/Pinecone daemons → Pinecone tile
+                    const pcDaemons = {
+                        'ai.dwe.seed-watcher':   { dot: 'pc-seed-watcher-dot',    status: 'pc-seed-watcher-status' },
+                        'ai.dwe.brain-trainer':  { dot: 'pc-brain-trainer-dot',    status: 'pc-brain-trainer-status' },
+                        'ai.dwe.nightly-review': { dot: 'pc-nightly-review-dot',   status: 'pc-nightly-review-status' },
+                        'ai.dwe.memory-decay':   { dot: 'pc-memory-decay-dot',     status: 'pc-memory-decay-status' },
+                    };
+                    if (pcDaemons[s.id]) {
+                        const pd = pcDaemons[s.id];
+                        const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
+                        const color = ok ? '#00ff88' : '#ff4444';
+                        document.getElementById(pd.dot).style.background = color;
+                        const st = document.getElementById(pd.status);
+                        st.textContent = s.status === 'running' ? 'Running' : s.status === 'waiting' ? 'Scheduled' : 'Down';
+                        st.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
                     }
                 });
 
@@ -1677,6 +1881,13 @@
                     return;
                 }
                 d.crons.forEach(c => {
+                    // Constitution Monitor cron → OpenClaw tile
+                    if (c.command === 'CONSTITUTION_MONITOR') {
+                        document.getElementById('oc-constitution-dot').style.background = '#00ff88';
+                        const cSt = document.getElementById('oc-constitution-status');
+                        cSt.textContent = c.nextRun || 'Active';
+                        cSt.style.color = 'rgba(0,255,136,0.6)';
+                    }
                     list.innerHTML += `<div class="service-item">
                         <span class="pulse-dot"></span>
                         <span class="label"><strong style="color:#00f5ff;">${c.id}</strong> ${c.command}</span>
@@ -1950,10 +2161,27 @@
                 const el = document.getElementById('health-gateway');
                 el.textContent = d.status === 'ok' ? `Online · ${d.label}` : d.status === 'warn' ? `Degraded · ${d.label}` : `Offline · ${d.label}`;
                 el.className = 'health-status ' + textClass;
+                // Color the IP/GW lines based on connectivity
+                const ipColor = d.status === 'ok' ? '#00ff88' : d.status === 'warn' ? '#f59e0b' : '#ff4444';
+                const ipLine = document.getElementById('sh-ip-line');
+                const gwLine = document.getElementById('sh-gw-line');
+                if (ipLine) ipLine.style.color = ipColor;
+                if (gwLine) gwLine.style.color = ipColor;
             } catch(e) {
                 setDot('dot-gateway', 'error');
                 document.getElementById('health-gateway').textContent = 'Error';
+                const ipLine = document.getElementById('sh-ip-line');
+                const gwLine = document.getElementById('sh-gw-line');
+                if (ipLine) ipLine.style.color = '#ff4444';
+                if (gwLine) gwLine.style.color = '#ff4444';
             }
+        }
+
+        function healthTier(hoursAgo) {
+            // green < 24h, yellow 24-48h, red > 48h
+            if (hoursAgo < 24) return { cls: 'ok', dot: 'ok' };
+            if (hoursAgo < 48) return { cls: 'warning', dot: 'warn' };
+            return { cls: 'error', dot: 'error' };
         }
 
         async function updateBackupTime() {
@@ -1963,16 +2191,15 @@
                 if (d.lastBackup && new Date(d.lastBackup).getFullYear() > 2000) {
                     const dt = new Date(d.lastBackup);
                     const ago = timeAgo(d.lastBackup);
-                    const dateStr = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-                    const timeStr = dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-                    const isRecent = (Date.now() - dt) < 3600000;
-                    el.innerHTML = `<span style="color:rgba(255,255,255,0.35);font-size:0.7em;">${dateStr} ${timeStr}</span> ${ago}`;
-                    el.className = 'health-status ' + (isRecent ? 'ok' : 'warning');
-                    setDot('dot-backup', isRecent ? 'ok' : 'warn');
+                    const hoursAgo = (Date.now() - dt) / 3600000;
+                    const tier = healthTier(hoursAgo);
+                    el.innerHTML = ago;
+                    el.className = 'health-status ' + tier.cls;
+                    setDot('dot-backup', tier.dot);
                 } else {
                     el.textContent = 'Never';
-                    el.className = 'health-status warning';
-                    setDot('dot-backup', 'warn');
+                    el.className = 'health-status error';
+                    setDot('dot-backup', 'error');
                 }
             } catch(e) {}
         }
@@ -1984,16 +2211,15 @@
                 if (d.lastBackup && new Date(d.lastBackup).getFullYear() > 2000) {
                     const dt = new Date(d.lastBackup);
                     const ago = timeAgo(d.lastBackup);
-                    const dateStr = dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-                    const timeStr = dt.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-                    const isRecent = (Date.now() - dt) < 604800000; // 7 days for weekly backup
-                    el.innerHTML = `<span style="color:rgba(255,255,255,0.35);font-size:0.7em;">${dateStr} ${timeStr}</span> ${ago}`;
-                    el.className = 'health-status ' + (isRecent ? 'ok' : 'warning');
-                    setDot('dot-oc-backup', isRecent ? 'ok' : 'warn');
+                    const hoursAgo = (Date.now() - dt) / 3600000;
+                    const tier = healthTier(hoursAgo);
+                    el.innerHTML = ago;
+                    el.className = 'health-status ' + tier.cls;
+                    setDot('dot-oc-backup', tier.dot);
                 } else {
                     el.textContent = 'Never';
-                    el.className = 'health-status warning';
-                    setDot('dot-oc-backup', 'warn');
+                    el.className = 'health-status error';
+                    setDot('dot-oc-backup', 'error');
                 }
             } catch(e) {}
         }
@@ -2092,6 +2318,11 @@
                     formatDateTime(_macBootTime);
                 document.getElementById('gateway-start-time').textContent =
                     formatDateTime(_gatewayStartTime);
+                // System Health: IP on main line, GW underneath (color set by fetchInternet)
+                const ipLine = document.getElementById('sh-ip-line');
+                const gwLine = document.getElementById('sh-gw-line');
+                ipLine.textContent = d.localIP || 'No IP';
+                gwLine.textContent = d.defaultGateway || 'No GW';
             } catch(e) {}
         }
 
@@ -2124,11 +2355,15 @@
         // ── Team Overview — combined tasks + heartbeat + session per agent ────
         async function fetchTeamOverview() {
             try {
-                const [tasksData, hbData, sessionData] = await Promise.all([
+                const [tasksData, hbData, sessionData, launchdData, sidneyDevices] = await Promise.all([
                     fetch('/mc/agent-tasks').then(r => r.json()).catch(() => ({ agents: [] })),
                     fetch('/mc/heartbeat').then(r => r.json()).catch(() => ({ agents: [] })),
                     fetch('/mc/acp').then(r => r.json()).catch(() => ({ agents: [], userPresence: null })),
+                    fetch('/mc/launchd').then(r => r.json()).catch(() => ({ services: [] })),
+                    fetch('/mc/sidney-devices').then(r => r.json()).catch(() => ({ iphone: null, watch: null })),
                 ]);
+                const daemonById = {};
+                for (const s of (launchdData.services || [])) daemonById[s.id] = s;
 
                 const tasksByRole = {};
                 for (const a of (tasksData.agents || [])) tasksByRole[a.id] = a;
@@ -2139,12 +2374,29 @@
                 const userPresence = sessionData.userPresence || null;
 
                 const AGENTS = [
-                    { id: 'ceo',   label: 'Sidney',         title: 'CEO',         icon: '👑', taskId: 'ceo',   hbId: null,    sessId: null,            isHuman: true  },
-                    { id: 'cto',   label: 'Steve',          title: 'CTO',         icon: '⚙️', taskId: 'cto',   hbId: 'cto',   sessId: 'cto',           isHuman: false },
-                    { id: 'anita', label: 'Anita',          title: 'COO',         icon: '📋', taskId: 'anita', hbId: 'anita', sessId: 'anita',         isHuman: false },
-                    { id: 'nicole',label: 'Nicole',         title: 'CSO',         icon: '📈', taskId: 'nicole',hbId: 'nicole',sessId: 'nicole',        isHuman: false },
-                    { id: 'ce',    label: 'Chief Engineer', title: 'Engineering', icon: '🔧', taskId: 'ce',    hbId: 'ce',    sessId: 'chief-engineer', isHuman: false },
-                    { id: 'main',  label: 'Unassigned',     title: 'Needs Owner', icon: '📥', taskId: 'main',  hbId: null,    sessId: 'main',          isHuman: false },
+                    { id: 'ceo',   label: 'Sidney',         title: 'CEO',         icon: '👑', taskId: 'ceo',   hbId: null,    sessId: null,            isHuman: true,  daemons: [] },
+                    { id: 'cto',   label: 'Steve',          title: 'CTO',         icon: '⚙️', taskId: 'cto',   hbId: 'cto',   sessId: 'cto',           isHuman: false, daemons: [
+                        { id: 'ai.dwe.agent-heartbeat-cto', short: 'Heartbeat' },
+                        { id: 'ai.dwe.cto-task-followup',   short: 'Follow-Up' },
+                    ]},
+                    { id: 'anita', label: 'Anita',          title: 'COO',         icon: '📋', taskId: 'anita', hbId: 'anita', sessId: 'anita',         isHuman: false, daemons: [
+                        { id: 'ai.dwe.agent-heartbeat-anita',              short: 'Heartbeat' },
+                        { id: 'ai.dwe.agent-heartbeat-anita-email-digest', short: 'Email Digest' },
+                        { id: 'ai.dwe.agent-heartbeat-anita-finance',      short: 'Finance' },
+                        { id: 'ai.dwe.anita-notion-triage',                short: 'Triage' },
+                        { id: 'ai.dwe.morning-digest',                     short: 'Morning' },
+                        { id: 'ai.dwe.anita-email-batch',                  short: 'Email Batch' },
+                    ]},
+                    { id: 'nicole',label: 'Nicole',         title: 'CSO',         icon: '📈', taskId: 'nicole',hbId: 'nicole',sessId: 'nicole',        isHuman: false, daemons: [
+                        { id: 'ai.dwe.agent-heartbeat-nicole',        short: 'Heartbeat' },
+                        { id: 'ai.dwe.nicole-task-followup',           short: 'Follow-Up' },
+                        { id: 'ai.dwe.agent-heartbeat-nicole-weekly',  short: 'Weekly' },
+                    ]},
+                    { id: 'ce',    label: 'Chief Engineer', title: 'Engineering', icon: '🔧', taskId: 'ce',    hbId: 'ce',    sessId: 'chief-engineer', isHuman: false, daemons: [
+                        { id: 'ai.dwe.agent-heartbeat-ce', short: 'Heartbeat' },
+                        { id: 'ai.dwe.ce-task-followup',   short: 'Follow-Up' },
+                    ]},
+                    { id: 'cfo',   label: 'Fran',           title: 'CFO',         icon: '💰', taskId: 'cfo',   hbId: 'cfo',   sessId: 'cfo',           isHuman: false, daemons: [] },
                 ];
 
                 // Priority config — always show all 4 levels
@@ -2291,6 +2543,46 @@
                         </div>`;
                     }
 
+                    // ── Daemon / device status rows ────────────────────────
+                    let daemonHtml = '';
+                    if (agent.isHuman && agent.id === 'ceo') {
+                        // Sidney: show iPhone + Apple Watch presence
+                        const devices = [
+                            { key: 'iphone', icon: '📱', label: 'iPhone' },
+                            { key: 'watch',  icon: '⌚', label: 'Apple Watch' },
+                        ];
+                        const rows = devices.map(dv => {
+                            const d = sidneyDevices?.[dv.key];
+                            const online = d?.online === true;
+                            const dot = online ? '#00ff88' : '#ff4444';
+                            const st = online ? 'On Network' : 'Offline';
+                            const stColor = online ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.5)';
+                            return `<div style="display:flex;align-items:center;gap:4px;">
+                                <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
+                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.45);">${dv.icon} ${dv.label}</span>
+                                <span style="margin-left:auto;font-size:0.5rem;color:${stColor};font-family:monospace;">${st}</span>
+                            </div>`;
+                        }).join('');
+                        daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,215,0,0.1);display:flex;flex-direction:column;gap:2px;">
+                            ${rows}
+                        </div>`;
+                    } else if (agent.daemons.length > 0) {
+                        const rows = agent.daemons.map(dm => {
+                            const d = daemonById[dm.id];
+                            const ok = d && (d.status === 'running' || (d.scheduled && d.status === 'waiting'));
+                            const dot = ok ? '#00ff88' : d ? '#ff4444' : '#555';
+                            const st = d ? (d.status === 'running' ? '▶' : d.status === 'waiting' ? '⏸' : '✕') : '?';
+                            return `<div style="display:flex;align-items:center;gap:4px;">
+                                <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
+                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.45);">${dm.short}</span>
+                                <span style="margin-left:auto;font-size:0.5rem;color:${ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.6)'};font-family:monospace;">${st}</span>
+                            </div>`;
+                        }).join('');
+                        daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:2px;">
+                            ${rows}
+                        </div>`;
+                    }
+
                     const bg     = agent.isHuman ? 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.05))' : 'rgba(255,255,255,0.025)';
                     const border = agent.isHuman ? 'rgba(255,215,0,0.22)' : 'rgba(255,255,255,0.07)';
 
@@ -2306,8 +2598,45 @@
                         ${sessStatusHtml}
                         ${tasksHtml}
                         ${modelHtml}
+                        ${daemonHtml}
                     </div>`;
                 }).join('');
+
+                // ── Populate unassigned tasks in Notion Task Management tile ──
+                const unassigned = tasksByRole['main'];
+                const uPanel = document.getElementById('unassigned-tasks-content');
+                if (unassigned && uPanel) {
+                    const donePct = unassigned.total > 0 ? Math.round((unassigned.done / unassigned.total) * 100) : 0;
+                    const barColor = donePct >= 75 ? '#22c55e' : donePct >= 40 ? '#f59e0b' : '#60a5fa';
+                    const prioBadges = PRIO_4.map(p => {
+                        const count = unassigned.byPriority[p] || 0;
+                        const c = count > 0 ? PRIO_ACTIVE[p] : PRIO_GHOST;
+                        return `<div style="text-align:center;padding:3px 9px;background:${c.bg};backdrop-filter:blur(4px);border:1px solid ${c.border};border-radius:6px;">
+                            <div style="font-size:0.65rem;color:${c.text};opacity:0.8;">${p}</div>
+                            <div style="font-size:0.9rem;font-weight:${count>0?'700':'400'};color:${c.text};">${count > 0 ? count : '—'}</div>
+                        </div>`;
+                    }).join('');
+                    const overdueHtml = unassigned.overdue > 0
+                        ? `<div style="text-align:center;padding:3px 9px;background:rgba(248,113,113,0.08);backdrop-filter:blur(4px);border:1px solid rgba(248,113,113,0.2);border-radius:6px;">
+                            <div style="font-size:0.65rem;color:#f87171;opacity:0.8;">Overdue</div>
+                            <div style="font-size:0.9rem;font-weight:700;color:#f87171;">⚠ ${unassigned.overdue}</div>
+                          </div>`
+                        : '';
+                    document.getElementById('unassigned-total-num').textContent = unassigned.total;
+                    uPanel.innerHTML = `
+                        <div style="text-align:center;padding:2px 10px;background:rgba(255,255,255,0.03);border-radius:6px;">
+                            <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.04em;">Open</div>
+                            <div style="font-size:1.1rem;font-weight:700;color:#ff69b4;">${unassigned.open}</div>
+                        </div>
+                        ${prioBadges}
+                        <div style="text-align:center;padding:2px 10px;background:rgba(255,255,255,0.03);border-radius:6px;">
+                            <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.04em;">Done</div>
+                            <div style="font-size:1.1rem;font-weight:700;color:#00ff88;">${unassigned.done}</div>
+                        </div>
+                        ${overdueHtml}`;
+                } else if (uPanel) {
+                    uPanel.innerHTML = `<span style="font-size:0.62rem;color:rgba(255,255,255,0.2);">None in Notion</span>`;
+                }
 
             } catch(e) {
                 document.getElementById('team-overview-grid').innerHTML =
@@ -2614,6 +2943,73 @@
         // Auto-refresh pipeline every 30s
         setInterval(fetchPipeline, 30000);
 
+        // ── /mc/digitalocean-status → droplet health metrics ──────────────
+        async function fetchDOMetrics(forceRefresh) {
+            const panel = document.getElementById('do-metrics-content');
+            if (!panel) return;
+            try {
+                const qs = forceRefresh ? '?refresh=1' : '';
+                if (forceRefresh) panel.innerHTML = '<span style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Refreshing...</span>';
+                const d = await fetch('/mc/digitalocean-status' + qs).then(r => r.json());
+                if (d.configured === false) {
+                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Add DO token for metrics</span>';
+                    return;
+                }
+                if (d.loading) {
+                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Loading metrics...</span>';
+                    return;
+                }
+                if (d.error && !d.cpu && d.cpu !== 0) {
+                    panel.innerHTML = `<span style="color:#ff6b6b;font-size:0.55rem;">${d.error}</span>`;
+                    return;
+                }
+                if (!d.agentInstalled && d.cpu === null) {
+                    panel.innerHTML = '<span style="color:rgba(255,200,50,0.6);font-size:0.55rem;">Install do-agent on droplet for metrics</span>';
+                    return;
+                }
+
+                function barColor(pct) {
+                    if (pct >= 80) return '#ff4444';
+                    if (pct >= 60) return '#f5a623';
+                    return '#00ff88';
+                }
+                function bar(label, pct, detail) {
+                    if (pct === null || pct === undefined) return '';
+                    const color = barColor(pct);
+                    const width = Math.min(100, Math.max(0, pct));
+                    return `<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;">
+                        <span style="width:2.2rem;font-size:0.55rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.03em;">${label}</span>
+                        <div style="flex:1;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                            <div style="width:${width}%;height:100%;background:${color};border-radius:3px;transition:width 0.5s;"></div>
+                        </div>
+                        <span style="width:2rem;text-align:right;font-size:0.55rem;font-family:monospace;color:${color};font-weight:600;">${Math.round(pct)}%</span>
+                        <span style="width:2.5rem;text-align:right;font-size:0.5rem;color:rgba(255,255,255,0.3);font-family:monospace;">${detail}</span>
+                    </div>`;
+                }
+
+                const memUsed = d.memTotalMB && d.memFreeMB ? d.memTotalMB - d.memFreeMB : null;
+                const memDetail = memUsed !== null ? (memUsed >= 1024 ? (memUsed/1024).toFixed(1)+'G' : memUsed+'M') : '';
+                const diskUsed = d.diskTotalMB && d.diskFreeMB ? d.diskTotalMB - d.diskFreeMB : null;
+                const diskDetail = diskUsed !== null ? (diskUsed >= 1024 ? (diskUsed/1024).toFixed(0)+'G' : diskUsed+'M') : '';
+
+                let html = '';
+                html += bar('CPU', d.cpu, '');
+                html += bar('MEM', d.memUsedPct, memDetail);
+                html += bar('DISK', d.diskUsedPct, diskDetail);
+                if (d.load1 !== null) {
+                    const loadColor = d.load1 >= 2 ? '#ff4444' : d.load1 >= 1 ? '#f5a623' : '#00ff88';
+                    html += `<div style="display:flex;align-items:center;gap:0.4rem;">
+                        <span style="width:2.2rem;font-size:0.55rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.03em;">LOAD</span>
+                        <span style="font-size:0.6rem;font-family:monospace;color:${loadColor};font-weight:600;">${d.load1}</span>
+                        ${d.dropletName ? `<span style="margin-left:auto;font-size:0.48rem;color:rgba(255,255,255,0.2);">${d.dropletName} · ${d.region}</span>` : ''}
+                    </div>`;
+                }
+                panel.innerHTML = html;
+            } catch(e) {
+                panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Metrics unavailable</span>';
+            }
+        }
+
         async function refreshAll() {
             document.getElementById('lastRefresh').textContent = 'Refreshing...';
             await Promise.all([
@@ -2635,7 +3031,8 @@
                 updateBackupTime(),
                 updateOCBackupTime(),
                 fetchInternet(),
-                fetchOpenclawVersion()
+                fetchOpenclawVersion(),
+                fetchDOMetrics()
             ]);
             document.getElementById('lastRefresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
         }
