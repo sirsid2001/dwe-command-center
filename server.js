@@ -521,6 +521,7 @@ function getAgents(req, res) {
             { id: 'anita',          name: 'Anita',          role: 'Chief Operating Officer',  telegram: 'anita-coo',       status: gatewayUp ? 'online' : 'offline' },
             { id: 'nicole',         name: 'Nicole',         role: 'Chief Strategic Officer',  telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
             { id: 'chief-engineer', name: 'Chief Engineer', role: 'Engineering Lead',         telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'cfo',            name: 'Fran',           role: 'Chief Financial Officer',  telegram: '@DWE_CFO_Bot',    status: gatewayUp ? 'online' : 'offline' },
             { id: 'main',           name: 'Main',           role: 'Primary Assistant',        telegram: null,              status: gatewayUp ? 'online' : 'offline' }
         ];
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -728,11 +729,13 @@ function getLaunchd(req, res) {
         'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'CSO Weekly Review',    group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-anita-finance': { name: 'COO Finance Review',   group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-anita-email-digest': { name: 'COO Email Digest', group: 'heartbeat', scheduled: true },
+        'ai.dwe.agent-heartbeat-cfo':          { name: 'CFO Heartbeat',        group: 'heartbeat',  scheduled: true  },
 
         // ── Task Follow-Up (2h cycles) ──
         'ai.dwe.ce-task-followup':              { name: 'CE Follow-Up',         group: 'followup',   scheduled: true  },
         'ai.dwe.cto-task-followup':             { name: 'CTO Follow-Up',        group: 'followup',   scheduled: true  },
         'ai.dwe.nicole-task-followup':          { name: 'CSO Follow-Up',        group: 'followup',   scheduled: true  },
+        'ai.dwe.cfo-task-followup':             { name: 'CFO Follow-Up',        group: 'followup',   scheduled: true  },
 
         // ── COO PM (operations & triage) ──
         'ai.dwe.anita-email-batch':             { name: 'Email Batch',          group: 'coo-pm',     scheduled: true  },
@@ -809,6 +812,7 @@ function getAgentRouting(req, res) {
         { id: 'anita',          name: 'Anita',          emoji: '⚙️', role: 'Operations & task coordination', channel: 'Telegram anita-coo' },
         { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Strategy & revenue discovery',   channel: 'Telegram nicole-cos' },
         { id: 'chief-engineer', name: 'Chief Engineer', emoji: '🔧', role: 'Infrastructure & daemons',       channel: 'OpenClaw session' },
+        { id: 'cfo',            name: 'Fran',           emoji: '💰', role: 'Finance & budgets',              channel: 'Telegram @DWE_CFO_Bot' },
         { id: 'main',           name: 'Main',           emoji: '🚀', role: 'Primary assistant (web chat)',   channel: 'OpenClaw webchat' }
     ];
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -950,6 +954,7 @@ async function getAgentTasks(req, res) {
             { role: 'COO',            name: 'Anita',          icon: '📋',  id: 'anita' },
             { role: 'CSO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
             { role: 'Chief Engineer', name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
+            { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
         ];
         const DONE_STATUSES = new Set(['Done', 'Completed', 'Complete', 'Review', 'Archived']);
@@ -1548,7 +1553,8 @@ function getHeartbeats(req, res) {
         { id: 'anita-finance',  name: 'Anita Finance',      pattern: /Starting Anita.*finance/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilMon = (1 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilMon); d.setHours(7,30,0,0); return d; } },
         { id: 'ce',             name: 'Chief Engineer',     pattern: /Starting CE health check/,               nextFn: () => { const d = new Date(now); const mins = d.getHours()*60 + d.getMinutes(); const nextSlot = [36, 276, 516, 756, 996, 1236].find(s => s > mins) || 36+1440; d.setHours(Math.floor(nextSlot/60), nextSlot%60, 0, 0); if (nextSlot > 1440) d.setDate(d.getDate()+1); return d; } },
         { id: 'nicole',         name: 'Nicole (CSO)',       pattern: /Starting Nicole CSO daily/,              nextFn: () => { const d = new Date(now); d.setHours(17,0,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
-        { id: 'nicole-weekly',  name: 'Nicole Weekly',      pattern: /Starting Nicole.*weekly/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilSun = (0 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilSun); d.setHours(18,0,0,0); return d; } }
+        { id: 'nicole-weekly',  name: 'Nicole Weekly',      pattern: /Starting Nicole.*weekly/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilSun = (0 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilSun); d.setHours(18,0,0,0); return d; } },
+        { id: 'cfo',            name: 'Fran (CFO)',         pattern: /Starting CFO health check/,              nextFn: () => { const d = new Date(now); const mins = d.getHours()*60 + d.getMinutes(); const nextSlot = [36, 276, 516, 756, 996, 1236].find(s => s > mins) || 36+1440; d.setHours(Math.floor(nextSlot/60), nextSlot%60, 0, 0); if (nextSlot > 1440) d.setDate(d.getDate()+1); return d; } }
     ];
 
     let logLines = [];

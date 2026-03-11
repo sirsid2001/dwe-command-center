@@ -1261,7 +1261,7 @@
 
             <!-- ═══ TEAM OVERVIEW — per-agent combined column ═══ -->
             <div style="margin-bottom:1.5rem;">
-                <div class="service-panel" style="overflow:visible;">
+                <div class="service-panel" style="overflow:visible;border:1px solid rgba(184,41,221,0.3);">
                     <div class="panel-header">
                         <div class="panel-icon">🏢</div>
                         <div class="panel-title">DWE Team Overview</div>
@@ -1289,46 +1289,160 @@
                 </div>
             </div>
 
-            <!-- Ecosystem + Health -->
-            <div class="health-grid">
-                <a href="/ecosystem" style="text-decoration: none;">
-                    <div class="mini-ecosystem">
-                        <div class="panel-header">
-                            <div class="panel-icon" style="background:linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));">🌐</div>
-                            <div class="panel-title" style="color:#ffffff;">Ecosystem Map</div>
-                        </div>
-                        <div class="mini-ecosystem-svg">
-                            <svg viewBox="0 0 400 200" style="width: 100%; height: 160px;">
-                                <line class="mini-conn online" x1="200" y1="100" x2="100" y2="50" />
-                                <line class="mini-conn online" x1="200" y1="100" x2="300" y2="50" />
-                                <line class="mini-conn online" x1="200" y1="100" x2="100" y2="150" />
-                                <line class="mini-conn online" x1="200" y1="100" x2="300" y2="150" />
-                                <line class="mini-conn online" x1="100" y1="50" x2="50" y2="25" />
-                                <line class="mini-conn online" x1="300" y1="50" x2="350" y2="25" />
-                                <circle cx="200" cy="100" r="25" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="200" y="105" text-anchor="middle" font-size="16">🖥️</text>
-                                <circle cx="100" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="100" y="55" text-anchor="middle" font-size="12">💻</text>
-                                <circle cx="300" cy="50" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="300" y="55" text-anchor="middle" font-size="12">⚙️</text>
-                                <circle cx="100" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="100" y="155" text-anchor="middle" font-size="12">📋</text>
-                                <circle cx="300" cy="150" r="18" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="300" y="155" text-anchor="middle" font-size="12">🔧</text>
-                                <circle cx="50" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="50" y="29" text-anchor="middle" font-size="10">🧠</text>
-                                <circle cx="350" cy="25" r="15" fill="rgba(20,25,70,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <text x="350" y="29" text-anchor="middle" font-size="10">🗄️</text>
-                                <rect x="315" y="170" width="76" height="24" rx="12" fill="rgba(0,255,136,0.2)" stroke="#00ff88" stroke-width="1" />
-                                <circle cx="330" cy="182" r="6" fill="#00ff88">
-                                    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+            <!-- ═══ ECOSYSTEM HUD ═══ -->
+            <style>
+                @keyframes hud-orbit-1 { 0%{transform:translate(0,0)} 25%{transform:translate(6px,-4px)} 50%{transform:translate(0,-7px)} 75%{transform:translate(-6px,-4px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-2 { 0%{transform:translate(0,0)} 25%{transform:translate(-5px,5px)} 50%{transform:translate(-8px,0)} 75%{transform:translate(-5px,-5px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-3 { 0%{transform:translate(0,0)} 25%{transform:translate(5px,5px)} 50%{transform:translate(8px,0)} 75%{transform:translate(5px,-5px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-4 { 0%{transform:translate(0,0)} 25%{transform:translate(-4px,-6px)} 50%{transform:translate(0,6px)} 75%{transform:translate(4px,-6px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-pulse-core { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+                @keyframes hud-conn-pulse { 0%{stroke-opacity:0.3} 50%{stroke-opacity:0.7} 100%{stroke-opacity:0.3} }
+                .hud-node-1 { animation: hud-orbit-1 8s ease-in-out infinite; }
+                .hud-node-2 { animation: hud-orbit-2 10s ease-in-out infinite; }
+                .hud-node-3 { animation: hud-orbit-3 9s ease-in-out infinite; }
+                .hud-node-4 { animation: hud-orbit-4 11s ease-in-out infinite; }
+                .hud-node-5 { animation: hud-orbit-1 12s ease-in-out infinite; }
+                .hud-node-6 { animation: hud-orbit-2 7s ease-in-out infinite; }
+                .hud-core-node { animation: hud-pulse-core 4s ease-in-out infinite; }
+                .hud-conn { animation: hud-conn-pulse 3s ease-in-out infinite; stroke:#00ff88; stroke-width:1.5; }
+                .hud-conn:nth-child(2) { animation-delay: 0.5s; }
+                .hud-conn:nth-child(3) { animation-delay: 1s; }
+                .hud-conn:nth-child(4) { animation-delay: 1.5s; }
+                .hud-conn:nth-child(5) { animation-delay: 0.3s; }
+                .hud-conn:nth-child(6) { animation-delay: 0.8s; }
+                .hud-section { padding:0.5rem 0.75rem;border-bottom:1px solid rgba(0,255,136,0.05); }
+                .hud-section:last-child { border-bottom:none; }
+                .hud-section-label { display:flex;align-items:center;gap:5px;margin-bottom:0.35rem; }
+                .hud-section-label span { font-size:0.52rem;font-family:monospace;color:rgba(0,255,136,0.4);letter-spacing:0.1em;text-transform:uppercase; }
+                .hud-section-label div { flex:1;height:1px;background:rgba(0,255,136,0.06); }
+                .hud-row { display:flex;align-items:center;gap:6px;padding:1px 0; }
+                .hud-dot { width:5px;height:5px;border-radius:50%;background:#555;flex-shrink:0;box-shadow:0 0 4px #555; }
+                .hud-name { font-size:0.6rem;font-family:monospace;color:rgba(255,255,255,0.5); }
+                .hud-st { margin-left:auto;font-size:0.52rem;font-family:monospace;color:rgba(255,255,255,0.3); }
+            </style>
+            <div style="margin-bottom:1rem;background:rgba(5,10,30,0.92);border:1px solid rgba(0,255,136,0.15);border-radius:12px;overflow:hidden;box-shadow:0 0 25px rgba(0,255,136,0.05),inset 0 1px 0 rgba(255,255,255,0.03);">
+                <!-- HUD Header -->
+                <div style="display:flex;align-items:center;padding:0.45rem 1rem;border-bottom:1px solid rgba(0,255,136,0.08);background:linear-gradient(90deg,rgba(0,255,136,0.04),transparent);">
+                    <span style="font-size:0.55rem;font-family:monospace;color:rgba(0,255,136,0.5);letter-spacing:0.12em;text-transform:uppercase;">SYS</span>
+                    <span style="margin:0 0.5rem;color:rgba(0,255,136,0.15);">|</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.85);letter-spacing:0.03em;">Ecosystem HUD</span>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:0.6rem;">
+                        <span id="hud-clock" style="font-size:0.55rem;font-family:monospace;color:rgba(0,255,136,0.35);letter-spacing:0.05em;"></span>
+                        <a href="/ecosystem" style="font-size:0.5rem;padding:2px 7px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.18);border-radius:3px;color:rgba(0,255,136,0.5);text-decoration:none;font-family:monospace;letter-spacing:0.06em;">EXPAND ↗</a>
+                    </div>
+                </div>
+                <!-- HUD Body -->
+                <div style="display:flex;align-items:stretch;min-height:320px;">
+                    <!-- Left: Animated Ecosystem Map -->
+                    <a href="/ecosystem" style="text-decoration:none;flex:1;padding:1rem;display:flex;align-items:center;justify-content:center;position:relative;">
+                        <svg viewBox="0 0 400 220" style="width:100%;max-width:440px;height:220px;">
+                            <!-- Connection lines with pulse -->
+                            <line class="hud-conn" x1="200" y1="110" x2="95" y2="50" />
+                            <line class="hud-conn" x1="200" y1="110" x2="305" y2="50" />
+                            <line class="hud-conn" x1="200" y1="110" x2="95" y2="170" />
+                            <line class="hud-conn" x1="200" y1="110" x2="305" y2="170" />
+                            <line class="hud-conn" x1="95" y1="50" x2="40" y2="25" />
+                            <line class="hud-conn" x1="305" y1="50" x2="360" y2="25" />
+                            <!-- Core hub -->
+                            <g class="hud-core-node">
+                                <circle cx="200" cy="110" r="28" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="2" />
+                                <circle cx="200" cy="110" r="35" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="1" stroke-dasharray="4 4">
+                                    <animateTransform attributeName="transform" type="rotate" from="0 200 110" to="360 200 110" dur="20s" repeatCount="indefinite" />
                                 </circle>
-                                <text x="362" y="186" text-anchor="middle" font-size="11" fill="#00ff88" font-weight="600">6 Agents</text>
-                            </svg>
+                                <text x="200" y="116" text-anchor="middle" font-size="18">🖥️</text>
+                            </g>
+                            <!-- Orbiting nodes -->
+                            <g class="hud-node-1">
+                                <circle cx="95" cy="50" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="95" y="56" text-anchor="middle" font-size="13">💻</text>
+                            </g>
+                            <g class="hud-node-2">
+                                <circle cx="305" cy="50" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="305" y="56" text-anchor="middle" font-size="13">⚙️</text>
+                            </g>
+                            <g class="hud-node-3">
+                                <circle cx="95" cy="170" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="95" y="176" text-anchor="middle" font-size="13">📋</text>
+                            </g>
+                            <g class="hud-node-4">
+                                <circle cx="305" cy="170" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="305" y="176" text-anchor="middle" font-size="13">🔧</text>
+                            </g>
+                            <g class="hud-node-5">
+                                <circle cx="40" cy="25" r="16" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="40" y="30" text-anchor="middle" font-size="11">🧠</text>
+                            </g>
+                            <g class="hud-node-6">
+                                <circle cx="360" cy="25" r="16" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
+                                <text x="360" y="30" text-anchor="middle" font-size="11">🗄️</text>
+                            </g>
+                            <!-- Agent badge -->
+                            <rect x="315" y="192" width="76" height="22" rx="11" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.35)" stroke-width="1" />
+                            <circle cx="329" cy="203" r="5" fill="#00ff88">
+                                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                            <text x="361" y="207" text-anchor="middle" font-size="10" fill="#00ff88" font-weight="600">6 Agents</text>
+                        </svg>
+                    </a>
+                    <!-- Right: All daemon groups -->
+                    <div style="flex:0 0 280px;border-left:1px solid rgba(0,255,136,0.08);display:flex;flex-direction:column;overflow-y:auto;max-height:340px;">
+                        <!-- Core Infrastructure -->
+                        <div class="hud-section">
+                            <div class="hud-section-label"><span>⚡ Core</span><div></div></div>
+                            <div style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span id="hud-core-gateway-dot" class="hud-dot"></span><span class="hud-name">OpenClaw Gateway</span><span id="hud-core-gateway-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-core-relay-dot" class="hud-dot"></span><span class="hud-name">Relay Daemon</span><span id="hud-core-relay-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-core-mc-dot" class="hud-dot"></span><span class="hud-name">Mission Control</span><span id="hud-core-mc-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- COO Operations -->
+                        <div class="hud-section">
+                            <div class="hud-section-label"><span>📋 COO Ops</span><div></div></div>
+                            <div id="hud-coo-ops" style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span id="hud-email-batch-dot" class="hud-dot"></span><span class="hud-name">Email Batch</span><span id="hud-email-batch-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-notion-triage-dot" class="hud-dot"></span><span class="hud-name">Notion Triage</span><span id="hud-notion-triage-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-morning-digest-dot" class="hud-dot"></span><span class="hud-name">Morning Digest</span><span id="hud-morning-digest-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- Brain & Knowledge -->
+                        <div class="hud-section">
+                            <div class="hud-section-label"><span>🧠 Brain</span><div></div></div>
+                            <div id="hud-brain" style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span id="hud-seed-watcher-dot" class="hud-dot"></span><span class="hud-name">Seed Watcher</span><span id="hud-seed-watcher-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-notion-sync-dot" class="hud-dot"></span><span class="hud-name">Notion Sync</span><span id="hud-notion-sync-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-brain-trainer-dot" class="hud-dot"></span><span class="hud-name">Brain Trainer</span><span id="hud-brain-trainer-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-nightly-review-dot" class="hud-dot"></span><span class="hud-name">Nightly Review</span><span id="hud-nightly-review-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-memory-decay-dot" class="hud-dot"></span><span class="hud-name">Memory Decay</span><span id="hud-memory-decay-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- Monitoring & Health -->
+                        <div class="hud-section">
+                            <div class="hud-section-label"><span>📡 Monitor</span><div></div></div>
+                            <div id="hud-monitor" style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span id="hud-health-monitor-dot" class="hud-dot"></span><span class="hud-name">Health Monitor</span><span id="hud-health-monitor-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-anomaly-check-dot" class="hud-dot"></span><span class="hud-name">Anomaly Check</span><span id="hud-anomaly-check-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-ralphy-monitor-dot" class="hud-dot"></span><span class="hud-name">Ralph Monitor</span><span id="hud-ralphy-monitor-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- Routines & Maintenance -->
+                        <div class="hud-section">
+                            <div class="hud-section-label"><span>🔧 Routines</span><div></div></div>
+                            <div id="hud-routines" style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- Cron Jobs -->
+                        <div class="hud-section" style="flex:1;">
+                            <div class="hud-section-label"><span>⏰ Cron</span><div></div></div>
+                            <div id="crons-list" style="display:flex;flex-direction:column;gap:3px;">
+                                <div class="hud-row"><span class="hud-dot"></span><span class="hud-name">Loading...</span></div>
+                            </div>
                         </div>
                     </div>
-                </a>
-
+                </div>
             </div>
 
             <!-- CSO Pipeline + Financial Pulse -->
@@ -1384,38 +1498,9 @@
                 </div>
             </div>
 
-            <!-- Services / LaunchD / Crons -->
-            <div class="services-grid" style="grid-template-columns:1fr 1fr;">
-                <!-- services-list hidden (all services moved to tiles) -->
-                <div id="services-list" style="display:none;"></div>
-
-                <div class="service-panel">
-                    <div class="panel-header">
-                        <div class="panel-icon">🚀</div>
-                        <div class="panel-title">LaunchD Daemons</div>
-                    </div>
-                    <div id="launchd-list" style="flex:1;">
-                        <div class="service-item"><span class="pulse-dot offline"></span><span class="label">Loading...</span></div>
-                    </div>
-                    <div class="panel-footer">
-                        <button class="footer-btn" onclick="refreshAll()">🔄 Refresh</button>
-                    </div>
-                </div>
-
-                <div class="service-panel">
-                    <div class="panel-header">
-                        <div class="panel-icon">⏰</div>
-                        <div class="panel-title">Cron Jobs</div>
-                    </div>
-                    <div id="crons-list" style="flex:1;">
-                        <div class="service-item"><span class="pulse-dot offline"></span><span class="label">Loading...</span></div>
-                    </div>
-                    <div class="panel-footer">
-                        <a href="https://github.com/sirsid2001/dwe-command-center" target="_blank" class="footer-btn">🐙 GitHub</a>
-                        <button class="footer-btn" onclick="refreshAll()">🔄 Refresh</button>
-                    </div>
-                </div>
-            </div>
+            <!-- services-list hidden (all services moved to tiles/HUD) -->
+            <div id="services-list" style="display:none;"></div>
+            <div id="launchd-list" style="display:none;"></div>
             <!-- Opportunities Panel (toggled via sidebar) -->
             <div id="opportunities-panel" style="display: none; margin-top: 2rem;">
                 <div class="panel" style="background: var(--card-bg, rgba(20,20,40,0.6)); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; overflow: hidden;">
@@ -1568,6 +1653,8 @@
             const now = new Date();
             document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' });
+            const hc = document.getElementById('hud-clock');
+            if (hc) hc.textContent = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -1754,6 +1841,37 @@
                         gwSt.textContent = ok ? 'Running' : 'Down';
                         gwSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
                     }
+                    // ── HUD daemon updates (all groups) ──
+                    const hudMap = {
+                        'ai.openclaw.gateway':       { dot: 'hud-core-gateway-dot',   st: 'hud-core-gateway-st' },
+                        'ai.openclaw.relay-daemon':   { dot: 'hud-core-relay-dot',     st: 'hud-core-relay-st' },
+                        'com.missioncontrol.server':  { dot: 'hud-core-mc-dot',        st: 'hud-core-mc-st' },
+                        'ai.dwe.anita-email-batch':   { dot: 'hud-email-batch-dot',    st: 'hud-email-batch-st' },
+                        'ai.dwe.anita-notion-triage': { dot: 'hud-notion-triage-dot',  st: 'hud-notion-triage-st' },
+                        'ai.dwe.morning-digest':      { dot: 'hud-morning-digest-dot', st: 'hud-morning-digest-st' },
+                        'ai.dwe.seed-watcher':        { dot: 'hud-seed-watcher-dot',   st: 'hud-seed-watcher-st' },
+                        'ai.dwe.notion-sync':         { dot: 'hud-notion-sync-dot',    st: 'hud-notion-sync-st' },
+                        'ai.dwe.brain-trainer':       { dot: 'hud-brain-trainer-dot',  st: 'hud-brain-trainer-st' },
+                        'ai.dwe.nightly-review':      { dot: 'hud-nightly-review-dot', st: 'hud-nightly-review-st' },
+                        'ai.dwe.memory-decay':        { dot: 'hud-memory-decay-dot',   st: 'hud-memory-decay-st' },
+                        'ai.dwe.health-monitor':      { dot: 'hud-health-monitor-dot', st: 'hud-health-monitor-st' },
+                        'ai.dwe.anomaly-check':       { dot: 'hud-anomaly-check-dot',  st: 'hud-anomaly-check-st' },
+                        'ai.dwe.ralphy-monitor':      { dot: 'hud-ralphy-monitor-dot', st: 'hud-ralphy-monitor-st' },
+                        'ai.dwe.clawhub-check':       { dot: 'hud-clawhub-check-dot',  st: 'hud-clawhub-check-st' },
+                        'ai.dwe.soul-calibration':    { dot: 'hud-soul-calibration-dot',st: 'hud-soul-calibration-st' },
+                        'ai.dwe.night-mode-heartbeat':{ dot: 'hud-night-mode-dot',     st: 'hud-night-mode-st' },
+                        'ai.dwe.openclaw-backup':     { dot: 'hud-oc-backup-dot',      st: 'hud-oc-backup-st' },
+                    };
+                    if (hudMap[s.id]) {
+                        const h = hudMap[s.id];
+                        const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
+                        const color = ok ? '#00ff88' : '#ff4444';
+                        const label = s.status === 'running' ? '▶ RUN' : s.status === 'waiting' ? '⏸ WAIT' : '✕ DOWN';
+                        const el = document.getElementById(h.dot);
+                        if (el) { el.style.background = color; el.style.boxShadow = `0 0 6px ${color}`; }
+                        const stEl = document.getElementById(h.st);
+                        if (stEl) { stEl.textContent = label; stEl.style.color = ok ? 'rgba(0,255,136,0.5)' : '#ff4444'; }
+                    }
                     // OpenClaw Backup → OpenClaw tile
                     if (s.id === 'ai.dwe.openclaw-backup') {
                         const ok = s.status === 'running' || (s.scheduled && s.status === 'waiting');
@@ -1805,62 +1923,6 @@
                         st.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
                     }
                 });
-
-                // Group services by category and render with section headers
-                const groupOrder = [
-                    { key: 'core',       label: 'Core Infrastructure',  icon: '⚡' },
-                    { key: 'heartbeat',  label: 'Agent Heartbeats',     icon: '💓' },
-                    { key: 'followup',   label: 'Task Follow-Up',       icon: '🔄' },
-                    { key: 'coo-pm',     label: 'COO Operations',       icon: '📋' },
-                    { key: 'brain',      label: 'Brain & Knowledge',    icon: '🧠' },
-                    { key: 'monitoring', label: 'Monitoring & Health',   icon: '📡' },
-                    { key: 'routine',    label: 'Routines & Maintenance',icon: '🔧' },
-                    { key: 'other',      label: 'Other',                icon: '📦' },
-                ];
-                const grouped = {};
-                d.services.forEach(s => {
-                    const g = s.group || 'other';
-                    if (!grouped[g]) grouped[g] = [];
-                    grouped[g].push(s);
-                });
-
-                let hasContent = false;
-                groupOrder.forEach(grp => {
-                    const items = grouped[grp.key];
-                    if (!items || items.length === 0) return;
-                    hasContent = true;
-                    // Count running vs total for the group
-                    const running = items.filter(s => s.status === 'running').length;
-                    const total = items.length;
-                    const allOk = items.every(s => s.status === 'running' || (s.scheduled && s.status === 'waiting'));
-                    const headerColor = allOk ? 'rgba(0,255,136,0.7)' : 'rgba(255,200,50,0.7)';
-                    list.innerHTML += `<div style="margin:0.75rem 0 0.35rem 0;padding:0.25rem 0.5rem;border-left:3px solid ${headerColor};font-size:0.75rem;font-weight:600;color:${headerColor};letter-spacing:0.03em;text-transform:uppercase;">
-                        ${grp.icon} ${grp.label}
-                    </div>`;
-                    items.forEach(s => {
-                        if (s.retired) {
-                            list.innerHTML += `<div class="service-item" style="opacity:0.4;">
-                                <span class="pulse-dot offline"></span>
-                                <span class="label" style="text-decoration:line-through;">${s.name}</span>
-                                <span class="badge" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);font-size:0.6rem;">retired</span>
-                            </div>`;
-                            return;
-                        }
-                        const dotClass = s.status === 'running' ? '' : s.status === 'error' ? ' error' : s.status === 'warning' ? ' warning' : ' offline';
-                        const badge    = s.status === 'running' ? 'running' : s.status === 'error' ? 'error' : s.status === 'warning' ? 'warning' : 'waiting';
-                        const label    = s.status === 'running' ? '▶' : s.status === 'error' ? '✕' : s.status === 'warning' ? '⚠' : '⏸';
-                        const hint     = s.scheduled && s.status !== 'running' ? ' style="opacity:0.75;"' : '';
-                        list.innerHTML += `<div class="service-item"${hint}>
-                            <span class="pulse-dot${dotClass}"></span>
-                            <span class="label">${s.name}</span>
-                            <span class="badge ${badge}">${label}</span>
-                        </div>`;
-                    });
-                });
-
-                if (!hasContent) {
-                    list.innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span>No daemons found</span></div>';
-                }
 
                 // Update agents gateway status
                 const gatewayRunning = d.services.some(s => s.id === 'ai.openclaw.gateway' && s.status === 'running');
@@ -2396,7 +2458,10 @@
                         { id: 'ai.dwe.agent-heartbeat-ce', short: 'Heartbeat' },
                         { id: 'ai.dwe.ce-task-followup',   short: 'Follow-Up' },
                     ]},
-                    { id: 'cfo',   label: 'Fran',           title: 'CFO',         icon: '💰', taskId: 'cfo',   hbId: 'cfo',   sessId: 'cfo',           isHuman: false, daemons: [] },
+                    { id: 'cfo',   label: 'Fran',           title: 'CFO',         icon: '💰', taskId: 'cfo',   hbId: 'cfo',   sessId: 'cfo',           isHuman: false, daemons: [
+                        { id: 'ai.dwe.agent-heartbeat-cfo', short: 'Heartbeat' },
+                        { id: 'ai.dwe.cfo-task-followup',   short: 'Follow-Up' },
+                    ]},
                 ];
 
                 // Priority config — always show all 4 levels
