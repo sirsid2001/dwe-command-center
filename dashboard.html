@@ -1291,157 +1291,206 @@
 
             <!-- ═══ ECOSYSTEM HUD ═══ -->
             <style>
-                @keyframes hud-orbit-1 { 0%{transform:translate(0,0)} 25%{transform:translate(6px,-4px)} 50%{transform:translate(0,-7px)} 75%{transform:translate(-6px,-4px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-2 { 0%{transform:translate(0,0)} 25%{transform:translate(-5px,5px)} 50%{transform:translate(-8px,0)} 75%{transform:translate(-5px,-5px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-3 { 0%{transform:translate(0,0)} 25%{transform:translate(5px,5px)} 50%{transform:translate(8px,0)} 75%{transform:translate(5px,-5px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-4 { 0%{transform:translate(0,0)} 25%{transform:translate(-4px,-6px)} 50%{transform:translate(0,6px)} 75%{transform:translate(4px,-6px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-pulse-core { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
-                @keyframes hud-conn-pulse { 0%{stroke-opacity:0.3} 50%{stroke-opacity:0.7} 100%{stroke-opacity:0.3} }
+                @keyframes hud-orbit-1 { 0%{transform:translate(0,0)} 25%{transform:translate(10px,-7px)} 50%{transform:translate(0,-12px)} 75%{transform:translate(-10px,-7px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-2 { 0%{transform:translate(0,0)} 25%{transform:translate(-8px,9px)} 50%{transform:translate(-14px,0)} 75%{transform:translate(-8px,-9px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-3 { 0%{transform:translate(0,0)} 25%{transform:translate(9px,8px)} 50%{transform:translate(14px,0)} 75%{transform:translate(9px,-8px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-4 { 0%{transform:translate(0,0)} 25%{transform:translate(-7px,-10px)} 50%{transform:translate(0,10px)} 75%{transform:translate(7px,-10px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-5 { 0%{transform:translate(0,0)} 25%{transform:translate(12px,3px)} 50%{transform:translate(5px,11px)} 75%{transform:translate(-6px,5px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-orbit-6 { 0%{transform:translate(0,0)} 25%{transform:translate(-6px,-8px)} 50%{transform:translate(-12px,2px)} 75%{transform:translate(-4px,10px)} 100%{transform:translate(0,0)} }
+                @keyframes hud-pulse-core { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+                @keyframes hud-ring-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                @keyframes hud-ring-spin-rev { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+                @keyframes hud-data-glow { 0%{opacity:0.9;r:2.5} 50%{opacity:1;r:3.5} 100%{opacity:0.9;r:2.5} }
                 .hud-node-1 { animation: hud-orbit-1 8s ease-in-out infinite; }
                 .hud-node-2 { animation: hud-orbit-2 10s ease-in-out infinite; }
                 .hud-node-3 { animation: hud-orbit-3 9s ease-in-out infinite; }
                 .hud-node-4 { animation: hud-orbit-4 11s ease-in-out infinite; }
-                .hud-node-5 { animation: hud-orbit-1 12s ease-in-out infinite; }
-                .hud-node-6 { animation: hud-orbit-2 7s ease-in-out infinite; }
+                .hud-node-5 { animation: hud-orbit-5 12s ease-in-out infinite; }
+                .hud-node-6 { animation: hud-orbit-6 7s ease-in-out infinite; }
                 .hud-core-node { animation: hud-pulse-core 4s ease-in-out infinite; }
-                .hud-conn { animation: hud-conn-pulse 3s ease-in-out infinite; stroke:#00ff88; stroke-width:1.5; }
-                .hud-conn:nth-child(2) { animation-delay: 0.5s; }
-                .hud-conn:nth-child(3) { animation-delay: 1s; }
-                .hud-conn:nth-child(4) { animation-delay: 1.5s; }
-                .hud-conn:nth-child(5) { animation-delay: 0.3s; }
-                .hud-conn:nth-child(6) { animation-delay: 0.8s; }
-                .hud-section { padding:0.5rem 0.75rem;border-bottom:1px solid rgba(0,255,136,0.05); }
-                .hud-section:last-child { border-bottom:none; }
-                .hud-section-label { display:flex;align-items:center;gap:5px;margin-bottom:0.35rem; }
-                .hud-section-label span { font-size:0.52rem;font-family:monospace;color:rgba(0,255,136,0.4);letter-spacing:0.1em;text-transform:uppercase; }
-                .hud-section-label div { flex:1;height:1px;background:rgba(0,255,136,0.06); }
-                .hud-row { display:flex;align-items:center;gap:6px;padding:1px 0; }
+                .hud-data-dot { fill:#fff; animation: hud-data-glow 2s ease-in-out infinite; }
+                .hud-panel-float {
+                    position:absolute; padding:0.45rem 0.6rem; border-radius:8px;
+                    background:rgba(5,10,30,0.88); backdrop-filter:blur(8px);
+                    border:1px solid rgba(0,212,255,0.2); box-shadow:0 0 15px rgba(0,212,255,0.06);
+                    font-family:monospace; z-index:2; min-width:155px;
+                }
+                .hud-panel-float .hud-plabel {
+                    font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase;
+                    margin-bottom:0.3rem; display:flex; align-items:center; gap:5px;
+                }
+                .hud-panel-float .hud-plabel div { flex:1;height:1px; }
+                .hud-row { display:flex;align-items:center;gap:6px;padding:1.5px 0; }
                 .hud-dot { width:5px;height:5px;border-radius:50%;background:#555;flex-shrink:0;box-shadow:0 0 4px #555; }
-                .hud-name { font-size:0.6rem;font-family:monospace;color:rgba(255,255,255,0.5); }
-                .hud-st { margin-left:auto;font-size:0.52rem;font-family:monospace;color:rgba(255,255,255,0.3); }
+                .hud-name { font-size:0.58rem;font-family:monospace;color:rgba(255,255,255,0.55); }
+                .hud-st { margin-left:auto;font-size:0.5rem;font-family:monospace;color:rgba(255,255,255,0.3); }
             </style>
-            <div style="margin-bottom:1rem;background:rgba(5,10,30,0.92);border:1px solid rgba(0,255,136,0.15);border-radius:12px;overflow:hidden;box-shadow:0 0 25px rgba(0,255,136,0.05),inset 0 1px 0 rgba(255,255,255,0.03);">
+            <div style="margin-bottom:1rem;background:rgba(3,6,20,0.95);border:1px solid rgba(0,212,255,0.2);border-radius:14px;overflow:hidden;box-shadow:0 0 35px rgba(0,212,255,0.06),0 0 80px rgba(0,212,255,0.02),inset 0 1px 0 rgba(255,255,255,0.04);">
                 <!-- HUD Header -->
-                <div style="display:flex;align-items:center;padding:0.45rem 1rem;border-bottom:1px solid rgba(0,255,136,0.08);background:linear-gradient(90deg,rgba(0,255,136,0.04),transparent);">
-                    <span style="font-size:0.55rem;font-family:monospace;color:rgba(0,255,136,0.5);letter-spacing:0.12em;text-transform:uppercase;">SYS</span>
-                    <span style="margin:0 0.5rem;color:rgba(0,255,136,0.15);">|</span>
-                    <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.85);letter-spacing:0.03em;">Ecosystem HUD</span>
+                <div style="display:flex;align-items:center;padding:0.5rem 1.1rem;border-bottom:1px solid rgba(0,212,255,0.1);background:linear-gradient(90deg,rgba(0,212,255,0.05),transparent 50%,rgba(184,41,221,0.03));">
+                    <span style="font-size:0.55rem;font-family:monospace;color:rgba(0,212,255,0.6);letter-spacing:0.12em;text-transform:uppercase;">SYS</span>
+                    <span style="margin:0 0.5rem;color:rgba(0,212,255,0.18);">|</span>
+                    <span style="font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:0.03em;">Ecosystem HUD</span>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:0.6rem;">
-                        <span id="hud-clock" style="font-size:0.55rem;font-family:monospace;color:rgba(0,255,136,0.35);letter-spacing:0.05em;"></span>
-                        <a href="/ecosystem" style="font-size:0.5rem;padding:2px 7px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.18);border-radius:3px;color:rgba(0,255,136,0.5);text-decoration:none;font-family:monospace;letter-spacing:0.06em;">EXPAND ↗</a>
+                        <span id="hud-clock" style="font-size:0.55rem;font-family:monospace;color:rgba(0,212,255,0.4);letter-spacing:0.05em;"></span>
+                        <a href="/ecosystem" style="font-size:0.5rem;padding:2px 7px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:3px;color:rgba(0,212,255,0.55);text-decoration:none;font-family:monospace;letter-spacing:0.06em;">EXPAND ↗</a>
                     </div>
                 </div>
-                <!-- HUD Body -->
-                <div style="display:flex;align-items:stretch;min-height:320px;">
-                    <!-- Left: Animated Ecosystem Map -->
-                    <a href="/ecosystem" style="text-decoration:none;flex:1;padding:1rem;display:flex;align-items:center;justify-content:center;position:relative;">
-                        <svg viewBox="0 0 400 220" style="width:100%;max-width:440px;height:220px;">
-                            <!-- Connection lines with pulse -->
-                            <line class="hud-conn" x1="200" y1="110" x2="95" y2="50" />
-                            <line class="hud-conn" x1="200" y1="110" x2="305" y2="50" />
-                            <line class="hud-conn" x1="200" y1="110" x2="95" y2="170" />
-                            <line class="hud-conn" x1="200" y1="110" x2="305" y2="170" />
-                            <line class="hud-conn" x1="95" y1="50" x2="40" y2="25" />
-                            <line class="hud-conn" x1="305" y1="50" x2="360" y2="25" />
-                            <!-- Core hub -->
-                            <g class="hud-core-node">
-                                <circle cx="200" cy="110" r="28" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="2" />
-                                <circle cx="200" cy="110" r="35" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="1" stroke-dasharray="4 4">
-                                    <animateTransform attributeName="transform" type="rotate" from="0 200 110" to="360 200 110" dur="20s" repeatCount="indefinite" />
-                                </circle>
-                                <text x="200" y="116" text-anchor="middle" font-size="18">🖥️</text>
-                            </g>
-                            <!-- Orbiting nodes -->
-                            <g class="hud-node-1">
-                                <circle cx="95" cy="50" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="95" y="56" text-anchor="middle" font-size="13">💻</text>
-                            </g>
-                            <g class="hud-node-2">
-                                <circle cx="305" cy="50" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="305" y="56" text-anchor="middle" font-size="13">⚙️</text>
-                            </g>
-                            <g class="hud-node-3">
-                                <circle cx="95" cy="170" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="95" y="176" text-anchor="middle" font-size="13">📋</text>
-                            </g>
-                            <g class="hud-node-4">
-                                <circle cx="305" cy="170" r="20" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="305" y="176" text-anchor="middle" font-size="13">🔧</text>
-                            </g>
-                            <g class="hud-node-5">
-                                <circle cx="40" cy="25" r="16" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="40" y="30" text-anchor="middle" font-size="11">🧠</text>
-                            </g>
-                            <g class="hud-node-6">
-                                <circle cx="360" cy="25" r="16" fill="rgba(5,10,30,0.95)" stroke="#00ff88" stroke-width="1.5" />
-                                <text x="360" y="30" text-anchor="middle" font-size="11">🗄️</text>
-                            </g>
-                            <!-- Agent badge -->
-                            <rect x="315" y="192" width="76" height="22" rx="11" fill="rgba(0,255,136,0.12)" stroke="rgba(0,255,136,0.35)" stroke-width="1" />
-                            <circle cx="329" cy="203" r="5" fill="#00ff88">
-                                <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite" />
-                            </circle>
-                            <text x="361" y="207" text-anchor="middle" font-size="10" fill="#00ff88" font-weight="600">6 Agents</text>
-                        </svg>
-                    </a>
-                    <!-- Right: All daemon groups -->
-                    <div style="flex:0 0 280px;border-left:1px solid rgba(0,255,136,0.08);display:flex;flex-direction:column;overflow-y:auto;max-height:340px;">
-                        <!-- Core Infrastructure -->
-                        <div class="hud-section">
-                            <div class="hud-section-label"><span>⚡ Core</span><div></div></div>
-                            <div style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span id="hud-core-gateway-dot" class="hud-dot"></span><span class="hud-name">OpenClaw Gateway</span><span id="hud-core-gateway-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-core-relay-dot" class="hud-dot"></span><span class="hud-name">Relay Daemon</span><span id="hud-core-relay-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-core-mc-dot" class="hud-dot"></span><span class="hud-name">Mission Control</span><span id="hud-core-mc-st" class="hud-st">—</span></div>
-                            </div>
-                        </div>
-                        <!-- COO Operations -->
-                        <div class="hud-section">
-                            <div class="hud-section-label"><span>📋 COO Ops</span><div></div></div>
-                            <div id="hud-coo-ops" style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span id="hud-email-batch-dot" class="hud-dot"></span><span class="hud-name">Email Batch</span><span id="hud-email-batch-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-notion-triage-dot" class="hud-dot"></span><span class="hud-name">Notion Triage</span><span id="hud-notion-triage-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-morning-digest-dot" class="hud-dot"></span><span class="hud-name">Morning Digest</span><span id="hud-morning-digest-st" class="hud-st">—</span></div>
-                            </div>
-                        </div>
-                        <!-- Brain & Knowledge -->
-                        <div class="hud-section">
-                            <div class="hud-section-label"><span>🧠 Brain</span><div></div></div>
-                            <div id="hud-brain" style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span id="hud-seed-watcher-dot" class="hud-dot"></span><span class="hud-name">Seed Watcher</span><span id="hud-seed-watcher-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-notion-sync-dot" class="hud-dot"></span><span class="hud-name">Notion Sync</span><span id="hud-notion-sync-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-brain-trainer-dot" class="hud-dot"></span><span class="hud-name">Brain Trainer</span><span id="hud-brain-trainer-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-nightly-review-dot" class="hud-dot"></span><span class="hud-name">Nightly Review</span><span id="hud-nightly-review-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-memory-decay-dot" class="hud-dot"></span><span class="hud-name">Memory Decay</span><span id="hud-memory-decay-st" class="hud-st">—</span></div>
-                            </div>
-                        </div>
-                        <!-- Monitoring & Health -->
-                        <div class="hud-section">
-                            <div class="hud-section-label"><span>📡 Monitor</span><div></div></div>
-                            <div id="hud-monitor" style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span id="hud-health-monitor-dot" class="hud-dot"></span><span class="hud-name">Health Monitor</span><span id="hud-health-monitor-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-anomaly-check-dot" class="hud-dot"></span><span class="hud-name">Anomaly Check</span><span id="hud-anomaly-check-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-ralphy-monitor-dot" class="hud-dot"></span><span class="hud-name">Ralph Monitor</span><span id="hud-ralphy-monitor-st" class="hud-st">—</span></div>
-                            </div>
-                        </div>
-                        <!-- Routines & Maintenance -->
-                        <div class="hud-section">
-                            <div class="hud-section-label"><span>🔧 Routines</span><div></div></div>
-                            <div id="hud-routines" style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
-                            </div>
-                        </div>
-                        <!-- Cron Jobs -->
-                        <div class="hud-section" style="flex:1;">
-                            <div class="hud-section-label"><span>⏰ Cron</span><div></div></div>
-                            <div id="crons-list" style="display:flex;flex-direction:column;gap:3px;">
-                                <div class="hud-row"><span class="hud-dot"></span><span class="hud-name">Loading...</span></div>
-                            </div>
+                <!-- HUD Body: Map with floating panels -->
+                <div style="position:relative;min-height:520px;padding:1rem;">
+                    <!-- SVG Map — centered, full width -->
+                    <svg viewBox="0 0 700 400" style="width:100%;height:100%;position:absolute;top:0;left:0;" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <!-- Data flow paths (center=350,200) -->
+                            <path id="flow-core-brain" d="M350,200 Q280,100 180,90" />
+                            <path id="flow-core-coo" d="M350,200 Q250,250 140,280" />
+                            <path id="flow-core-monitor" d="M350,200 Q450,250 560,280" />
+                            <path id="flow-core-routines" d="M350,200 Q450,300 580,350" />
+                            <path id="flow-core-cron" d="M350,200 Q350,300 350,360" />
+                            <path id="flow-brain-coo" d="M180,90 Q120,180 140,280" />
+                            <path id="flow-brain-monitor" d="M180,90 Q370,60 560,120" />
+                            <path id="flow-core-infra" d="M350,200 Q450,100 560,80" />
+                            <radialGradient id="core-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="rgba(0,212,255,0.15)" />
+                                <stop offset="100%" stop-color="rgba(0,212,255,0)" />
+                            </radialGradient>
+                        </defs>
+
+                        <!-- Orbital rings around core -->
+                        <circle cx="350" cy="200" r="80" fill="none" stroke="rgba(0,212,255,0.05)" stroke-width="1" stroke-dasharray="6 4" style="transform-origin:350px 200px;animation:hud-ring-spin 40s linear infinite;" />
+                        <circle cx="350" cy="200" r="140" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1" stroke-dasharray="8 6" style="transform-origin:350px 200px;animation:hud-ring-spin-rev 55s linear infinite;" />
+                        <circle cx="350" cy="200" r="210" fill="none" stroke="rgba(184,41,221,0.04)" stroke-width="1" stroke-dasharray="10 8" style="transform-origin:350px 200px;animation:hud-ring-spin 70s linear infinite;" />
+
+                        <!-- Connection lines (subtle, teal/white) -->
+                        <line x1="350" y1="200" x2="180" y2="90" stroke="rgba(0,212,255,0.12)" stroke-width="1" />
+                        <line x1="350" y1="200" x2="560" y2="80" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+                        <line x1="350" y1="200" x2="140" y2="280" stroke="rgba(255,165,0,0.1)" stroke-width="1" />
+                        <line x1="350" y1="200" x2="560" y2="280" stroke="rgba(0,212,255,0.1)" stroke-width="1" />
+                        <line x1="350" y1="200" x2="580" y2="350" stroke="rgba(255,200,50,0.08)" stroke-width="1" />
+                        <line x1="350" y1="200" x2="350" y2="360" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+                        <line x1="180" y1="90" x2="140" y2="280" stroke="rgba(184,41,221,0.06)" stroke-width="0.5" />
+                        <line x1="560" y1="80" x2="560" y2="280" stroke="rgba(0,212,255,0.05)" stroke-width="0.5" />
+
+                        <!-- Data flow particles (white dots moving along paths) -->
+                        <circle class="hud-data-dot" r="2.5"><animateMotion dur="4s" repeatCount="indefinite"><mpath href="#flow-core-brain"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="2"><animateMotion dur="5s" repeatCount="indefinite" begin="0.8s"><mpath href="#flow-core-coo"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="2"><animateMotion dur="4.5s" repeatCount="indefinite" begin="1.5s"><mpath href="#flow-core-monitor"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="2.5"><animateMotion dur="6s" repeatCount="indefinite" begin="0.3s"><mpath href="#flow-core-routines"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="2"><animateMotion dur="3.5s" repeatCount="indefinite" begin="2s"><mpath href="#flow-core-cron"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(184,41,221,0.8)"><animateMotion dur="7s" repeatCount="indefinite" begin="1s"><mpath href="#flow-brain-coo"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(0,212,255,0.8)"><animateMotion dur="6s" repeatCount="indefinite" begin="3s"><mpath href="#flow-brain-monitor"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="2"><animateMotion dur="5s" repeatCount="indefinite" begin="0.5s"><mpath href="#flow-core-infra"/></animateMotion></circle>
+                        <!-- Reverse flow (back to core) -->
+                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(0,255,136,0.7)"><animateMotion dur="5s" repeatCount="indefinite" begin="2.5s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#flow-core-brain"/></animateMotion></circle>
+                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(255,200,50,0.7)"><animateMotion dur="6s" repeatCount="indefinite" begin="1.2s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#flow-core-monitor"/></animateMotion></circle>
+
+                        <!-- Core hub -->
+                        <g class="hud-core-node">
+                            <circle cx="350" cy="200" r="50" fill="url(#core-glow)" />
+                            <circle cx="350" cy="200" r="32" fill="rgba(3,6,20,0.95)" stroke="#00d4ff" stroke-width="2.5" />
+                            <circle cx="350" cy="200" r="40" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1" stroke-dasharray="4 4" style="transform-origin:350px 200px;animation:hud-ring-spin 15s linear infinite;" />
+                            <text x="350" y="196" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.9)" font-family="monospace" font-weight="700">DWE</text>
+                            <text x="350" y="212" text-anchor="middle" font-size="9" fill="rgba(0,212,255,0.6)" font-family="monospace">CORE</text>
+                        </g>
+
+                        <!-- Node: Brain (top-left) -->
+                        <g class="hud-node-1">
+                            <circle cx="180" cy="90" r="22" fill="rgba(3,6,20,0.92)" stroke="#b829dd" stroke-width="1.8" />
+                            <text x="180" y="96" text-anchor="middle" font-size="15">🧠</text>
+                        </g>
+                        <!-- Node: Core Infra (top-right) -->
+                        <g class="hud-node-2">
+                            <circle cx="560" cy="80" r="22" fill="rgba(3,6,20,0.92)" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" />
+                            <text x="560" y="86" text-anchor="middle" font-size="15">⚡</text>
+                        </g>
+                        <!-- Node: COO (left) -->
+                        <g class="hud-node-3">
+                            <circle cx="140" cy="280" r="22" fill="rgba(3,6,20,0.92)" stroke="#ff8c42" stroke-width="1.8" />
+                            <text x="140" y="286" text-anchor="middle" font-size="15">📋</text>
+                        </g>
+                        <!-- Node: Monitor (right) -->
+                        <g class="hud-node-4">
+                            <circle cx="560" cy="280" r="22" fill="rgba(3,6,20,0.92)" stroke="#00d4ff" stroke-width="1.8" />
+                            <text x="560" y="286" text-anchor="middle" font-size="15">📡</text>
+                        </g>
+                        <!-- Node: Routines (bottom-right) -->
+                        <g class="hud-node-5">
+                            <circle cx="580" cy="350" r="18" fill="rgba(3,6,20,0.92)" stroke="#ffc832" stroke-width="1.5" />
+                            <text x="580" y="355" text-anchor="middle" font-size="12">🔧</text>
+                        </g>
+                        <!-- Node: Cron (bottom-center) -->
+                        <g class="hud-node-6">
+                            <circle cx="350" cy="360" r="18" fill="rgba(3,6,20,0.92)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+                            <text x="350" y="365" text-anchor="middle" font-size="12">⏰</text>
+                        </g>
+
+                        <!-- Agent badge -->
+                        <rect x="290" y="248" width="120" height="24" rx="12" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.25)" stroke-width="1" />
+                        <circle cx="308" cy="260" r="5" fill="#00d4ff">
+                            <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite" />
+                        </circle>
+                        <text x="352" y="264" text-anchor="middle" font-size="10" fill="#00d4ff" font-weight="600" font-family="monospace">6 Agents Online</text>
+                    </svg>
+
+                    <!-- Floating panels positioned AROUND the map -->
+
+                    <!-- CORE INFRA — top right -->
+                    <div class="hud-panel-float" style="top:1.2rem;right:1.2rem;border-color:rgba(255,255,255,0.2);">
+                        <div class="hud-plabel"><span style="color:rgba(255,255,255,0.5);">⚡ CORE INFRA</span><div style="background:rgba(255,255,255,0.08);"></div></div>
+                        <div class="hud-row"><span id="hud-core-gateway-dot" class="hud-dot"></span><span class="hud-name">Gateway</span><span id="hud-core-gateway-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-core-relay-dot" class="hud-dot"></span><span class="hud-name">Relay</span><span id="hud-core-relay-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-core-mc-dot" class="hud-dot"></span><span class="hud-name">Mission Ctrl</span><span id="hud-core-mc-st" class="hud-st">—</span></div>
+                    </div>
+
+                    <!-- BRAIN — top left -->
+                    <div class="hud-panel-float" style="top:1.2rem;left:1.2rem;border-color:rgba(184,41,221,0.25);">
+                        <div class="hud-plabel"><span style="color:rgba(184,41,221,0.6);">🧠 BRAIN</span><div style="background:rgba(184,41,221,0.1);"></div></div>
+                        <div class="hud-row"><span id="hud-seed-watcher-dot" class="hud-dot"></span><span class="hud-name">Seed Watcher</span><span id="hud-seed-watcher-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-notion-sync-dot" class="hud-dot"></span><span class="hud-name">Notion Sync</span><span id="hud-notion-sync-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-brain-trainer-dot" class="hud-dot"></span><span class="hud-name">Brain Trainer</span><span id="hud-brain-trainer-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-nightly-review-dot" class="hud-dot"></span><span class="hud-name">Nightly Review</span><span id="hud-nightly-review-st" class="hud-st">—</span></div>
+                        <div class="hud-row"><span id="hud-memory-decay-dot" class="hud-dot"></span><span class="hud-name">Memory Decay</span><span id="hud-memory-decay-st" class="hud-st">—</span></div>
+                    </div>
+
+                    <!-- COO OPS — bottom left -->
+                    <div class="hud-panel-float" style="bottom:1.2rem;left:1.2rem;border-color:rgba(255,140,66,0.25);">
+                        <div class="hud-plabel"><span style="color:rgba(255,140,66,0.6);">📋 COO OPS</span><div style="background:rgba(255,140,66,0.1);"></div></div>
+                        <div id="hud-coo-ops">
+                            <div class="hud-row"><span id="hud-email-batch-dot" class="hud-dot"></span><span class="hud-name">Email Batch</span><span id="hud-email-batch-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-notion-triage-dot" class="hud-dot"></span><span class="hud-name">Notion Triage</span><span id="hud-notion-triage-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-morning-digest-dot" class="hud-dot"></span><span class="hud-name">Morning Digest</span><span id="hud-morning-digest-st" class="hud-st">—</span></div>
                         </div>
                     </div>
+
+                    <!-- MONITOR — middle right -->
+                    <div class="hud-panel-float" style="top:50%;right:1.2rem;transform:translateY(-50%);border-color:rgba(0,212,255,0.25);">
+                        <div class="hud-plabel"><span style="color:rgba(0,212,255,0.6);">📡 MONITOR</span><div style="background:rgba(0,212,255,0.1);"></div></div>
+                        <div id="hud-monitor">
+                            <div class="hud-row"><span id="hud-health-monitor-dot" class="hud-dot"></span><span class="hud-name">Health Monitor</span><span id="hud-health-monitor-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-anomaly-check-dot" class="hud-dot"></span><span class="hud-name">Anomaly Check</span><span id="hud-anomaly-check-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-ralphy-monitor-dot" class="hud-dot"></span><span class="hud-name">Ralph Monitor</span><span id="hud-ralphy-monitor-st" class="hud-st">—</span></div>
+                        </div>
+                    </div>
+
+                    <!-- ROUTINES — bottom right -->
+                    <div class="hud-panel-float" style="bottom:1.2rem;right:1.2rem;border-color:rgba(255,200,50,0.25);">
+                        <div class="hud-plabel"><span style="color:rgba(255,200,50,0.6);">🔧 ROUTINES</span><div style="background:rgba(255,200,50,0.1);"></div></div>
+                        <div id="hud-routines">
+                            <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
+                        </div>
+                    </div>
+
+                    <!-- CRON — middle left -->
+                    <div class="hud-panel-float" style="top:50%;left:1.2rem;transform:translateY(-50%);border-color:rgba(0,212,255,0.18);">
+                        <div class="hud-plabel"><span style="color:rgba(0,212,255,0.5);">⏰ CRON</span><div style="background:rgba(0,212,255,0.06);"></div></div>
+                        <div id="crons-list">
+                            <div class="hud-row"><span class="hud-dot"></span><span class="hud-name">Loading...</span></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -1939,7 +1988,7 @@
                 const list = document.getElementById('crons-list');
                 list.innerHTML = '';
                 if (d.crons.length === 0) {
-                    list.innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span>No cron jobs</span></div>';
+                    list.innerHTML = '<div class="hud-row"><span class="hud-dot" style="background:#555;"></span><span class="hud-name">No cron jobs</span></div>';
                     return;
                 }
                 d.crons.forEach(c => {
@@ -1950,14 +1999,14 @@
                         cSt.textContent = c.nextRun || 'Active';
                         cSt.style.color = 'rgba(0,255,136,0.6)';
                     }
-                    list.innerHTML += `<div class="service-item">
-                        <span class="pulse-dot"></span>
-                        <span class="label"><strong style="color:#00f5ff;">${c.id}</strong> ${c.command}</span>
-                        <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);">${c.nextRun}</span>
+                    list.innerHTML += `<div class="hud-row">
+                        <span class="hud-dot" style="background:#00d4ff;box-shadow:0 0 4px #00d4ff;"></span>
+                        <span class="hud-name">${c.id}</span>
+                        <span class="hud-st">${c.nextRun}</span>
                     </div>`;
                 });
             } catch(e) {
-                document.getElementById('crons-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+                document.getElementById('crons-list').innerHTML = '<div class="hud-row"><span class="hud-dot" style="background:#ff4444;box-shadow:0 0 4px #ff4444;"></span><span class="hud-name">Failed to load</span></div>';
             }
         }
 
