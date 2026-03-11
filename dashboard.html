@@ -1291,203 +1291,417 @@
 
             <!-- ═══ ECOSYSTEM HUD ═══ -->
             <style>
-                @keyframes hud-orbit-1 { 0%{transform:translate(0,0)} 25%{transform:translate(10px,-7px)} 50%{transform:translate(0,-12px)} 75%{transform:translate(-10px,-7px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-2 { 0%{transform:translate(0,0)} 25%{transform:translate(-8px,9px)} 50%{transform:translate(-14px,0)} 75%{transform:translate(-8px,-9px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-3 { 0%{transform:translate(0,0)} 25%{transform:translate(9px,8px)} 50%{transform:translate(14px,0)} 75%{transform:translate(9px,-8px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-4 { 0%{transform:translate(0,0)} 25%{transform:translate(-7px,-10px)} 50%{transform:translate(0,10px)} 75%{transform:translate(7px,-10px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-5 { 0%{transform:translate(0,0)} 25%{transform:translate(12px,3px)} 50%{transform:translate(5px,11px)} 75%{transform:translate(-6px,5px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-orbit-6 { 0%{transform:translate(0,0)} 25%{transform:translate(-6px,-8px)} 50%{transform:translate(-12px,2px)} 75%{transform:translate(-4px,10px)} 100%{transform:translate(0,0)} }
-                @keyframes hud-pulse-core { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
-                @keyframes hud-ring-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-                @keyframes hud-ring-spin-rev { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
-                @keyframes hud-data-glow { 0%{opacity:0.9;r:2.5} 50%{opacity:1;r:3.5} 100%{opacity:0.9;r:2.5} }
-                .hud-node-1 { animation: hud-orbit-1 8s ease-in-out infinite; }
-                .hud-node-2 { animation: hud-orbit-2 10s ease-in-out infinite; }
-                .hud-node-3 { animation: hud-orbit-3 9s ease-in-out infinite; }
-                .hud-node-4 { animation: hud-orbit-4 11s ease-in-out infinite; }
-                .hud-node-5 { animation: hud-orbit-5 12s ease-in-out infinite; }
-                .hud-node-6 { animation: hud-orbit-6 7s ease-in-out infinite; }
-                .hud-core-node { animation: hud-pulse-core 4s ease-in-out infinite; }
-                .hud-data-dot { fill:#fff; animation: hud-data-glow 2s ease-in-out infinite; }
-                .hud-panel-float {
-                    position:absolute; padding:0.45rem 0.6rem; border-radius:8px;
-                    background:rgba(5,10,30,0.88); backdrop-filter:blur(8px);
-                    border:1px solid rgba(0,212,255,0.2); box-shadow:0 0 15px rgba(0,212,255,0.06);
-                    font-family:monospace; z-index:2; min-width:155px;
+                @keyframes hud-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+                @keyframes hud-spin-rev { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+                @keyframes hud-pulse { 0%{opacity:0.4} 50%{opacity:1} 100%{opacity:0.4} }
+                @keyframes hud-core-breathe { 0%{r:4} 50%{r:7} 100%{r:4} }
+                @keyframes hud-scan { 0%{stroke-dashoffset:0} 100%{stroke-dashoffset:-60} }
+                @keyframes hud-bar-glow { 0%{filter:brightness(1)} 50%{filter:brightness(1.4)} 100%{filter:brightness(1)} }
+                .hud-frame {
+                    position:relative; padding:0.5rem 0.65rem; font-family:'Courier New',monospace; z-index:2;
+                    background:rgba(2,8,22,0.85); backdrop-filter:blur(6px);
+                    clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
                 }
-                .hud-panel-float .hud-plabel {
-                    font-size:0.55rem; letter-spacing:0.1em; text-transform:uppercase;
-                    margin-bottom:0.3rem; display:flex; align-items:center; gap:5px;
+                .hud-frame::before {
+                    content:''; position:absolute; inset:0; pointer-events:none;
+                    clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+                    border:1px solid rgba(0,180,255,0.25);
                 }
-                .hud-panel-float .hud-plabel div { flex:1;height:1px; }
-                .hud-row { display:flex;align-items:center;gap:6px;padding:1.5px 0; }
-                .hud-dot { width:5px;height:5px;border-radius:50%;background:#555;flex-shrink:0;box-shadow:0 0 4px #555; }
-                .hud-name { font-size:0.58rem;font-family:monospace;color:rgba(255,255,255,0.55); }
-                .hud-st { margin-left:auto;font-size:0.5rem;font-family:monospace;color:rgba(255,255,255,0.3); }
+                .hud-frame::after {
+                    content:''; position:absolute; top:0; left:0; width:12px; height:12px; pointer-events:none;
+                    border-top:2px solid rgba(0,180,255,0.6); border-left:2px solid rgba(0,180,255,0.6);
+                }
+                .hud-frame .corner-br { position:absolute; bottom:0; right:0; width:12px; height:12px;
+                    border-bottom:2px solid rgba(0,180,255,0.6); border-right:2px solid rgba(0,180,255,0.6); }
+                .hud-frame .corner-tr { position:absolute; top:0; right:0; width:12px; height:12px;
+                    border-top:2px solid rgba(255,160,40,0.5); border-right:2px solid rgba(255,160,40,0.5); }
+                .hud-frame .corner-bl { position:absolute; bottom:0; left:0; width:12px; height:12px;
+                    border-bottom:2px solid rgba(255,160,40,0.5); border-left:2px solid rgba(255,160,40,0.5); }
+                .hud-ftitle {
+                    font-size:0.52rem; letter-spacing:0.14em; text-transform:uppercase;
+                    color:rgba(0,180,255,0.7); margin-bottom:0.35rem; padding-bottom:0.2rem;
+                    border-bottom:1px solid rgba(0,180,255,0.12); display:flex; align-items:center; gap:6px;
+                }
+                .hud-ftitle .hud-bar-accent { flex:1; height:2px;
+                    background:linear-gradient(90deg,rgba(0,180,255,0.3),transparent); }
+                .hud-row { display:flex; align-items:center; gap:6px; padding:2px 0; }
+                .hud-dot { width:6px; height:6px; border-radius:50%; background:#334; flex-shrink:0;
+                    box-shadow:0 0 6px rgba(0,180,255,0.15); }
+                .hud-name { font-size:0.58rem; color:rgba(180,210,240,0.6); }
+                .hud-st { margin-left:auto; font-size:0.5rem; color:rgba(0,180,255,0.35); }
+                .hud-bar-track { flex:1; height:3px; background:rgba(0,180,255,0.08); border-radius:2px; overflow:hidden; margin-left:4px; }
+                .hud-bar-fill { height:100%; border-radius:2px; animation:hud-bar-glow 3s ease-in-out infinite; }
             </style>
-            <div style="margin-bottom:1rem;background:rgba(3,6,20,0.95);border:1px solid rgba(0,212,255,0.2);border-radius:14px;overflow:hidden;box-shadow:0 0 35px rgba(0,212,255,0.06),0 0 80px rgba(0,212,255,0.02),inset 0 1px 0 rgba(255,255,255,0.04);">
+            <div style="margin-bottom:1.2rem;background:linear-gradient(180deg,rgba(2,6,18,0.97) 0%,rgba(4,12,35,0.97) 60%,rgba(8,20,50,0.95) 100%);border:1px solid rgba(0,180,255,0.18);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(0,120,255,0.06),0 0 100px rgba(0,80,200,0.03),inset 0 1px 0 rgba(255,255,255,0.04),inset 0 -80px 120px rgba(0,40,120,0.06);">
                 <!-- HUD Header -->
-                <div style="display:flex;align-items:center;padding:0.5rem 1.1rem;border-bottom:1px solid rgba(0,212,255,0.1);background:linear-gradient(90deg,rgba(0,212,255,0.05),transparent 50%,rgba(184,41,221,0.03));">
-                    <span style="font-size:0.55rem;font-family:monospace;color:rgba(0,212,255,0.6);letter-spacing:0.12em;text-transform:uppercase;">SYS</span>
-                    <span style="margin:0 0.5rem;color:rgba(0,212,255,0.18);">|</span>
-                    <span style="font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:0.03em;">Ecosystem HUD</span>
-                    <div style="margin-left:auto;display:flex;align-items:center;gap:0.6rem;">
-                        <span id="hud-clock" style="font-size:0.55rem;font-family:monospace;color:rgba(0,212,255,0.4);letter-spacing:0.05em;"></span>
-                        <a href="/ecosystem" style="font-size:0.5rem;padding:2px 7px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:3px;color:rgba(0,212,255,0.55);text-decoration:none;font-family:monospace;letter-spacing:0.06em;">EXPAND ↗</a>
+                <div style="display:flex;align-items:center;padding:0.5rem 1.1rem;border-bottom:1px solid rgba(0,180,255,0.1);background:linear-gradient(90deg,rgba(0,180,255,0.06),transparent 40%,transparent 60%,rgba(255,160,40,0.03));">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <div style="width:8px;height:8px;background:rgba(0,180,255,0.6);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);"></div>
+                        <span style="font-size:0.55rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.6);letter-spacing:0.14em;">SYS::ECOSYSTEM</span>
+                    </div>
+                    <span style="margin:0 0.7rem;color:rgba(0,180,255,0.12);">|</span>
+                    <span style="font-size:0.82rem;font-weight:700;color:rgba(220,240,255,0.92);letter-spacing:0.05em;text-shadow:0 0 12px rgba(0,180,255,0.2);">DWE HUD</span>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:0.7rem;">
+                        <span id="hud-clock" style="font-size:0.55rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.4);letter-spacing:0.06em;"></span>
+                        <div style="display:flex;gap:4px;">
+                            <div style="width:4px;height:4px;border-radius:50%;background:rgba(0,255,120,0.6);box-shadow:0 0 4px rgba(0,255,120,0.4);"><div style="animation:hud-pulse 2s infinite;width:100%;height:100%;border-radius:50%;background:inherit;"></div></div>
+                            <div style="width:4px;height:4px;border-radius:50%;background:rgba(0,180,255,0.6);box-shadow:0 0 4px rgba(0,180,255,0.4);"></div>
+                            <div style="width:4px;height:4px;border-radius:50%;background:rgba(255,160,40,0.5);box-shadow:0 0 4px rgba(255,160,40,0.3);"></div>
+                        </div>
+                        <a href="/ecosystem" style="font-size:0.48rem;padding:3px 8px;background:rgba(0,180,255,0.06);border:1px solid rgba(0,180,255,0.2);color:rgba(0,180,255,0.55);text-decoration:none;font-family:'Courier New',monospace;letter-spacing:0.08em;clip-path:polygon(0 0,calc(100% - 4px) 0,100% 4px,100% 100%,4px 100%,0 calc(100% - 4px));">EXPAND ↗</a>
                     </div>
                 </div>
-                <!-- HUD Body: Map with floating panels -->
-                <div style="position:relative;min-height:520px;padding:1rem;">
-                    <!-- SVG Map — centered, full width -->
-                    <svg viewBox="0 0 700 400" style="width:100%;height:100%;position:absolute;top:0;left:0;" preserveAspectRatio="xMidYMid meet">
-                        <defs>
-                            <!-- Data flow paths (center=350,200) -->
-                            <path id="flow-core-brain" d="M350,200 Q280,100 180,90" />
-                            <path id="flow-core-coo" d="M350,200 Q250,250 140,280" />
-                            <path id="flow-core-monitor" d="M350,200 Q450,250 560,280" />
-                            <path id="flow-core-routines" d="M350,200 Q450,300 580,350" />
-                            <path id="flow-core-cron" d="M350,200 Q350,300 350,360" />
-                            <path id="flow-brain-coo" d="M180,90 Q120,180 140,280" />
-                            <path id="flow-brain-monitor" d="M180,90 Q370,60 560,120" />
-                            <path id="flow-core-infra" d="M350,200 Q450,100 560,80" />
-                            <radialGradient id="core-glow" cx="50%" cy="50%" r="50%">
-                                <stop offset="0%" stop-color="rgba(0,212,255,0.15)" />
-                                <stop offset="100%" stop-color="rgba(0,212,255,0)" />
-                            </radialGradient>
-                        </defs>
 
-                        <!-- Orbital rings around core -->
-                        <circle cx="350" cy="200" r="80" fill="none" stroke="rgba(0,212,255,0.05)" stroke-width="1" stroke-dasharray="6 4" style="transform-origin:350px 200px;animation:hud-ring-spin 40s linear infinite;" />
-                        <circle cx="350" cy="200" r="140" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1" stroke-dasharray="8 6" style="transform-origin:350px 200px;animation:hud-ring-spin-rev 55s linear infinite;" />
-                        <circle cx="350" cy="200" r="210" fill="none" stroke="rgba(184,41,221,0.04)" stroke-width="1" stroke-dasharray="10 8" style="transform-origin:350px 200px;animation:hud-ring-spin 70s linear infinite;" />
+                <!-- HUD Body: 3-column layout — panels | reticle | panels -->
+                <div style="display:grid;grid-template-columns:210px 1fr 210px;min-height:700px;gap:0;">
 
-                        <!-- Connection lines (subtle, teal/white) -->
-                        <line x1="350" y1="200" x2="180" y2="90" stroke="rgba(0,212,255,0.12)" stroke-width="1" />
-                        <line x1="350" y1="200" x2="560" y2="80" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-                        <line x1="350" y1="200" x2="140" y2="280" stroke="rgba(255,165,0,0.1)" stroke-width="1" />
-                        <line x1="350" y1="200" x2="560" y2="280" stroke="rgba(0,212,255,0.1)" stroke-width="1" />
-                        <line x1="350" y1="200" x2="580" y2="350" stroke="rgba(255,200,50,0.08)" stroke-width="1" />
-                        <line x1="350" y1="200" x2="350" y2="360" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
-                        <line x1="180" y1="90" x2="140" y2="280" stroke="rgba(184,41,221,0.06)" stroke-width="0.5" />
-                        <line x1="560" y1="80" x2="560" y2="280" stroke="rgba(0,212,255,0.05)" stroke-width="0.5" />
-
-                        <!-- Data flow particles (white dots moving along paths) -->
-                        <circle class="hud-data-dot" r="2.5"><animateMotion dur="4s" repeatCount="indefinite"><mpath href="#flow-core-brain"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="2"><animateMotion dur="5s" repeatCount="indefinite" begin="0.8s"><mpath href="#flow-core-coo"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="2"><animateMotion dur="4.5s" repeatCount="indefinite" begin="1.5s"><mpath href="#flow-core-monitor"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="2.5"><animateMotion dur="6s" repeatCount="indefinite" begin="0.3s"><mpath href="#flow-core-routines"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="2"><animateMotion dur="3.5s" repeatCount="indefinite" begin="2s"><mpath href="#flow-core-cron"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(184,41,221,0.8)"><animateMotion dur="7s" repeatCount="indefinite" begin="1s"><mpath href="#flow-brain-coo"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(0,212,255,0.8)"><animateMotion dur="6s" repeatCount="indefinite" begin="3s"><mpath href="#flow-brain-monitor"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="2"><animateMotion dur="5s" repeatCount="indefinite" begin="0.5s"><mpath href="#flow-core-infra"/></animateMotion></circle>
-                        <!-- Reverse flow (back to core) -->
-                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(0,255,136,0.7)"><animateMotion dur="5s" repeatCount="indefinite" begin="2.5s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#flow-core-brain"/></animateMotion></circle>
-                        <circle class="hud-data-dot" r="1.5" style="fill:rgba(255,200,50,0.7)"><animateMotion dur="6s" repeatCount="indefinite" begin="1.2s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#flow-core-monitor"/></animateMotion></circle>
-
-                        <!-- Core hub -->
-                        <g class="hud-core-node">
-                            <circle cx="350" cy="200" r="50" fill="url(#core-glow)" />
-                            <circle cx="350" cy="200" r="32" fill="rgba(3,6,20,0.95)" stroke="#00d4ff" stroke-width="2.5" />
-                            <circle cx="350" cy="200" r="40" fill="none" stroke="rgba(0,212,255,0.1)" stroke-width="1" stroke-dasharray="4 4" style="transform-origin:350px 200px;animation:hud-ring-spin 15s linear infinite;" />
-                            <text x="350" y="196" text-anchor="middle" font-size="14" fill="rgba(255,255,255,0.9)" font-family="monospace" font-weight="700">DWE</text>
-                            <text x="350" y="212" text-anchor="middle" font-size="9" fill="rgba(0,212,255,0.6)" font-family="monospace">CORE</text>
-                        </g>
-
-                        <!-- Node: Brain (top-left) -->
-                        <g class="hud-node-1">
-                            <circle cx="180" cy="90" r="22" fill="rgba(3,6,20,0.92)" stroke="#b829dd" stroke-width="1.8" />
-                            <text x="180" y="96" text-anchor="middle" font-size="15">🧠</text>
-                        </g>
-                        <!-- Node: Core Infra (top-right) -->
-                        <g class="hud-node-2">
-                            <circle cx="560" cy="80" r="22" fill="rgba(3,6,20,0.92)" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" />
-                            <text x="560" y="86" text-anchor="middle" font-size="15">⚡</text>
-                        </g>
-                        <!-- Node: COO (left) -->
-                        <g class="hud-node-3">
-                            <circle cx="140" cy="280" r="22" fill="rgba(3,6,20,0.92)" stroke="#ff8c42" stroke-width="1.8" />
-                            <text x="140" y="286" text-anchor="middle" font-size="15">📋</text>
-                        </g>
-                        <!-- Node: Monitor (right) -->
-                        <g class="hud-node-4">
-                            <circle cx="560" cy="280" r="22" fill="rgba(3,6,20,0.92)" stroke="#00d4ff" stroke-width="1.8" />
-                            <text x="560" y="286" text-anchor="middle" font-size="15">📡</text>
-                        </g>
-                        <!-- Node: Routines (bottom-right) -->
-                        <g class="hud-node-5">
-                            <circle cx="580" cy="350" r="18" fill="rgba(3,6,20,0.92)" stroke="#ffc832" stroke-width="1.5" />
-                            <text x="580" y="355" text-anchor="middle" font-size="12">🔧</text>
-                        </g>
-                        <!-- Node: Cron (bottom-center) -->
-                        <g class="hud-node-6">
-                            <circle cx="350" cy="360" r="18" fill="rgba(3,6,20,0.92)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
-                            <text x="350" y="365" text-anchor="middle" font-size="12">⏰</text>
-                        </g>
-
-                        <!-- Agent badge -->
-                        <rect x="290" y="248" width="120" height="24" rx="12" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.25)" stroke-width="1" />
-                        <circle cx="308" cy="260" r="5" fill="#00d4ff">
-                            <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite" />
-                        </circle>
-                        <text x="352" y="264" text-anchor="middle" font-size="10" fill="#00d4ff" font-weight="600" font-family="monospace">6 Agents Online</text>
-                    </svg>
-
-                    <!-- Floating panels positioned AROUND the map -->
-
-                    <!-- CORE INFRA — top right -->
-                    <div class="hud-panel-float" style="top:1.2rem;right:1.2rem;border-color:rgba(255,255,255,0.2);">
-                        <div class="hud-plabel"><span style="color:rgba(255,255,255,0.5);">⚡ CORE INFRA</span><div style="background:rgba(255,255,255,0.08);"></div></div>
-                        <div class="hud-row"><span id="hud-core-gateway-dot" class="hud-dot"></span><span class="hud-name">Gateway</span><span id="hud-core-gateway-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-core-relay-dot" class="hud-dot"></span><span class="hud-name">Relay</span><span id="hud-core-relay-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-core-mc-dot" class="hud-dot"></span><span class="hud-name">Mission Ctrl</span><span id="hud-core-mc-st" class="hud-st">—</span></div>
-                    </div>
-
-                    <!-- BRAIN — top left -->
-                    <div class="hud-panel-float" style="top:1.2rem;left:1.2rem;border-color:rgba(184,41,221,0.25);">
-                        <div class="hud-plabel"><span style="color:rgba(184,41,221,0.6);">🧠 BRAIN</span><div style="background:rgba(184,41,221,0.1);"></div></div>
-                        <div class="hud-row"><span id="hud-seed-watcher-dot" class="hud-dot"></span><span class="hud-name">Seed Watcher</span><span id="hud-seed-watcher-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-notion-sync-dot" class="hud-dot"></span><span class="hud-name">Notion Sync</span><span id="hud-notion-sync-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-brain-trainer-dot" class="hud-dot"></span><span class="hud-name">Brain Trainer</span><span id="hud-brain-trainer-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-nightly-review-dot" class="hud-dot"></span><span class="hud-name">Nightly Review</span><span id="hud-nightly-review-st" class="hud-st">—</span></div>
-                        <div class="hud-row"><span id="hud-memory-decay-dot" class="hud-dot"></span><span class="hud-name">Memory Decay</span><span id="hud-memory-decay-st" class="hud-st">—</span></div>
-                    </div>
-
-                    <!-- COO OPS — bottom left -->
-                    <div class="hud-panel-float" style="bottom:1.2rem;left:1.2rem;border-color:rgba(255,140,66,0.25);">
-                        <div class="hud-plabel"><span style="color:rgba(255,140,66,0.6);">📋 COO OPS</span><div style="background:rgba(255,140,66,0.1);"></div></div>
-                        <div id="hud-coo-ops">
-                            <div class="hud-row"><span id="hud-email-batch-dot" class="hud-dot"></span><span class="hud-name">Email Batch</span><span id="hud-email-batch-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-notion-triage-dot" class="hud-dot"></span><span class="hud-name">Notion Triage</span><span id="hud-notion-triage-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-morning-digest-dot" class="hud-dot"></span><span class="hud-name">Morning Digest</span><span id="hud-morning-digest-st" class="hud-st">—</span></div>
+                    <!-- LEFT COLUMN: Brain, COO, Cron (evenly spaced, Cron flush bottom) -->
+                    <div style="display:flex;flex-direction:column;justify-content:space-between;padding:12px;border-right:1px solid rgba(0,180,255,0.06);">
+                        <!-- BRAIN -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle"><span>🧠 BRAIN</span><div class="hud-bar-accent"></div></div>
+                            <div class="hud-row"><span id="hud-seed-watcher-dot" class="hud-dot"></span><span class="hud-name">Seed Watcher</span><span id="hud-seed-watcher-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-notion-sync-dot" class="hud-dot"></span><span class="hud-name">Notion Sync</span><span id="hud-notion-sync-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-brain-trainer-dot" class="hud-dot"></span><span class="hud-name">Brain Trainer</span><span id="hud-brain-trainer-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-nightly-review-dot" class="hud-dot"></span><span class="hud-name">Nightly Review</span><span id="hud-nightly-review-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-memory-decay-dot" class="hud-dot"></span><span class="hud-name">Memory Decay</span><span id="hud-memory-decay-st" class="hud-st">—</span></div>
+                        </div>
+                        <!-- DWE OPS -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle" style="color:rgba(255,160,40,0.7);border-color:rgba(255,160,40,0.12);"><span>📋 DWE OPS</span><div class="hud-bar-accent" style="background:linear-gradient(90deg,rgba(255,160,40,0.3),transparent);"></div></div>
+                            <div id="hud-coo-ops">
+                                <div class="hud-row"><span id="hud-email-batch-dot" class="hud-dot"></span><span class="hud-name">Email Batch</span><span id="hud-email-batch-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-notion-triage-dot" class="hud-dot"></span><span class="hud-name">Notion Triage</span><span id="hud-notion-triage-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-morning-digest-dot" class="hud-dot"></span><span class="hud-name">Morning Digest</span><span id="hud-morning-digest-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- CRON (flush bottom) -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle"><span>⏰ CRON</span><div class="hud-bar-accent"></div></div>
+                            <div id="crons-list">
+                                <div class="hud-row"><span class="hud-dot"></span><span class="hud-name">Loading...</span></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- MONITOR — middle right -->
-                    <div class="hud-panel-float" style="top:50%;right:1.2rem;transform:translateY(-50%);border-color:rgba(0,212,255,0.25);">
-                        <div class="hud-plabel"><span style="color:rgba(0,212,255,0.6);">📡 MONITOR</span><div style="background:rgba(0,212,255,0.1);"></div></div>
-                        <div id="hud-monitor">
-                            <div class="hud-row"><span id="hud-health-monitor-dot" class="hud-dot"></span><span class="hud-name">Health Monitor</span><span id="hud-health-monitor-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-anomaly-check-dot" class="hud-dot"></span><span class="hud-name">Anomaly Check</span><span id="hud-anomaly-check-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-ralphy-monitor-dot" class="hud-dot"></span><span class="hud-name">Ralph Monitor</span><span id="hud-ralphy-monitor-st" class="hud-st">—</span></div>
-                        </div>
+                    <!-- CENTER: Targeting Reticle / Ecosystem Map -->
+                    <div style="position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;">
+                        <!-- Subtle radial background glow -->
+                        <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(0,120,255,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+                        <svg viewBox="0 0 500 500" style="width:100%;height:100%;">
+                            <defs>
+                                <radialGradient id="hud-core-glow2" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="rgba(0,180,255,0.18)"/>
+                                    <stop offset="60%" stop-color="rgba(0,120,255,0.04)"/>
+                                    <stop offset="100%" stop-color="transparent"/>
+                                </radialGradient>
+                                <filter id="hud-glow"><feGaussianBlur stdDeviation="2" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                                <!-- Data flow paths -->
+                                <path id="fp1" d="M250,250 Q170,170 110,100"/>
+                                <path id="fp2" d="M250,250 Q330,170 400,110"/>
+                                <path id="fp3" d="M250,250 Q170,330 100,400"/>
+                                <path id="fp4" d="M250,250 Q330,330 410,390"/>
+                                <path id="fp5" d="M250,250 Q250,160 250,60"/>
+                                <path id="fp6" d="M250,250 Q250,340 250,440"/>
+                            </defs>
+
+                            <!-- Outer ring 4 — very faint, large -->
+                            <circle cx="250" cy="250" r="230" fill="none" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+                            <!-- Tick marks on outer ring -->
+                            <g style="transform-origin:250px 250px;animation:hud-spin 120s linear infinite;">
+                                <line x1="250" y1="21" x2="250" y2="28" stroke="rgba(0,180,255,0.15)" stroke-width="1"/>
+                                <line x1="250" y1="472" x2="250" y2="479" stroke="rgba(0,180,255,0.15)" stroke-width="1"/>
+                                <line x1="21" y1="250" x2="28" y2="250" stroke="rgba(0,180,255,0.15)" stroke-width="1"/>
+                                <line x1="472" y1="250" x2="479" y2="250" stroke="rgba(0,180,255,0.15)" stroke-width="1"/>
+                            </g>
+
+                            <!-- Ring 3 — dashed, rotating -->
+                            <circle cx="250" cy="250" r="190" fill="none" stroke="rgba(0,180,255,0.07)" stroke-width="1" stroke-dasharray="12 8" style="transform-origin:250px 250px;animation:hud-spin 80s linear infinite;"/>
+
+                            <!-- Ring 2 — orange arc segments (like the reference) -->
+                            <g style="transform-origin:250px 250px;animation:hud-spin-rev 35s linear infinite;">
+                                <!-- Arc segment top -->
+                                <path d="M250,105 A145,145 0 0,1 380,190" fill="none" stroke="rgba(255,160,40,0.4)" stroke-width="2.5" stroke-linecap="round"/>
+                                <!-- Arc segment bottom -->
+                                <path d="M250,395 A145,145 0 0,1 120,310" fill="none" stroke="rgba(255,160,40,0.3)" stroke-width="2" stroke-linecap="round"/>
+                                <!-- Small tick arcs -->
+                                <path d="M145,155 A130,130 0 0,1 175,125" fill="none" stroke="rgba(255,160,40,0.25)" stroke-width="1.5"/>
+                                <path d="M355,345 A130,130 0 0,1 325,375" fill="none" stroke="rgba(255,160,40,0.25)" stroke-width="1.5"/>
+                            </g>
+
+                            <!-- Ring 1 — main targeting ring, cyan -->
+                            <g style="transform-origin:250px 250px;animation:hud-spin 50s linear infinite;">
+                                <circle cx="250" cy="250" r="110" fill="none" stroke="rgba(0,180,255,0.25)" stroke-width="2"/>
+                                <!-- Notch marks every 30 degrees -->
+                                <line x1="250" y1="141" x2="250" y2="148" stroke="rgba(0,180,255,0.4)" stroke-width="1.5"/>
+                                <line x1="305" y1="155" x2="301" y2="161" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="345" y1="195" x2="339" y2="199" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="360" y1="250" x2="352" y2="250" stroke="rgba(0,180,255,0.4)" stroke-width="1.5"/>
+                                <line x1="345" y1="305" x2="339" y2="301" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="305" y1="345" x2="301" y2="339" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="250" y1="360" x2="250" y2="352" stroke="rgba(0,180,255,0.4)" stroke-width="1.5"/>
+                                <line x1="195" y1="345" x2="199" y2="339" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="155" y1="305" x2="161" y2="301" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="140" y1="250" x2="148" y2="250" stroke="rgba(0,180,255,0.4)" stroke-width="1.5"/>
+                                <line x1="155" y1="195" x2="161" y2="199" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                                <line x1="195" y1="155" x2="199" y2="161" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                            </g>
+
+                            <!-- Inner dashed ring -->
+                            <circle cx="250" cy="250" r="70" fill="none" stroke="rgba(0,180,255,0.12)" stroke-width="1" stroke-dasharray="4 6" style="transform-origin:250px 250px;animation:hud-spin-rev 20s linear infinite;"/>
+
+                            <!-- Crosshairs -->
+                            <line x1="250" y1="180" x2="250" y2="220" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                            <line x1="250" y1="280" x2="250" y2="320" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                            <line x1="180" y1="250" x2="220" y2="250" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                            <line x1="280" y1="250" x2="320" y2="250" stroke="rgba(0,180,255,0.3)" stroke-width="1"/>
+                            <!-- Diagonal cross -->
+                            <line x1="205" y1="205" x2="220" y2="220" stroke="rgba(255,160,40,0.2)" stroke-width="0.8"/>
+                            <line x1="280" y1="220" x2="295" y2="205" stroke="rgba(255,160,40,0.2)" stroke-width="0.8"/>
+                            <line x1="205" y1="295" x2="220" y2="280" stroke="rgba(255,160,40,0.2)" stroke-width="0.8"/>
+                            <line x1="280" y1="280" x2="295" y2="295" stroke="rgba(255,160,40,0.2)" stroke-width="0.8"/>
+
+
+                            <!-- ═══ CENTER: RELAY — the router/gateway that connects everything ═══ -->
+                            <circle cx="250" cy="250" r="60" fill="url(#hud-core-glow2)"/>
+                            <circle id="hud-relay-ring" cx="250" cy="250" r="38" fill="rgba(2,6,18,0.95)" stroke="rgba(0,255,136,0.6)" stroke-width="2.5"/>
+                            <circle cx="250" cy="250" r="45" fill="none" stroke="rgba(0,255,136,0.12)" stroke-width="1" stroke-dasharray="3 3" style="transform-origin:250px 250px;animation:hud-spin 12s linear infinite;"/>
+                            <text x="250" y="244" text-anchor="middle" font-size="14" fill="rgba(220,240,255,0.95)" font-family="'Courier New',monospace" font-weight="700" filter="url(#hud-glow)">ROUTER</text>
+                            <text x="250" y="262" text-anchor="middle" font-size="8" fill="rgba(0,255,136,0.6)" font-family="'Courier New',monospace" letter-spacing="1">192.168.1.254</text>
+                            <!-- Relay status breathing dot — dynamic via JS -->
+                            <circle id="hud-relay-pulse" cx="250" cy="250" r="4" fill="rgba(0,255,136,0.5)">
+                                <animate attributeName="r" values="4;7;4" dur="3s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.5;0.15;0.5" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+
+                            <!-- ═══ CONNECTION LINES: Relay connects everything ═══ -->
+                            <!-- Relay → AI Team -->
+                            <line x1="250" y1="212" x2="250" y2="78" stroke="rgba(0,255,136,0.1)" stroke-width="0.8"/>
+                            <!-- Relay → Notion -->
+                            <line x1="218" y1="222" x2="118" y2="108" stroke="rgba(0,180,255,0.08)" stroke-width="0.8"/>
+                            <!-- Relay → n8n -->
+                            <line x1="282" y1="222" x2="332" y2="148" stroke="rgba(255,160,40,0.08)" stroke-width="0.8"/>
+                            <!-- Relay → Pinecone -->
+                            <line x1="218" y1="278" x2="118" y2="392" stroke="rgba(0,255,180,0.07)" stroke-width="0.8"/>
+                            <!-- Relay → OpenRouter -->
+                            <line x1="282" y1="278" x2="332" y2="348" stroke="rgba(255,200,50,0.07)" stroke-width="0.8"/>
+                            <!-- Relay ⚡ Mac Mini — yellow lightning bolt -->
+                            <defs>
+                                <filter id="lightning-glow">
+                                    <feGaussianBlur stdDeviation="3" result="g"/>
+                                    <feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                </filter>
+                            </defs>
+                            <!-- ═══ REAL-TIME TRAFFIC SYSTEM — all paths + per-service containers ═══ -->
+                            <defs>
+                                <path id="relay-macmini-line" d="M288,250 L395,250"/>
+                                <path id="pulse-macmini-relay" d="M420,250 L250,250"/>
+                                <path id="pulse-mm-openrouter" d="M420,250 L250,250 L340,355"/>
+                                <path id="pulse-mm-brain" d="M420,250 L250,250 L110,400"/>
+                                <path id="pulse-mm-github" d="M420,250 L250,250 L55,250"/>
+                                <path id="pulse-mm-notion" d="M420,250 L250,250 L110,100"/>
+                                <path id="pulse-n8n-mm" d="M340,140 L250,250 L420,250"/>
+                            </defs>
+                            <!-- Faint connector lines (static, always visible) -->
+                            <line x1="250" y1="250" x2="110" y2="400" stroke="rgba(255,100,200,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="55" y2="250" stroke="rgba(0,140,255,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="110" y2="100" stroke="rgba(0,255,136,0.06)" stroke-width="1"/>
+                            <line x1="340" y1="140" x2="250" y2="250" stroke="rgba(255,140,40,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="340" y2="355" stroke="rgba(255,200,50,0.06)" stroke-width="1"/>
+                            <line x1="288" y1="250" x2="395" y2="250" stroke="rgba(255,240,50,0.06)" stroke-width="1"/>
+                            <!-- Per-service real-time traffic containers (populated by JS) -->
+                            <g id="rt-traffic-notion"></g>
+                            <g id="rt-traffic-n8n"></g>
+                            <g id="rt-traffic-openrouter"></g>
+                            <g id="rt-traffic-github"></g>
+                            <g id="rt-traffic-brain"></g>
+                            <g id="rt-traffic-total"></g>
+                            <!-- Total throughput readout -->
+                            <text id="traffic-readout" x="342" y="238" font-size="5" fill="rgba(0,255,200,0.7)" text-anchor="middle" font-family="'Courier New',monospace"></text>
+
+                            <!-- Cross connections -->
+                            <line x1="118" y1="108" x2="118" y2="392" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+                            <line x1="250" y1="60" x2="118" y2="100" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+                            <line x1="250" y1="60" x2="340" y2="140" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+
+                            <!-- (Old data flow particles removed — all traffic now uses colored line system above) -->
+
+                            <!-- ═══ ECOSYSTEM NODES ═══ -->
+
+
+
+                            <!-- AI Team (top) — 6 agents — CYAN -->
+                            <g>
+                                <circle cx="250" cy="60" r="20" fill="rgba(2,6,18,0.92)" stroke="rgba(0,200,255,0.5)" stroke-width="1.8"/>
+                                <circle cx="250" cy="60" r="26" fill="none" stroke="rgba(0,200,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="250" y="66" text-anchor="middle" font-size="17">👥</text>
+                                <text x="250" y="36" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">AI TEAM</text>
+                            </g>
+
+
+
+                            <!-- Notion (top-left) — dynamic status — BLUE -->
+                            <g>
+                                <circle id="hud-notion-ring" cx="110" cy="100" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(80,120,255,0.45)" stroke-width="1.5"/>
+                                <circle cx="110" cy="100" r="23" fill="none" stroke="rgba(80,120,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="110" y="106" text-anchor="middle" font-size="15">✅</text>
+                                <circle id="hud-notion-pulse" cx="128" cy="84" r="4" fill="rgba(80,120,255,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                                <text x="110" y="78" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">NOTION</text>
+                            </g>
+
+
+                            <!-- n8n (right of top) — dynamic status — ORANGE -->
+                            <g>
+                                <circle id="hud-n8n-ring" cx="340" cy="140" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,140,40,0.45)" stroke-width="1.5"/>
+                                <circle cx="340" cy="140" r="23" fill="none" stroke="rgba(255,140,40,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="340" y="146" text-anchor="middle" font-size="15">⚡</text>
+                                <text x="340" y="118" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">N8N</text>
+                                <circle id="hud-n8n-pulse" cx="358" cy="124" r="4" fill="rgba(255,140,40,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+
+
+
+                            <!-- DWE Brain / Pinecone (bottom-left) — dynamic status — MAGENTA -->
+                            <g>
+                                <circle id="hud-brain-ring" cx="110" cy="400" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,80,200,0.4)" stroke-width="1.5"/>
+                                <circle cx="110" cy="400" r="23" fill="none" stroke="rgba(255,80,200,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="110" y="406" text-anchor="middle" font-size="15">🧠</text>
+                                <text x="110" y="378" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">DWE BRAIN</text>
+                                <circle id="hud-brain-pulse" cx="128" cy="384" r="4" fill="rgba(255,80,200,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+
+
+                            <!-- OpenRouter (right of bottom) — dynamic status — GOLD -->
+                            <g>
+                                <circle id="hud-openrouter-ring" cx="340" cy="355" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,200,50,0.4)" stroke-width="1.5"/>
+                                <circle cx="340" cy="355" r="23" fill="none" stroke="rgba(255,200,50,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="340" y="361" text-anchor="middle" font-size="15">🤖</text>
+                                <text x="340" y="333" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENROUTER</text>
+                                <circle id="hud-openrouter-pulse" cx="358" cy="339" r="4" fill="rgba(255,200,50,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+
+
+
+                            <!-- GitHub (far left) — LAVENDER -->
+                            <g>
+                                <circle cx="55" cy="250" r="14" fill="rgba(2,6,18,0.9)" stroke="rgba(180,160,255,0.4)" stroke-width="1.2"/>
+                                <text x="55" y="255" text-anchor="middle" font-size="12">🐙</text>
+                                <text x="55" y="234" text-anchor="middle" font-size="7" fill="#fff" font-weight="700" font-family="'Courier New',monospace">GITHUB</text>
+                            </g>
+
+                            <!-- ═══ MAC MINI CLUSTER (right side) — local services orbit around it ═══ -->
+                            <g>
+                                <!-- Mac Mini hub -->
+                                <circle cx="420" cy="250" r="24" fill="rgba(2,6,18,0.92)" stroke="rgba(0,255,136,0.55)" stroke-width="2"/>
+                                <circle cx="420" cy="250" r="30" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <!-- Heartbeat pulse ring -->
+                                <circle cx="420" cy="250" r="24" fill="none" stroke="rgba(0,255,136,0.4)" stroke-width="1.5">
+                                    <animate attributeName="r" values="24;36;24" dur="2s" repeatCount="indefinite"/>
+                                    <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+                                </circle>
+                                <circle cx="420" cy="250" r="24" fill="none" stroke="rgba(0,255,136,0.3)" stroke-width="1">
+                                    <animate attributeName="r" values="24;42;24" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+                                    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+                                </circle>
+                                <text x="420" y="256" text-anchor="middle" font-size="18">🖥️</text>
+                                <text x="420" y="222" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MAC MINI</text>
+                                <!-- Green heartbeat dot -->
+                                <circle cx="442" cy="230" r="4" fill="rgba(0,255,136,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+                                    <animate attributeName="r" values="4;5;4" dur="2s" repeatCount="indefinite"/>
+                                </circle>
+
+                                <!-- Satellite laser beam lines (yellow) -->
+                                <line x1="420" y1="250" x2="470" y2="164" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
+                                <line x1="420" y1="250" x2="470" y2="336" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
+                                <line x1="420" y1="250" x2="485" y2="250" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
+
+                                <!-- Yellow laser beam paths for animation -->
+                                <defs>
+                                    <path id="laser-ollama" d="M420,250 L470,164"/>
+                                    <path id="laser-mcporter" d="M420,250 L470,336"/>
+                                    <path id="laser-openclaw" d="M420,250 L485,250"/>
+                                </defs>
+                                <!-- Laser beams outbound (yellow dots) -->
+                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="4.8s" repeatCount="indefinite"><mpath href="#laser-ollama"/></animateMotion></circle>
+                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="5.6s" repeatCount="indefinite" begin="1.2s"><mpath href="#laser-mcporter"/></animateMotion></circle>
+                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="5.2s" repeatCount="indefinite" begin="2.4s"><mpath href="#laser-openclaw"/></animateMotion></circle>
+                                <!-- Laser beams return -->
+                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="6s" repeatCount="indefinite" begin="3.2s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-ollama"/></animateMotion></rect>
+                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="6.4s" repeatCount="indefinite" begin="4.4s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-mcporter"/></animateMotion></rect>
+                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="5.6s" repeatCount="indefinite" begin="1.6s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-openclaw"/></animateMotion></rect>
+
+                                <!-- Ollama (1 o'clock — doubled distance) -->
+                                <circle cx="470" cy="164" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
+                                <text x="470" y="169" text-anchor="middle" font-size="10">🦙</text>
+                                <text x="470" y="150" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OLLAMA</text>
+
+                                <!-- MCporter (5 o'clock — same distance as Ollama) -->
+                                <circle cx="470" cy="336" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
+                                <text x="470" y="341" text-anchor="middle" font-size="10">🔌</text>
+                                <text x="470" y="354" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MCPORTER</text>
+
+                                <!-- OpenClaw (3 o'clock — doubled distance) -->
+                                <circle cx="485" cy="250" r="13" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.4)" stroke-width="1.2"/>
+                                <text x="485" y="255" text-anchor="middle" font-size="10">🎯</text>
+                                <text x="485" y="268" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENCLAW</text>
+                            </g>
+
+                            <!-- Status badge bottom -->
+                            <rect x="185" y="468" width="130" height="20" rx="3" fill="rgba(0,180,255,0.06)" stroke="rgba(0,180,255,0.2)" stroke-width="0.8"/>
+                            <circle cx="200" cy="478" r="4" fill="rgba(0,255,120,0.7)">
+                                <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <text x="255" y="482" text-anchor="middle" font-size="9" fill="rgba(0,180,255,0.7)" font-family="'Courier New',monospace" font-weight="600">6 AGENTS ONLINE</text>
+
+                            <!-- Scanning arc (rotating partial arc like the reference) -->
+                            <g style="transform-origin:250px 250px;animation:hud-spin 8s linear infinite;">
+                                <path d="M250,85 A165,165 0 0,1 390,175" fill="none" stroke="rgba(0,255,180,0.12)" stroke-width="1.5" stroke-linecap="round"/>
+                            </g>
+                        </svg>
                     </div>
 
-                    <!-- ROUTINES — bottom right -->
-                    <div class="hud-panel-float" style="bottom:1.2rem;right:1.2rem;border-color:rgba(255,200,50,0.25);">
-                        <div class="hud-plabel"><span style="color:rgba(255,200,50,0.6);">🔧 ROUTINES</span><div style="background:rgba(255,200,50,0.1);"></div></div>
-                        <div id="hud-routines">
-                            <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
-                            <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
+                    <!-- RIGHT COLUMN: Core Infra, Monitor, Routines (evenly spaced, Routines flush bottom) -->
+                    <div style="display:flex;flex-direction:column;justify-content:space-between;padding:12px;border-left:1px solid rgba(0,180,255,0.06);">
+                        <!-- CORE INFRA -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle"><span>⚡ CORE INFRA</span><div class="hud-bar-accent"></div></div>
+                            <div class="hud-row"><span id="hud-core-gateway-dot" class="hud-dot"></span><span class="hud-name">Gateway</span><span id="hud-core-gateway-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-core-relay-dot" class="hud-dot"></span><span class="hud-name">Relay</span><span id="hud-core-relay-st" class="hud-st">—</span></div>
+                            <div class="hud-row"><span id="hud-core-mc-dot" class="hud-dot"></span><span class="hud-name">Mission Ctrl</span><span id="hud-core-mc-st" class="hud-st">—</span></div>
                         </div>
-                    </div>
-
-                    <!-- CRON — middle left -->
-                    <div class="hud-panel-float" style="top:50%;left:1.2rem;transform:translateY(-50%);border-color:rgba(0,212,255,0.18);">
-                        <div class="hud-plabel"><span style="color:rgba(0,212,255,0.5);">⏰ CRON</span><div style="background:rgba(0,212,255,0.06);"></div></div>
-                        <div id="crons-list">
-                            <div class="hud-row"><span class="hud-dot"></span><span class="hud-name">Loading...</span></div>
+                        <!-- MONITOR -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle" style="color:rgba(0,220,255,0.7);"><span>📡 MONITOR</span><div class="hud-bar-accent"></div></div>
+                            <div id="hud-monitor">
+                                <div class="hud-row"><span id="hud-health-monitor-dot" class="hud-dot"></span><span class="hud-name">Health Monitor</span><span id="hud-health-monitor-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-anomaly-check-dot" class="hud-dot"></span><span class="hud-name">Anomaly Check</span><span id="hud-anomaly-check-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-ralphy-monitor-dot" class="hud-dot"></span><span class="hud-name">Ralph Monitor</span><span id="hud-ralphy-monitor-st" class="hud-st">—</span></div>
+                            </div>
+                        </div>
+                        <!-- ROUTINES (flush bottom) -->
+                        <div class="hud-frame">
+                            <div class="corner-br"></div><div class="corner-tr"></div><div class="corner-bl"></div>
+                            <div class="hud-ftitle" style="color:rgba(255,200,50,0.7);border-color:rgba(255,200,50,0.12);"><span>🔧 ROUTINES</span><div class="hud-bar-accent" style="background:linear-gradient(90deg,rgba(255,200,50,0.3),transparent);"></div></div>
+                            <div id="hud-routines">
+                                <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
+                            </div>
                         </div>
                     </div>
 
@@ -1792,6 +2006,11 @@
                         setDot('dot-n8n', ok ? 'ok' : 'error');
                         document.getElementById('health-n8n').textContent = ok ? 'Online' : 'Unreachable';
                         document.getElementById('health-n8n').className = 'health-status ' + (ok ? 'ok' : 'error');
+                        // Update HUD n8n node
+                        const n8nRing = document.getElementById('hud-n8n-ring');
+                        const n8nPulse = document.getElementById('hud-n8n-pulse');
+                        if (n8nRing) n8nRing.setAttribute('stroke', ok ? 'rgba(255,140,40,0.45)' : 'rgba(255,68,68,0.45)');
+                        if (n8nPulse) n8nPulse.setAttribute('fill', ok ? 'rgba(255,140,40,0.8)' : 'rgba(255,68,68,0.8)');
                         return;
                     }
 
@@ -1799,6 +2018,9 @@
                     if (s.name === 'OpenRouter') {
                         const orDot = document.getElementById('oc-openrouter-dot');
                         const orCredit = document.getElementById('oc-openrouter-credit');
+                        // Update HUD OpenRouter node
+                        const orRing = document.getElementById('hud-openrouter-ring');
+                        const orPulse = document.getElementById('hud-openrouter-pulse');
                         if (cr && cr.remaining !== undefined && cr.remaining !== null) {
                             const rem = cr.remaining;
                             const creditColor = rem >= 2 ? '#22c55e' : rem >= 0.50 ? '#f59e0b' : '#ef4444';
@@ -1806,10 +2028,14 @@
                             orDot.style.background = dotColor;
                             orCredit.textContent = `$${rem.toFixed(2)}`;
                             orCredit.style.color = creditColor;
+                            if (orRing) orRing.setAttribute('stroke', ok ? 'rgba(255,200,50,0.4)' : 'rgba(255,68,68,0.4)');
+                            if (orPulse) orPulse.setAttribute('fill', ok ? 'rgba(255,200,50,0.8)' : 'rgba(255,68,68,0.8)');
                         } else {
                             orDot.style.background = ok ? '#00ff88' : '#ff4444';
                             orCredit.textContent = ok ? 'Online' : 'Down';
                             orCredit.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                            if (orRing) orRing.setAttribute('stroke', ok ? 'rgba(255,200,50,0.4)' : 'rgba(255,68,68,0.4)');
+                            if (orPulse) orPulse.setAttribute('fill', ok ? 'rgba(255,200,50,0.8)' : 'rgba(255,68,68,0.8)');
                         }
                         return;
                     }
@@ -1832,6 +2058,11 @@
                         setDot('dot-notion', ok ? 'ok' : 'error');
                         document.getElementById('health-notion').textContent = ok ? 'Online' : 'Unreachable';
                         document.getElementById('health-notion').className = 'health-status ' + (ok ? 'ok' : 'error');
+                        // Update HUD Notion node
+                        const notionRing = document.getElementById('hud-notion-ring');
+                        const notionPulse = document.getElementById('hud-notion-pulse');
+                        if (notionRing) notionRing.setAttribute('stroke', ok ? 'rgba(80,120,255,0.45)' : 'rgba(255,68,68,0.45)');
+                        if (notionPulse) notionPulse.setAttribute('fill', ok ? 'rgba(80,120,255,0.8)' : 'rgba(255,68,68,0.8)');
                         return;
                     }
                     // Skip Ollama from External Services — now in Mac mini tile
@@ -1848,6 +2079,11 @@
                         const pcText = document.getElementById('pinecone-status-text');
                         pcText.textContent = ok ? 'Online' : 'Offline';
                         pcText.style.color = ok ? '#00ff88' : '#ff4444';
+                        // Update HUD Brain node
+                        const brainRing = document.getElementById('hud-brain-ring');
+                        const brainPulse = document.getElementById('hud-brain-pulse');
+                        if (brainRing) brainRing.setAttribute('stroke', ok ? 'rgba(255,80,200,0.4)' : 'rgba(255,68,68,0.4)');
+                        if (brainPulse) brainPulse.setAttribute('fill', ok ? 'rgba(255,80,200,0.8)' : 'rgba(255,68,68,0.8)');
                         return;
                     }
 
@@ -1881,6 +2117,11 @@
                         const rlSt = document.getElementById('oc-relay-status');
                         rlSt.textContent = ok ? 'Running' : 'Down';
                         rlSt.style.color = ok ? 'rgba(0,255,136,0.6)' : '#ff4444';
+                        // HUD center relay ring + pulse
+                        const relayRing = document.getElementById('hud-relay-ring');
+                        const relayPulse = document.getElementById('hud-relay-pulse');
+                        if (relayRing) relayRing.setAttribute('stroke', ok ? 'rgba(0,255,136,0.6)' : 'rgba(255,68,68,0.6)');
+                        if (relayPulse) relayPulse.setAttribute('fill', ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.5)');
                     }
                     // OpenClaw Gateway daemon → OpenClaw tile
                     if (s.id === 'ai.openclaw.gateway') {
@@ -3702,6 +3943,106 @@
             if (window._css4Resize) { window.removeEventListener('resize', window._css4Resize); window._css4Resize = null; }
         }
 
+        // ── Real-time per-service network traffic visualization ────────────
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+
+        // Service config: color, path ID, container ID
+        const TRAFFIC_SERVICES = {
+            notion:     { color: 'rgba(0,255,136,',     path: '#pulse-mm-notion',      container: 'rt-traffic-notion' },
+            n8n:        { color: 'rgba(255,140,40,',     path: '#pulse-n8n-mm',          container: 'rt-traffic-n8n' },
+            openrouter: { color: 'rgba(255,255,255,',    path: '#pulse-mm-openrouter',   container: 'rt-traffic-openrouter' },
+            github:     { color: 'rgba(0,140,255,',      path: '#pulse-mm-github',       container: 'rt-traffic-github' },
+            brain:      { color: 'rgba(255,100,200,',    path: '#pulse-mm-brain',        container: 'rt-traffic-brain' },
+        };
+
+        async function fetchTraffic() {
+            try {
+                const d = await fetch('/mc/traffic').then(r => r.json());
+                updateTrafficViz(d);
+            } catch(e) {}
+        }
+
+        function updateTrafficViz(data) {
+            const readout = document.getElementById('traffic-readout');
+
+            // Update total Mbps readout
+            if (readout && data.total) {
+                readout.textContent = '\u25BC' + data.total.mbpsIn.toFixed(1) + ' \u25B2' + data.total.mbpsOut.toFixed(1) + ' Mbps';
+            }
+
+            // Update each service's traffic lines
+            const services = data.services || {};
+            for (const [svc, cfg] of Object.entries(TRAFFIC_SERVICES)) {
+                const container = document.getElementById(cfg.container);
+                if (!container) continue;
+
+                // Clear previous
+                while (container.firstChild) container.removeChild(container.firstChild);
+
+                const svcData = services[svc];
+                if (!svcData) continue;
+
+                const totalBytes = (svcData.bytesIn || 0) + (svcData.bytesOut || 0);
+                // Cumulative bytes: 1 pair per 10KB, min 0 (no traffic = no lines), max 6
+                const pairCount = Math.min(6, Math.max(0, Math.round(totalBytes / 10000)));
+                if (pairCount === 0) continue;
+
+                const dur = Math.max(3, 10 - pairCount * 0.8);
+                for (let i = 0; i < pairCount; i++) {
+                    const beginOffset = (i * dur / pairCount).toFixed(1);
+                    // Outbound line (main color, full opacity)
+                    container.appendChild(createTrafficRect(cfg.color + '0.9)', cfg.path, dur, beginOffset, false));
+                    // Return line (same color, dimmer)
+                    container.appendChild(createTrafficRect(cfg.color + '0.6)', cfg.path, dur, beginOffset, true));
+                }
+            }
+
+            // Also show total traffic on the Router↔Mac Mini link
+            const totalContainer = document.getElementById('rt-traffic-total');
+            if (totalContainer) {
+                while (totalContainer.firstChild) totalContainer.removeChild(totalContainer.firstChild);
+                if (data.total) {
+                    const totalBytes = (data.total.bytesIn || 0) + (data.total.bytesOut || 0);
+                    const pairCount = Math.min(6, Math.max(0, Math.round(totalBytes / 10000)));
+                    if (pairCount > 0) {
+                        const dur = Math.max(2, 6 - pairCount * 0.5);
+                        for (let i = 0; i < pairCount; i++) {
+                            const beginOffset = (i * dur / pairCount).toFixed(1);
+                            totalContainer.appendChild(createTrafficRect('rgba(255,240,50,0.8)', '#relay-macmini-line', dur, beginOffset, false));
+                            totalContainer.appendChild(createTrafficRect('rgba(255,240,50,0.5)', '#relay-macmini-line', dur, beginOffset, true));
+                        }
+                    }
+                }
+            }
+        }
+
+        function createTrafficRect(fill, pathRef, dur, begin, reverse) {
+            const rect = document.createElementNS(SVG_NS, 'rect');
+            rect.setAttribute('x', '-3');
+            rect.setAttribute('y', '-0.5');
+            rect.setAttribute('width', '6');
+            rect.setAttribute('height', '1');
+            rect.setAttribute('rx', '0.5');
+            rect.setAttribute('fill', fill);
+
+            const motion = document.createElementNS(SVG_NS, 'animateMotion');
+            motion.setAttribute('rotate', 'auto');
+            motion.setAttribute('dur', dur + 's');
+            motion.setAttribute('repeatCount', 'indefinite');
+            motion.setAttribute('begin', begin + 's');
+            if (reverse) {
+                motion.setAttribute('keyPoints', '1;0');
+                motion.setAttribute('keyTimes', '0;1');
+                motion.setAttribute('calcMode', 'linear');
+            }
+
+            const mpath = document.createElementNS(SVG_NS, 'mpath');
+            mpath.setAttribute('href', pathRef);
+            motion.appendChild(mpath);
+            rect.appendChild(motion);
+            return rect;
+        }
+
         // Initial load + 60s auto-refresh
         refreshAll();
         setInterval(refreshAll, 60000);
@@ -3709,6 +4050,9 @@
         setInterval(fetchBrain, 60000);
         setInterval(fetchSystem, 60000);
         setInterval(fetchInternet, 60000);
+        // 5s traffic monitor
+        fetchTraffic();
+        setInterval(fetchTraffic, 5000);
 
         // ── 5-minute idle → full page reload ─────────────────────────────────
         const IDLE_RELOAD_MS = 5 * 60 * 1000;

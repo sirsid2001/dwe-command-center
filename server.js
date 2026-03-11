@@ -259,6 +259,9 @@ const server = http.createServer((req, res) => {
         case '/mc/internet':
             getInternetStatus(req, res);
             break;
+        case '/mc/traffic':
+            getTraffic(req, res);
+            break;
         case '/mc/openrouter-credits':
             getOpenRouterCredits(req, res);
             break;
@@ -1402,6 +1405,108 @@ function getInternetStatus(req, res) {
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ status, label, lastPingSuccess, secsSince }));
+}
+
+// Network traffic monitor — per-service via nettop + total via netstat, refreshed every 5s
+const SERVICE_IP_MAP = {
+    // prefix → service name (matched against connection remote IPs)
+    '208.103.161': 'notion',
+    '64.23.238.56': 'n8n',
+    '104.18.2': 'openrouter',
+    '104.18.3': 'openrouter',
+    '140.82.11': 'github',
+    '34.36.155': 'brain',
+};
+let trafficCache = {
+    total: { bytesIn: 0, bytesOut: 0, mbpsIn: 0, mbpsOut: 0 },
+    services: { notion: { bytesIn: 0, bytesOut: 0 }, n8n: { bytesIn: 0, bytesOut: 0 }, openrouter: { bytesIn: 0, bytesOut: 0 }, github: { bytesIn: 0, bytesOut: 0 }, brain: { bytesIn: 0, bytesOut: 0 } },
+    iface: null, ts: null
+};
+let prevServiceCounters = null;
+let prevServiceTs = null;
+
+function sampleTraffic() {
+    // Run both nettop (per-connection) and netstat (total) in parallel
+    exec("nettop -L 1 -n -x -J bytes_in,bytes_out 2>/dev/null", { timeout: 8000 }, (err, nettopOut) => {
+        exec("netstat -ib | grep -E '^en[01].*<Link'", (err2, netstatOut) => {
+            const now = Date.now();
+
+            // Parse total from netstat
+            let totalIn = 0, totalOut = 0, iface = null;
+            if (netstatOut) {
+                for (const line of netstatOut.trim().split('\n')) {
+                    const cols = line.trim().split(/\s+/);
+                    if (cols.length >= 10 && parseInt(cols[4]) > 0) {
+                        iface = cols[0];
+                        totalIn = parseInt(cols[6]);
+                        totalOut = parseInt(cols[9]);
+                        break;
+                    }
+                }
+            }
+
+            // Parse per-connection from nettop, aggregate by service
+            const svcBytes = { notion: { bi: 0, bo: 0 }, n8n: { bi: 0, bo: 0 }, openrouter: { bi: 0, bo: 0 }, github: { bi: 0, bo: 0 }, brain: { bi: 0, bo: 0 } };
+            if (nettopOut) {
+                for (const line of nettopOut.trim().split('\n')) {
+                    // Connection lines look like: tcp4 192.168.1.80:61493<->17.57.144.43:5223,4528852,12156547,
+                    const m = line.match(/^tcp[46]\s+[\d.:]+<->([\d.]+):\d+,(\d+),(\d+),/);
+                    if (!m) continue;
+                    const remoteIP = m[1];
+                    const bi = parseInt(m[2]) || 0;
+                    const bo = parseInt(m[3]) || 0;
+                    // Match remote IP to a service
+                    for (const [prefix, svc] of Object.entries(SERVICE_IP_MAP)) {
+                        if (remoteIP.startsWith(prefix)) {
+                            svcBytes[svc].bi += bi;
+                            svcBytes[svc].bo += bo;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Total traffic uses netstat deltas (reliable interface counters)
+            const services = {};
+            for (const svc of Object.keys(svcBytes)) {
+                // Use raw cumulative bytes as activity level (nettop counters are per-connection cumulative)
+                services[svc] = {
+                    bytesIn: svcBytes[svc].bi,
+                    bytesOut: svcBytes[svc].bo
+                };
+            }
+
+            if (prevServiceCounters && prevServiceTs) {
+                const elapsed = (now - prevServiceTs) / 1000;
+                if (elapsed > 0) {
+                    const dTotalIn = totalIn - (prevServiceCounters.totalIn || 0);
+                    const dTotalOut = totalOut - (prevServiceCounters.totalOut || 0);
+                    if (dTotalIn >= 0 && dTotalOut >= 0) {
+                        trafficCache = {
+                            total: {
+                                bytesIn: Math.round(dTotalIn / elapsed),
+                                bytesOut: Math.round(dTotalOut / elapsed),
+                                mbpsIn: parseFloat(((dTotalIn / elapsed) * 8 / 1000000).toFixed(2)),
+                                mbpsOut: parseFloat(((dTotalOut / elapsed) * 8 / 1000000).toFixed(2))
+                            },
+                            services,
+                            iface,
+                            ts: now
+                        };
+                    }
+                }
+            }
+            prevServiceCounters = { totalIn, totalOut };
+            prevServiceTs = now;
+        });
+    });
+}
+sampleTraffic();
+setInterval(sampleTraffic, 5000);
+
+function getTraffic(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(trafficCache));
 }
 
 async function getSystemHealth(req, res) {
