@@ -436,6 +436,29 @@
             border-color: rgba(255,255,255,0.4);
             color: #fff;
         }
+        /* HUD layer toggle buttons */
+        .hud-tog {
+            font-family: 'Courier New', monospace;
+            font-size: 0.58rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            padding: 3px 7px;
+            border-radius: 3px;
+            border: 1px solid var(--tog-c, rgba(255,255,255,0.3));
+            background: rgba(2,6,18,0.75);
+            color: var(--tog-c, rgba(255,255,255,0.6));
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 0.2s, background 0.2s;
+            white-space: nowrap;
+        }
+        .hud-tog:hover { background: rgba(255,255,255,0.08); }
+        .hud-tog.tog-off {
+            opacity: 0.3;
+            background: rgba(2,6,18,0.5);
+            border-color: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.25);
+        }
     </style>
 
     <!-- ── CSS2: Deep Neon ─────────────────────────────────────────── -->
@@ -1421,8 +1444,8 @@
                             <!-- Ring 3 — dashed, rotating -->
                             <circle cx="250" cy="250" r="190" fill="none" stroke="rgba(0,180,255,0.07)" stroke-width="1" stroke-dasharray="12 8" style="transform-origin:250px 250px;animation:hud-spin 80s linear infinite;"/>
 
-                            <!-- Ring 2 — orange arc segments (like the reference) -->
-                            <g style="transform-origin:250px 250px;animation:hud-spin-rev 35s linear infinite;">
+                            <!-- Ring 2 — orange arc segments — speed driven by network bandwidth -->
+                            <g id="hud-net-ring" style="transform-origin:250px 250px;animation:hud-spin-rev 35s linear infinite;">
                                 <!-- Arc segment top -->
                                 <path d="M250,105 A145,145 0 0,1 380,190" fill="none" stroke="rgba(255,160,40,0.4)" stroke-width="2.5" stroke-linecap="round"/>
                                 <!-- Arc segment bottom -->
@@ -1467,10 +1490,11 @@
 
                             <!-- ═══ CENTER: RELAY — the router/gateway that connects everything ═══ -->
                             <circle cx="250" cy="250" r="60" fill="url(#hud-core-glow2)"/>
-                            <circle id="hud-relay-ring" cx="250" cy="250" r="38" fill="rgba(2,6,18,0.95)" stroke="rgba(0,255,136,0.6)" stroke-width="2.5"/>
-                            <circle cx="250" cy="250" r="45" fill="none" stroke="rgba(0,255,136,0.12)" stroke-width="1" stroke-dasharray="3 3" style="transform-origin:250px 250px;animation:hud-spin 12s linear infinite;"/>
+                            <circle id="hud-relay-ring" cx="250" cy="250" r="38" fill="rgba(2,6,18,0.95)" stroke="rgba(0,255,136,0.6)" stroke-width="2.5" style="transform-origin:250px 250px; animation: hud-spin-rev 14s linear infinite;"/>
+                            <circle id="hud-inner-spin" cx="250" cy="250" r="45" fill="none" stroke="rgba(0,255,136,0.12)" stroke-width="1" stroke-dasharray="3 3" style="transform-origin:250px 250px;animation:hud-spin 12s linear infinite;"/>
                             <text x="250" y="244" text-anchor="middle" font-size="14" fill="rgba(220,240,255,0.95)" font-family="'Courier New',monospace" font-weight="700" filter="url(#hud-glow)">ROUTER</text>
                             <text x="250" y="262" text-anchor="middle" font-size="8" fill="rgba(0,255,136,0.6)" font-family="'Courier New',monospace" letter-spacing="1">192.168.1.254</text>
+                            <text id="hud-router-extip" x="250" y="272" text-anchor="middle" font-size="6" fill="rgba(0,255,136,0.35)" font-family="'Courier New',monospace">—</text>
                             <!-- Relay status breathing dot — dynamic via JS -->
                             <circle id="hud-relay-pulse" cx="250" cy="250" r="4" fill="rgba(0,255,136,0.5)">
                                 <animate attributeName="r" values="4;7;4" dur="3s" repeatCount="indefinite"/>
@@ -1481,13 +1505,13 @@
                             <!-- Relay → AI Team -->
                             <line x1="250" y1="212" x2="250" y2="78" stroke="rgba(0,255,136,0.1)" stroke-width="0.8"/>
                             <!-- Relay → Notion -->
-                            <line x1="218" y1="222" x2="118" y2="108" stroke="rgba(0,180,255,0.08)" stroke-width="0.8"/>
-                            <!-- Relay → n8n -->
-                            <line x1="282" y1="222" x2="332" y2="148" stroke="rgba(255,160,40,0.08)" stroke-width="0.8"/>
-                            <!-- Relay → Pinecone -->
-                            <line x1="218" y1="278" x2="118" y2="392" stroke="rgba(0,255,180,0.07)" stroke-width="0.8"/>
+                            <line x1="213" y1="225" x2="134" y2="171" stroke="rgba(0,180,255,0.08)" stroke-width="0.8"/>
+                            <!-- Relay → n8n (lower-left) -->
+                            <line x1="228" y1="274" x2="151" y2="349" stroke="rgba(255,160,40,0.08)" stroke-width="0.8"/>
+                            <!-- Relay → Brain (lower-left, 8:00 of n8n) -->
+                            <line x1="215" y1="278" x2="64" y2="401" stroke="rgba(255,80,200,0.07)" stroke-width="0.8"/>
                             <!-- Relay → OpenRouter -->
-                            <line x1="282" y1="278" x2="332" y2="348" stroke="rgba(255,200,50,0.07)" stroke-width="0.8"/>
+                            <line x1="286" y1="223" x2="355" y2="172" stroke="rgba(255,200,50,0.07)" stroke-width="0.8"/>
                             <!-- Relay ⚡ Mac Mini — yellow lightning bolt -->
                             <defs>
                                 <filter id="lightning-glow">
@@ -1497,35 +1521,38 @@
                             </defs>
                             <!-- ═══ REAL-TIME TRAFFIC SYSTEM — all paths + per-service containers ═══ -->
                             <defs>
-                                <path id="relay-macmini-line" d="M288,250 L395,250"/>
-                                <path id="pulse-macmini-relay" d="M420,250 L250,250"/>
-                                <path id="pulse-mm-openrouter" d="M420,250 L250,250 L340,355"/>
-                                <path id="pulse-mm-brain" d="M420,250 L250,250 L110,400"/>
-                                <path id="pulse-mm-github" d="M420,250 L250,250 L55,250"/>
-                                <path id="pulse-mm-notion" d="M420,250 L250,250 L110,100"/>
-                                <path id="pulse-n8n-mm" d="M340,140 L250,250 L420,250"/>
+                                <path id="relay-macmini-line" d="M250,212 L250,88"/>
+                                <path id="pulse-macmini-relay" d="M250,60 L250,250"/>
+                                <path id="pulse-mm-openrouter" d="M250,60 L250,250 L369,161"/>
+                                <path id="pulse-mm-brain" d="M141,359 L50,412"/>
+                                <path id="pulse-mm-github" d="M250,60 L250,250 L55,250"/>
+                                <path id="pulse-mm-notion" d="M250,60 L250,250 L119,161"/>
+                                <path id="pulse-n8n-mm" d="M141,359 L250,250 L250,60"/>
+                                <path id="pulse-mm-telegram" d="M250,60 L250,250 L420,250"/>
                             </defs>
                             <!-- Faint connector lines (static, always visible) -->
-                            <line x1="250" y1="250" x2="110" y2="400" stroke="rgba(255,100,200,0.06)" stroke-width="1"/>
+                            <line x1="141" y1="359" x2="50" y2="412" stroke="rgba(255,100,200,0.12)" stroke-width="1"/>
                             <line x1="250" y1="250" x2="55" y2="250" stroke="rgba(0,140,255,0.06)" stroke-width="1"/>
-                            <line x1="250" y1="250" x2="110" y2="100" stroke="rgba(0,255,136,0.06)" stroke-width="1"/>
-                            <line x1="340" y1="140" x2="250" y2="250" stroke="rgba(255,140,40,0.06)" stroke-width="1"/>
-                            <line x1="250" y1="250" x2="340" y2="355" stroke="rgba(255,200,50,0.06)" stroke-width="1"/>
-                            <line x1="288" y1="250" x2="395" y2="250" stroke="rgba(255,240,50,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="119" y2="161" stroke="rgba(0,255,136,0.06)" stroke-width="1"/>
+                            <line x1="141" y1="359" x2="250" y2="250" stroke="rgba(255,140,40,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="369" y2="161" stroke="rgba(255,200,50,0.06)" stroke-width="1"/>
+                            <line x1="250" y1="250" x2="250" y2="60" stroke="rgba(0,255,136,0.06)" stroke-width="1"/>
+                            <line x1="288" y1="250" x2="395" y2="250" stroke="rgba(0,200,255,0.06)" stroke-width="1"/>
                             <!-- Per-service real-time traffic containers (populated by JS) -->
                             <g id="rt-traffic-notion"></g>
                             <g id="rt-traffic-n8n"></g>
                             <g id="rt-traffic-openrouter"></g>
                             <g id="rt-traffic-github"></g>
                             <g id="rt-traffic-brain"></g>
+                            <g id="rt-traffic-telegram"></g>
                             <g id="rt-traffic-total"></g>
                             <!-- Total throughput readout -->
                             <text id="traffic-readout" x="342" y="238" font-size="5" fill="rgba(0,255,200,0.7)" text-anchor="middle" font-family="'Courier New',monospace"></text>
 
                             <!-- Cross connections -->
-                            <line x1="118" y1="108" x2="118" y2="392" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
-                            <line x1="250" y1="60" x2="118" y2="100" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
-                            <line x1="250" y1="60" x2="340" y2="140" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+                            <line x1="119" y1="161" x2="50" y2="412" stroke="rgba(0,180,255,0.04)" stroke-width="0.5"/>
+                            <line x1="250" y1="60" x2="119" y2="161" stroke="rgba(0,255,136,0.04)" stroke-width="0.5"/>
+                            <line x1="250" y1="60" x2="369" y2="161" stroke="rgba(0,255,136,0.04)" stroke-width="0.5"/>
 
                             <!-- (Old data flow particles removed — all traffic now uses colored line system above) -->
 
@@ -1533,60 +1560,63 @@
 
 
 
-                            <!-- AI Team (top) — 6 agents — CYAN -->
+                            <!-- Telegram (right) — agent comms — CYAN -->
                             <g>
-                                <circle cx="250" cy="60" r="20" fill="rgba(2,6,18,0.92)" stroke="rgba(0,200,255,0.5)" stroke-width="1.8"/>
-                                <circle cx="250" cy="60" r="26" fill="none" stroke="rgba(0,200,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
-                                <text x="250" y="66" text-anchor="middle" font-size="17">👥</text>
-                                <text x="250" y="36" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">AI TEAM</text>
-                            </g>
-
-
-
-                            <!-- Notion (top-left) — dynamic status — BLUE -->
-                            <g>
-                                <circle id="hud-notion-ring" cx="110" cy="100" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(80,120,255,0.45)" stroke-width="1.5"/>
-                                <circle cx="110" cy="100" r="23" fill="none" stroke="rgba(80,120,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
-                                <text x="110" y="106" text-anchor="middle" font-size="15">✅</text>
-                                <circle id="hud-notion-pulse" cx="128" cy="84" r="4" fill="rgba(80,120,255,0.8)">
-                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
-                                </circle>
-                                <text x="110" y="78" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">NOTION</text>
-                            </g>
-
-
-                            <!-- n8n (right of top) — dynamic status — ORANGE -->
-                            <g>
-                                <circle id="hud-n8n-ring" cx="340" cy="140" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,140,40,0.45)" stroke-width="1.5"/>
-                                <circle cx="340" cy="140" r="23" fill="none" stroke="rgba(255,140,40,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
-                                <text x="340" y="146" text-anchor="middle" font-size="15">⚡</text>
-                                <text x="340" y="118" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">N8N</text>
-                                <circle id="hud-n8n-pulse" cx="358" cy="124" r="4" fill="rgba(255,140,40,0.8)">
-                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                <circle cx="420" cy="250" r="20" fill="rgba(2,6,18,0.92)" stroke="rgba(0,200,255,0.5)" stroke-width="1.8"/>
+                                <circle cx="420" cy="250" r="26" fill="none" stroke="rgba(0,200,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="420" y="256" text-anchor="middle" font-size="17">✈️</text>
+                                <text x="420" y="222" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">TELEGRAM</text>
+                                <circle id="hud-telegram-pulse" cx="438" cy="232" r="4" fill="rgba(0,200,255,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/>
                                 </circle>
                             </g>
 
 
 
-                            <!-- DWE Brain / Pinecone (bottom-left) — dynamic status — MAGENTA -->
+                            <!-- Notion — midpoint GitHub/MEM — BLUE -->
                             <g>
-                                <circle id="hud-brain-ring" cx="110" cy="400" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,80,200,0.4)" stroke-width="1.5"/>
-                                <circle cx="110" cy="400" r="23" fill="none" stroke="rgba(255,80,200,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
-                                <text x="110" y="406" text-anchor="middle" font-size="15">🧠</text>
-                                <text x="110" y="378" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">DWE BRAIN</text>
-                                <circle id="hud-brain-pulse" cx="128" cy="384" r="4" fill="rgba(255,80,200,0.8)">
+                                <circle id="hud-notion-ring" cx="119" cy="161" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(80,120,255,0.45)" stroke-width="1.5"/>
+                                <circle cx="119" cy="161" r="23" fill="none" stroke="rgba(80,120,255,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="119" y="167" text-anchor="middle" font-size="15">✅</text>
+                                <circle id="hud-notion-pulse" cx="137" cy="145" r="4" fill="rgba(80,120,255,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                                <text x="119" y="138" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">NOTION</text>
+                            </g>
+
+
+                            <!-- n8n (lower-left, 7:30) — dynamic status — ORANGE -->
+                            <g>
+                                <circle id="hud-n8n-ring" cx="141" cy="359" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,140,40,0.45)" stroke-width="1.5"/>
+                                <circle cx="141" cy="359" r="23" fill="none" stroke="rgba(255,140,40,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="141" y="365" text-anchor="middle" font-size="15">⚡</text>
+                                <text x="141" y="335" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">N8N</text>
+                                <circle id="hud-n8n-pulse" cx="159" cy="343" r="4" fill="rgba(255,140,40,0.8)">
                                     <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
                                 </circle>
                             </g>
 
 
-                            <!-- OpenRouter (right of bottom) — dynamic status — GOLD -->
+
+                            <!-- DWE Brain / Pinecone — 8:00 of n8n — MAGENTA -->
                             <g>
-                                <circle id="hud-openrouter-ring" cx="340" cy="355" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,200,50,0.4)" stroke-width="1.5"/>
-                                <circle cx="340" cy="355" r="23" fill="none" stroke="rgba(255,200,50,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
-                                <text x="340" y="361" text-anchor="middle" font-size="15">🤖</text>
-                                <text x="340" y="333" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENROUTER</text>
-                                <circle id="hud-openrouter-pulse" cx="358" cy="339" r="4" fill="rgba(255,200,50,0.8)">
+                                <circle id="hud-brain-ring" cx="50" cy="412" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,80,200,0.4)" stroke-width="1.5"/>
+                                <circle cx="50" cy="412" r="23" fill="none" stroke="rgba(255,80,200,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="50" y="418" text-anchor="middle" font-size="15">🧠</text>
+                                <text x="50" y="389" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">DWE BRAIN</text>
+                                <circle id="hud-brain-pulse" cx="68" cy="396" r="4" fill="rgba(255,80,200,0.8)">
+                                    <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
+                                </circle>
+                            </g>
+
+
+                            <!-- OpenRouter — midpoint OpenClaw/Telegram — GOLD -->
+                            <g>
+                                <circle id="hud-openrouter-ring" cx="369" cy="161" r="18" fill="rgba(2,6,18,0.92)" stroke="rgba(255,200,50,0.4)" stroke-width="1.5"/>
+                                <circle cx="369" cy="161" r="23" fill="none" stroke="rgba(255,200,50,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <text x="369" y="167" text-anchor="middle" font-size="15">🤖</text>
+                                <text x="369" y="138" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENROUTER</text>
+                                <circle id="hud-openrouter-pulse" cx="387" cy="145" r="4" fill="rgba(255,200,50,0.8)">
                                     <animate attributeName="opacity" values="1;0.3;1" dur="4s" repeatCount="indefinite"/>
                                 </circle>
                             </g>
@@ -1600,62 +1630,68 @@
                                 <text x="55" y="234" text-anchor="middle" font-size="7" fill="#fff" font-weight="700" font-family="'Courier New',monospace">GITHUB</text>
                             </g>
 
-                            <!-- ═══ MAC MINI CLUSTER (right side) — local services orbit around it ═══ -->
+                            <!-- ═══ MAC MINI CLUSTER (top) — local services crown above it ═══ -->
                             <g>
                                 <!-- Mac Mini hub -->
-                                <circle cx="420" cy="250" r="24" fill="rgba(2,6,18,0.92)" stroke="rgba(0,255,136,0.55)" stroke-width="2"/>
-                                <circle cx="420" cy="250" r="30" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
+                                <circle cx="250" cy="60" r="24" fill="rgba(2,6,18,0.92)" stroke="rgba(0,255,136,0.55)" stroke-width="2"/>
+                                <circle cx="250" cy="60" r="30" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="0.8" stroke-dasharray="3 4"/>
                                 <!-- Heartbeat pulse ring -->
-                                <circle cx="420" cy="250" r="24" fill="none" stroke="rgba(0,255,136,0.4)" stroke-width="1.5">
+                                <circle cx="250" cy="60" r="24" fill="none" stroke="rgba(0,255,136,0.4)" stroke-width="1.5">
                                     <animate attributeName="r" values="24;36;24" dur="2s" repeatCount="indefinite"/>
                                     <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
                                 </circle>
-                                <circle cx="420" cy="250" r="24" fill="none" stroke="rgba(0,255,136,0.3)" stroke-width="1">
+                                <circle cx="250" cy="60" r="24" fill="none" stroke="rgba(0,255,136,0.3)" stroke-width="1">
                                     <animate attributeName="r" values="24;42;24" dur="2s" repeatCount="indefinite" begin="0.3s"/>
                                     <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" begin="0.3s"/>
                                 </circle>
-                                <text x="420" y="256" text-anchor="middle" font-size="18">🖥️</text>
-                                <text x="420" y="222" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MAC MINI</text>
+                                <text x="250" y="66" text-anchor="middle" font-size="18">🖥️</text>
+                                <text x="250" y="36" text-anchor="middle" font-size="9" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MAC MINI</text>
+                                <!-- RAM badge at 12 o'clock — live RAM % -->
+                                <text id="hud-ram-badge" x="250" y="26" text-anchor="middle" font-size="6" fill="rgba(0,255,136,0.55)" font-family="'Courier New',monospace">RAM —%</text>
                                 <!-- Green heartbeat dot -->
-                                <circle cx="442" cy="230" r="4" fill="rgba(0,255,136,0.8)">
+                                <circle cx="268" cy="42" r="4" fill="rgba(0,255,136,0.8)">
                                     <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
                                     <animate attributeName="r" values="4;5;4" dur="2s" repeatCount="indefinite"/>
                                 </circle>
 
                                 <!-- Satellite laser beam lines (yellow) -->
-                                <line x1="420" y1="250" x2="470" y2="164" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
-                                <line x1="420" y1="250" x2="470" y2="336" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
-                                <line x1="420" y1="250" x2="485" y2="250" stroke="rgba(255,220,50,0.18)" stroke-width="0.8"/>
+                                <line x1="250" y1="60" x2="175" y2="22" stroke="rgba(255,220,50,0.45)" stroke-width="1.2"/>
+                                <line x1="250" y1="60" x2="325" y2="22" stroke="rgba(255,220,50,0.45)" stroke-width="1.2"/>
+                                <line x1="250" y1="60" x2="318" y2="72" stroke="rgba(255,220,50,0.45)" stroke-width="1.2"/>
+                                <line x1="250" y1="60" x2="182" y2="72" stroke="rgba(255,220,50,0.45)" stroke-width="1.2"/>
 
-                                <!-- Yellow laser beam paths for animation -->
+                                <!-- Local process traffic paths (reused by JS) -->
                                 <defs>
-                                    <path id="laser-ollama" d="M420,250 L470,164"/>
-                                    <path id="laser-mcporter" d="M420,250 L470,336"/>
-                                    <path id="laser-openclaw" d="M420,250 L485,250"/>
+                                    <path id="laser-ollama"   d="M250,60 L175,22"/>
+                                    <path id="laser-mcporter" d="M250,60 L325,22"/>
+                                    <path id="laser-openclaw" d="M250,60 L318,72"/>
+                                    <path id="laser-mem"      d="M250,60 L182,72"/>
                                 </defs>
-                                <!-- Laser beams outbound (yellow dots) -->
-                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="4.8s" repeatCount="indefinite"><mpath href="#laser-ollama"/></animateMotion></circle>
-                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="5.6s" repeatCount="indefinite" begin="1.2s"><mpath href="#laser-mcporter"/></animateMotion></circle>
-                                <circle r="2" fill="rgba(255,220,50,0.9)" filter="url(#hud-glow)"><animateMotion dur="5.2s" repeatCount="indefinite" begin="2.4s"><mpath href="#laser-openclaw"/></animateMotion></circle>
-                                <!-- Laser beams return -->
-                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="6s" repeatCount="indefinite" begin="3.2s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-ollama"/></animateMotion></rect>
-                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="6.4s" repeatCount="indefinite" begin="4.4s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-mcporter"/></animateMotion></rect>
-                                <rect x="-2" y="-0.75" width="4" height="1.5" rx="0.75" fill="rgba(255,200,50,0.6)"><animateMotion rotate="auto" dur="5.6s" repeatCount="indefinite" begin="1.6s" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#laser-openclaw"/></animateMotion></rect>
+                                <!-- Real-time local process traffic containers (populated by JS) -->
+                                <g id="rt-local-ollama"></g>
+                                <g id="rt-local-mcp"></g>
+                                <g id="rt-local-openclaw"></g>
+                                <g id="rt-local-mem"></g>
 
-                                <!-- Ollama (1 o'clock — doubled distance) -->
-                                <circle cx="470" cy="164" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
-                                <text x="470" y="169" text-anchor="middle" font-size="10">🦙</text>
-                                <text x="470" y="150" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OLLAMA</text>
+                                <!-- Ollama (upper-left) -->
+                                <circle cx="175" cy="22" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
+                                <text x="175" y="27" text-anchor="middle" font-size="10">🦙</text>
+                                <text x="175" y="9" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OLLAMA</text>
 
-                                <!-- MCporter (5 o'clock — same distance as Ollama) -->
-                                <circle cx="470" cy="336" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
-                                <text x="470" y="341" text-anchor="middle" font-size="10">🔌</text>
-                                <text x="470" y="354" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MCPORTER</text>
+                                <!-- MCporter (upper-right) -->
+                                <circle cx="325" cy="22" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
+                                <text x="325" y="27" text-anchor="middle" font-size="10">🔌</text>
+                                <text x="325" y="9" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MCPORTER</text>
 
-                                <!-- OpenClaw (3 o'clock — doubled distance) -->
-                                <circle cx="485" cy="250" r="13" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.4)" stroke-width="1.2"/>
-                                <text x="485" y="255" text-anchor="middle" font-size="10">🎯</text>
-                                <text x="485" y="268" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENCLAW</text>
+                                <!-- OpenClaw (lower-right) -->
+                                <circle cx="318" cy="72" r="13" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.4)" stroke-width="1.2"/>
+                                <text x="318" y="77" text-anchor="middle" font-size="10">🎯</text>
+                                <text x="318" y="90" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">OPENCLAW</text>
+
+                                <!-- MEM (lower-left) — live RAM % -->
+                                <circle id="hud-mem-ring" cx="182" cy="72" r="12" fill="rgba(2,6,18,0.9)" stroke="rgba(255,220,50,0.35)" stroke-width="1.2"/>
+                                <text id="hud-mem-pct" x="182" y="76" text-anchor="middle" font-size="7" fill="rgba(255,220,50,0.9)" font-weight="700" font-family="'Courier New',monospace">—%</text>
+                                <text x="182" y="57" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="'Courier New',monospace">MEM</text>
                             </g>
 
                             <!-- Status badge bottom -->
@@ -1665,11 +1701,30 @@
                             </circle>
                             <text x="255" y="482" text-anchor="middle" font-size="9" fill="rgba(0,180,255,0.7)" font-family="'Courier New',monospace" font-weight="600">6 AGENTS ONLINE</text>
 
-                            <!-- Scanning arc (rotating partial arc like the reference) -->
-                            <g style="transform-origin:250px 250px;animation:hud-spin 8s linear infinite;">
+                            <!-- Scanning arc (rotating partial arc — speed driven by memory %) -->
+                            <g id="hud-scan-arc" style="transform-origin:250px 250px;animation:hud-spin 8s linear infinite;">
                                 <path d="M250,85 A165,165 0 0,1 390,175" fill="none" stroke="rgba(0,255,180,0.12)" stroke-width="1.5" stroke-linecap="round"/>
                             </g>
                         </svg>
+                        <!-- ── HUD Layer Toggle Controls ── -->
+                        <div id="hud-toggles" style="position:absolute;bottom:6px;left:0;right:0;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:0 8px;pointer-events:all;">
+                            <!-- Services -->
+                            <button onclick="hudToggle('telegram')"   id="tog-telegram"   class="hud-tog" style="--tog-c:rgba(0,200,255,0.8)">📡 Telegram</button>
+                            <button onclick="hudToggle('notion')"     id="tog-notion"     class="hud-tog" style="--tog-c:rgba(0,255,136,0.8)">📝 Notion</button>
+                            <button onclick="hudToggle('openrouter')" id="tog-openrouter" class="hud-tog" style="--tog-c:rgba(255,200,50,0.8)">🤖 OpenRouter</button>
+                            <button onclick="hudToggle('n8n')"        id="tog-n8n"        class="hud-tog" style="--tog-c:rgba(255,140,40,0.8)">⚡ n8n</button>
+                            <button onclick="hudToggle('brain')"      id="tog-brain"      class="hud-tog" style="--tog-c:rgba(255,100,200,0.8)">🧠 Brain</button>
+                            <button onclick="hudToggle('github')"     id="tog-github"     class="hud-tog" style="--tog-c:rgba(0,140,255,0.8)">🐙 GitHub</button>
+                            <!-- Local -->
+                            <button onclick="hudToggle('ollama')"     id="tog-ollama"     class="hud-tog" style="--tog-c:rgba(255,220,50,0.8)">🦙 Ollama</button>
+                            <button onclick="hudToggle('mcp')"        id="tog-mcp"        class="hud-tog" style="--tog-c:rgba(255,180,50,0.8)">🔌 MCP</button>
+                            <button onclick="hudToggle('openclaw')"   id="tog-openclaw"   class="hud-tog" style="--tog-c:rgba(255,200,80,0.8)">🐾 OpenClaw</button>
+                            <!-- Rings -->
+                            <button onclick="hudToggle('ring-cpu')"   id="tog-ring-cpu"   class="hud-tog" style="--tog-c:rgba(0,255,180,0.8)">◌ CPU</button>
+                            <button onclick="hudToggle('ring-mem')"   id="tog-ring-mem"   class="hud-tog" style="--tog-c:rgba(0,255,136,0.8)">◌ MEM</button>
+                            <button onclick="hudToggle('ring-net')"   id="tog-ring-net"   class="hud-tog" style="--tog-c:rgba(255,160,40,0.8)">◌ NET</button>
+                            <button onclick="hudToggle('ring-router')" id="tog-ring-router" class="hud-tog" style="--tog-c:rgba(0,255,136,0.8)">◌ Router</button>
+                        </div>
                     </div>
 
                     <!-- RIGHT COLUMN: Core Infra, Monitor, Routines (evenly spaced, Routines flush bottom) -->
@@ -3946,6 +4001,43 @@
         // ── Real-time per-service network traffic visualization ────────────
         const SVG_NS = 'http://www.w3.org/2000/svg';
 
+        // ── HUD layer toggle state ─────────────────────────────────────────
+        const hudToggles = {
+            telegram: true, notion: true, openrouter: true, n8n: true, brain: true, github: true,
+            ollama: true, mcp: true, openclaw: true,
+            'ring-cpu': true, 'ring-mem': true, 'ring-net': true, 'ring-router': true
+        };
+        function hudToggle(key) {
+            hudToggles[key] = !hudToggles[key];
+            const btn = document.getElementById('tog-' + key);
+            if (btn) btn.classList.toggle('tog-off', !hudToggles[key]);
+            if (key === 'ring-cpu') {
+                ['hud-scan-arc','hud-inner-spin'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+                });
+            }
+            if (key === 'ring-net') {
+                const el = document.getElementById('hud-net-ring');
+                if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+            }
+            if (key === 'ring-router') {
+                const el = document.getElementById('hud-relay-ring');
+                if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+            }
+            if (key === 'ring-mem') {
+                const el = document.getElementById('hud-mem-ring');
+                if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+            }
+            // Clear dots for service that just turned off
+            if (!hudToggles[key]) {
+                const svc = (typeof TRAFFIC_SERVICES !== 'undefined' && TRAFFIC_SERVICES[key]);
+                if (svc) { const c = document.getElementById(svc.container); if (c) while (c.firstChild) c.removeChild(c.firstChild); }
+                const lsvc = (typeof LOCAL_SERVICES !== 'undefined' && LOCAL_SERVICES[key]);
+                if (lsvc) { const c = document.getElementById(lsvc.container); if (c) while (c.firstChild) c.removeChild(c.firstChild); }
+            }
+        }
+
         // Service config: color, path ID, container ID
         const TRAFFIC_SERVICES = {
             notion:     { color: 'rgba(0,255,136,',     path: '#pulse-mm-notion',      container: 'rt-traffic-notion' },
@@ -3953,6 +4045,7 @@
             openrouter: { color: 'rgba(255,255,255,',    path: '#pulse-mm-openrouter',   container: 'rt-traffic-openrouter' },
             github:     { color: 'rgba(0,140,255,',      path: '#pulse-mm-github',       container: 'rt-traffic-github' },
             brain:      { color: 'rgba(255,100,200,',    path: '#pulse-mm-brain',        container: 'rt-traffic-brain' },
+            telegram:   { color: 'rgba(0,200,255,',       path: '#pulse-mm-telegram',     container: 'rt-traffic-telegram' },
         };
 
         async function fetchTraffic() {
@@ -3960,6 +4053,116 @@
                 const d = await fetch('/mc/traffic').then(r => r.json());
                 updateTrafficViz(d);
             } catch(e) {}
+        }
+
+        const LOCAL_SERVICES = {
+            ollama:   { color: 'rgba(255,220,50,',  path: '#laser-ollama',   container: 'rt-local-ollama' },
+            mcp:      { color: 'rgba(255,180,50,',  path: '#laser-mcporter', container: 'rt-local-mcp' },
+            openclaw: { color: 'rgba(255,200,80,',  path: '#laser-openclaw', container: 'rt-local-openclaw' },
+            mem:      { color: 'rgba(255,220,50,',  path: '#laser-mem',      container: 'rt-local-mem' },
+        };
+
+        async function fetchLocalTraffic() {
+            try {
+                const d = await fetch('/mc/local-traffic').then(r => r.json());
+                updateLocalTrafficViz(d);
+            } catch(e) {}
+        }
+
+        function createTrafficDot(fill, pathRef, dur, begin, reverse) {
+            const dot = document.createElementNS(SVG_NS, 'circle');
+            dot.setAttribute('r', '2.2');
+            dot.setAttribute('fill', fill);
+            const motion = document.createElementNS(SVG_NS, 'animateMotion');
+            motion.setAttribute('dur', dur + 's');
+            motion.setAttribute('repeatCount', 'indefinite');
+            motion.setAttribute('begin', begin + 's');
+            if (reverse) {
+                motion.setAttribute('keyPoints', '1;0');
+                motion.setAttribute('keyTimes', '0;1');
+                motion.setAttribute('calcMode', 'linear');
+            }
+            const mpath = document.createElementNS(SVG_NS, 'mpath');
+            mpath.setAttribute('href', pathRef);
+            motion.appendChild(mpath);
+            dot.appendChild(motion);
+            return dot;
+        }
+
+        function updateLocalTrafficViz(data) {
+            // Only show dots when there are real local connections — 0 = nothing animates
+            const memPct = data.memPct || 0;
+            const counts = {
+                ollama:   Math.min(6, data.ollama),
+                mcp:      Math.min(6, data.mcp),
+                openclaw: Math.min(6, data.gateway),
+                mem:      Math.max(1, memPct > 80 ? 3 : memPct > 60 ? 2 : 1), // always 1 heartbeat
+            };
+
+            // Update MEM node color + text
+            const memRing = document.getElementById('hud-mem-ring');
+            const memPctEl = document.getElementById('hud-mem-pct');
+            if (memRing && memPct > 0) {
+                const ringColor = memPct > 80 ? 'rgba(255,80,80,0.6)' : memPct > 60 ? 'rgba(255,220,50,0.6)' : 'rgba(0,255,136,0.5)';
+                const textColor = memPct > 80 ? 'rgba(255,80,80,0.9)' : memPct > 60 ? 'rgba(255,220,50,0.9)' : 'rgba(0,255,136,0.9)';
+                memRing.setAttribute('stroke', ringColor);
+                if (memPctEl) { memPctEl.textContent = Math.round(memPct) + '%'; memPctEl.setAttribute('fill', textColor); }
+                const ramBadge = document.getElementById('hud-ram-badge');
+                if (ramBadge) { ramBadge.textContent = 'RAM ' + Math.round(memPct) + '%'; ramBadge.setAttribute('fill', textColor.replace('0.9', '0.55')); }
+            }
+            // Blue scanning arc = Mac Mini CPU throughput
+            const cpuPct = data.cpuPct || 0;
+            const cpuDur = cpuPct > 85 ? 1 : cpuPct > 70 ? 3 : cpuPct > 50 ? 6 : cpuPct > 30 ? 12 : cpuPct > 10 ? 20 : 35;
+            if (hudToggles['ring-cpu']) {
+                const scanArc = document.getElementById('hud-scan-arc');
+                const innerSpin = document.getElementById('hud-inner-spin');
+                if (scanArc) scanArc.style.animation = `hud-spin ${cpuDur}s linear infinite`;
+                if (innerSpin) innerSpin.style.animation = `hud-spin ${(cpuDur * 0.6).toFixed(1)}s linear infinite`;
+            }
+            // Orange arc ring = Mac Mini network throughput (local interface bandwidth)
+            const macMbps = (data.macMbpsIn || 0) + (data.macMbpsOut || 0);
+            const netDur = macMbps > 50 ? 1 : macMbps > 15 ? 3 : macMbps > 5 ? 6 : macMbps > 1 ? 12 : macMbps > 0.1 ? 20 : 35;
+            if (hudToggles['ring-net']) {
+                const netRing = document.getElementById('hud-net-ring');
+                if (netRing) netRing.style.animation = `hud-spin-rev ${netDur}s linear infinite`;
+            }
+
+            // Update router external IP display
+            if (data.routerExtIp) {
+                const extIpEl = document.getElementById('hud-router-extip');
+                if (extIpEl) extIpEl.textContent = data.routerExtIp;
+            }
+
+            // Green relay ring = Router WAN throughput (BGW320 counters)
+            const rMbps = data.routerMbps || 0;
+            const rDur = rMbps > 50 ? 1 : rMbps > 15 ? 3 : rMbps > 5 ? 6 : rMbps > 1 ? 12 : rMbps > 0.1 ? 20 : 35;
+            const relayRing = document.getElementById('hud-relay-ring');
+            if (hudToggles['ring-router'] && !data.routerAlert && relayRing) relayRing.style.animation = `hud-spin-rev ${rDur}s linear infinite`;
+
+            // Router health alert — flash relay ring red if BGW320 drops/errors incremented
+            if (data.routerAlert) {
+                if (relayRing) {
+                    relayRing.style.stroke = 'rgba(255,80,80,0.9)';
+                    setTimeout(() => { relayRing.style.stroke = ''; }, 3000);
+                }
+            }
+            for (const [svc, cfg] of Object.entries(LOCAL_SERVICES)) {
+                const container = document.getElementById(cfg.container);
+                if (!container) continue;
+                while (container.firstChild) container.removeChild(container.firstChild);
+                if (!hudToggles[svc]) continue;
+                const dotCount = counts[svc] || 0;
+                if (dotCount === 0) continue;  // no connections = no animation
+                // Speed scales with activity: more dots = faster (1.2s min, 3s idle)
+                const dur = Math.max(1.2, 3.5 - dotCount * 0.5);
+                for (let i = 0; i < dotCount; i++) {
+                    const begin = (i * dur / dotCount).toFixed(1);
+                    // outbound dot (bright)
+                    container.appendChild(createTrafficDot(cfg.color + '0.95)', cfg.path, dur, begin, false));
+                    // return dot (dimmer)
+                    container.appendChild(createTrafficDot(cfg.color + '0.5)', cfg.path, dur + 0.4, begin, true));
+                }
+            }
         }
 
         function updateTrafficViz(data) {
@@ -3970,9 +4173,12 @@
                 readout.textContent = '\u25BC' + data.total.mbpsIn.toFixed(1) + ' \u25B2' + data.total.mbpsOut.toFixed(1) + ' Mbps';
             }
 
+            // Orange/green ring speeds now driven by CPU% and router Mbps in updateLocalTrafficViz
+
             // Update each service's traffic lines
             const services = data.services || {};
             for (const [svc, cfg] of Object.entries(TRAFFIC_SERVICES)) {
+                if (!hudToggles[svc]) continue;
                 const container = document.getElementById(cfg.container);
                 if (!container) continue;
 
@@ -3984,7 +4190,18 @@
 
                 const totalBytes = (svcData.bytesIn || 0) + (svcData.bytesOut || 0);
                 // Cumulative bytes: 1 pair per 10KB, min 0 (no traffic = no lines), max 6
-                const pairCount = Math.min(6, Math.max(0, Math.round(totalBytes / 10000)));
+                let pairCount = Math.min(6, Math.max(0, Math.round(totalBytes / 10000)));
+
+                // For server-side services (brain, openrouter), use activity blip if no local traffic
+                if (pairCount === 0 && data.activity) {
+                    const lastBlip = data.activity[svc] || 0;
+                    const ageSec = (Date.now() - lastBlip) / 1000;
+                    if (ageSec < 25) {
+                        // Fresh blip — show 2 pairs fading as age increases (25s window)
+                        pairCount = Math.max(1, Math.round(2 * (1 - ageSec / 25)));
+                    }
+                }
+
                 if (pairCount === 0) continue;
 
                 const dur = Math.max(3, 10 - pairCount * 0.8);
@@ -4053,6 +4270,9 @@
         // 5s traffic monitor
         fetchTraffic();
         setInterval(fetchTraffic, 5000);
+        // 5s local process traffic (Mac Mini satellites)
+        fetchLocalTraffic();
+        setInterval(fetchLocalTraffic, 5000);
 
         // ── 5-minute idle → full page reload ─────────────────────────────────
         const IDLE_RELOAD_MS = 5 * 60 * 1000;

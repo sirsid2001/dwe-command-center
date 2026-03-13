@@ -262,6 +262,9 @@ const server = http.createServer((req, res) => {
         case '/mc/traffic':
             getTraffic(req, res);
             break;
+        case '/mc/local-traffic':
+            getLocalTraffic(req, res);
+            break;
         case '/mc/openrouter-credits':
             getOpenRouterCredits(req, res);
             break;
@@ -450,6 +453,9 @@ function getWeather(req, res, city) {
     }));
 }
 
+// Activity blip log — for server-side services (brain, openrouter) not visible in local nettop
+const activityLog = {}; // { brain: lastMs, openrouter: lastMs, ... }
+
 function handleActivity(req, res) {
     if (req.method === 'GET') {
         fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
@@ -470,11 +476,13 @@ function handleActivity(req, res) {
             try {
                 const entry = JSON.parse(body);
                 entry.timestamp = new Date().toISOString();
-                
+                // Update traffic blip log if entry has a service field
+                if (entry.service) activityLog[entry.service] = Date.now();
+
                 fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
                     const activity = JSON.parse(data || '{"entries":[]}');
                     activity.entries.push(entry);
-                    
+
                     fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2), err => {
                         if (err) {
                             res.writeHead(500);
@@ -1407,6 +1415,10 @@ function getInternetStatus(req, res) {
     res.end(JSON.stringify({ status, label, lastPingSuccess, secsSince }));
 }
 
+// Activity blip log — for services whose traffic is server-side (brain, openrouter)
+// Scripts POST to /mc/activity?service=brain to register activity
+// activityLog declared near top of file — see handleActivity
+
 // Network traffic monitor — per-service via nettop + total via netstat, refreshed every 5s
 const SERVICE_IP_MAP = {
     // prefix → service name (matched against connection remote IPs)
@@ -1416,10 +1428,16 @@ const SERVICE_IP_MAP = {
     '104.18.3': 'openrouter',
     '140.82.11': 'github',
     '34.36.155': 'brain',
+    '3.220.89': 'brain',
+    '3.233.180': 'brain',
+    '3.210.104': 'brain',
+    '149.154': 'telegram',
+    '91.108': 'telegram',
+    '160.79.104': 'openrouter',  // Anthropic/Claude API (openclaw gateway calls)
 };
 let trafficCache = {
     total: { bytesIn: 0, bytesOut: 0, mbpsIn: 0, mbpsOut: 0 },
-    services: { notion: { bytesIn: 0, bytesOut: 0 }, n8n: { bytesIn: 0, bytesOut: 0 }, openrouter: { bytesIn: 0, bytesOut: 0 }, github: { bytesIn: 0, bytesOut: 0 }, brain: { bytesIn: 0, bytesOut: 0 } },
+    services: { notion: { bytesIn: 0, bytesOut: 0 }, n8n: { bytesIn: 0, bytesOut: 0 }, openrouter: { bytesIn: 0, bytesOut: 0 }, github: { bytesIn: 0, bytesOut: 0 }, brain: { bytesIn: 0, bytesOut: 0 }, telegram: { bytesIn: 0, bytesOut: 0 } },
     iface: null, ts: null
 };
 let prevServiceCounters = null;
@@ -1446,7 +1464,7 @@ function sampleTraffic() {
             }
 
             // Parse per-connection from nettop, aggregate by service
-            const svcBytes = { notion: { bi: 0, bo: 0 }, n8n: { bi: 0, bo: 0 }, openrouter: { bi: 0, bo: 0 }, github: { bi: 0, bo: 0 }, brain: { bi: 0, bo: 0 } };
+            const svcBytes = { notion: { bi: 0, bo: 0 }, n8n: { bi: 0, bo: 0 }, openrouter: { bi: 0, bo: 0 }, github: { bi: 0, bo: 0 }, brain: { bi: 0, bo: 0 }, telegram: { bi: 0, bo: 0 } };
             if (nettopOut) {
                 for (const line of nettopOut.trim().split('\n')) {
                     // Connection lines look like: tcp4 192.168.1.80:61493<->17.57.144.43:5223,4528852,12156547,
@@ -1482,17 +1500,22 @@ function sampleTraffic() {
                     const dTotalIn = totalIn - (prevServiceCounters.totalIn || 0);
                     const dTotalOut = totalOut - (prevServiceCounters.totalOut || 0);
                     if (dTotalIn >= 0 && dTotalOut >= 0) {
+                        const mbpsIn  = parseFloat(((dTotalIn  / elapsed) * 8 / 1000000).toFixed(2));
+                        const mbpsOut = parseFloat(((dTotalOut / elapsed) * 8 / 1000000).toFixed(2));
                         trafficCache = {
                             total: {
-                                bytesIn: Math.round(dTotalIn / elapsed),
+                                bytesIn:  Math.round(dTotalIn  / elapsed),
                                 bytesOut: Math.round(dTotalOut / elapsed),
-                                mbpsIn: parseFloat(((dTotalIn / elapsed) * 8 / 1000000).toFixed(2)),
-                                mbpsOut: parseFloat(((dTotalOut / elapsed) * 8 / 1000000).toFixed(2))
+                                mbpsIn,
+                                mbpsOut
                             },
                             services,
                             iface,
                             ts: now
                         };
+                        // Mirror Mac Mini bandwidth into localTrafficCache for orange ring
+                        localTrafficCache.macMbpsIn  = mbpsIn;
+                        localTrafficCache.macMbpsOut = mbpsOut;
                     }
                 }
             }
@@ -1506,7 +1529,115 @@ setInterval(sampleTraffic, 5000);
 
 function getTraffic(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(trafficCache));
+    res.end(JSON.stringify({ ...trafficCache, activity: activityLog }));
+}
+
+// Local process traffic — monitors inter-process connections within Mac Mini
+let localTrafficCache = { ollama: 0, mcp: 0, gateway: 0, memPct: 0, cpuPct: 0, macMbpsIn: 0, macMbpsOut: 0, routerDrops: 0, routerErrors: 0, routerAlert: false, routerMbps: 0, routerExtIp: '', ts: null };
+let lastSystemHealth = null; // populated by getSystemHealth, read by sampleLocalTraffic
+
+function sampleLocalTraffic() {
+    // Ollama: connections + CPU — high CPU = actively generating tokens
+    exec("lsof -i :11434 -n -P 2>/dev/null | grep -c ESTABLISHED", (e1, ollamaOut) => {
+        const ollamaConns = parseInt((ollamaOut || '').trim()) || 0;
+        exec("ps -p 924 -o %cpu= 2>/dev/null", (ec, cpuOut) => {
+            const ollamaCpu = parseFloat((cpuOut || '0').trim()) || 0;
+            // Scale: idle=0, connection but low cpu=1, generating=2-6 based on cpu%
+            const ollamaActivity = ollamaConns > 0
+                ? Math.min(6, Math.max(1, ollamaConns + Math.round(ollamaCpu / 20)))
+                : 0;
+
+            // OpenClaw gateway: running=1 dot, CPU activity=more dots
+            exec("ps -p 896 -o %cpu= 2>/dev/null", (e2, gwCpu) => {
+                const gwCpuVal = parseFloat((gwCpu || '0').trim()) || 0;
+                const gatewayConns = gwCpuVal > 1 ? Math.min(5, 1 + Math.round(gwCpuVal / 5)) : 1;
+
+                // MCporter (relay-daemon): ESTABLISHED connections → dots
+                exec("lsof -p 856 -n -P 2>/dev/null | grep -c ESTABLISHED", (e3, rdOut) => {
+                    const mcpConns = parseInt((rdOut || '').trim()) || 0;
+                    // Mac Mini CPU% — 100 minus idle% from top (accurate, all cores)
+                    exec("top -l 1 -n 0 2>/dev/null | awk '/CPU usage/ {gsub(/%/,\"\"); for(i=1;i<=NF;i++) if($i==\"idle\") idle=$(i-1); printf \"%.1f\", 100-idle}'", (e4, cpuRaw) => {
+                        const cpuPct = parseFloat((cpuRaw || '0').trim()) || 0;
+                        // Mac Mini RAM pressure% via vm_stat — free+inactive+purgeable = reclaimable
+                        exec("python3 -c \"import subprocess,re; out=subprocess.check_output(['vm_stat'],text=True); p=lambda n:(lambda m:int(m.group(1)) if m else 0)(re.search(n+r'[^\\d]*(\\d+)',out)); fr=p('Pages free'); ia=p('Pages inactive'); pu=p('Pages purgeable'); tot=fr+p('Pages active')+ia+p('Pages wired down')+p('Pages occupied by compressor'); avail=fr+ia+pu; print(f'{(1-avail/tot)*100:.1f}' if tot else 0)\"", (e5, memRaw) => {
+                            const memPct = parseFloat((memRaw || '0').trim()) || 0;
+                            localTrafficCache = {
+                                ...localTrafficCache,
+                                ollama: ollamaActivity,
+                                mcp: mcpConns,
+                                gateway: gatewayConns,
+                                memPct,
+                                cpuPct,
+                                ts: Date.now()
+                            };
+                        });
+                    });
+                });
+            });
+        });
+    });
+}
+sampleLocalTraffic();
+setInterval(sampleLocalTraffic, 5000);
+
+// Router health — poll Nokia BGW320-505 AT&T gateway (no auth required from LAN)
+let lastRouterCounters = null;
+let lastRouterBytes = null;
+let lastRouterPollTs = null;
+function sampleRouterHealth() {
+    const http = require('http');
+    http.get('http://192.168.1.254/cgi-bin/broadbandstatistics.ha', res => {
+        let body = '';
+        res.on('data', d => body += d);
+        res.on('end', () => {
+            const extract = (label) => {
+                const m = body.match(new RegExp(label + '[\\s\\S]{0,300}?<td[^>]*>\\s*(\\d+)'));
+                return m ? parseInt(m[1]) : 0;
+            };
+            const extractStr = (label) => {
+                const m = body.match(new RegExp(label + '[\\s\\S]{0,300}?<td[^>]*>\\s*([\\d.]+)'));
+                return m ? m[1].trim() : '';
+            };
+            const extIp = extractStr('Broadband IPv4 Address');
+            if (extIp) localTrafficCache.routerExtIp = extIp;
+            const txDrops = extract('Transmit Drops');
+            const rxDrops = extract('Receive Drops');
+            const txErr   = extract('Transmit Errors');
+            const rxErr   = extract('Receive Errors');
+            const total = txDrops + rxDrops + txErr + rxErr;
+            const alert = lastRouterCounters !== null && total > lastRouterCounters;
+            lastRouterCounters = total;
+
+            // Compute WAN throughput Mbps from byte counter deltas
+            // Transmit Bytes = WAN upload (works); Receive Unicast × ~850B avg = download estimate
+            const txBytes  = extract('Transmit Bytes');
+            const rxUcast  = extract('Receive Unicast');
+            const now = Date.now();
+            let routerMbps = 0;
+            if (lastRouterBytes !== null && lastRouterPollTs !== null) {
+                const elapsed = (now - lastRouterPollTs) / 1000; // seconds
+                if (elapsed > 0) {
+                    const txDelta  = Math.max(0, txBytes - lastRouterBytes.tx);
+                    const rxDelta  = Math.max(0, rxUcast - lastRouterBytes.rxUcast) * 850; // est bytes
+                    routerMbps = ((txDelta + rxDelta) * 8) / (elapsed * 1e6);
+                }
+            }
+            lastRouterBytes = { tx: txBytes, rxUcast: rxUcast };
+            lastRouterPollTs = now;
+
+            localTrafficCache.routerDrops  = txDrops + rxDrops;
+            localTrafficCache.routerErrors = txErr + rxErr;
+            localTrafficCache.routerAlert  = alert;
+            localTrafficCache.routerMbps   = routerMbps;
+        });
+    }).on('error', () => {}); // silent if router unreachable
+}
+sampleRouterHealth();
+setInterval(sampleRouterHealth, 5000);
+
+function getLocalTraffic(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(localTrafficCache));
 }
 
 async function getSystemHealth(req, res) {
@@ -1569,8 +1700,7 @@ async function getSystemHealth(req, res) {
             if (lstart) gatewayStartISO = new Date(lstart).toISOString();
         }
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
+        const sysPayload = {
             chip: chipOut || 'Apple M4',
             cores: logicalCPU,
             cpu:    { percent: cpuPct, raw: cpuRaw },
@@ -1581,7 +1711,10 @@ async function getSystemHealth(req, res) {
             localIP: ipOut || null,
             defaultGateway: gwOut || null,
             timestamp: new Date().toISOString()
-        }));
+        };
+        lastSystemHealth = sysPayload; // cache for sampleLocalTraffic
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(sysPayload));
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
