@@ -1538,8 +1538,11 @@ let lastSystemHealth = null; // populated by getSystemHealth, read by sampleLoca
 
 function sampleLocalTraffic() {
     // Ollama: connections + CPU — high CPU = actively generating tokens
-    exec("lsof -i :11434 -n -P 2>/dev/null | grep -c ESTABLISHED", (e1, ollamaOut) => {
-        const ollamaConns = parseInt((ollamaOut || '').trim()) || 0;
+    // Also check if n8n (64.23.238.56) is connected to Ollama
+    exec("lsof -i :11434 -n -P 2>/dev/null | grep ESTABLISHED", (e1, ollamaRaw) => {
+        const ollamaLines = (ollamaRaw || '').trim().split('\n').filter(l => l.length > 0);
+        const ollamaConns = ollamaLines.length;
+        const n8nToOllama = ollamaLines.some(l => l.includes('64.23.238.56')) ? 1 : 0;
         exec("ps -p 924 -o %cpu= 2>/dev/null", (ec, cpuOut) => {
             const ollamaCpu = parseFloat((cpuOut || '0').trim()) || 0;
             // Scale: idle=0, connection but low cpu=1, generating=2-6 based on cpu%
@@ -1564,6 +1567,7 @@ function sampleLocalTraffic() {
                             localTrafficCache = {
                                 ...localTrafficCache,
                                 ollama: ollamaActivity,
+                                n8nOllama: n8nToOllama ? Math.max(2, ollamaActivity) : 0,
                                 mcp: mcpConns,
                                 gateway: gatewayConns,
                                 memPct,
@@ -1608,21 +1612,20 @@ function sampleRouterHealth() {
             const alert = lastRouterCounters !== null && total > lastRouterCounters;
             lastRouterCounters = total;
 
-            // Compute WAN throughput Mbps from byte counter deltas
-            // Transmit Bytes = WAN upload (works); Receive Unicast × ~850B avg = download estimate
+            // Compute WAN throughput Mbps from actual byte counter deltas
             const txBytes  = extract('Transmit Bytes');
-            const rxUcast  = extract('Receive Unicast');
+            const rxBytes  = extract('Receive Bytes');
             const now = Date.now();
             let routerMbps = 0;
             if (lastRouterBytes !== null && lastRouterPollTs !== null) {
                 const elapsed = (now - lastRouterPollTs) / 1000; // seconds
                 if (elapsed > 0) {
                     const txDelta  = Math.max(0, txBytes - lastRouterBytes.tx);
-                    const rxDelta  = Math.max(0, rxUcast - lastRouterBytes.rxUcast) * 850; // est bytes
+                    const rxDelta  = Math.max(0, rxBytes - lastRouterBytes.rx);
                     routerMbps = ((txDelta + rxDelta) * 8) / (elapsed * 1e6);
                 }
             }
-            lastRouterBytes = { tx: txBytes, rxUcast: rxUcast };
+            lastRouterBytes = { tx: txBytes, rx: rxBytes };
             lastRouterPollTs = now;
 
             localTrafficCache.routerDrops  = txDrops + rxDrops;

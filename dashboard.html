@@ -1316,6 +1316,7 @@
             <style>
                 @keyframes hud-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
                 @keyframes hud-spin-rev { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+                @keyframes hud-relay-pulse { 0%,100%{stroke-opacity:1;stroke-width:5} 50%{stroke-opacity:0.4;stroke-width:3} }
                 @keyframes hud-pulse { 0%{opacity:0.4} 50%{opacity:1} 100%{opacity:0.4} }
                 @keyframes hud-core-breathe { 0%{r:4} 50%{r:7} 100%{r:4} }
                 @keyframes hud-scan { 0%{stroke-dashoffset:0} 100%{stroke-dashoffset:-60} }
@@ -1441,8 +1442,8 @@
                                 <line x1="472" y1="250" x2="479" y2="250" stroke="rgba(0,180,255,0.15)" stroke-width="1"/>
                             </g>
 
-                            <!-- Ring 3 — dashed, rotating -->
-                            <circle cx="250" cy="250" r="190" fill="none" stroke="rgba(0,180,255,0.07)" stroke-width="1" stroke-dasharray="12 8" style="transform-origin:250px 250px;animation:hud-spin 80s linear infinite;"/>
+                            <!-- Ring 3 — dashed, rotating — speed + color driven by router WAN throughput -->
+                            <circle id="hud-outer-ring" cx="250" cy="250" r="190" fill="none" stroke="rgba(0,180,255,0.07)" stroke-width="1" stroke-dasharray="12 8" style="transform-origin:250px 250px;animation:hud-spin 80s linear infinite;"/>
 
                             <!-- Ring 2 — orange arc segments — speed driven by network bandwidth -->
                             <g id="hud-net-ring" style="transform-origin:250px 250px;animation:hud-spin-rev 35s linear infinite;">
@@ -1455,8 +1456,8 @@
                                 <path d="M355,345 A130,130 0 0,1 325,375" fill="none" stroke="rgba(255,160,40,0.25)" stroke-width="1.5"/>
                             </g>
 
-                            <!-- Ring 1 — main targeting ring, cyan -->
-                            <g style="transform-origin:250px 250px;animation:hud-spin 50s linear infinite;">
+                            <!-- Ring 1 — main targeting ring — speed + color driven by router throughput -->
+                            <g id="hud-ring1" style="transform-origin:250px 250px;animation:hud-spin 50s linear infinite;">
                                 <circle cx="250" cy="250" r="110" fill="none" stroke="rgba(0,180,255,0.25)" stroke-width="2"/>
                                 <!-- Notch marks every 30 degrees -->
                                 <line x1="250" y1="141" x2="250" y2="148" stroke="rgba(0,180,255,0.4)" stroke-width="1.5"/>
@@ -1529,6 +1530,7 @@
                                 <path id="pulse-mm-notion" d="M250,60 L250,250 L119,161"/>
                                 <path id="pulse-n8n-mm" d="M141,359 L250,250 L250,60"/>
                                 <path id="pulse-mm-telegram" d="M250,60 L250,250 L420,250"/>
+                                <path id="pulse-n8n-ollama" d="M141,359 L250,250 L250,60 L175,22"/>
                             </defs>
                             <!-- Faint connector lines (static, always visible) -->
                             <line x1="141" y1="359" x2="50" y2="412" stroke="rgba(255,100,200,0.12)" stroke-width="1"/>
@@ -1538,7 +1540,9 @@
                             <line x1="250" y1="250" x2="369" y2="161" stroke="rgba(255,200,50,0.06)" stroke-width="1"/>
                             <line x1="250" y1="250" x2="250" y2="60" stroke="rgba(0,255,136,0.06)" stroke-width="1"/>
                             <line x1="288" y1="250" x2="395" y2="250" stroke="rgba(0,200,255,0.06)" stroke-width="1"/>
+                            <!-- n8n ↔ Ollama connector — no separate line needed, dots follow existing segments -->
                             <!-- Per-service real-time traffic containers (populated by JS) -->
+                            <g id="rt-traffic-n8n-ollama"></g>
                             <g id="rt-traffic-notion"></g>
                             <g id="rt-traffic-n8n"></g>
                             <g id="rt-traffic-openrouter"></g>
@@ -4022,8 +4026,10 @@
                 if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
             }
             if (key === 'ring-router') {
-                const el = document.getElementById('hud-relay-ring');
-                if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+                ['hud-relay-ring', 'hud-outer-ring', 'hud-ring1'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.visibility = hudToggles[key] ? '' : 'hidden';
+                });
             }
             if (key === 'ring-mem') {
                 const el = document.getElementById('hud-mem-ring');
@@ -4135,15 +4141,71 @@
 
             // Green relay ring = Router WAN throughput (BGW320 counters)
             const rMbps = data.routerMbps || 0;
-            const rDur = rMbps > 50 ? 1 : rMbps > 15 ? 3 : rMbps > 5 ? 6 : rMbps > 1 ? 12 : rMbps > 0.1 ? 20 : 35;
+            const rDur = rMbps > 200 ? 0.8 : rMbps > 100 ? 1.5 : rMbps > 50 ? 2.5 : rMbps > 15 ? 4 : rMbps > 5 ? 8 : rMbps > 1 ? 14 : rMbps > 0.1 ? 22 : 35;
             const relayRing = document.getElementById('hud-relay-ring');
-            if (hudToggles['ring-router'] && !data.routerAlert && relayRing) relayRing.style.animation = `hud-spin-rev ${rDur}s linear infinite`;
+            if (hudToggles['ring-router'] && !data.routerAlert && relayRing) {
+                relayRing.style.animation = `hud-spin-rev ${rDur}s linear infinite`;
+                if (rMbps >= 900) {
+                    // 900+ Mbps: bright red with pulse
+                    relayRing.setAttribute('stroke', 'rgba(255,50,50,1)');
+                    relayRing.setAttribute('stroke-width', '5');
+                    relayRing.style.filter = 'drop-shadow(0 0 8px rgba(255,50,50,0.8))';
+                    relayRing.style.animation = `hud-spin-rev ${rDur}s linear infinite, hud-relay-pulse 0.6s ease-in-out infinite`;
+                } else {
+                    // Normal: dim → bold green
+                    const gAlpha = Math.min(1, 0.25 + (rMbps / 9) * 0.75);
+                    const gWidth = rMbps >= 9 ? 4.5 : rMbps >= 3 ? 3.5 : 2.5;
+                    relayRing.setAttribute('stroke', `rgba(0,255,136,${gAlpha.toFixed(2)})`);
+                    relayRing.setAttribute('stroke-width', gWidth);
+                    relayRing.style.filter = '';
+                }
+            }
+
+            // Outer ring (Ring 3) + Ring 1 — speed + color driven by router throughput
+            const outerRing = document.getElementById('hud-outer-ring');
+            const ring1 = document.getElementById('hud-ring1');
+            if (!data.routerAlert) {
+                const oDur = rMbps > 400 ? 2 : rMbps > 200 ? 4 : rMbps > 100 ? 8 : rMbps > 50 ? 15 : rMbps > 15 ? 25 : rMbps > 5 ? 40 : rMbps > 1 ? 55 : 80;
+                const r1Dur = rMbps > 400 ? 3 : rMbps > 200 ? 6 : rMbps > 100 ? 10 : rMbps > 50 ? 18 : rMbps > 15 ? 28 : rMbps > 5 ? 38 : rMbps > 1 ? 45 : 50;
+                if (outerRing) {
+                    outerRing.style.animation = `hud-spin ${oDur}s linear infinite`;
+                    if (rMbps >= 400) {
+                        outerRing.setAttribute('stroke', 'rgba(0,255,136,0.9)');
+                        outerRing.setAttribute('stroke-width', '3');
+                    } else if (rMbps >= 100) {
+                        outerRing.setAttribute('stroke', `rgba(0,255,136,${(0.3 + (rMbps / 400) * 0.6).toFixed(2)})`);
+                        outerRing.setAttribute('stroke-width', '2');
+                    } else if (rMbps >= 10) {
+                        outerRing.setAttribute('stroke', `rgba(0,255,136,${(0.1 + (rMbps / 100) * 0.2).toFixed(2)})`);
+                        outerRing.setAttribute('stroke-width', '1.5');
+                    } else {
+                        outerRing.setAttribute('stroke', 'rgba(0,180,255,0.07)');
+                        outerRing.setAttribute('stroke-width', '1');
+                    }
+                }
+                if (ring1) {
+                    ring1.style.animation = `hud-spin ${r1Dur}s linear infinite`;
+                    // Ring 1 notch lines: gray at idle → green at speed
+                    const r1Lines = ring1.querySelectorAll('line, circle');
+                    const r1Color = rMbps >= 400 ? 'rgba(0,255,136,0.7)' : rMbps >= 100 ? 'rgba(0,255,136,0.45)' : rMbps >= 10 ? 'rgba(0,255,136,0.25)' : 'rgba(0,180,255,0.3)';
+                    const r1CircleColor = rMbps >= 400 ? 'rgba(0,255,136,0.6)' : rMbps >= 100 ? 'rgba(0,255,136,0.35)' : rMbps >= 10 ? 'rgba(0,255,136,0.2)' : 'rgba(0,180,255,0.25)';
+                    r1Lines.forEach(el => el.setAttribute('stroke', el.tagName === 'circle' ? r1CircleColor : r1Color));
+                }
+            }
 
             // Router health alert — flash relay ring red if BGW320 drops/errors incremented
             if (data.routerAlert) {
                 if (relayRing) {
                     relayRing.style.stroke = 'rgba(255,80,80,0.9)';
                     setTimeout(() => { relayRing.style.stroke = ''; }, 3000);
+                }
+                if (outerRing) {
+                    outerRing.setAttribute('stroke', 'rgba(255,80,80,0.5)');
+                    setTimeout(() => { outerRing.setAttribute('stroke', ''); }, 3000);
+                }
+                if (ring1) {
+                    ring1.querySelectorAll('line, circle').forEach(el => el.setAttribute('stroke', 'rgba(255,80,80,0.4)'));
+                    setTimeout(() => { ring1.querySelectorAll('line, circle').forEach(el => el.setAttribute('stroke', '')); }, 3000);
                 }
             }
             for (const [svc, cfg] of Object.entries(LOCAL_SERVICES)) {
@@ -4161,6 +4223,24 @@
                     container.appendChild(createTrafficDot(cfg.color + '0.95)', cfg.path, dur, begin, false));
                     // return dot (dimmer)
                     container.appendChild(createTrafficDot(cfg.color + '0.5)', cfg.path, dur + 0.4, begin, true));
+                }
+            }
+
+            // n8n ↔ Ollama direct traffic — bright yellow
+            const n8nOllamaContainer = document.getElementById('rt-traffic-n8n-ollama');
+            if (n8nOllamaContainer) {
+                while (n8nOllamaContainer.firstChild) n8nOllamaContainer.removeChild(n8nOllamaContainer.firstChild);
+                const n8nOllamaActivity = data.n8nOllama || 0;
+                if (n8nOllamaActivity > 0 && hudToggles['n8n'] && hudToggles['ollama']) {
+                    const dotCount = Math.min(6, n8nOllamaActivity);
+                    const dur = Math.max(2.0, 5.0 - dotCount * 0.6);
+                    for (let i = 0; i < dotCount; i++) {
+                        const begin = (i * dur / dotCount).toFixed(1);
+                        // Bright yellow dots flowing n8n → Router → Mac Mini → Ollama
+                        n8nOllamaContainer.appendChild(createTrafficDot('rgba(255,255,0,0.95)', '#pulse-n8n-ollama', dur, begin, false));
+                        // Return dots Ollama → Mac Mini → Router → n8n
+                        n8nOllamaContainer.appendChild(createTrafficDot('rgba(255,255,0,0.6)', '#pulse-n8n-ollama', dur + 0.4, begin, true));
+                    }
                 }
             }
         }
