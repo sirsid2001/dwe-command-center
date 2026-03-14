@@ -78,6 +78,12 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'ai-team.html'), 'text/html');
         return;
     }
+
+    // Delegations page
+    if (pathname === '/delegations' || pathname === '/delegations.html') {
+        serveFile(res, path.join(__dirname, 'delegations.html'), 'text/html');
+        return;
+    }
     
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
@@ -279,6 +285,12 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/heartbeat':
             getHeartbeats(req, res);
+            break;
+        case '/mc/delegation-stats':
+            getDelegationStats(req, res);
+            break;
+        case '/mc/recurring-tasks':
+            getRecurringTaskStats(req, res);
             break;
         case '/mc/cso':
             getCSoPipeline(req, res);
@@ -1781,6 +1793,114 @@ setInterval(pollSidneyDevices, 30000);
 function getSidneyDevices(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(sidneyDevicesCache));
+}
+
+function getRecurringTaskStats(req, res) {
+    const LOG_FILE = `${process.env.HOME}/openclaw/logs/recurring_task_handler.log`;
+    try {
+        const content = fs.existsSync(LOG_FILE) ? fs.readFileSync(LOG_FILE, 'utf8') : '';
+        const lines = content.split('\n');
+
+        let lastRun = null;
+        let lastFound = 0;
+        let totalCreated = 0;
+        let totalFailed = 0;
+        let lastStatus = 'unknown';
+        const taskNames = [];
+
+        for (const line of lines) {
+            // Last run start
+            const startMatch = line.match(/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] Starting recurring task handler/);
+            if (startMatch) { lastRun = startMatch[1]; lastFound = 0; }
+
+            // Found count
+            const foundMatch = line.match(/Found (\d+) recurring tasks/);
+            if (foundMatch) lastFound = parseInt(foundMatch[1]);
+
+            // Success
+            const successMatch = line.match(/SUCCESS: Created new instance of recurring task '([^']+)'/);
+            if (successMatch) { totalCreated++; if (!taskNames.includes(successMatch[1])) taskNames.push(successMatch[1]); }
+
+            // Failure
+            if (line.includes('ERROR: Failed to create')) totalFailed++;
+
+            // Completed
+            if (line.includes('Recurring task handler completed')) lastStatus = 'completed';
+        }
+
+        // Check daemon status via launchctl
+        let daemonLoaded = false;
+        try {
+            const { execSync } = require('child_process');
+            const out = execSync('launchctl list ai.dwe.recurring-tasks 2>&1', { encoding: 'utf8', timeout: 3000 });
+            daemonLoaded = !out.includes('Could not find');
+        } catch(e) { daemonLoaded = false; }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            daemonActive: daemonLoaded,
+            lastRun,
+            lastFound,
+            totalCreated,
+            totalFailed,
+            lastStatus,
+            taskNames: taskNames.slice(-10),
+            timestamp: new Date().toISOString()
+        }));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message, daemonActive: false }));
+    }
+}
+
+function getDelegationStats(req, res) {
+    const LOG_FILE = `${process.env.HOME}/openclaw/logs/agent-heartbeat.log`;
+    try {
+        const content = fs.existsSync(LOG_FILE) ? fs.readFileSync(LOG_FILE, 'utf8') : '';
+        const lines = content.split('\n');
+
+        // Parse delegation lines: [timestamp] [<Agent>-delegate] Delegating to <target>: <title>
+        const delegations = [];
+        const delegateRegex = /^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \[(\w+)-delegate\] Delegating to (\w[\w-]*):\s*(.+)/;
+
+        for (const line of lines) {
+            const m = line.match(delegateRegex);
+            if (m) {
+                delegations.push({ timestamp: m[1], source: m[2], target: m[3], task: m[4].trim() });
+            }
+        }
+
+        // Count by source (who delegates)
+        const bySource = {};
+        delegations.forEach(d => { bySource[d.source] = (bySource[d.source] || 0) + 1; });
+
+        // Count by target (who gets delegated to)
+        const byTarget = {};
+        delegations.forEach(d => { byTarget[d.target] = (byTarget[d.target] || 0) + 1; });
+
+        // Count pairs (source → target)
+        const pairs = {};
+        delegations.forEach(d => {
+            const key = `${d.source} → ${d.target}`;
+            pairs[key] = (pairs[key] || 0) + 1;
+        });
+
+        // Last 10 delegations (most recent first)
+        const recent = delegations.slice(-10).reverse();
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            total: delegations.length,
+            bySource,
+            byTarget,
+            pairs,
+            recent,
+            timestamp: new Date().toISOString()
+        }));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message, total: 0, bySource: {}, byTarget: {} }));
+    }
 }
 
 function getHeartbeats(req, res) {

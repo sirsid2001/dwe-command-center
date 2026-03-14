@@ -107,24 +107,61 @@ async function getDWEStats() {
         const allTasks = await fetchAllNotionTasks();
         
         const total = allTasks.length;
-        const completed = allTasks.filter(t => 
-            t.status === 'Done' || 
-            t.status === 'Completed' || 
-            t.status === 'Complete' || 
+        const completed = allTasks.filter(t =>
+            t.status === 'Done' ||
+            t.status === 'Completed' ||
+            t.status === 'Complete' ||
             t.status === 'Review'
         ).length;
-        const inProgress = allTasks.filter(t => 
-            t.status === 'In Progress' || 
+        const inProgress = allTasks.filter(t =>
+            t.status === 'In Progress' ||
             t.status === 'In progress'
         ).length;
         const maxId = allTasks.reduce((max, t) => Math.max(max, t.idNumber || 0), 0);
-        
+
+        // Status breakdown
+        const statusCounts = {};
+        allTasks.forEach(t => { statusCounts[t.status] = (statusCounts[t.status] || 0) + 1; });
+
+        // Priority breakdown
+        const priorityCounts = {};
+        allTasks.forEach(t => { priorityCounts[t.priority] = (priorityCounts[t.priority] || 0) + 1; });
+
+        // Role/agent breakdown
+        const roleCounts = {};
+        allTasks.forEach(t => { roleCounts[t.role] = (roleCounts[t.role] || 0) + 1; });
+
+        // Overdue tasks
+        const overdue = allTasks.filter(t => t.pastDue && t.status !== 'Done' && t.status !== 'Completed' && t.status !== 'Complete').length;
+
+        // Blocked tasks
+        const blocked = allTasks.filter(t => t.status === 'Blocked').length;
+
+        // Not started
+        const notStarted = allTasks.filter(t => t.status === 'Not started' || t.status === 'Not Started').length;
+
+        // Tasks created in last 7 days (by due date proximity or ID)
+        const recentTasks = allTasks.filter(t => {
+            if (!t.dueDate) return false;
+            const due = new Date(t.dueDate);
+            const now = new Date();
+            const diff = (due - now) / (1000 * 60 * 60 * 24);
+            return diff >= -7 && diff <= 7;
+        }).length;
+
         cachedStats = {
             total: total,
             completed: completed,
             inProgress: inProgress,
             remaining: total - completed,
             maxId: maxId,
+            overdue: overdue,
+            blocked: blocked,
+            notStarted: notStarted,
+            recentTasks: recentTasks,
+            statusCounts: statusCounts,
+            priorityCounts: priorityCounts,
+            roleCounts: roleCounts,
             lastUpdated: new Date().toISOString()
         };
         cacheTime = now;
