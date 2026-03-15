@@ -12,36 +12,11 @@ const path = require('path');
 const url = require('url');
 
 // DWE Widget API
-const { getDWEStats, fetchAllNotionTasks } = require('./dwe-widget-api.js');
-
-// Sprint Orchestrator
-const sprint = require('./sprint-orchestrator.js');
-
-// Centralized Operations Log
-const opsLog = require('./ops-log.js');
-
-// Sprint Retrospective Engine
-const sprintRetro = require('./sprint-retro.js');
-
-// PID file management — prevents zombie processes on restart
-const PID_FILE = path.join(__dirname, 'mc-server.pid');
-(function managePidFile() {
-    // Kill stale process if PID file exists
-    if (fs.existsSync(PID_FILE)) {
-        const oldPid = parseInt(fs.readFileSync(PID_FILE, 'utf8').trim(), 10);
-        if (oldPid && oldPid !== process.pid) {
-            try { process.kill(oldPid, 0); process.kill(oldPid, 'SIGTERM'); console.log(`[PID] Killed stale process ${oldPid}`); } catch(e) { /* already dead */ }
-        }
-    }
-    fs.writeFileSync(PID_FILE, String(process.pid));
-    const cleanup = () => { try { fs.unlinkSync(PID_FILE); } catch(e) {} process.exit(); };
-    process.on('SIGTERM', cleanup);
-    process.on('SIGINT', cleanup);
-})();
+const { getDWEStats } = require('./dwe-widget-api.js');
 
 // Config
 const PORT = 8899;
-const HOST = '0.0.0.0';  // listen on all interfaces (LAN accessible)
+const HOST = '127.0.0.1';
 const DATA_FILE = path.join(__dirname, 'mc-data.json');
 const ACTIVITY_FILE = path.join(__dirname, 'mc-activity.json');
 const HTML_FILE = path.join(__dirname, 'dashboard.html');
@@ -316,18 +291,6 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/recurring-tasks':
             getRecurringTaskStats(req, res);
-            break;
-        case '/mc/sprint':
-            handleSprint(req, res);
-            break;
-        case '/mc/sprint-history':
-            handleSprintHistory(req, res);
-            break;
-        case '/mc/sprint-retro':
-            handleSprintRetro(req, res);
-            break;
-        case '/mc/ops-log':
-            handleOpsLog(req, res);
             break;
         case '/mc/cso':
             getCSoPipeline(req, res);
@@ -879,14 +842,30 @@ function getAgentRouting(req, res) {
     res.end(JSON.stringify({ agents, timestamp: new Date().toISOString() }));
 }
 
-// Notion API — fetchAllNotionTasks imported from dwe-widget-api.js
+// Notion API integration - loaded from environment or config file
+const NOTION_API_KEY = (() => {
+    try { const k = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/NOTION_API_KEY="?([^"\n]+)"?/)?.[1]?.trim(); if (k) return k; } catch(e) {}
+    return process.env.NOTION_API_KEY || '';
+})();
+const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 async function getNotionTasks(req, res) {
+    if (!NOTION_API_KEY) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ 
+            error: 'Notion API key not configured. Set NOTION_API_KEY environment variable.',
+            tasks: [],
+            stats: { total: 0, inProgress: 0, completed: 0, todo: 0 }
+        }));
+        return;
+    }
+    
     try {
         console.log('Fetching all Notion tasks...');
         const allTasks = await fetchAllNotionTasks();
         console.log(`Fetched ${allTasks.length} total tasks`);
 
+        // Calculate stats
         const stats = {
             total: allTasks.length,
             inProgress: allTasks.filter(t => t.status === 'In Progress' || t.status === 'In progress').length,
@@ -896,8 +875,8 @@ async function getNotionTasks(req, res) {
         };
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            tasks: allTasks.slice(0, 100),
+        res.end(JSON.stringify({ 
+            tasks: allTasks.slice(0, 100), // Limit displayed tasks to 100 for UI performance
             stats: stats,
             source: 'Notion',
             timestamp: new Date().toISOString()
@@ -909,7 +888,85 @@ async function getNotionTasks(req, res) {
     }
 }
 
+// Fetch all tasks with pagination
+async function fetchAllNotionTasks() {
+    const allTasks = [];
+    let hasMore = true;
+    let nextCursor = null;
+    
+    while (hasMore && allTasks.length < 3000) {
+        const options = {
+            hostname: 'api.notion.com',
+            path: `/v1/data_sources/${NOTION_DB_ID}/query`,
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${NOTION_API_KEY}`,
+                'Notion-Version': '2025-09-03',
+                'Content-Type': 'application/json'
+            }
+        };
+        
+        // Query ALL records - no filters
+        const body = nextCursor 
+            ? JSON.stringify({ page_size: 100, start_cursor: nextCursor })
+            : JSON.stringify({ page_size: 100 });
+        
+        const response = await new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+            req.on('error', reject);
+            req.write(body);
+            req.end();
+        });
+        
+        if (response.results) {
+            const tasks = response.results.map(task => {
+                const props = task.properties;
+                let status = 'No Status';
+                if (props.Status?.status?.name) status = props.Status.status.name;
+                else if (props.Status?.select?.name) status = props.Status.select.name;
+                
+                // Get ID number from Notion's unique_id field
+                const idNumber = props.ID?.unique_id?.number || 0;
+                
+                return {
+                    id: task.id,
+                    idNumber: idNumber,
+                    name: props['Task name']?.title?.[0]?.plain_text || 'Untitled',
+                    status: status,
+                    priority: props.Priority?.select?.name || 'Medium',
+                    role: props.Role?.select?.name || 'Unassigned',
+                    dueDate: props['Due date']?.date?.start || null,
+                    pastDue: props['Past due']?.formula?.boolean || false,
+                    taskType: props['Task type']?.select?.name || 'Task',
+                    summary: props.Summary?.rich_text?.[0]?.plain_text || ''
+                };
+            });
+            allTasks.push(...tasks);
+        }
+        
+        hasMore = response.has_more;
+        nextCursor = response.next_cursor;
+    }
+    
+    return allTasks;
+}
+
 async function getAgentTasks(req, res) {
+    if (!NOTION_API_KEY) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Notion API key not configured', agents: [] }));
+        return;
+    }
     try {
         const allTasks = await fetchAllNotionTasks();
 
@@ -927,9 +984,6 @@ async function getAgentTasks(req, res) {
         const PRIORITY_ORDER = ['Critical', 'High', 'Medium', 'Low', 'No Priority'];
 
         const KNOWN_ROLES = new Set(AGENTS.map(a => a.role));
-        const ACTIONABLE_STATUSES = new Set(['Not started', 'Not Started', 'In Progress', 'In progress']);
-        const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-
         const agentStats = AGENTS.map(({ role, name, icon, id }) => {
             // For 'Unassigned': tasks with role not in any known agent role
             const tasks = role === 'Unassigned'
@@ -944,47 +998,7 @@ async function getAgentTasks(req, res) {
                 byPriority[p] = (byPriority[p] || 0) + 1;
             }
             const overdue = open.filter(t => t.pastDue || (t.dueDate && new Date(t.dueDate) < new Date())).length;
-
-            // Actionable tasks: Status ∈ {Not Started, In Progress} AND (dueDate ≤ today OR no dueDate)
-            const actionable = tasks.filter(t =>
-                ACTIONABLE_STATUSES.has(t.status) &&
-                (!t.dueDate || t.dueDate <= todayStr)
-            );
-            const actionableByPriority = {};
-            for (const p of PRIORITY_ORDER) actionableByPriority[p] = 0;
-            for (const t of actionable) {
-                const p = t.priority || 'No Priority';
-                actionableByPriority[p] = (actionableByPriority[p] || 0) + 1;
-            }
-            const actionableOverdue = actionable.filter(t => t.dueDate && t.dueDate < todayStr).length;
-            const actionableNoDue = actionable.filter(t => !t.dueDate).length;
-            // Include task list for dashboard display (sorted: overdue first, then by priority)
-            const PRIO_RANK = { Critical: 0, High: 1, Medium: 2, Low: 3 };
-            const actionableList = actionable
-                .map(t => ({
-                    id: t.idNumber,
-                    name: t.name,
-                    status: t.status,
-                    priority: t.priority,
-                    dueDate: t.dueDate || null,
-                    isOverdue: !!(t.dueDate && t.dueDate < todayStr),
-                }))
-                .sort((a, b) => {
-                    // Overdue first
-                    if (a.isOverdue !== b.isOverdue) return a.isOverdue ? -1 : 1;
-                    // Then by priority
-                    return (PRIO_RANK[a.priority] ?? 4) - (PRIO_RANK[b.priority] ?? 4);
-                });
-
-            return {
-                id, role, name, icon,
-                total: tasks.length, open: open.length, done: done.length, overdue, byPriority,
-                actionable: actionableList.length,
-                actionableOverdue,
-                actionableNoDue,
-                actionableByPriority,
-                actionableList,
-            };
+            return { id, role, name, icon, total: tasks.length, open: open.length, done: done.length, overdue, byPriority };
         });
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1889,132 +1903,6 @@ function getDelegationStats(req, res) {
     }
 }
 
-function handleSprint(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    if (req.method === 'GET') {
-        // Return current sprint state + presence info
-        const state = sprint.getState();
-        const presence = sprint.getPresenceStatus();
-        res.writeHead(200);
-        res.end(JSON.stringify({ ...state, presence }));
-    } else if (req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', () => {
-            try {
-                const { action, trigger } = JSON.parse(body);
-                let result;
-                if (action === 'activate') {
-                    result = sprint.activate(trigger || 'manual');
-                } else if (action === 'deactivate') {
-                    result = sprint.deactivate(trigger || 'manual');
-                } else if (action === 'cycle') {
-                    sprint.runSprintCycle();
-                    result = { ok: true, message: 'Manual cycle triggered' };
-                } else {
-                    res.writeHead(400);
-                    res.end(JSON.stringify({ error: 'Invalid action. Use: activate, deactivate, cycle' }));
-                    return;
-                }
-                res.writeHead(200);
-                res.end(JSON.stringify(result));
-            } catch(e) {
-                res.writeHead(400);
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
-    } else {
-        res.writeHead(405);
-        res.end(JSON.stringify({ error: 'GET or POST only' }));
-    }
-}
-
-function handleOpsLog(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    if (req.method === 'GET') {
-        const url = new URL(req.url, 'http://localhost');
-        const type = url.searchParams.get('type') || 'all';
-        const limit = parseInt(url.searchParams.get('limit') || '200');
-        const offset = parseInt(url.searchParams.get('offset') || '0');
-        const data = opsLog.getEvents(type, limit, offset);
-        res.writeHead(200);
-        res.end(JSON.stringify(data));
-    } else if (req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', () => {
-            try {
-                const { type, icon, detail, meta } = JSON.parse(body);
-                if (!type || !detail) {
-                    res.writeHead(400);
-                    res.end(JSON.stringify({ error: 'type and detail required' }));
-                    return;
-                }
-                const event = opsLog.logEvent(type, icon || '📝', detail, meta || {});
-                res.writeHead(200);
-                res.end(JSON.stringify(event));
-            } catch(e) {
-                res.writeHead(400);
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
-    } else {
-        res.writeHead(405);
-        res.end(JSON.stringify({ error: 'GET or POST only' }));
-    }
-}
-
-function handleSprintHistory(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    try {
-        const historyFile = require('path').join(process.env.HOME || '/Users/elf-6', 'openclaw/logs/sprint_history.json');
-        const fs2 = require('fs');
-        if (fs2.existsSync(historyFile)) {
-            const data = fs2.readFileSync(historyFile, 'utf8');
-            res.writeHead(200);
-            res.end(data);
-        } else {
-            res.writeHead(200);
-            res.end(JSON.stringify({ sessions: [], totals: { tasksCompleted: 0, tasksKickedBack: 0, sprintCycles: 0, totalSessions: 0 } }));
-        }
-    } catch(e) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message }));
-    }
-}
-
-function handleSprintRetro(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    if (req.method === 'GET') {
-        // Return latest retro report
-        const report = sprintRetro.getLatestReport();
-        if (report) {
-            res.writeHead(200);
-            res.end(JSON.stringify(report));
-        } else {
-            res.writeHead(200);
-            res.end(JSON.stringify({ message: 'No retro reports yet. POST to trigger one.' }));
-        }
-    } else if (req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk);
-        req.on('end', async () => {
-            try {
-                const { sprintNumber, ceoFeedback } = body ? JSON.parse(body) : {};
-                const report = await sprintRetro.runRetro(sprintNumber || null, ceoFeedback || null);
-                res.writeHead(200);
-                res.end(JSON.stringify(report));
-            } catch(e) {
-                res.writeHead(500);
-                res.end(JSON.stringify({ error: e.message }));
-            }
-        });
-    } else {
-        res.writeHead(405);
-        res.end(JSON.stringify({ error: 'GET or POST only' }));
-    }
-}
-
 function getHeartbeats(req, res) {
     const LOG_FILE = `${process.env.HOME}/openclaw/logs/agent-heartbeat.log`;
     const now = new Date();
@@ -2291,43 +2179,29 @@ function readPipelineFile(req, res) {
 // ── OpenClaw Version Management ──────────────────────────────────────────
 const OC_VERSION_STATE = path.join(__dirname, '.openclaw-version-state.json');
 
-function versionNewer(current, latest) {
-    if (!latest || !current || current === latest) return false;
-    const c = current.split('.').map(Number);
-    const l = latest.split('.').map(Number);
-    for (let i = 0; i < Math.max(c.length, l.length); i++) {
-        if ((l[i] || 0) > (c[i] || 0)) return true;
-        if ((l[i] || 0) < (c[i] || 0)) return false;
-    }
-    return false;
-}
-
 function getOpenclawVersion(req, res) {
     res.setHeader('Content-Type', 'application/json');
-    // Get actual installed version from package.json
-    let currentVersion = 'unknown';
+    // Read current version from openclaw.json
     try {
-        const pkg = JSON.parse(fs.readFileSync('/opt/homebrew/lib/node_modules/openclaw/package.json', 'utf8'));
-        currentVersion = pkg.version || 'unknown';
-    } catch(e) { /* fallback stays unknown */ }
-    {
+        const ocConfig = JSON.parse(fs.readFileSync(path.join(process.env.HOME, '.openclaw/openclaw.json'), 'utf8'));
+        const currentVersion = ocConfig.meta?.lastTouchedVersion || 'unknown';
         // Read cached update state if it exists
         let updateState = {};
         try {
             updateState = JSON.parse(fs.readFileSync(OC_VERSION_STATE, 'utf8'));
         } catch(e) { /* no cached state yet */ }
-        const latestVersion = updateState.latestVersion || null;
-        const updateAvailable = versionNewer(currentVersion, latestVersion);
         res.end(JSON.stringify({
             ok: true,
             currentVersion,
-            latestVersion,
-            updateAvailable,
+            latestVersion: updateState.latestVersion || null,
+            updateAvailable: updateState.updateAvailable || false,
             lastChecked: updateState.lastChecked || null,
             releaseUrl: updateState.releaseUrl || null,
             releaseNotes: updateState.releaseNotes || null,
             dweImpact: updateState.dweImpact || null
         }));
+    } catch(e) {
+        res.end(JSON.stringify({ ok: false, error: e.message }));
     }
 }
 
@@ -2379,12 +2253,6 @@ server.listen(PORT, HOST, () => {
     console.log(`   Data: http://${HOST}:${PORT}/mc/data`);
     console.log('');
     console.log('Press Ctrl+C to stop');
-
-    // Resume Sprint Mode if it was active before restart
-    sprint.resumeIfActive();
-
-    // Start Apple Watch presence detector (auto-triggers Sprint Mode)
-    sprint.startPresenceDetector();
 });
 
 // ── Google Drive File Browser ────────────────────────────────────────────────

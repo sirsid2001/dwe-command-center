@@ -1,0 +1,86 @@
+{
+  "name": "DWE | Ops ChangeLog Writer — Centralized Event Logger",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dwe-ops-changelog",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: dwe-ops-changelog",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 300],
+      "webhookId": "dwe-ops-changelog"
+    },
+    {
+      "parameters": {},
+      "id": "exec-trigger",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [0, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || $input.item.json;\nconst ts = body.timestamp || new Date().toISOString();\nconst user = body.user || body.type || 'System';\nconst tab = body.tab || '';\nconst changeType = body.changeType || body.type || 'event';\nconst recordId = body.recordId || body.id || '';\nconst field = body.field || '';\nconst oldVal = body.oldValue || '';\nconst newVal = body.newValue || body.detail || '';\nconst notes = body.notes || '';\nconst changeId = 'OPS-' + Date.now().toString(36).toUpperCase();\n\nreturn [{ json: {\n  Timestamp: ts,\n  'User/System': user,\n  'Tab Affected': tab,\n  'Change Type': changeType,\n  'Record ID': recordId,\n  'Field Changed': field,\n  'Old Value': oldVal,\n  'New Value': newVal,\n  Notes: notes,\n  'Change ID': changeId\n} }];"
+      },
+      "id": "format-row",
+      "name": "Format ChangeLog Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [330, 400]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "__rl": true, "value": "1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "ChangeLog", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "User/System": "={{ $json['User/System'] }}",
+            "Tab Affected": "={{ $json['Tab Affected'] }}",
+            "Change Type": "={{ $json['Change Type'] }}",
+            "Record ID": "={{ $json['Record ID'] }}",
+            "Field Changed": "={{ $json['Field Changed'] }}",
+            "Old Value": "={{ $json['Old Value'] }}",
+            "New Value": "={{ $json['New Value'] }}",
+            "Notes": "={{ $json.Notes }}",
+            "Change ID": "={{ $json['Change ID'] }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "sheets-append",
+      "name": "Append to ChangeLog",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [660, 400],
+      "credentials": { "googleSheetsOAuth2Api": { "id": "google-sheets-cred", "name": "Google Sheets" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, changeId: $json['Change ID'] || $('Format ChangeLog Row').item.json['Change ID'] } }];"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 400]
+    }
+  ],
+  "connections": {
+    "Webhook: dwe-ops-changelog": { "main": [[{ "node": "Format ChangeLog Row", "type": "main", "index": 0 }]] },
+    "Execute Workflow Trigger": { "main": [[{ "node": "Format ChangeLog Row", "type": "main", "index": 0 }]] },
+    "Format ChangeLog Row": { "main": [[{ "node": "Append to ChangeLog", "type": "main", "index": 0 }]] },
+    "Append to ChangeLog": { "main": [[{ "node": "Response", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [],
+  "pinData": {}
+}

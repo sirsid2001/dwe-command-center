@@ -400,36 +400,6 @@
         @media (max-width: 1600px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .services-grid { grid-template-columns: 1fr; } }
 
-        /* ── Mobile responsive ───────────────────────────────────────── */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -260px;
-                width: 240px;
-                transition: left 0.3s ease;
-                z-index: 1000;
-            }
-            .sidebar.open { left: 14px; }
-            .main-content { margin-left: 0 !important; max-width: 100% !important; padding: 0.8rem !important; }
-            .stats-grid { grid-template-columns: 1fr !important; }
-            .services-grid { grid-template-columns: 1fr !important; }
-            .mobile-menu-btn {
-                display: block !important;
-                position: fixed; top: 10px; left: 10px; z-index: 1001;
-                background: rgba(20, 25, 70, 0.95); border: 1px solid rgba(255,255,255,0.15);
-                color: #fff; font-size: 1.4rem; padding: 8px 12px; border-radius: 10px;
-                cursor: pointer; backdrop-filter: blur(10px);
-            }
-            .mobile-overlay {
-                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.5); z-index: 999;
-            }
-            .mobile-overlay.open { display: block; }
-            .hero-stat { min-width: 80px !important; padding: 0.6rem !important; }
-            .hero-stat-num { font-size: 1.8rem !important; }
-        }
-        .mobile-menu-btn { display: none; }
-
         /* ── Theme switcher sidebar section ────────────────────────────── */
         .theme-section {
             margin-bottom: 0.75rem;
@@ -812,11 +782,8 @@
     <!-- CSS4 animated neural background -->
     <canvas id="css4-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none; opacity:0.55;"></canvas>
 
-    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">&#9776;</button>
-    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
-
     <div class="container" id="main-container">
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar">
             <div class="logo">
                 <div class="logo-icon">🚀</div>
                 <div class="logo-text">
@@ -837,6 +804,10 @@
                     <div class="nav-icon">📋</div>
                     <span>Decisions</span>
                 </button>
+                <button class="nav-item">
+                    <div class="nav-icon">📜</div>
+                    <span>Logs</span>
+                </button>
                 <a href="/ecosystem" class="nav-item" style="text-decoration: none;">
                     <div class="nav-icon">🌐</div>
                     <span>Ecosystem</span>
@@ -846,8 +817,8 @@
                     <span>Opportunities</span>
                 </button>
                 <a href="/delegations" class="nav-item" style="text-decoration: none;">
-                    <div class="nav-icon">📋</div>
-                    <span>Logs</span>
+                    <div class="nav-icon">🔗</div>
+                    <span>Delegations</span>
                 </a>
             </div>
 
@@ -888,23 +859,6 @@
                 <div style="display:flex;gap:0.4rem;flex-shrink:0;">
                     <a id="oc-banner-link" href="#" target="_blank" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,170,0,0.2);border:1px solid rgba(255,170,0,0.4);border-radius:6px;color:#ffaa00;text-decoration:none;cursor:pointer;">Release Notes</a>
                     <button onclick="dismissUpdateBanner()" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.5);cursor:pointer;">Dismiss</button>
-                </div>
-            </div>
-
-            <!-- Sprint Mode Banner (hidden by default) -->
-            <div id="sprint-banner" style="display:none;margin:0.6rem 0;padding:0.65rem 1rem;background:linear-gradient(135deg,rgba(0,245,255,0.12),rgba(0,255,136,0.08));border:1px solid rgba(0,245,255,0.3);border-radius:12px;backdrop-filter:blur(10px);align-items:center;gap:0.8rem;">
-                <div style="font-size:1.1rem;" id="sprint-icon">🏃</div>
-                <div style="flex:1;">
-                    <div style="font-weight:700;font-size:0.8rem;color:#00f5ff;">Sprint Mode <span id="sprint-status-label">ACTIVE</span></div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6);margin-top:2px;">
-                        <span id="sprint-watch-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;"></span><span id="sprint-watch-label" style="font-size:0.65rem;margin-right:8px;"></span>
-                        Trigger: <span id="sprint-trigger">—</span> | Cycles: <span id="sprint-cycles">0</span> | Since: <span id="sprint-since">—</span>
-                    </div>
-                    <div id="sprint-assignments" style="font-size:0.65rem;color:rgba(255,255,255,0.45);margin-top:3px;"></div>
-                </div>
-                <div style="display:flex;gap:0.4rem;flex-shrink:0;">
-                    <button id="sprint-toggle-btn" onclick="toggleSprint()" style="font-size:0.65rem;padding:4px 12px;background:rgba(0,245,255,0.2);border:1px solid rgba(0,245,255,0.4);border-radius:6px;color:#00f5ff;cursor:pointer;font-weight:600;">Deactivate</button>
-                    <button onclick="manualSprintCycle()" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.5);cursor:pointer;">Run Cycle</button>
                 </div>
             </div>
 
@@ -2111,7 +2065,7 @@
             } catch(e) { console.warn('status fetch failed', e); }
         }
 
-        // ── /dwe/status → Notion progress + metrics (single fetch) ────────────
+        // ── /dwe/status → Notion task progress ───────────────────────────────
         async function fetchDWEStats() {
             try {
                 const d = await fetch('/dwe/status').then(r => r.json());
@@ -2136,39 +2090,19 @@
                 setDot('dot-notion', total > 0 ? 'ok' : 'warn');
                 document.getElementById('health-notion').textContent = total > 0 ? 'Connected' : 'No data';
                 document.getElementById('health-notion').className = 'health-status ' + (total > 0 ? 'ok' : 'warning');
-
-                // Pass data to metrics updater (avoids second /dwe/status fetch)
-                updateNotionMetrics(d);
             } catch(e) {
                 document.getElementById('prog-total').textContent = 'Error';
                 setDot('dot-notion', 'error');
             }
         }
 
-        // ── Notion Metrics (uses data from fetchDWEStats, fetches recurring separately) ──
+        // ── Notion Metrics (combined into Task Management panel) ─────────────
         async function fetchNotionMetrics() {
-            // Only fetch recurring tasks — DWE stats are handled by fetchDWEStats above
             try {
-                const rc = await fetch('/mc/recurring-tasks').then(r => r.json()).catch(() => ({ daemonActive: false, totalCreated: 0 }));
-                // Recurring tasks indicator
-                const dot = document.getElementById('recurring-daemon-dot');
-                dot.style.background = rc.daemonActive ? '#00ff88' : '#ff4444';
-                dot.title = rc.daemonActive ? 'Daemon loaded' : 'Daemon not loaded';
-                document.getElementById('recurring-created-count').textContent = rc.totalCreated || 0;
-                if (rc.lastRun) {
-                    document.getElementById('recurring-last-run').textContent = 'Last: ' + rc.lastRun.split(' ')[0];
-                }
-                if (rc.taskNames && rc.taskNames.length > 0) {
-                    document.getElementById('recurring-task-names').textContent = rc.taskNames.slice(0, 4).join(' · ');
-                }
-            } catch(e) {
-                console.error('Recurring tasks fetch error:', e);
-            }
-        }
-
-        // Helper: update metrics panel with pre-fetched /dwe/status data
-        function updateNotionMetrics(d) {
-            try {
+                const [d, rc] = await Promise.all([
+                    fetch('/dwe/status').then(r => r.json()),
+                    fetch('/mc/recurring-tasks').then(r => r.json()).catch(() => ({ daemonActive: false, totalCreated: 0 }))
+                ]);
 
                 // Key counts
                 document.getElementById('nm-inprogress').textContent = d.inProgress || 0;
@@ -2179,7 +2113,6 @@
                 // Overdue highlight
                 const odEl = document.getElementById('nm-overdue');
                 if ((d.overdue || 0) > 0) odEl.style.textShadow = '0 0 8px rgba(255,0,170,0.6)';
-                else odEl.style.textShadow = 'none';
 
                 // Status distribution bar
                 const sc = d.statusCounts || {};
@@ -2225,6 +2158,18 @@
                 });
                 document.getElementById('nm-priority-bar').innerHTML = pBarHtml;
                 document.getElementById('nm-priority-legend').innerHTML = pLegendHtml;
+
+                // Recurring tasks indicator
+                const dot = document.getElementById('recurring-daemon-dot');
+                dot.style.background = rc.daemonActive ? '#00ff88' : '#ff4444';
+                dot.title = rc.daemonActive ? 'Daemon loaded' : 'Daemon not loaded';
+                document.getElementById('recurring-created-count').textContent = rc.totalCreated || 0;
+                if (rc.lastRun) {
+                    document.getElementById('recurring-last-run').textContent = 'Last: ' + rc.lastRun.split(' ')[0];
+                }
+                if (rc.taskNames && rc.taskNames.length > 0) {
+                    document.getElementById('recurring-task-names').textContent = rc.taskNames.slice(0, 4).join(' · ');
+                }
             } catch(e) {
                 console.error('Notion metrics error:', e);
             }
@@ -2640,6 +2585,7 @@
                         badge.style.background = 'rgba(255,170,0,0.2)';
                         badge.style.color = '#ffaa00';
                         badge.textContent = 'v' + d.currentVersion + ' → ' + d.latestVersion;
+                        showUpdateBanner(d);
                     } else {
                         badge.style.background = 'rgba(0,255,136,0.1)';
                         badge.style.color = 'rgba(0,255,136,0.6)';
@@ -3074,62 +3020,44 @@
                         </div>`;
                     }
 
-                    // ── Tasks — actionable only (Not Started/In Progress, due ≤ today or no due) ─────────
+                    // ── Tasks — always show all 4 priority rows ─────────
                     let tasksHtml = '';
                     if (t) {
-                        const taskLabel = agent.id === 'main' ? 'Needs Assignment' : 'Actionable';
-                        const actionCount = t.actionable || 0;
-                        const actionOverdue = t.actionableOverdue || 0;
-                        const actionNoDue = t.actionableNoDue || 0;
-                        const actionByPrio = t.actionableByPriority || {};
-                        const actionList = t.actionableList || [];
-
-                        // Priority badges for actionable tasks only
+                        const donePct  = t.total > 0 ? Math.round((t.done / t.total) * 100) : 0;
+                        const barColor = donePct >= 75 ? '#22c55e' : donePct >= 40 ? '#f59e0b' : '#60a5fa';
+                        const taskLabel = agent.id === 'main' ? 'Needs Assignment' : 'Tasks';
+                        // Always render all 4 — colored if > 0, ghost if 0
                         const prioBadges = PRIO_4.map(p => {
-                            const count = actionByPrio[p] || 0;
+                            const count = t.byPriority[p] || 0;
                             const c = count > 0 ? PRIO_ACTIVE[p] : PRIO_GHOST;
                             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 5px;background:${c.bg};border:1px solid ${c.border};border-radius:4px;margin-top:2px;">
                                 <span style="font-size:0.58rem;color:${c.text};">${p}</span>
                                 <span style="font-size:0.7rem;font-weight:${count>0?'700':'400'};color:${c.text};">${count > 0 ? count : '—'}</span>
                             </div>`;
                         }).join('');
-
-                        const overdueHtml = actionOverdue > 0
-                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${actionOverdue} overdue</div>`
+                        const overdueHtml = t.overdue > 0
+                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${t.overdue} overdue</div>`
                             : `<div style="font-size:0.58rem;color:rgba(255,255,255,0.18);margin-top:3px;">✓ no overdue</div>`;
-
-                        // Task list (show up to 5 tasks)
-                        const listHtml = actionList.length > 0
-                            ? `<div style="margin-top:5px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.06);">` +
-                              actionList.slice(0, 5).map(tk => {
-                                  const prioC = PRIO_ACTIVE[tk.priority] || { text: 'rgba(255,255,255,0.4)' };
-                                  const statusDot = tk.status.includes('Progress') ? '#f59e0b' : '#60a5fa';
-                                  const dueTag = tk.isOverdue
-                                      ? `<span style="font-size:0.48rem;color:#f87171;margin-left:auto;flex-shrink:0;">⚠ ${tk.dueDate}</span>`
-                                      : tk.dueDate
-                                          ? `<span style="font-size:0.48rem;color:rgba(255,255,255,0.25);margin-left:auto;flex-shrink:0;">${tk.dueDate}</span>`
-                                          : `<span style="font-size:0.48rem;color:rgba(255,255,255,0.15);margin-left:auto;flex-shrink:0;">no due</span>`;
-                                  return `<div style="display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
-                                      <span style="width:5px;height:5px;border-radius:50%;background:${statusDot};flex-shrink:0;"></span>
-                                      <span style="font-size:0.52rem;color:${prioC.text};flex-shrink:0;">TAS-${tk.id}</span>
-                                      <span style="font-size:0.52rem;color:rgba(255,255,255,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${tk.name}">${tk.name.length > 28 ? tk.name.slice(0, 26) + '…' : tk.name}</span>
-                                      ${dueTag}
-                                  </div>`;
-                              }).join('') +
-                              (actionList.length > 5 ? `<div style="font-size:0.5rem;color:rgba(255,255,255,0.2);padding-top:2px;">+${actionList.length - 5} more</div>` : '') +
-                              `</div>`
-                            : '';
-
                         tasksHtml = `
-                            <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:3px;">
-                                <span style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);">${taskLabel}</span>
-                                <span style="font-size:0.9rem;font-weight:700;color:#ff69b4;margin-left:auto;">${actionCount}</span>
+                            <div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">${taskLabel}</div>
+                            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;text-align:center;margin-bottom:4px;">
+                                <div style="background:rgba(0,245,255,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#00f5ff;">${t.total}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Total</div>
+                                </div>
+                                <div style="background:rgba(255,0,170,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#ff69b4;">${t.open}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Open</div>
+                                </div>
+                                <div style="background:rgba(0,255,136,0.07);border-radius:3px;padding:2px 0;">
+                                    <div style="font-size:0.9rem;font-weight:700;color:#00ff88;">${t.done}</div>
+                                    <div style="font-size:0.52rem;color:rgba(255,255,255,0.3);">Done</div>
+                                </div>
                             </div>
-                            <div style="display:flex;gap:6px;font-size:0.52rem;color:rgba(255,255,255,0.3);margin-bottom:4px;">
-                                <span>Total: ${t.total}</span>
-                                <span>Done: ${t.done}</span>
+                            <div style="height:2px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:3px;">
+                                <div style="height:2px;width:${donePct}%;background:${barColor};border-radius:2px;"></div>
                             </div>
-                            ${prioBadges}${overdueHtml}${listHtml}`;
+                            ${prioBadges}${overdueHtml}`;
                     } else {
                         tasksHtml = `<div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Tasks</div>
                             <div style="font-size:0.62rem;color:rgba(255,255,255,0.2);">None in Notion</div>`;
@@ -3234,8 +3162,8 @@
                         </div>
                         ${sessStatusHtml}
                         ${tasksHtml}
-                        ${daemonHtml}
                         ${modelHtml}
+                        ${daemonHtml}
                         ${delegHtml}
                     </div>`;
                 }).join('');
@@ -3648,98 +3576,12 @@
             }
         }
 
-        // ── Sprint Mode ──────────────────────────────────────────────────
-        async function fetchSprintStatus() {
-            try {
-                const d = await fetch('/mc/sprint').then(r => r.json());
-                const banner = document.getElementById('sprint-banner');
-                if (d.active) {
-                    banner.style.display = 'flex';
-                    document.getElementById('sprint-status-label').textContent = 'ACTIVE';
-                    document.getElementById('sprint-icon').textContent = '🏃';
-                    banner.style.borderColor = 'rgba(0,245,255,0.3)';
-                    const triggerMap = { geofence_leave: '📍 Left Home', sleep_mode: '😴 Sleep', manual: '🖐️ Manual', watch_absent: '⌚ Watch Away' };
-                    document.getElementById('sprint-trigger').textContent = triggerMap[d.trigger] || d.trigger || '—';
-                    document.getElementById('sprint-cycles').textContent = d.cycleCount || 0;
-                    document.getElementById('sprint-since').textContent = d.started ? new Date(d.started).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
-                    document.getElementById('sprint-toggle-btn').textContent = 'Deactivate';
-                    document.getElementById('sprint-toggle-btn').style.color = '#ff6b6b';
-                    document.getElementById('sprint-toggle-btn').style.borderColor = 'rgba(255,107,107,0.4)';
-                    // Show assignments
-                    if (d.assignments && Object.keys(d.assignments).length > 0) {
-                        const assignHtml = Object.entries(d.assignments).map(([role, a]) =>
-                            `${role}: TAS-${a.taskNumber}`
-                        ).join(' | ');
-                        document.getElementById('sprint-assignments').textContent = assignHtml;
-                    } else {
-                        document.getElementById('sprint-assignments').textContent = 'Waiting for first cycle...';
-                    }
-                } else {
-                    // Show a subtle inactive indicator
-                    banner.style.display = 'flex';
-                    document.getElementById('sprint-status-label').textContent = 'INACTIVE';
-                    document.getElementById('sprint-icon').textContent = '⏸️';
-                    banner.style.borderColor = 'rgba(255,255,255,0.1)';
-                    banner.style.background = 'rgba(255,255,255,0.03)';
-                    document.getElementById('sprint-trigger').textContent = '—';
-                    document.getElementById('sprint-cycles').textContent = d.cycleCount || 0;
-                    document.getElementById('sprint-since').textContent = d.stopped ? 'Stopped ' + new Date(d.stopped).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '—';
-                    document.getElementById('sprint-toggle-btn').textContent = 'Activate';
-                    document.getElementById('sprint-toggle-btn').style.color = '#00f5ff';
-                    document.getElementById('sprint-toggle-btn').style.borderColor = 'rgba(0,245,255,0.4)';
-                    document.getElementById('sprint-assignments').textContent = '';
-                }
-                // Watch presence indicator
-                if (d.presence) {
-                    const dot = document.getElementById('sprint-watch-dot');
-                    const label = document.getElementById('sprint-watch-label');
-                    if (d.presence.watchDetected) {
-                        dot.style.background = '#00ff88';
-                        dot.style.boxShadow = '0 0 4px #00ff88';
-                        label.textContent = '⌚ Watch nearby';
-                        label.style.color = 'rgba(0,255,136,0.6)';
-                    } else if (d.presence.watchDetected === false) {
-                        dot.style.background = '#ff6b6b';
-                        dot.style.boxShadow = '0 0 4px #ff6b6b';
-                        label.textContent = '⌚ Watch away';
-                        label.style.color = 'rgba(255,107,107,0.6)';
-                    } else {
-                        dot.style.background = '#666';
-                        dot.style.boxShadow = 'none';
-                        label.textContent = '⌚ Checking...';
-                        label.style.color = 'rgba(255,255,255,0.3)';
-                    }
-                }
-            } catch(e) {}
-        }
-
-        async function toggleSprint() {
-            const d = await fetch('/mc/sprint').then(r => r.json());
-            const action = d.active ? 'deactivate' : 'activate';
-            await fetch('/mc/sprint', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, trigger: 'manual' })
-            });
-            fetchSprintStatus();
-        }
-
-        async function manualSprintCycle() {
-            await fetch('/mc/sprint', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'cycle' })
-            });
-            fetchSprintStatus();
-        }
-
         async function refreshAll() {
             document.getElementById('lastRefresh').textContent = 'Refreshing...';
             await Promise.all([
                 fetchStatus(),
                 fetchDWEStats(),
                 fetchNotionMetrics(),
-                fetchSprintStatus(),
                 fetchServices(),
                 fetchLaunchd(),
                 fetchCrons(),
@@ -4687,21 +4529,6 @@
             }
         });
         resetIdleTimer();
-
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('mobile-overlay').classList.toggle('open');
-        }
-        // Close mobile menu when a nav link is clicked
-        document.querySelectorAll('.sidebar .nav-item').forEach(function(item) {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('sidebar').classList.remove('open');
-                    document.getElementById('mobile-overlay').classList.remove('open');
-                }
-            });
-        });
     </script>
 </body>
 </html>

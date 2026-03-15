@@ -9,7 +9,7 @@ const NOTION_API_KEY = (() => {
     try { const k = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/NOTION_API_KEY="?([^"\n]+)"?/)?.[1]?.trim(); if (k) return k; } catch(e) {}
     return process.env.NOTION_API_KEY || '';
 })();
-const NOTION_DB_ID = '2f797f89-9129-8068-b8ae-c4321d1c72b7';
+const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
 
 // Cache for 5 minutes
 let cachedStats = null;
@@ -24,11 +24,11 @@ async function fetchAllNotionTasks() {
     while (hasMore && allTasks.length < 3000) {
         const options = {
             hostname: 'api.notion.com',
-            path: `/v1/databases/${NOTION_DB_ID}/query`,
+            path: `/v1/data_sources/${NOTION_DB_ID}/query`,
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${NOTION_API_KEY}`,
-                'Notion-Version': '2022-06-28',
+                'Notion-Version': '2025-09-03',
                 'Content-Type': 'application/json'
             }
         };
@@ -70,7 +70,6 @@ async function fetchAllNotionTasks() {
                     role: props.Role?.select?.name || 'Unassigned',
                     dueDate: props['Due date']?.date?.start || null,
                     pastDue: props['Past due']?.formula?.boolean || false,
-                    taskType: props['Task type']?.select?.name || '',
                     summary: props.Summary?.rich_text?.[0]?.plain_text || ''
                 };
             });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DWE | Subagent Delegations</title>
+    <title>DWE | Operations Log</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -72,13 +72,84 @@
         .pair-count { font-size: 1.1rem; font-weight: 700; color: #00f5ff; min-width: 30px; text-align: center; }
         .pair-label { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
         #updated { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 0.5rem; }
+        .tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .tab {
+            padding: 10px 24px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            color: rgba(255,255,255,0.4); border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: rgba(255,255,255,0.7); }
+        .tab.active { color: #00f5ff; border-bottom-color: #00f5ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sprint-session {
+            background: rgba(15, 20, 60, 0.7); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 1.2rem; margin-bottom: 1rem;
+        }
+        .session-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+        .session-title { font-size: 0.85rem; font-weight: 700; }
+        .session-trigger { font-size: 0.65rem; color: rgba(255,255,255,0.35); }
+        .session-stats { display: flex; gap: 1rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
+        .mini-stat { text-align: center; padding: 6px 14px; background: rgba(0,245,255,0.05); border: 1px solid rgba(0,245,255,0.1); border-radius: 8px; }
+        .mini-stat-num { font-size: 1.4rem; font-weight: 800; color: #00f5ff; }
+        .mini-stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.35); }
+        .cycle-row {
+            display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+            background: rgba(255,255,255,0.02); border-radius: 6px; margin-bottom: 3px;
+            font-size: 0.7rem;
+        }
+        .cycle-num { font-weight: 700; color: #00f5ff; min-width: 55px; }
+        .cycle-ts { color: rgba(255,255,255,0.25); font-family: monospace; min-width: 75px; }
+        .cycle-items { color: rgba(255,255,255,0.5); }
+        .cycle-items .completed { color: #00ff88; }
+        .cycle-items .kicked { color: #ff6b6b; }
+        .cycle-items .assigned { color: #00f5ff; }
+
+        /* ── Mobile responsive ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            body { padding: 1rem 0.6rem; }
+            h1 { font-size: 1.2rem; }
+            .stat-row { flex-wrap: wrap; gap: 0.5rem; }
+            .stat-box { min-width: 80px; padding: 0.7rem 0.8rem; flex: 1; }
+            .stat-num { font-size: 1.5rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .tab { padding: 8px 14px; font-size: 0.72rem; white-space: nowrap; }
+            .flow-row { flex-wrap: wrap; }
+            .flow-ts { width: auto; }
+            .flow-task { white-space: normal; }
+            .sprint-session { padding: 0.8rem; }
+            .session-header { flex-wrap: wrap; gap: 0.5rem; }
+        }
     </style>
 </head>
 <body>
     <a href="/" class="back-link">← Back to Command Center</a>
-    <h1>Subagent Delegation Tracker</h1>
-    <div class="subtitle">Agent-to-agent task delegation history and metrics</div>
+    <h1>Operations Log</h1>
+    <div class="subtitle">Delegations and Sprint session history</div>
 
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('master')">Master Log</div>
+        <div class="tab" onclick="switchTab('delegations')">Delegations</div>
+        <div class="tab" onclick="switchTab('sprint')">Sprint Log</div>
+    </div>
+
+    <div id="tab-master" class="tab-content active">
+        <div class="panel" style="padding:0; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8rem 1.2rem;">
+                <div class="panel-title" style="margin-bottom:0;">Change Log — All Systems</div>
+                <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit#gid=1257021974" target="_blank" style="font-size:0.7rem; color:rgba(255,255,255,0.4); text-decoration:none; padding:4px 10px; border:1px solid rgba(255,255,255,0.12); border-radius:6px;">↗ Open in Sheets</a>
+            </div>
+            <iframe
+                src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQrp71fA3RafPPAwhLoFIYD3a3XuiNUuA6ZuOMsptKTBlNv12cHDI5XZ-NDZafVa9a_DPcsiU7QftRQ/pubhtml?gid=1257021974&single=true"
+                style="width:100%; height:600px; border:none; border-top:1px solid rgba(255,255,255,0.08);"
+                loading="lazy"
+                title="DWE Change Log">
+            </iframe>
+        </div>
+    </div>
+
+    <div id="tab-delegations" class="tab-content">
     <!-- Summary stats -->
     <div class="stat-row">
         <div class="stat-box">
@@ -121,6 +192,31 @@
     </div>
 
     <div id="updated"></div>
+    </div><!-- end tab-delegations -->
+
+    <div id="tab-sprint" class="tab-content">
+        <div class="stat-row">
+            <div class="stat-box">
+                <div class="stat-num" id="sp-total-completed">—</div>
+                <div class="stat-label">Tasks Completed (All Time)</div>
+            </div>
+            <div class="stat-box" style="background:rgba(0,255,136,0.05);border-color:rgba(0,255,136,0.12);">
+                <div class="stat-num" style="color:#00ff88;" id="sp-total-sessions">—</div>
+                <div class="stat-label">Sprint Sessions</div>
+            </div>
+            <div class="stat-box" style="background:rgba(184,41,221,0.05);border-color:rgba(184,41,221,0.12);">
+                <div class="stat-num" style="color:#b829dd;" id="sp-total-cycles">—</div>
+                <div class="stat-label">Total Cycles</div>
+            </div>
+            <div class="stat-box" style="background:rgba(255,107,107,0.05);border-color:rgba(255,107,107,0.12);">
+                <div class="stat-num" style="color:#ff6b6b;" id="sp-total-kicked">—</div>
+                <div class="stat-label">Kicked Back</div>
+            </div>
+        </div>
+
+        <div id="sprint-sessions"></div>
+        <div id="sp-updated" style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.5rem;"></div>
+    </div><!-- end tab-sprint -->
 
     <script>
         const AGENT_COLORS = {
@@ -198,7 +294,85 @@
         }
 
         load();
-        setInterval(load, 60000);
+        setInterval(() => { load(); }, 60000);
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
+            if (tab === 'sprint') loadSprint();
+        }
+
+        // Sprint Log
+        async function loadSprint() {
+            try {
+                const d = await fetch('/mc/sprint-history').then(r => r.json());
+                const t = d.totals || {};
+
+                document.getElementById('sp-total-completed').textContent = t.tasksCompleted || 0;
+                document.getElementById('sp-total-sessions').textContent = t.totalSessions || 0;
+                document.getElementById('sp-total-cycles').textContent = t.sprintCycles || 0;
+                document.getElementById('sp-total-kicked').textContent = t.tasksKickedBack || 0;
+
+                let html = '';
+                const sessions = (d.sessions || []).slice().reverse(); // newest first
+                if (sessions.length === 0) {
+                    html = '<div class="panel"><div class="panel-title">No sprint sessions recorded yet</div></div>';
+                }
+                sessions.forEach(s => {
+                    const started = new Date(s.started).toLocaleString();
+                    const ended = s.ended ? new Date(s.ended).toLocaleString() : '<span style="color:#00ff88;">Active</span>';
+                    const duration = s.ended
+                        ? Math.round((new Date(s.ended) - new Date(s.started)) / 60000) + ' min'
+                        : Math.round((Date.now() - new Date(s.started)) / 60000) + ' min (running)';
+                    const st = s.stats || {};
+
+                    html += `<div class="sprint-session">
+                        <div class="session-header">
+                            <div>
+                                <div class="session-title">${s.ended ? '⏹️' : '🏃'} Sprint — ${started}</div>
+                                <div class="session-trigger">Trigger: ${s.trigger || '?'} | Duration: ${duration} | Ended: ${ended}</div>
+                            </div>
+                        </div>
+                        <div class="session-stats">
+                            <div class="mini-stat"><div class="mini-stat-num">${st.tasksCompleted||0}</div><div class="mini-stat-label">Completed</div></div>
+                            <div class="mini-stat"><div class="mini-stat-num" style="color:#ff6b6b;">${st.tasksKickedBack||0}</div><div class="mini-stat-label">Kicked Back</div></div>
+                            <div class="mini-stat"><div class="mini-stat-num" style="color:#00ff88;">${st.tasksAssigned||0}</div><div class="mini-stat-label">Assigned</div></div>
+                            <div class="mini-stat"><div class="mini-stat-num" style="color:#b829dd;">${st.tasksUnblocked||0}</div><div class="mini-stat-label">Unblocked</div></div>
+                            <div class="mini-stat"><div class="mini-stat-num" style="color:rgba(255,255,255,0.6);">${st.totalCycles||0}</div><div class="mini-stat-label">Cycles</div></div>
+                        </div>`;
+
+                    // Show cycles (last 20 max)
+                    const cycles = (s.cycles || []).slice(-20).reverse();
+                    if (cycles.length > 0) {
+                        html += '<div class="panel-title">Cycle Log</div>';
+                        cycles.forEach(c => {
+                            const ts = new Date(c.timestamp).toLocaleTimeString();
+                            let items = '';
+                            (c.completed||[]).forEach(t => items += `<span class="completed">✅ ${t}</span> `);
+                            (c.kickedBack||[]).forEach(t => items += `<span class="kicked">🔙 ${t}</span> `);
+                            (c.assigned||[]).forEach(t => items += `<span class="assigned">▶️ ${t}</span> `);
+                            (c.unblocked||[]).forEach(t => items += `<span class="completed">🔧 ${t}</span> `);
+                            if (!items && c.totalActions === 0) items = '<span style="color:rgba(255,255,255,0.2);">No actions</span>';
+                            html += `<div class="cycle-row">
+                                <span class="cycle-num">Cycle #${c.cycle}</span>
+                                <span class="cycle-ts">${ts}</span>
+                                <span class="cycle-items">${items}</span>
+                            </div>`;
+                        });
+                    }
+
+                    html += '</div>';
+                });
+
+                document.getElementById('sprint-sessions').innerHTML = html;
+                document.getElementById('sp-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+            } catch(e) {
+                document.getElementById('sprint-sessions').innerHTML = '<div class="panel"><div class="panel-title">Error loading sprint history</div></div>';
+            }
+        }
     </script>
 </body>
 </html>
