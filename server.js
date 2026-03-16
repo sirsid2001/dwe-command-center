@@ -341,6 +341,12 @@ const server = http.createServer((req, res) => {
         case '/mc/acp':
             getAgentSessions(req, res);
             break;
+        case '/mc/income-ops':
+            getIncomeOps(req, res);
+            break;
+        case '/mc/change-log':
+            getChangeLog(req, res);
+            break;
         case '/mc/pipeline':
             getPipeline(req, res);
             break;
@@ -432,6 +438,120 @@ function serveFile(res, filePath, contentType) {
         });
         res.end(data);
     });
+}
+
+// ── IncomeOps_Monitor — proxies Google Sheets via Maton ─────────────────
+function getIncomeOps(req, res) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const apiPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/IncomeOps_Monitor!A1:V50`;
+
+    const opts = {
+        hostname: 'gateway.maton.ai',
+        path: apiPath,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+    };
+
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                // Row 4 (index 3) is the header row
+                const header = rows[3] || [];
+                const dataRows = rows.slice(4); // data starts at row 5
+
+                const streams = dataRows.filter(r => r[0] && r[0].trim()).map(r => {
+                    const obj = {};
+                    header.forEach((col, i) => {
+                        const key = col.trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                        obj[key] = (r[i] || '').trim();
+                    });
+                    return obj;
+                });
+
+                // Summary row (row 1, index 0) has totals in specific columns
+                const summaryRow = rows[0] || [];
+                const cashflowRow = rows[1] || [];
+                const summary = {
+                    daily_total: summaryRow[12] || '$0',
+                    weekly_total: summaryRow[13] || '$0',
+                    monthly_total: summaryRow[14] || '$0',
+                    yearly_total: summaryRow[15] || '$0',
+                    projected_profit: summaryRow[17] || '$0',
+                    staked_total: cashflowRow[7] || '$0'
+                };
+
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({ ok: true, streams, summary, updated: new Date().toISOString() }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+            }
+        });
+    });
+
+    apiReq.on('error', (e) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + e.message }));
+    });
+
+    apiReq.end();
+}
+
+// ── Change_Log — proxies Google Sheets via Maton ────────────────────────
+function getChangeLog(req, res) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const apiPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/Change_Log!A1:X500`;
+
+    const opts = {
+        hostname: 'gateway.maton.ai',
+        path: apiPath,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+    };
+
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                const header = rows[0] || [];
+                const dataRows = rows.slice(1);
+
+                const entries = dataRows.filter(r => r[0] && r[0].trim()).map(r => {
+                    const obj = {};
+                    header.forEach((col, i) => {
+                        const key = col.trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                        obj[key] = (r[i] || '').trim();
+                    });
+                    return obj;
+                });
+
+                // Return newest first
+                entries.reverse();
+
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({ ok: true, entries, total: entries.length, updated: new Date().toISOString() }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+            }
+        });
+    });
+
+    apiReq.on('error', (e) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + e.message }));
+    });
+
+    apiReq.end();
 }
 
 function getStatus(req, res) {

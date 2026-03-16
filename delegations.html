@@ -135,17 +135,72 @@
     </div>
 
     <div id="tab-master" class="tab-content active">
-        <div class="panel" style="padding:0; overflow:hidden;">
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8rem 1.2rem;">
-                <div class="panel-title" style="margin-bottom:0;">Change Log — All Systems</div>
-                <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit#gid=1257021974" target="_blank" style="font-size:0.7rem; color:rgba(255,255,255,0.4); text-decoration:none; padding:4px 10px; border:1px solid rgba(255,255,255,0.12); border-radius:6px;">↗ Open in Sheets</a>
+        <!-- Master Log Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <span id="ml-count" style="color:rgba(255,255,255,0.35); font-size:0.75rem;"></span>
+                <span id="ml-updated" style="color:rgba(255,255,255,0.25); font-size:0.65rem;"></span>
             </div>
-            <iframe
-                src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQrp71fA3RafPPAwhLoFIYD3a3XuiNUuA6ZuOMsptKTBlNv12cHDI5XZ-NDZafVa9a_DPcsiU7QftRQ/pubhtml?gid=1257021974&single=true"
-                style="width:100%; height:600px; border:none; border-top:1px solid rgba(255,255,255,0.08);"
-                loading="lazy"
-                title="DWE Change Log">
-            </iframe>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input id="ml-search" type="text" placeholder="Search logs..." oninput="mlRender()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:6px; padding:5px 12px; font-family:Inter,sans-serif; font-size:0.75rem; width:180px;">
+                <select id="ml-filter-type" onchange="mlRender()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:6px; padding:5px 10px; font-family:Inter,sans-serif; font-size:0.72rem; cursor:pointer;">
+                    <option value="all">All Types</option>
+                    <option value="Add">Add</option>
+                    <option value="Update">Update</option>
+                    <option value="Delete">Delete</option>
+                </select>
+                <select id="ml-filter-impact" onchange="mlRender()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:6px; padding:5px 10px; font-family:Inter,sans-serif; font-size:0.72rem; cursor:pointer;">
+                    <option value="all">All Impact</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+                <button onclick="mlFetch()" id="ml-refresh" style="background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.2); color:#00ff88; border-radius:6px; padding:5px 14px; cursor:pointer; font-family:Inter,sans-serif; font-size:0.72rem;">Refresh</button>
+                <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit#gid=1257021974" target="_blank" style="font-size:0.7rem; color:rgba(255,255,255,0.4); text-decoration:none; padding:5px 10px; border:1px solid rgba(255,255,255,0.12); border-radius:6px;">Open Sheet</a>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; margin-bottom:1rem;" id="ml-stats-row">
+            <div style="background:rgba(15,20,60,0.7); border:1px solid rgba(0,245,255,0.12); border-radius:10px; padding:0.8rem; text-align:center; backdrop-filter:blur(12px);">
+                <div style="color:rgba(255,255,255,0.45); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Total Entries</div>
+                <div id="ml-stat-total" style="color:#00f5ff; font-size:1.6rem; font-weight:800;">—</div>
+            </div>
+            <div style="background:rgba(15,20,60,0.7); border:1px solid rgba(0,255,136,0.12); border-radius:10px; padding:0.8rem; text-align:center; backdrop-filter:blur(12px);">
+                <div style="color:rgba(255,255,255,0.45); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Adds</div>
+                <div id="ml-stat-adds" style="color:#00ff88; font-size:1.6rem; font-weight:800;">—</div>
+            </div>
+            <div style="background:rgba(15,20,60,0.7); border:1px solid rgba(255,170,0,0.12); border-radius:10px; padding:0.8rem; text-align:center; backdrop-filter:blur(12px);">
+                <div style="color:rgba(255,255,255,0.45); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Updates</div>
+                <div id="ml-stat-updates" style="color:#ffaa00; font-size:1.6rem; font-weight:800;">—</div>
+            </div>
+            <div style="background:rgba(15,20,60,0.7); border:1px solid rgba(184,41,221,0.12); border-radius:10px; padding:0.8rem; text-align:center; backdrop-filter:blur(12px);">
+                <div style="color:rgba(255,255,255,0.45); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Unique Users</div>
+                <div id="ml-stat-users" style="color:#b829dd; font-size:1.6rem; font-weight:800;">—</div>
+            </div>
+        </div>
+
+        <!-- Log Table -->
+        <div class="panel" style="padding:0; overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-family:Inter,sans-serif;">
+                    <thead>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.15);">
+                            <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap;">Timestamp</th>
+                            <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">User / System</th>
+                            <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Tab</th>
+                            <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Type</th>
+                            <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Field</th>
+                            <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; max-width:250px;">Notes</th>
+                            <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Impact</th>
+                            <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.65rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ml-tbody"></tbody>
+                </table>
+            </div>
+            <div id="ml-loading" style="text-align:center; padding:2rem; color:rgba(255,255,255,0.3); font-size:0.85rem;">Loading change log...</div>
+            <div id="ml-pagination" style="display:flex; justify-content:center; align-items:center; gap:1rem; padding:0.8rem; border-top:1px solid rgba(255,255,255,0.05);"></div>
         </div>
     </div>
 
@@ -303,7 +358,126 @@
             document.getElementById('tab-' + tab).classList.add('active');
             document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
             if (tab === 'sprint') loadSprint();
+            if (tab === 'master' && !mlData) mlFetch();
         }
+
+        // ── Master Log (Change_Log from Google Sheet) ───────────────────
+        let mlData = null;
+        let mlPage = 0;
+        const ML_PAGE_SIZE = 50;
+
+        async function mlFetch() {
+            const btn = document.getElementById('ml-refresh');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            try {
+                const r = await fetch('/mc/change-log');
+                const json = await r.json();
+                if (json.ok) {
+                    mlData = json.entries;
+                    mlPage = 0;
+                    document.getElementById('ml-updated').textContent = 'Updated: ' + new Date(json.updated).toLocaleTimeString();
+                    mlRender();
+                } else {
+                    document.getElementById('ml-loading').textContent = 'Error: ' + (json.error || 'Unknown');
+                }
+            } catch(e) {
+                document.getElementById('ml-loading').textContent = 'Failed to fetch: ' + e.message;
+            }
+            btn.textContent = 'Refresh';
+            btn.disabled = false;
+        }
+
+        function mlEsc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        function mlRender() {
+            if (!mlData) return;
+            const search = (document.getElementById('ml-search').value || '').toLowerCase();
+            const typeFilter = document.getElementById('ml-filter-type').value;
+            const impactFilter = document.getElementById('ml-filter-impact').value;
+
+            let filtered = mlData;
+            if (typeFilter !== 'all') filtered = filtered.filter(e => e.Change_Type === typeFilter);
+            if (impactFilter !== 'all') filtered = filtered.filter(e => e.Change_Impact_Level === impactFilter);
+            if (search) filtered = filtered.filter(e =>
+                (e.Timestamp || '').toLowerCase().includes(search) ||
+                (e.User_System || '').toLowerCase().includes(search) ||
+                (e.Tab_Affected || '').toLowerCase().includes(search) ||
+                (e.Notes || '').toLowerCase().includes(search) ||
+                (e.Field_Changed || '').toLowerCase().includes(search) ||
+                (e.Record_ID || '').toLowerCase().includes(search)
+            );
+
+            // Stats
+            document.getElementById('ml-stat-total').textContent = mlData.length;
+            document.getElementById('ml-stat-adds').textContent = mlData.filter(e => e.Change_Type === 'Add').length;
+            document.getElementById('ml-stat-updates').textContent = mlData.filter(e => e.Change_Type === 'Update').length;
+            const users = new Set(mlData.map(e => e.User_System).filter(Boolean));
+            document.getElementById('ml-stat-users').textContent = users.size;
+            document.getElementById('ml-count').textContent = filtered.length + ' entries' + (filtered.length !== mlData.length ? ' (filtered)' : '');
+
+            // Pagination
+            const totalPages = Math.ceil(filtered.length / ML_PAGE_SIZE);
+            if (mlPage >= totalPages) mlPage = Math.max(0, totalPages - 1);
+            const start = mlPage * ML_PAGE_SIZE;
+            const pageItems = filtered.slice(start, start + ML_PAGE_SIZE);
+
+            const typeColors = { 'Add': '#00ff88', 'Update': '#ffaa00', 'Delete': '#ff4466' };
+            const typeBg = { 'Add': 'rgba(0,255,136,0.1)', 'Update': 'rgba(255,170,0,0.1)', 'Delete': 'rgba(255,68,102,0.1)' };
+            const impactColors = { 'High': '#ff4466', 'Medium': '#ffaa00', 'Low': '#00f5ff' };
+            const impactBg = { 'High': 'rgba(255,68,102,0.1)', 'Medium': 'rgba(255,170,0,0.08)', 'Low': 'rgba(0,245,255,0.08)' };
+
+            const tbody = document.getElementById('ml-tbody');
+            const loading = document.getElementById('ml-loading');
+
+            if (pageItems.length === 0) {
+                loading.textContent = filtered.length === 0 ? 'No matching entries.' : 'No entries found.';
+                loading.style.display = 'block';
+                tbody.innerHTML = '';
+            } else {
+                loading.style.display = 'none';
+                tbody.innerHTML = pageItems.map(e => {
+                    const tc = typeColors[e.Change_Type] || '#aaa';
+                    const tb = typeBg[e.Change_Type] || 'rgba(255,255,255,0.05)';
+                    const ic = impactColors[e.Change_Impact_Level] || 'rgba(255,255,255,0.35)';
+                    const ib = impactBg[e.Change_Impact_Level] || 'rgba(255,255,255,0.03)';
+                    const userColor = AGENT_COLORS[e.User_System] || (e.User_System === 'n8n' ? '#7b61ff' : 'rgba(255,255,255,0.6)');
+                    const notes = (e.Notes || '').length > 80 ? mlEsc(e.Notes.substring(0, 80)) + '...' : mlEsc(e.Notes || '—');
+                    const statusColor = e.Status === 'Completed' ? '#00ff88' : e.Status === 'Pending' ? '#ffaa00' : 'rgba(255,255,255,0.35)';
+                    return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <td style="padding:0.5rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.72rem; font-family:monospace; white-space:nowrap;">${mlEsc(e.Timestamp || '—')}</td>
+                        <td style="padding:0.5rem 0.75rem; color:${userColor}; font-size:0.75rem; font-weight:600; white-space:nowrap; max-width:140px; overflow:hidden; text-overflow:ellipsis;" title="${mlEsc(e.User_System || '')}">${mlEsc(e.User_System || '—')}</td>
+                        <td style="padding:0.5rem 0.75rem; color:rgba(255,255,255,0.5); font-size:0.72rem;">${mlEsc(e.Tab_Affected || '—')}</td>
+                        <td style="padding:0.5rem 0.75rem; text-align:center;">
+                            <span style="background:${tb}; color:${tc}; padding:2px 8px; border-radius:4px; font-size:0.65rem; font-weight:600;">${mlEsc(e.Change_Type || '—')}</span>
+                        </td>
+                        <td style="padding:0.5rem 0.75rem; color:rgba(255,255,255,0.45); font-size:0.72rem; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${mlEsc(e.Field_Changed || '')}">${mlEsc(e.Field_Changed || '—')}</td>
+                        <td style="padding:0.5rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${mlEsc(e.Notes || '')}">${notes}</td>
+                        <td style="padding:0.5rem 0.75rem; text-align:center;">
+                            ${e.Change_Impact_Level ? `<span style="background:${ib}; color:${ic}; padding:2px 8px; border-radius:4px; font-size:0.6rem; font-weight:600;">${mlEsc(e.Change_Impact_Level)}</span>` : '<span style="color:rgba(255,255,255,0.2); font-size:0.65rem;">—</span>'}
+                        </td>
+                        <td style="padding:0.5rem 0.75rem; text-align:center; color:${statusColor}; font-size:0.7rem; font-weight:500;">${mlEsc(e.Status || '—')}</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Pagination controls
+            const pag = document.getElementById('ml-pagination');
+            if (totalPages <= 1) {
+                pag.innerHTML = '';
+            } else {
+                pag.innerHTML = `
+                    <button onclick="mlPage=0;mlRender()" ${mlPage===0?'disabled':''} style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.7rem;">First</button>
+                    <button onclick="mlPage--;mlRender()" ${mlPage===0?'disabled':''} style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.7rem;">Prev</button>
+                    <span style="color:rgba(255,255,255,0.4); font-size:0.72rem;">Page ${mlPage+1} of ${totalPages}</span>
+                    <button onclick="mlPage++;mlRender()" ${mlPage>=totalPages-1?'disabled':''} style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.7rem;">Next</button>
+                    <button onclick="mlPage=${totalPages-1};mlRender()" ${mlPage>=totalPages-1?'disabled':''} style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; padding:4px 10px; cursor:pointer; font-size:0.7rem;">Last</button>
+                `;
+            }
+        }
+
+        // Auto-load Master Log on page load (it's the default tab)
+        mlFetch();
 
         // Sprint Log
         async function loadSprint() {

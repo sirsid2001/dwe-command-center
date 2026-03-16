@@ -845,6 +845,14 @@
                     <div class="nav-icon">💰</div>
                     <span>Opportunities</span>
                 </button>
+                <button class="nav-item" onclick="toggleRevenue()">
+                    <div class="nav-icon">📈</div>
+                    <span>Revenue</span>
+                </button>
+                <button class="nav-item" onclick="toggleIntel()">
+                    <div class="nav-icon">📡</div>
+                    <span>Intel</span>
+                </button>
                 <a href="/delegations" class="nav-item" style="text-decoration: none;">
                     <div class="nav-icon">📋</div>
                     <span>Logs</span>
@@ -1949,6 +1957,238 @@
                 </div>
             </div>
 
+            <!-- ── Revenue Panel (IncomeOps_Monitor) ────────────────────────── -->
+            <div id="revenue-panel" style="display:none; padding: 1.5rem;">
+
+                <!-- Revenue Header -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <h2 style="color:#fff; font-family:Inter,sans-serif; font-size:1.5rem; margin:0;">
+                            📈 IncomeOps Monitor
+                        </h2>
+                        <span id="rev-updated" style="color:rgba(255,255,255,0.3); font-size:0.7rem; font-family:Inter,sans-serif;"></span>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button onclick="revFetchData()" id="rev-refresh-btn" style="background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.2); color:#00ff88; border-radius:0.5rem; padding:0.4rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Refresh
+                        </button>
+                        <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit" target="_blank" rel="noopener" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.4rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center;">
+                            Open Sheet
+                        </a>
+                        <button onclick="toggleRevenue()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.4rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:1rem; margin-bottom:1.5rem;" class="rev-top-row">
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,255,136,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Daily Income</div>
+                        <div id="rev-sum-daily" style="color:#00ff88; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,200,255,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Weekly Income</div>
+                        <div id="rev-sum-weekly" style="color:#00c8ff; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,245,255,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Monthly Income</div>
+                        <div id="rev-sum-monthly" style="color:#00f5ff; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(184,41,221,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Yearly Projection</div>
+                        <div id="rev-sum-yearly" style="color:#b829dd; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,170,0,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Total Staked</div>
+                        <div id="rev-sum-staked" style="color:#ffaa00; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                    </div>
+                </div>
+
+                <!-- Gauge + Projected Profit -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;" class="rev-gauge-row">
+                    <!-- Monthly Revenue Gauge -->
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.5rem; backdrop-filter:blur(12px); text-align:center;">
+                        <h3 style="color:rgba(255,255,255,0.6); font-family:Inter,sans-serif; font-size:0.85rem; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.06em;">Monthly Revenue Goal</h3>
+                        <div style="position:relative; width:180px; height:180px; margin:0 auto 1rem;">
+                            <div id="rev-gauge" style="width:180px; height:180px; border-radius:50%; background:conic-gradient(#00ff88 0%, #00ff88 0%, rgba(255,255,255,0.06) 0%); display:flex; align-items:center; justify-content:center; transition: background 0.6s ease;">
+                                <div style="width:140px; height:140px; border-radius:50%; background:rgba(12,12,30,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                    <span id="rev-gauge-pct" style="color:#00ff88; font-size:2rem; font-weight:700; font-family:Inter,sans-serif;">0%</span>
+                                    <span id="rev-gauge-mrr" style="color:rgba(255,255,255,0.5); font-size:0.75rem; font-family:Inter,sans-serif;">$0/mo</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                            <span style="color:rgba(255,255,255,0.5); font-size:0.85rem; font-family:Inter,sans-serif;">Goal:</span>
+                            <span id="rev-goal-display" onclick="revEditGoal()" style="color:#00f5ff; font-size:1.1rem; font-weight:600; font-family:Inter,sans-serif; cursor:pointer; border-bottom:1px dashed rgba(0,245,255,0.3);">$10,000</span>
+                            <input id="rev-goal-input" type="number" style="display:none; width:100px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.4rem; padding:0.3rem 0.5rem; font-family:Inter,sans-serif; font-size:0.95rem; text-align:center;" onblur="revSaveGoal()" onkeydown="if(event.key==='Enter')revSaveGoal()">
+                        </div>
+                    </div>
+
+                    <!-- Projected Profit -->
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.5rem; backdrop-filter:blur(12px);">
+                        <h3 style="color:rgba(255,255,255,0.6); font-family:Inter,sans-serif; font-size:0.85rem; margin:0 0 1.25rem; text-transform:uppercase; letter-spacing:0.06em;">Portfolio Snapshot</h3>
+                        <div style="display:flex; flex-direction:column; gap:1rem;">
+                            <div style="background:rgba(255,255,255,0.03); border-radius:0.75rem; padding:1rem;">
+                                <div style="color:rgba(255,255,255,0.45); font-size:0.75rem; font-family:Inter,sans-serif; margin-bottom:0.35rem;">Total Projected Profit</div>
+                                <div id="rev-proj-profit" style="color:#00ff88; font-size:1.5rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); border-radius:0.75rem; padding:1rem;">
+                                <div style="color:rgba(255,255,255,0.45); font-size:0.75rem; font-family:Inter,sans-serif; margin-bottom:0.35rem;">Active Streams</div>
+                                <div id="rev-proj-streams" style="color:#00f5ff; font-size:1.5rem; font-weight:700; font-family:Inter,sans-serif;">0</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03); border-radius:0.75rem; padding:1rem;">
+                                <div style="color:rgba(255,255,255,0.45); font-size:0.75rem; font-family:Inter,sans-serif; margin-bottom:0.35rem;">Avg Daily Growth</div>
+                                <div id="rev-proj-growth" style="color:#b829dd; font-size:1.5rem; font-weight:700; font-family:Inter,sans-serif;">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Income Bar Chart -->
+                <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.5rem; backdrop-filter:blur(12px); margin-bottom:1.5rem;">
+                    <h3 style="color:rgba(255,255,255,0.6); font-family:Inter,sans-serif; font-size:0.85rem; margin:0 0 1.25rem; text-transform:uppercase; letter-spacing:0.06em;">Daily Income by Stream</h3>
+                    <div id="rev-chart" style="display:flex; align-items:flex-end; gap:1rem; height:200px; padding:0 0.5rem;"></div>
+                </div>
+
+                <!-- Income Streams Table -->
+                <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.5rem; backdrop-filter:blur(12px); margin-bottom:1.5rem;">
+                    <h3 style="color:rgba(255,255,255,0.6); font-family:Inter,sans-serif; font-size:0.85rem; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.06em;">Income Streams</h3>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-family:Inter,sans-serif;">
+                            <thead>
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <th style="text-align:left; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Stream</th>
+                                    <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Platform</th>
+                                    <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
+                                    <th style="text-align:right; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Staked</th>
+                                    <th style="text-align:right; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Daily</th>
+                                    <th style="text-align:right; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Monthly</th>
+                                    <th style="text-align:right; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Yearly</th>
+                                    <th style="text-align:right; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Proj Profit</th>
+                                    <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">ROI</th>
+                                    <th style="text-align:center; padding:0.6rem 0.75rem; color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Tier</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rev-streams-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="rev-loading" style="text-align:center; padding:2rem; color:rgba(255,255,255,0.3); font-family:Inter,sans-serif; font-size:0.9rem;">Loading IncomeOps data...</div>
+                </div>
+
+                <!-- Responsive styles for revenue panel -->
+                <style>
+                    @media (max-width: 768px) {
+                        .rev-top-row { grid-template-columns: 1fr 1fr !important; }
+                        .rev-gauge-row { grid-template-columns: 1fr !important; }
+                    }
+                    @media (max-width: 480px) {
+                        .rev-top-row { grid-template-columns: 1fr !important; }
+                    }
+                </style>
+            </div>
+
+            <!-- ── Intel Panel ────────────────────────────────────────────── -->
+            <div id="intel-panel" style="display:none; padding: 1.5rem;">
+
+                <!-- Intel Header -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+                    <h2 style="color:#fff; font-family:Inter,sans-serif; font-size:1.5rem; margin:0;">
+                        📡 Intel Feed
+                    </h2>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <select id="intel-filter" onchange="intelRender()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.4rem 0.8rem; font-family:Inter,sans-serif; font-size:0.8rem; cursor:pointer;">
+                            <option value="all">All Categories</option>
+                            <option value="ai-news">AI News</option>
+                            <option value="industry">Industry Trends</option>
+                            <option value="competitor">Competitor Watch</option>
+                            <option value="opportunity">Opportunities</option>
+                        </select>
+                        <select id="intel-importance-filter" onchange="intelRender()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.4rem 0.8rem; font-family:Inter,sans-serif; font-size:0.8rem; cursor:pointer;">
+                            <option value="all">All Importance</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <button onclick="toggleIntel()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.4rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daily Brief -->
+                <div id="intel-brief" style="background:linear-gradient(135deg, rgba(0,200,255,0.08), rgba(100,50,255,0.08)); border:1px solid rgba(0,200,255,0.2); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                        <span style="font-size:1.1rem;">🗞️</span>
+                        <h3 style="color:#00c8ff; font-family:Inter,sans-serif; font-size:0.95rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Daily Brief</h3>
+                        <span id="intel-brief-date" style="color:rgba(255,255,255,0.4); font-size:0.75rem; margin-left:auto; font-family:Inter,sans-serif;"></span>
+                    </div>
+                    <textarea id="intel-brief-text" rows="3" placeholder="Write today's brief — key takeaways, action items, market moves..." style="width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.08); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.75rem; resize:vertical; line-height:1.5;" oninput="intelSaveBrief()"></textarea>
+                </div>
+
+                <!-- Category Stats -->
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem;" class="intel-stats-row">
+                    <div id="intel-stat-ai" style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,200,255,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="font-size:1.5rem; margin-bottom:0.25rem;">🤖</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">AI News</div>
+                        <div id="intel-count-ai" style="color:#00c8ff; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">0</div>
+                    </div>
+                    <div id="intel-stat-industry" style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,255,136,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="font-size:1.5rem; margin-bottom:0.25rem;">📊</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Industry</div>
+                        <div id="intel-count-industry" style="color:#00ff88; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">0</div>
+                    </div>
+                    <div id="intel-stat-competitor" style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,170,0,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="font-size:1.5rem; margin-bottom:0.25rem;">🔍</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Competitors</div>
+                        <div id="intel-count-competitor" style="color:#ffaa00; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">0</div>
+                    </div>
+                    <div id="intel-stat-opportunity" style="background:rgba(20,20,40,0.6); border:1px solid rgba(200,100,255,0.15); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
+                        <div style="font-size:1.5rem; margin-bottom:0.25rem;">💎</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">Opportunities</div>
+                        <div id="intel-count-opportunity" style="color:#c864ff; font-size:1.4rem; font-weight:700; font-family:Inter,sans-serif;">0</div>
+                    </div>
+                </div>
+
+                <!-- Add New Intel Item -->
+                <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.25rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
+                    <h3 style="color:rgba(255,255,255,0.7); font-family:Inter,sans-serif; font-size:0.85rem; margin:0 0 1rem; text-transform:uppercase; letter-spacing:0.05em;">Add Intel Item</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;" class="intel-form-grid">
+                        <input id="intel-title" type="text" placeholder="Title / Headline" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem;">
+                        <input id="intel-source" type="text" placeholder="Source (e.g. TechCrunch, Twitter)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem;">
+                        <select id="intel-category" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem; cursor:pointer;">
+                            <option value="ai-news">AI News</option>
+                            <option value="industry">Industry Trends</option>
+                            <option value="competitor">Competitor Watch</option>
+                            <option value="opportunity">Opportunities</option>
+                        </select>
+                        <select id="intel-importance" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem; cursor:pointer;">
+                            <option value="medium">Medium</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <textarea id="intel-notes" rows="2" placeholder="Notes / Analysis / Key Takeaway" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem; resize:vertical; margin-bottom:0.75rem;"></textarea>
+                    <input id="intel-url" type="text" placeholder="URL (optional)" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.85rem; padding:0.6rem 0.75rem; margin-bottom:0.75rem;">
+                    <button onclick="intelAdd()" style="background:linear-gradient(135deg, #00c8ff, #0080ff); border:none; color:#fff; border-radius:0.5rem; padding:0.6rem 1.5rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                        + Add Item
+                    </button>
+                </div>
+
+                <!-- Intel Feed -->
+                <div id="intel-feed" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+
+                <!-- Responsive styles for intel panel -->
+                <style>
+                    @media (max-width: 768px) {
+                        .intel-stats-row { grid-template-columns: 1fr 1fr !important; }
+                        .intel-form-grid { grid-template-columns: 1fr !important; }
+                    }
+                </style>
+            </div>
+
         </main>
     </div>
 
@@ -1959,6 +2199,340 @@
             const isVisible = panel.style.display !== 'none';
             panel.style.display = isVisible ? 'none' : 'block';
             if (!isVisible) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ── Revenue Panel (IncomeOps_Monitor) ──────────────────────────────
+        let revData = null; // cached API response
+        const REV_GOAL_KEY = 'dwe_revenue_goal';
+
+        function revFmt(str) {
+            // Returns the dollar string as-is from the sheet, or '—' if empty
+            if (!str || str.trim() === '' || str.trim() === '$0' || str.trim() === '$0.00') return '$0';
+            return str.trim();
+        }
+
+        function revParseDollar(str) {
+            if (!str) return 0;
+            return parseFloat(String(str).replace(/[$,]/g, '')) || 0;
+        }
+
+        function revFmtCurrency(n) {
+            return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        async function revFetchData() {
+            const btn = document.getElementById('rev-refresh-btn');
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            try {
+                const r = await fetch('/mc/income-ops');
+                const json = await r.json();
+                if (json.ok) {
+                    revData = json;
+                    revRender();
+                    document.getElementById('rev-updated').textContent = 'Updated: ' + new Date(json.updated).toLocaleTimeString();
+                } else {
+                    document.getElementById('rev-loading').textContent = 'Error: ' + (json.error || 'Unknown');
+                }
+            } catch(e) {
+                document.getElementById('rev-loading').textContent = 'Failed to fetch: ' + e.message;
+            }
+            btn.textContent = 'Refresh';
+            btn.disabled = false;
+        }
+
+        function toggleRevenue() {
+            const panel = document.getElementById('revenue-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                if (!revData) revFetchData();
+                else revRender();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // ── Intel Panel ─────────────────────────────────────────────────────
+        const INTEL_STORAGE_KEY = 'dwe_intel_data';
+        const INTEL_BRIEF_KEY = 'dwe_intel_brief';
+
+        const INTEL_CATEGORIES = {
+            'ai-news': { label: 'AI News', icon: '🤖', color: '#00c8ff' },
+            'industry': { label: 'Industry', icon: '📊', color: '#00ff88' },
+            'competitor': { label: 'Competitor', icon: '🔍', color: '#ffaa00' },
+            'opportunity': { label: 'Opportunity', icon: '💎', color: '#c864ff' }
+        };
+
+        const INTEL_IMPORTANCE = {
+            'critical': { label: 'CRITICAL', color: '#ff4444', bg: 'rgba(255,68,68,0.15)' },
+            'high': { label: 'HIGH', color: '#ffaa00', bg: 'rgba(255,170,0,0.12)' },
+            'medium': { label: 'MED', color: '#00c8ff', bg: 'rgba(0,200,255,0.1)' },
+            'low': { label: 'LOW', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)' }
+        };
+
+        function intelLoad() {
+            const raw = localStorage.getItem(INTEL_STORAGE_KEY);
+            if (!raw) return [];
+            return JSON.parse(raw);
+        }
+
+        function intelSave(items) {
+            localStorage.setItem(INTEL_STORAGE_KEY, JSON.stringify(items));
+        }
+
+        function intelSaveBrief() {
+            const text = document.getElementById('intel-brief-text').value;
+            const today = new Date().toISOString().slice(0, 10);
+            const briefs = JSON.parse(localStorage.getItem(INTEL_BRIEF_KEY) || '{}');
+            briefs[today] = text;
+            localStorage.setItem(INTEL_BRIEF_KEY, JSON.stringify(briefs));
+        }
+
+        function intelLoadBrief() {
+            const today = new Date().toISOString().slice(0, 10);
+            const briefs = JSON.parse(localStorage.getItem(INTEL_BRIEF_KEY) || '{}');
+            document.getElementById('intel-brief-text').value = briefs[today] || '';
+            document.getElementById('intel-brief-date').textContent = today;
+        }
+
+        function intelAdd() {
+            const title = document.getElementById('intel-title').value.trim();
+            if (!title) return;
+            const item = {
+                id: Date.now(),
+                title: title,
+                source: document.getElementById('intel-source').value.trim(),
+                category: document.getElementById('intel-category').value,
+                importance: document.getElementById('intel-importance').value,
+                notes: document.getElementById('intel-notes').value.trim(),
+                url: document.getElementById('intel-url').value.trim(),
+                date: new Date().toISOString(),
+                read: false
+            };
+            const items = intelLoad();
+            items.unshift(item);
+            intelSave(items);
+            document.getElementById('intel-title').value = '';
+            document.getElementById('intel-source').value = '';
+            document.getElementById('intel-notes').value = '';
+            document.getElementById('intel-url').value = '';
+            document.getElementById('intel-importance').value = 'medium';
+            intelRender();
+        }
+
+        function intelDelete(id) {
+            const items = intelLoad().filter(i => i.id !== id);
+            intelSave(items);
+            intelRender();
+        }
+
+        function intelToggleRead(id) {
+            const items = intelLoad();
+            const item = items.find(i => i.id === id);
+            if (item) item.read = !item.read;
+            intelSave(items);
+            intelRender();
+        }
+
+        function intelRender() {
+            const items = intelLoad();
+            const catFilter = document.getElementById('intel-filter').value;
+            const impFilter = document.getElementById('intel-importance-filter').value;
+
+            // Stats
+            const counts = { 'ai-news': 0, 'industry': 0, 'competitor': 0, 'opportunity': 0 };
+            items.forEach(i => { if (counts[i.category] !== undefined) counts[i.category]++; });
+            document.getElementById('intel-count-ai').textContent = counts['ai-news'];
+            document.getElementById('intel-count-industry').textContent = counts['industry'];
+            document.getElementById('intel-count-competitor').textContent = counts['competitor'];
+            document.getElementById('intel-count-opportunity').textContent = counts['opportunity'];
+
+            // Filter
+            let filtered = items;
+            if (catFilter !== 'all') filtered = filtered.filter(i => i.category === catFilter);
+            if (impFilter !== 'all') filtered = filtered.filter(i => i.importance === impFilter);
+
+            // Sort: importance (critical > high > medium > low), then date desc
+            const impOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+            filtered.sort((a, b) => {
+                const d = (impOrder[a.importance] || 3) - (impOrder[b.importance] || 3);
+                if (d !== 0) return d;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            // Render feed
+            const feed = document.getElementById('intel-feed');
+            if (filtered.length === 0) {
+                feed.innerHTML = '<div style="text-align:center; padding:3rem; color:rgba(255,255,255,0.3); font-family:Inter,sans-serif;">No intel items yet. Add your first item above.</div>';
+                return;
+            }
+
+            feed.innerHTML = filtered.map(item => {
+                const cat = INTEL_CATEGORIES[item.category] || INTEL_CATEGORIES['ai-news'];
+                const imp = INTEL_IMPORTANCE[item.importance] || INTEL_IMPORTANCE['medium'];
+                const dateStr = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const readOpacity = item.read ? '0.5' : '1';
+                const urlLink = item.url ? `<a href="${item.url}" target="_blank" rel="noopener" style="color:${cat.color}; font-size:0.75rem; text-decoration:none; opacity:0.8;">🔗 Source</a>` : '';
+
+                return `<div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-left:3px solid ${cat.color}; border-radius:0.75rem; padding:1rem 1.25rem; backdrop-filter:blur(12px); opacity:${readOpacity}; transition:opacity 0.3s;">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                                <span style="font-size:0.85rem;">${cat.icon}</span>
+                                <span style="color:${cat.color}; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; font-family:Inter,sans-serif;">${cat.label}</span>
+                                <span style="background:${imp.bg}; color:${imp.color}; font-size:0.6rem; font-weight:700; padding:0.15rem 0.5rem; border-radius:0.25rem; font-family:Inter,sans-serif; letter-spacing:0.05em;">${imp.label}</span>
+                                <span style="color:rgba(255,255,255,0.3); font-size:0.7rem; font-family:Inter,sans-serif;">${dateStr}</span>
+                                ${item.source ? `<span style="color:rgba(255,255,255,0.25); font-size:0.7rem; font-family:Inter,sans-serif;">via ${item.source}</span>` : ''}
+                            </div>
+                            <div style="color:#fff; font-family:Inter,sans-serif; font-size:0.9rem; font-weight:500; margin-bottom:${item.notes ? '0.4rem' : '0'};">${item.title}</div>
+                            ${item.notes ? `<div style="color:rgba(255,255,255,0.5); font-family:Inter,sans-serif; font-size:0.8rem; line-height:1.4;">${item.notes}</div>` : ''}
+                            ${urlLink ? `<div style="margin-top:0.4rem;">${urlLink}</div>` : ''}
+                        </div>
+                        <div style="display:flex; gap:0.3rem; flex-shrink:0;">
+                            <button onclick="intelToggleRead(${item.id})" title="${item.read ? 'Mark unread' : 'Mark read'}" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); border-radius:0.4rem; width:28px; height:28px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;">${item.read ? '📖' : '✓'}</button>
+                            <button onclick="intelDelete(${item.id})" title="Delete" style="background:rgba(255,50,50,0.08); border:1px solid rgba(255,50,50,0.15); color:rgba(255,100,100,0.7); border-radius:0.4rem; width:28px; height:28px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;">✕</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            intelLoadBrief();
+        }
+
+        function toggleIntel() {
+            const panel = document.getElementById('intel-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                intelRender();
+                intelLoadBrief();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function revRender() {
+            if (!revData) return;
+            const { streams, summary } = revData;
+
+            // Summary cards
+            document.getElementById('rev-sum-daily').textContent = revFmt(summary.daily_total);
+            document.getElementById('rev-sum-weekly').textContent = revFmt(summary.weekly_total);
+            document.getElementById('rev-sum-monthly').textContent = revFmt(summary.monthly_total);
+            document.getElementById('rev-sum-yearly').textContent = revFmt(summary.yearly_total);
+            document.getElementById('rev-sum-staked').textContent = revFmt(summary.staked_total);
+
+            // Gauge — monthly income vs goal
+            const monthlyIncome = revParseDollar(summary.monthly_total);
+            const goal = parseInt(localStorage.getItem(REV_GOAL_KEY)) || 10000;
+            const pct = goal > 0 ? Math.min(Math.round((monthlyIncome / goal) * 100), 100) : 0;
+            const deg = (pct / 100) * 360;
+            const color = pct >= 100 ? '#00ff88' : pct >= 50 ? '#00f5ff' : '#b829dd';
+            const gaugeEl = document.getElementById('rev-gauge');
+            gaugeEl.style.background = `conic-gradient(${color} 0deg, ${color} ${deg}deg, rgba(255,255,255,0.06) ${deg}deg)`;
+            document.getElementById('rev-gauge-pct').textContent = pct + '%';
+            document.getElementById('rev-gauge-pct').style.color = color;
+            document.getElementById('rev-gauge-mrr').textContent = revFmtCurrency(monthlyIncome) + '/mo';
+            document.getElementById('rev-goal-display').textContent = revFmtCurrency(goal);
+
+            // Portfolio snapshot
+            const projProfit = revParseDollar(summary.projected_profit);
+            document.getElementById('rev-proj-profit').textContent = projProfit > 0 ? revFmtCurrency(projProfit) : revFmt(summary.projected_profit);
+            const activeStreams = streams.filter(s => s.Status && s.Status.includes('Active')).length;
+            document.getElementById('rev-proj-streams').textContent = activeStreams;
+
+            // Avg daily growth
+            const growths = streams.map(s => parseFloat(String(s.Daily_Growth || '0').replace('%', ''))).filter(g => g > 0);
+            const avgGrowth = growths.length > 0 ? (growths.reduce((a, b) => a + b, 0) / growths.length).toFixed(2) : '0';
+            document.getElementById('rev-proj-growth').textContent = avgGrowth + '%';
+
+            // Bar chart — daily income per stream
+            revRenderChart(streams);
+
+            // Streams table
+            revRenderStreams(streams);
+        }
+
+        function revRenderChart(streams) {
+            const chart = document.getElementById('rev-chart');
+            const items = streams.filter(s => s.Stream_Name);
+            if (items.length === 0) {
+                chart.innerHTML = '<div style="display:flex; align-items:center; justify-content:center; width:100%; color:rgba(255,255,255,0.3); font-family:Inter,sans-serif; font-size:0.85rem;">No daily income data</div>';
+                return;
+            }
+            const vals = items.map(s => ({ name: (s.Stream_Name || '').replace(/^(Crypto: |BYTNEX |Bytnex )/i, '').substring(0, 18), value: revParseDollar(s['1_Day']) }));
+            const maxVal = Math.max(...vals.map(v => v.value), 1);
+            chart.innerHTML = vals.map(v => {
+                const heightPct = (v.value / maxVal) * 100;
+                const barColor = v.value > 0 ? 'linear-gradient(to top, #00ff88, #00f5ff)' : 'rgba(255,255,255,0.06)';
+                return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:0.4rem; min-width:50px;">
+                    <span style="color:rgba(255,255,255,0.5); font-size:0.65rem; font-family:Inter,sans-serif;">${v.value > 0 ? revFmtCurrency(v.value) : ''}</span>
+                    <div style="width:100%; max-width:60px; height:${Math.max(heightPct, 2)}%; background:${barColor}; border-radius:0.4rem 0.4rem 0 0; min-height:4px; transition:height 0.4s ease;"></div>
+                    <span style="color:rgba(255,255,255,0.35); font-size:0.6rem; font-family:Inter,sans-serif; font-weight:500; text-align:center; line-height:1.2; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${v.name}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function revRenderStreams(streams) {
+            const tbody = document.getElementById('rev-streams-tbody');
+            const loading = document.getElementById('rev-loading');
+            if (streams.length === 0) {
+                loading.textContent = 'No active income streams found.';
+                loading.style.display = 'block';
+                tbody.innerHTML = '';
+                return;
+            }
+            loading.style.display = 'none';
+
+            const tierColors = { 'High': '#00ff88', 'Medium': '#ffaa00', 'New': '#aaa' };
+
+            function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+            tbody.innerHTML = streams.map(s => {
+                const tierRaw = s['Monitoring_Tier'] || '';
+                const tierLabel = tierRaw.replace(/[^\w\s]/g, '').trim();
+                const tierColor = tierColors[tierLabel] || '#aaa';
+                const isActive = (s.Status || '').includes('Active');
+                const statusColor = isActive ? '#00ff88' : '#ff4466';
+                const statusBg = isActive ? 'rgba(0,255,136,0.1)' : 'rgba(255,68,102,0.1)';
+                return `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <td style="padding:0.6rem 0.75rem; color:#fff; font-size:0.8rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${esc(s.Stream_Name || '')}">${esc(s.Stream_Name || '—')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:rgba(255,255,255,0.5); font-size:0.8rem; text-align:center;">${esc(s.Source_Platform || '—')}</td>
+                    <td style="padding:0.6rem 0.75rem; text-align:center;">
+                        <span style="background:${statusBg}; color:${statusColor}; padding:0.15rem 0.55rem; border-radius:1rem; font-size:0.7rem; font-weight:500;">${isActive ? 'Active' : 'Inactive'}</span>
+                    </td>
+                    <td style="padding:0.6rem 0.75rem; color:#ffaa00; font-size:0.8rem; text-align:right; font-weight:500;">${revFmt(s['Staked_Balance'] || '')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:#00ff88; font-size:0.8rem; text-align:right; font-weight:600;">${revFmt(s['1_Day'] || '')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:#00f5ff; font-size:0.8rem; text-align:right;">${revFmt(s['30_Days'] || '')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:#b829dd; font-size:0.8rem; text-align:right;">${revFmt(s['365_Days'] || '')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:#00ff88; font-size:0.8rem; text-align:right; font-weight:600;">${revFmt(s['Projected_Profit'] || '')}</td>
+                    <td style="padding:0.6rem 0.75rem; color:rgba(255,255,255,0.6); font-size:0.8rem; text-align:center;">${esc(s['Cumulative_ROI'] || '—')}</td>
+                    <td style="padding:0.6rem 0.75rem; text-align:center;">
+                        <span style="color:${tierColor}; font-size:0.75rem; font-weight:500;">${tierLabel || '—'}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function revEditGoal() {
+            const display = document.getElementById('rev-goal-display');
+            const input = document.getElementById('rev-goal-input');
+            input.value = parseInt(localStorage.getItem(REV_GOAL_KEY)) || 10000;
+            display.style.display = 'none';
+            input.style.display = 'inline-block';
+            input.focus();
+            input.select();
+        }
+
+        function revSaveGoal() {
+            const display = document.getElementById('rev-goal-display');
+            const input = document.getElementById('rev-goal-input');
+            const val = parseInt(input.value);
+            if (!isNaN(val) && val > 0) {
+                localStorage.setItem(REV_GOAL_KEY, val);
+            }
+            display.style.display = 'inline';
+            input.style.display = 'none';
+            revRender();
         }
 
         // ── Drive File Browser ───────────────────────────────────────────────

@@ -20,7 +20,7 @@ const NOTION_API_KEY = (() => {
     try { const k = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/NOTION_API_KEY="?([^"\n]+)"?/)?.[1]?.trim(); if (k) return k; } catch(e) {}
     return process.env.NOTION_API_KEY || '';
 })();
-const NOTION_DB_ID = '2f797f89-9129-80f7-99d0-000b3bf2f347';
+const NOTION_DB_ID = '2f797f89-9129-8068-b8ae-c4321d1c72b7';
 
 // State
 const STATE_FILE = path.join(process.env.HOME, 'openclaw/shared/sprint_mode.json');
@@ -41,6 +41,12 @@ const PRIORITY_ORDER = ['Critical', 'High', 'Medium', 'Low'];
 
 // Track Jarvis unblock attempts: taskId → { attempts, createdAt, jarvisTaskId }
 let jarvisAttempts = {};
+
+// Role → openclaw account mapping for Telegram check-ins
+const ROLE_ACCOUNT_MAP = {
+    'CTO': 'cto', 'COO': 'anita', 'CSO': 'nicole',
+    'Chief Engineer': 'chief-engineer', 'CFO': 'cfo'
+};
 
 // ─── Logging ───────────────────────────────────────────────
 
@@ -423,6 +429,7 @@ async function runSprintCycle() {
                         } else {
                             await updateTaskStatus(task.id, 'On Hold');
                             actionsTaken.push(`⏸️ TAS-${task.idNumber} (${role}): → On Hold (Jarvis couldn't unblock)`);
+                            sendTelegramNotification(`⏸️ <b>Task On Hold</b>\nTAS-${task.idNumber} — "${task.title}"\nAssigned: ${role}\nReason: Jarvis couldn't unblock after ${ja.attempts} attempt(s). Needs CEO decision.`);
                         }
                         delete jarvisAttempts[task.id];
                     }
@@ -720,6 +727,60 @@ async function reassignTask(task, newRole) {
     return result.status === 200;
 }
 
+// ─── Agent Sprint Check-Ins ───────────────────────────────
+
+/**
+ * On sprint activation, each agent queries their actionable tasks and
+ * Telegrams their status: "I have X tasks: [list]" or "0 tasks, standing by."
+ * Uses the local /mc/agent-tasks endpoint to avoid duplicate Notion queries.
+ */
+async function sendAgentCheckIns() {
+    const http = require('http');
+    try {
+        const data = await new Promise((resolve, reject) => {
+            http.get('http://localhost:8899/mc/agent-tasks', (res) => {
+                let body = '';
+                res.on('data', c => body += c);
+                res.on('end', () => {
+                    try { resolve(JSON.parse(body)); } catch(e) { reject(e); }
+                });
+            }).on('error', reject);
+        });
+
+        if (!data.agents) return;
+
+        for (const [role, info] of Object.entries(data.agents)) {
+            const account = ROLE_ACCOUNT_MAP[role];
+            if (!account) continue;
+
+            const actionable = info.actionableList || [];
+            const count = actionable.length;
+            let msg;
+
+            if (count === 0) {
+                msg = `🏃 Sprint activated — ${role}: 0 actionable tasks. Standing by for assignments.`;
+            } else {
+                const taskLines = actionable.slice(0, 5).map(t => {
+                    const due = t.dueDate ? ` (due: ${t.dueDate})` : ' (no due)';
+                    return `• TAS-${t.idNumber} — ${t.title}${due}`;
+                }).join('\n');
+                const extra = count > 5 ? `\n...and ${count - 5} more` : '';
+                msg = `🏃 Sprint activated — ${role}: ${count} actionable task${count > 1 ? 's' : ''}:\n${taskLines}${extra}`;
+            }
+
+            // Send via openclaw CLI (non-blocking)
+            const { exec } = require('child_process');
+            exec(`openclaw message send --channel telegram --account ${account} --target 5205160024 --message ${JSON.stringify(msg)}`,
+                { timeout: 30000 },
+                (err) => { if (err) log(`Check-in send failed for ${role}: ${err.message}`); }
+            );
+            log(`Sprint check-in sent for ${role}: ${count} actionable tasks`);
+        }
+    } catch(e) {
+        log(`Agent check-ins failed: ${e.message}`);
+    }
+}
+
 // ─── Activate / Deactivate ─────────────────────────────────
 
 function activate(trigger = 'manual') {
@@ -752,6 +813,9 @@ function activate(trigger = 'manual') {
     startHistorySession(trigger);
     opsLog.logEvent('sprint', '🏃', `Sprint ACTIVATED (${triggerLabel})`, { trigger });
     sendTelegramNotification(`🏃 <b>Sprint Mode ACTIVATED</b>\n${triggerLabel}\n\nGoal: ZERO open tasks.\nRules: 1 task at a time per agent. Mark completed as "Review" (not Done). Blocked → Jarvis unblock → Hold/Reassign.`);
+
+    // Agent check-ins: each agent Telegrams their actionable task count
+    sendAgentCheckIns().catch(e => log(`Agent check-ins error: ${e.message}`));
 
     // Cool iMessage to Sidney
     const openCount = state.openTasks || '?';
