@@ -109,6 +109,16 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'delegations.html'), 'text/html');
         return;
     }
+
+    // Revenue page
+    if (pathname === '/revenue' || pathname === '/revenue.html') {
+        serveFile(res, path.join(__dirname, 'revenue.html'), 'text/html');
+        return;
+    }
+    if (pathname === '/funnel' || pathname === '/funnel.html') {
+        serveFile(res, path.join(__dirname, 'funnel.html'), 'text/html');
+        return;
+    }
     
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
@@ -210,6 +220,9 @@ const server = http.createServer((req, res) => {
         case '/mc/brain':
             getBrainStatus(req, res);
             break;
+        case '/mc/migration':
+            getMigrationStatus(req, res);
+            break;
         case '/mc/brain-run':
             exec('launchctl start ai.dwe.brain-trainer', (err) => {
                 res.setHeader('Content-Type', 'application/json');
@@ -239,6 +252,9 @@ const server = http.createServer((req, res) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err }));
             });
+            break;
+        case '/mc/newsletters':
+            runNewsletterDigest(req, res, parsedUrl.query);
             break;
         case '/mc/openclaw-version':
             getOpenclawVersion(req, res);
@@ -395,11 +411,136 @@ const server = http.createServer((req, res) => {
                 res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
             }
             break;
+        case '/mc/wf2-config':
+            handleWF2Config(req, res);
+            break;
+        case '/mc/pipeline-products':
+            getPipelineProducts(req, res);
+            break;
+        case '/mc/graduate-product':
+            handleGraduateProduct(req, res);
+            break;
+        case '/mc/mqt-price':
+            getMqtPrice(req, res);
+            break;
+        case '/mc/prospects':
+            getProspects(req, res, parsedUrl.query);
+            break;
+        case '/mc/prospects/add':
+            addProspect(req, res, parsedUrl.query);
+            break;
+        case '/mc/prospects/update':
+            updateProspect(req, res, parsedUrl.query);
+            break;
+        case '/mc/prospects/stats':
+            getProspectStats(req, res, parsedUrl.query);
+            break;
+        case '/mc/pipelines':
+            listPipelines(req, res);
+            break;
         default:
             res.writeHead(404, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Not found' }));
     }
 });
+
+// ── WF2 Config — dynamic keywords & subreddits via Google Sheets ─────
+function handleWF2Config(req, res) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const RANGE = 'WF2_Config!A1:B10';
+
+    if (req.method === 'GET') {
+        const opts = {
+            hostname: 'gateway.maton.ai',
+            path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${RANGE}`,
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+        };
+        const apiReq = https.request(opts, (apiRes) => {
+            let body = '';
+            apiRes.on('data', chunk => body += chunk);
+            apiRes.on('end', () => {
+                try {
+                    const raw = JSON.parse(body);
+                    const rows = raw.values || [];
+                    const config = {};
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i][0]) config[rows[i][0]] = rows[i][1] || '';
+                    }
+                    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                    res.end(JSON.stringify({
+                        ok: true,
+                        subreddits: (config.subreddits || '').split(',').map(s => s.trim()).filter(Boolean),
+                        keywords: (config.keywords || '').split(',').map(s => s.trim()).filter(Boolean),
+                        last_updated: config.last_updated || ''
+                    }));
+                } catch(e) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+                }
+            });
+        });
+        apiReq.on('error', (e) => {
+            res.writeHead(502, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + e.message }));
+        });
+        apiReq.end();
+
+    } else if (req.method === 'POST') {
+        let reqBody = '';
+        req.on('data', chunk => reqBody += chunk);
+        req.on('end', () => {
+            try {
+                const { subreddits, keywords } = JSON.parse(reqBody);
+                const now = new Date().toISOString();
+                const payload = JSON.stringify({
+                    values: [
+                        [subreddits || ''],
+                        [keywords || ''],
+                        [now]
+                    ]
+                });
+                const opts = {
+                    hostname: 'gateway.maton.ai',
+                    path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/WF2_Config!B2:B4?valueInputOption=RAW`,
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${MATON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(payload)
+                    }
+                };
+                const apiReq = https.request(opts, (apiRes) => {
+                    let body = '';
+                    apiRes.on('data', chunk => body += chunk);
+                    apiRes.on('end', () => {
+                        try {
+                            const result = JSON.parse(body);
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ ok: true, updated: now, cells: result.updatedCells || 0 }));
+                        } catch(e) {
+                            res.writeHead(500, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+                        }
+                    });
+                });
+                apiReq.on('error', (e) => {
+                    res.writeHead(502, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + e.message }));
+                });
+                apiReq.write(payload);
+                apiReq.end();
+            } catch(e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: e.message }));
+            }
+        });
+    } else {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'GET or POST only' }));
+    }
+}
 
 // DWE Widget Status Handler
 async function handleDWEStatus(req, res) {
@@ -444,7 +585,7 @@ function serveFile(res, filePath, contentType) {
 function getIncomeOps(req, res) {
     const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
     const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
-    const apiPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/IncomeOps_Monitor!A1:V50`;
+    const apiPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/IncomeOps_Monitor!A1:W50`;
 
     const opts = {
         hostname: 'gateway.maton.ai',
@@ -473,6 +614,22 @@ function getIncomeOps(req, res) {
                     return obj;
                 });
 
+                // Split streams by Income Type
+                const cashflowStreams = streams.filter(s => s.Income_Type === 'Cash Flow');
+                const longtermStreams = streams.filter(s => s.Income_Type !== 'Cash Flow');
+
+                // Parse dollar values for summing
+                const parseDollar = (v) => parseFloat((v || '$0').replace(/[$,]/g, '')) || 0;
+                const cashflowMonthly = cashflowStreams.reduce((sum, s) => sum + parseDollar(s['30_Days']), 0);
+                const longtermMonthly = longtermStreams.reduce((sum, s) => sum + parseDollar(s['30_Days']), 0);
+
+                // Sort: Cash Flow first, then by 30-day desc
+                streams.sort((a, b) => {
+                    if (a.Income_Type === 'Cash Flow' && b.Income_Type !== 'Cash Flow') return -1;
+                    if (a.Income_Type !== 'Cash Flow' && b.Income_Type === 'Cash Flow') return 1;
+                    return parseDollar(b['30_Days']) - parseDollar(a['30_Days']);
+                });
+
                 // Summary row (row 1, index 0) has totals in specific columns
                 const summaryRow = rows[0] || [];
                 const cashflowRow = rows[1] || [];
@@ -486,7 +643,16 @@ function getIncomeOps(req, res) {
                 };
 
                 res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
-                res.end(JSON.stringify({ ok: true, streams, summary, updated: new Date().toISOString() }));
+                res.end(JSON.stringify({
+                    ok: true,
+                    streams,
+                    cashflow_streams: cashflowStreams,
+                    longterm_streams: longtermStreams,
+                    cashflow_monthly: '$' + cashflowMonthly.toFixed(2),
+                    longterm_monthly: '$' + longtermMonthly.toFixed(2),
+                    summary,
+                    updated: new Date().toISOString()
+                }));
             } catch(e) {
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
@@ -500,6 +666,497 @@ function getIncomeOps(req, res) {
     });
 
     apiReq.end();
+}
+
+// ── MQT Price — fetches live MQT price from DexScreener ───────────────
+function getMqtPrice(req, res) {
+    const MQT_CONTRACT = '0xef0cdae2FfEEeFA539a244a16b3f46ba75b8c810';
+    const apiUrl = `https://api.dexscreener.com/latest/dex/tokens/${MQT_CONTRACT}`;
+
+    https.get(apiUrl, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const pairs = data.pairs || [];
+                if (pairs.length === 0) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'No pairs found for MQT' }));
+                    return;
+                }
+                const price = parseFloat(pairs[0].priceUsd) || 0;
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({
+                    ok: true,
+                    price,
+                    symbol: 'MQT',
+                    source: 'DexScreener',
+                    pair: pairs[0].pairAddress,
+                    updated: new Date().toISOString()
+                }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+            }
+        });
+    }).on('error', (e) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'DexScreener API error: ' + e.message }));
+    });
+}
+
+// ── Prospect Pipeline — replicable funnel system ──────────────────────
+
+const PIPELINES_DIR = path.join(require('os').homedir(), 'openclaw/shared/config/pipelines');
+
+function loadPipelineConfig(pipelineId) {
+    const configPath = path.join(PIPELINES_DIR, pipelineId || 'dwe-marketing', 'pipeline.json');
+    try { return JSON.parse(fs.readFileSync(configPath, 'utf8')); }
+    catch(e) { return null; }
+}
+
+function listPipelines(req, res) {
+    try {
+        const dirs = fs.readdirSync(PIPELINES_DIR).filter(d =>
+            d !== '_template' && fs.existsSync(path.join(PIPELINES_DIR, d, 'pipeline.json'))
+        );
+        const pipelines = dirs.map(d => {
+            const cfg = loadPipelineConfig(d);
+            return cfg ? { id: cfg.pipeline_id, name: cfg.name, active: cfg.active, industry: cfg.industry_focus } : null;
+        }).filter(Boolean);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, pipelines }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+function getProspects(req, res, query) {
+    const cfg = loadPipelineConfig(query.pipeline);
+    if (!cfg) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Pipeline not found' })); return; }
+
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+
+    const opts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
+
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                const header = rows[0] || [];
+                const prospects = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => {
+                    const obj = {};
+                    header.forEach((col, i) => { obj[col] = (r[i] || '').trim(); });
+                    return obj;
+                });
+                // Stage counts
+                const stages = {};
+                prospects.forEach(p => { const s = p.Funnel_Stage || 'New'; stages[s] = (stages[s] || 0) + 1; });
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({ ok: true, pipeline: cfg.pipeline_id, prospects, stage_counts: stages, total: prospects.length }));
+            } catch(e) { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message })); }
+        });
+    });
+    apiReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+    apiReq.end();
+}
+
+function addProspect(req, res, query) {
+    if (req.method !== 'POST') { res.writeHead(405, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'POST required' })); return; }
+
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+        try {
+            const data = JSON.parse(body);
+            const cfg = loadPipelineConfig(query.pipeline);
+            if (!cfg) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Pipeline not found' })); return; }
+
+            const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+            const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+            const now = new Date().toISOString().split('T')[0];
+
+            // First, read to get next ID
+            const range = encodeURIComponent(cfg.sheet_tab + '!A:A');
+            const readOpts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
+
+            const readReq = https.request(readOpts, (readRes) => {
+                let readBody = '';
+                readRes.on('data', chunk => readBody += chunk);
+                readRes.on('end', () => {
+                    let nextId = 1;
+                    try {
+                        const ids = JSON.parse(readBody).values || [];
+                        ids.forEach(r => { const m = (r[0] || '').match(/PP-(\d+)/); if (m) nextId = Math.max(nextId, parseInt(m[1]) + 1); });
+                    } catch(e) {}
+                    const leadId = 'PP-' + String(nextId).padStart(4, '0');
+
+                    const row = [
+                        leadId,
+                        data.business_name || '',
+                        data.url || '',
+                        data.industry || '',
+                        data.location || '',
+                        data.lead_score || '',
+                        '', // Audit_Score (empty until audited)
+                        'New',
+                        data.funding_signal || 'No',
+                        data.contact_email || '',
+                        data.contact_name || '',
+                        data.source || '',
+                        now,
+                        now,
+                        '', '', '', '',
+                        data.notes || ''
+                    ];
+
+                    const appendRange = encodeURIComponent(cfg.sheet_tab + '!A:S');
+                    const appendPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${appendRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+                    const writeOpts = { hostname: 'gateway.maton.ai', path: appendPath, method: 'POST', headers: { 'Authorization': `Bearer ${MATON_KEY}`, 'Content-Type': 'application/json' } };
+
+                    const writeReq = https.request(writeOpts, (writeRes) => {
+                        let writeBody = '';
+                        writeRes.on('data', chunk => writeBody += chunk);
+                        writeRes.on('end', () => {
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ ok: true, lead_id: leadId, pipeline: cfg.pipeline_id }));
+                        });
+                    });
+                    writeReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+                    writeReq.end(JSON.stringify({ values: [row] }));
+                });
+            });
+            readReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+            readReq.end();
+        } catch(e) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Invalid JSON: ' + e.message })); }
+    });
+}
+
+function updateProspect(req, res, query) {
+    if (req.method !== 'PUT') { res.writeHead(405, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'PUT required' })); return; }
+
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+        try {
+            const data = JSON.parse(body);
+            const cfg = loadPipelineConfig(query.pipeline);
+            if (!cfg) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Pipeline not found' })); return; }
+            if (!data.lead_id) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'lead_id required' })); return; }
+
+            const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+            const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+
+            // Read all data to find the row
+            const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+            const readOpts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
+
+            const readReq = https.request(readOpts, (readRes) => {
+                let readBody = '';
+                readRes.on('data', chunk => readBody += chunk);
+                readRes.on('end', () => {
+                    try {
+                        const raw = JSON.parse(readBody);
+                        const rows = raw.values || [];
+                        const header = rows[0] || [];
+                        let rowIdx = -1;
+                        for (let i = 1; i < rows.length; i++) {
+                            if ((rows[i][0] || '').trim() === data.lead_id) { rowIdx = i; break; }
+                        }
+                        if (rowIdx === -1) { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Lead not found' })); return; }
+
+                        // Merge updates into existing row
+                        const existing = rows[rowIdx];
+                        const fieldMap = {};
+                        header.forEach((h, i) => { fieldMap[h] = i; });
+
+                        // Apply updates
+                        const updatable = ['Audit_Score', 'Funnel_Stage', 'Funding_Signal', 'Last_Activity', 'Audit_Report_Path', 'Outreach_Status', 'Product_Offered', 'Monthly_Value', 'Notes', 'Contact_Email', 'Contact_Name'];
+                        updatable.forEach(f => {
+                            if (data[f] !== undefined && fieldMap[f] !== undefined) {
+                                while (existing.length <= fieldMap[f]) existing.push('');
+                                existing[fieldMap[f]] = data[f];
+                            }
+                        });
+                        // Always update Last_Activity
+                        if (fieldMap['Last_Activity'] !== undefined) {
+                            while (existing.length <= fieldMap['Last_Activity']) existing.push('');
+                            existing[fieldMap['Last_Activity']] = new Date().toISOString().split('T')[0];
+                        }
+
+                        const sheetRow = rowIdx + 1; // 1-indexed
+                        const writeRange = encodeURIComponent(cfg.sheet_tab + `!A${sheetRow}:S${sheetRow}`);
+                        const writePath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${writeRange}?valueInputOption=USER_ENTERED`;
+                        const writeOpts = { hostname: 'gateway.maton.ai', path: writePath, method: 'PUT', headers: { 'Authorization': `Bearer ${MATON_KEY}`, 'Content-Type': 'application/json' } };
+
+                        const writeReq = https.request(writeOpts, (writeRes) => {
+                            let writeBody = '';
+                            writeRes.on('data', chunk => writeBody += chunk);
+                            writeRes.on('end', () => {
+                                res.writeHead(200, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ ok: true, lead_id: data.lead_id, updated_row: sheetRow }));
+                            });
+                        });
+                        writeReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+                        writeReq.end(JSON.stringify({ values: [existing] }));
+                    } catch(e) { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message })); }
+                });
+            });
+            readReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+            readReq.end();
+        } catch(e) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Invalid JSON: ' + e.message })); }
+    });
+}
+
+function getProspectStats(req, res, query) {
+    const cfg = loadPipelineConfig(query.pipeline);
+    if (!cfg) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Pipeline not found' })); return; }
+
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+
+    const opts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
+
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                const header = rows[0] || [];
+                const data = rows.slice(1).filter(r => r[0] && r[0].trim());
+
+                const stageIdx = header.indexOf('Funnel_Stage');
+                const scoreIdx = header.indexOf('Audit_Score');
+                const valueIdx = header.indexOf('Monthly_Value');
+                const fundingIdx = header.indexOf('Funding_Signal');
+
+                const stages = {};
+                const stageOrder = ['New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
+                stageOrder.forEach(s => stages[s] = 0);
+
+                let totalValue = 0;
+                let totalScore = 0;
+                let scoredCount = 0;
+                let fundingLeads = 0;
+
+                data.forEach(r => {
+                    const stage = (r[stageIdx] || 'New').trim();
+                    stages[stage] = (stages[stage] || 0) + 1;
+                    const val = parseFloat((r[valueIdx] || '0').replace(/[$,]/g, '')) || 0;
+                    totalValue += val;
+                    const score = parseFloat(r[scoreIdx] || '0') || 0;
+                    if (score > 0) { totalScore += score; scoredCount++; }
+                    if ((r[fundingIdx] || '').trim().toLowerCase() !== 'no' && (r[fundingIdx] || '').trim() !== '') fundingLeads++;
+                });
+
+                // Conversion rates
+                const conversions = {};
+                for (let i = 0; i < stageOrder.length - 1; i++) {
+                    const from = stageOrder[i];
+                    const laterSum = stageOrder.slice(i + 1).reduce((s, st) => s + (stages[st] || 0), 0);
+                    const fromTotal = (stages[from] || 0) + laterSum;
+                    conversions[from + ' → ' + stageOrder[i + 1]] = fromTotal > 0 ? Math.round((laterSum / fromTotal) * 100) + '%' : '0%';
+                }
+
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({
+                    ok: true,
+                    pipeline: cfg.pipeline_id,
+                    total: data.length,
+                    stages,
+                    conversions,
+                    pipeline_value: '$' + totalValue.toFixed(0),
+                    avg_audit_score: scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0,
+                    funding_leads: fundingLeads,
+                    products: cfg.products
+                }));
+            } catch(e) { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message })); }
+        });
+    });
+    apiReq.on('error', (e) => { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); });
+    apiReq.end();
+}
+
+// ── Pipeline Products — reads GO products from Product_Pipeline sheet ──
+function getPipelineProducts(req, res) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const apiPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/Product_Pipeline!A1:K50`;
+
+    const opts = {
+        hostname: 'gateway.maton.ai',
+        path: apiPath,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+    };
+
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                const header = rows[0] || [];
+                const dataRows = rows.slice(1);
+
+                const products = dataRows.filter(r => r[0] && r[0].trim()).map((r, idx) => {
+                    const obj = { _row: idx + 2 }; // 1-indexed, header is row 1
+                    header.forEach((col, i) => {
+                        const key = col.trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+                        obj[key] = (r[i] || '').trim();
+                    });
+                    return obj;
+                });
+
+                // Filter to GO products that are Ready to Launch (not yet graduated)
+                const goProducts = products.filter(p =>
+                    p.VERDICT === 'GO' &&
+                    p.Status === 'Ready to Launch'
+                );
+
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+                res.end(JSON.stringify({ ok: true, products: goProducts, total: products.length, updated: new Date().toISOString() }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+            }
+        });
+    });
+
+    apiReq.on('error', (e) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + e.message }));
+    });
+
+    apiReq.end();
+}
+
+// ── Graduate Product — moves product from Pipeline → IncomeOps ─────────
+function handleGraduateProduct(req, res) {
+    if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'POST only' }));
+        return;
+    }
+
+    let reqBody = '';
+    req.on('data', chunk => reqBody += chunk);
+    req.on('end', () => {
+        try {
+            const { source_id, product_name, price, row_number } = JSON.parse(reqBody);
+            if (!source_id || !product_name) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'source_id and product_name required' }));
+                return;
+            }
+
+            const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+            const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+            const now = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+            // Step 1: Append new row to IncomeOps_Monitor
+            const newRow = [
+                product_name,           // A: Stream Name
+                source_id,              // B: Contract ID
+                'DWE Product Pipeline', // C: Source Platform
+                now,                    // D: Start Date
+                '',                     // E: End Date
+                '✅ Active',            // F: Status
+                '30',                   // G: Cycle Days
+                '$0',                   // H: Staked Balance
+                '',                     // I: Loan Balance
+                price || '',            // J: Unit Value
+                '',                     // K: Daily Rewards
+                'Y',                    // L: Cashflow
+                '',                     // M: 1 Day ($)
+                '',                     // N: 7 Days ($)
+                '$0',                   // O: 30 Days ($) — updated when revenue starts
+                '$0',                   // P: 365 Days ($)
+                '',                     // Q: Projected Units
+                '',                     // R: Projected Profit
+                '',                     // S: Daily Growth %
+                '',                     // T: Cumulative ROI %
+                '🟢 High',             // U: Monitoring Tier
+                '',                     // V: Notes / Escalation
+                'Cash Flow'             // W: Income Type
+            ];
+
+            const appendPayload = JSON.stringify({ values: [newRow] });
+            const appendOpts = {
+                hostname: 'gateway.maton.ai',
+                path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/IncomeOps_Monitor!A:W:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${MATON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(appendPayload)
+                }
+            };
+
+            const appendReq = https.request(appendOpts, (appendRes) => {
+                let appendBody = '';
+                appendRes.on('data', chunk => appendBody += chunk);
+                appendRes.on('end', () => {
+                    // Step 2: Update Pipeline Status to "Graduated → IncomeOps"
+                    if (row_number) {
+                        const statusPayload = JSON.stringify({ values: [['Graduated → IncomeOps']] });
+                        const statusOpts = {
+                            hostname: 'gateway.maton.ai',
+                            path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/Product_Pipeline!I${row_number}?valueInputOption=RAW`,
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${MATON_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Content-Length': Buffer.byteLength(statusPayload)
+                            }
+                        };
+                        const statusReq = https.request(statusOpts, (statusRes) => {
+                            let statusBody = '';
+                            statusRes.on('data', chunk => statusBody += chunk);
+                            statusRes.on('end', () => {
+                                console.log(`[graduate] ${product_name} (${source_id}) → IncomeOps as Cash Flow`);
+                                res.writeHead(200, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ ok: true, product: product_name, source_id, graduated: now }));
+                            });
+                        });
+                        statusReq.on('error', (e) => {
+                            // Append succeeded but status update failed — still report success with warning
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ ok: true, product: product_name, warning: 'Added to IncomeOps but Pipeline status update failed: ' + e.message }));
+                        });
+                        statusReq.write(statusPayload);
+                        statusReq.end();
+                    } else {
+                        console.log(`[graduate] ${product_name} (${source_id}) → IncomeOps as Cash Flow (no row_number, status not updated)`);
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: true, product: product_name, source_id, graduated: now }));
+                    }
+                });
+            });
+
+            appendReq.on('error', (e) => {
+                res.writeHead(502, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Failed to append to IncomeOps: ' + e.message }));
+            });
+
+            appendReq.write(appendPayload);
+            appendReq.end();
+        } catch(e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
 }
 
 // ── Change_Log — proxies Google Sheets via Maton ────────────────────────
@@ -1309,6 +1966,59 @@ function getBrainStatus(req, res) {
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+// Pinecone dwe-v2 → dwe-v3 Migration Status
+function getMigrationStatus(req, res) {
+    const RESEED_LOG = '/Users/elf-6/openclaw/logs/reseed-v3.log';
+    const PINECONE_KEY = process.env.PINECONE_API_KEY || '';
+    const result = { v3Vectors: null, reseedTotal: 1516, reseedProcessed: 0, reseedFailed: 0, isRunning: false, complete: false, lastLine: '' };
+
+    // Parse reseed log for progress
+    try {
+        if (fs.existsSync(RESEED_LOG)) {
+            const lines = fs.readFileSync(RESEED_LOG, 'utf8').split('\n').filter(l => l.trim());
+            result.lastLine = lines[lines.length - 1] || '';
+            // Count queued files
+            result.reseedProcessed = lines.filter(l => l.includes('Queued:')).length;
+            // Count failures
+            result.reseedFailed = lines.filter(l => l.includes('FAILED to copy')).length;
+            // Check if complete
+            result.complete = lines.some(l => l.includes('RE-SEED COMPLETE'));
+            // Check if running
+            const { execSync } = require('child_process');
+            try { result.isRunning = execSync('pgrep -f reseed_v3.py 2>/dev/null', { stdio: 'pipe' }).toString().trim().length > 0; } catch(e) {}
+        }
+    } catch(e) {}
+
+    // Query Pinecone dwe-v3 stats
+    if (PINECONE_KEY) {
+        const postData = '{}';
+        const opts = {
+            hostname: 'dwe-v3-lm4owoj.svc.aped-4627-b74a.pinecone.io',
+            path: '/describe_index_stats',
+            method: 'POST',
+            headers: { 'Api-Key': PINECONE_KEY, 'Content-Type': 'application/json', 'Content-Length': postData.length }
+        };
+        const preq = https.request(opts, pres => {
+            let data = '';
+            pres.on('data', c => data += c);
+            pres.on('end', () => {
+                try { result.v3Vectors = JSON.parse(data).totalVectorCount || 0; } catch(e) {}
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(result));
+            });
+        });
+        preq.on('error', () => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+        });
+        preq.write(postData);
+        preq.end();
+    } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
     }
 }
 
@@ -2564,6 +3274,37 @@ function copyDriveFile(res, filename) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
     }
+}
+
+// ═══ Newsletter Digest ═══
+function runNewsletterDigest(req, res, query) {
+    const telegram = query && query.telegram === '1' ? '--telegram' : '';
+    const args = ['all', '--json', telegram].filter(Boolean).join(' ');
+    const cmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /opt/homebrew/bin/python3 /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh.json ${args}`;
+
+    // Use the bash script directly but with --json mode
+    const digestCmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh all --json ${telegram}`;
+
+    exec(digestCmd, { timeout: 300000, maxBuffer: 1024 * 1024 * 5, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout, stderr) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        if (err) {
+            res.end(JSON.stringify({ error: err.message, stderr: stderr }));
+            return;
+        }
+        // Find JSON in output (script prints JSON when --json flag used)
+        try {
+            const jsonStart = stdout.indexOf('{"');
+            if (jsonStart >= 0) {
+                const data = JSON.parse(stdout.substring(jsonStart));
+                res.end(JSON.stringify(data));
+            } else {
+                res.end(JSON.stringify({ error: 'No JSON output found', raw: stdout.substring(0, 500) }));
+            }
+        } catch (e) {
+            res.end(JSON.stringify({ error: 'JSON parse error: ' + e.message, raw: stdout.substring(0, 500) }));
+        }
+    });
 }
 
 // Handle errors gracefully

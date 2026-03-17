@@ -341,6 +341,32 @@ function sendTelegramNotification(message) {
     req.end();
 }
 
+// ─── Agent Dispatch (TAS-1097 fix) ────────────────────────
+
+function notifyAgentAssignment(role, taskNumber, taskName, priority) {
+    const account = ROLE_ACCOUNT_MAP[role];
+    if (!account) {
+        log(`No account mapping for role ${role} — skipping agent notification`);
+        return;
+    }
+
+    const msg = `🎯 Sprint Task Assigned: TAS-${taskNumber} — "${taskName}" (${priority})\n\nThis task is now In Progress and assigned to you. Begin work immediately. Update Notion when done and set status to Review.`;
+
+    const { exec } = require('child_process');
+    exec(
+        `openclaw agent --agent ${account} --channel telegram --message ${JSON.stringify(msg)} --deliver`,
+        { timeout: 60000 },
+        (err, stdout, stderr) => {
+            if (err) {
+                log(`Agent dispatch failed for ${role}: ${err.message}`);
+                sendTelegramNotification(`⚠️ Could not dispatch TAS-${taskNumber} to ${role} agent. Task is In Progress but agent may not be aware.`);
+            } else {
+                log(`Agent dispatch OK for ${role}: TAS-${taskNumber}`);
+            }
+        }
+    );
+}
+
 // ─── iMessage Notification ─────────────────────────────────
 
 const IMESSAGE_TO = 'sirsid2001@icloud.com';
@@ -417,6 +443,7 @@ async function runSprintCycle() {
                         await updateTaskStatus(task.id, 'In Progress');
                         delete jarvisAttempts[task.id];
                         actionsTaken.push(`✅ TAS-${task.idNumber} (${role}): Jarvis unblocked → In Progress`);
+                        notifyAgentAssignment(role, task.idNumber, task.name, task.priority);
                     } else if (elapsed > maxWait) {
                         // Jarvis couldn't help in time — hold or reassign
                         log(`Jarvis timed out on TAS-${task.idNumber} after ${Math.round(elapsed/60000)}min`);
@@ -449,6 +476,7 @@ async function runSprintCycle() {
                     assignedAt: new Date().toISOString()
                 };
                 actionsTaken.push(`▶️ ${role}: Assigned TAS-${next.idNumber} "${next.name}" (${next.priority})`);
+                notifyAgentAssignment(role, next.idNumber, next.name, next.priority);
             } else if (activeTasks.length > 1) {
                 // Multiple active — keep highest priority (FIFO tiebreak), pause the rest
                 const sorted = activeTasks.sort((a, b) => {
