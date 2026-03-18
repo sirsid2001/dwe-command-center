@@ -18,8 +18,16 @@
         .refresh-btn:hover { background: rgba(255,170,0,0.2); }
         .pipeline-select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; padding: 0.35rem 0.6rem; font-family: Inter, sans-serif; font-size: 0.8rem; }
         .updated-text { color: rgba(255,255,255,0.3); font-size: 0.7rem; }
+        .cogs-btn { color: rgba(255,255,255,0.4); font-size: 1rem; cursor: pointer; padding: 0.3rem; transition: all 0.2s; text-decoration: none; }
+        .cogs-btn:hover { color: #ffaa00; }
 
         .content { padding: 80px 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+        /* Ops toolbar */
+        .ops-toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .ops-pill { padding: 0.35rem 0.85rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 2rem; color: rgba(255,255,255,0.6); font-size: 0.7rem; font-family: Inter, sans-serif; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .ops-pill:hover { background: rgba(255,170,0,0.1); border-color: rgba(255,170,0,0.3); color: #ffaa00; }
+        .ops-pill .pill-icon { font-size: 0.75rem; }
 
         .card { background: rgba(20,20,40,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.25rem; backdrop-filter: blur(12px); }
         .card-title { color: rgba(255,255,255,0.5); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
@@ -35,16 +43,19 @@
         .stat-card .val.purple { color: #b829dd; }
         .stat-card .sub { color: rgba(255,255,255,0.3); font-size: 0.65rem; margin-top: 0.15rem; }
 
-        /* Funnel visualization */
+        /* Funnel visualization — single row across the page */
         .funnel-stages { display: flex; align-items: stretch; gap: 0; }
-        .funnel-stage { flex: 1; text-align: center; padding: 1rem 0.5rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; }
+        .funnel-stage { flex: 1; text-align: center; padding: 1rem 0.25rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; background: none; }
         .funnel-stage .count { font-size: 1.8rem; font-weight: 800; }
-        .funnel-stage .name { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.3rem; }
-        .funnel-stage .bar { position: absolute; bottom: 0; left: 10%; right: 10%; border-radius: 4px 4px 0 0; transition: height 0.6s ease; }
-        .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 40px; flex-shrink: 0; }
-        .funnel-arrow .rate { font-size: 0.6rem; color: rgba(255,255,255,0.35); font-weight: 500; writing-mode: vertical-rl; }
+        .funnel-stage .name { font-size: 0.6rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.3rem; }
+        .funnel-stage .bar { position: absolute; bottom: 0; left: 15%; right: 15%; height: 3px !important; border-radius: 2px; }
+        .funnel-stage .stage-cogs { position: absolute; top: 4px; right: 6px; color: rgba(255,255,255,0.2); font-size: 0.7rem; text-decoration: none; transition: color 0.2s; }
+        .funnel-stage .stage-cogs:hover { color: #ffaa00; }
+        .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 30px; flex-shrink: 0; }
+        .funnel-arrow .rate { font-size: 0.55rem; color: rgba(255,255,255,0.3); font-weight: 500; writing-mode: vertical-rl; }
 
         /* Stage colors */
+        .stage-leadgen .count { color: #22d3ee; } .stage-leadgen .bar { background: rgba(34,211,238,0.2); }
         .stage-new .count { color: #888; } .stage-new .bar { background: rgba(136,136,136,0.2); }
         .stage-audited .count { color: #00c8ff; } .stage-audited .bar { background: rgba(0,200,255,0.2); }
         .stage-outreach .count { color: #00f5ff; } .stage-outreach .bar { background: rgba(0,245,255,0.2); }
@@ -70,6 +81,7 @@
         .prospects-table td.center { text-align: center; }
 
         .stage-badge { padding: 0.12rem 0.5rem; border-radius: 1rem; font-size: 0.6rem; font-weight: 500; }
+        .stage-badge.leadgen { background: rgba(34,211,238,0.1); color: #22d3ee; }
         .stage-badge.new { background: rgba(136,136,136,0.15); color: #888; }
         .stage-badge.audited { background: rgba(0,200,255,0.1); color: #00c8ff; }
         .stage-badge.outreach { background: rgba(0,245,255,0.1); color: #00f5ff; }
@@ -81,6 +93,10 @@
         .funding-yes { color: #00ff88; font-weight: 600; }
         .funding-maybe { color: #ffaa00; }
         .funding-no { color: rgba(255,255,255,0.3); }
+        .audit-link { color: #00c8ff; text-decoration: none; font-size: 0.6rem; }
+        .audit-link:hover { text-decoration: underline; }
+        .stage-action { display: block; margin-top: 0.25rem; font-size: 0.55rem; color: rgba(255,255,255,0.3); text-decoration: none; }
+        .stage-action:hover { color: #ffaa00; }
 
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .empty-msg { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
@@ -104,10 +120,24 @@
             <button class="refresh-btn" onclick="fetchData()">Refresh</button>
             <a href="/revenue" class="back-btn">Revenue</a>
             <a href="/" class="back-btn">← Dashboard</a>
+            <a id="cogs-link" href="/mc/config?pipeline=dwe-marketing" target="_blank" class="cogs-btn" title="Pipeline Config">⚙</a>
         </div>
     </div>
 
     <div class="content">
+        <!-- Operations Toolbar -->
+        <div class="ops-toolbar">
+            <a id="prospects-api-link" href="/mc/prospects?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">🔗</span> Prospects API</a>
+            <a id="stats-api-link" href="/mc/prospects/stats?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">📈</span> Stats API</a>
+            <a href="/mc/logs/audit" target="_blank" class="ops-pill"><span class="pill-icon">📋</span> Audit Log</a>
+            <a href="/mc/logs/outreach" target="_blank" class="ops-pill"><span class="pill-icon">📤</span> Outreach Log</a>
+            <a id="reports-link" href="/mc/audit-reports?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">📊</span> Audit Reports</a>
+            <a id="drafts-link" href="/mc/outreach-drafts?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">✉️</span> Outreach Drafts</a>
+            <a id="audit-prompt-link" href="/mc/prompt/audit?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">🧠</span> Audit Prompt</a>
+            <a id="outreach-prompt-link" href="/mc/prompt/outreach?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">✍️</span> Outreach Prompt</a>
+            <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80" target="_blank" class="ops-pill"><span class="pill-icon">📄</span> Google Sheet</a>
+        </div>
+
         <!-- Top Stats -->
         <div class="stats-row">
             <div class="stat-card">
@@ -159,6 +189,7 @@
                                 <th class="center">Stage</th>
                                 <th class="center">Funding</th>
                                 <th class="right">Value</th>
+                                <th class="center">Audit</th>
                             </tr>
                         </thead>
                         <tbody id="prospects-tbody"></tbody>
@@ -211,12 +242,21 @@
 
                 render();
                 document.getElementById('updated-text').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+                // Update pipeline-dependent links
+                const p = document.getElementById('pipeline-select').value;
+                document.getElementById('cogs-link').href = '/mc/config?pipeline=' + p;
+                document.getElementById('reports-link').href = '/mc/audit-reports?pipeline=' + p;
+                document.getElementById('drafts-link').href = '/mc/outreach-drafts?pipeline=' + p;
+                document.getElementById('prospects-api-link').href = '/mc/prospects?pipeline=' + p;
+                document.getElementById('stats-api-link').href = '/mc/prospects/stats?pipeline=' + p;
+                document.getElementById('audit-prompt-link').href = '/mc/prompt/audit?pipeline=' + p;
+                document.getElementById('outreach-prompt-link').href = '/mc/prompt/outreach?pipeline=' + p;
             } catch(e) { console.error('Failed to fetch', e); }
         }
 
-        const stageOrder = ['New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
-        const stageClasses = { 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell' };
-        const stageColors = { 'New': '#888', 'Audited': '#00c8ff', 'Outreach Sent': '#00f5ff', 'Responded': '#ffaa00', 'Proposal': '#ff6600', 'Client': '#00ff88', 'Upsell': '#b829dd' };
+        const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
+        const stageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell' };
+        const stageColors = { 'Lead Generation': '#22d3ee', 'New': '#888', 'Audited': '#00c8ff', 'Outreach Sent': '#00f5ff', 'Responded': '#ffaa00', 'Proposal': '#ff6600', 'Client': '#00ff88', 'Upsell': '#b829dd' };
 
         function render() {
             if (!statsData) return;
@@ -232,15 +272,39 @@
             const maxCount = Math.max(...stageOrder.map(s => stages[s] || 0), 1);
             const conversions = statsData.conversions || {};
 
+            const pipeline = document.getElementById('pipeline-select').value;
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+            const stageLinks = {
+                'Lead Generation': { label: 'Sourcing', href: sheetUrl + '/edit#gid=1468071313' },
+                'New': { label: 'View Sheet', href: sheetUrl },
+                'Audited': { label: 'View Reports', href: `/mc/audit-reports?pipeline=${pipeline}` },
+                'Outreach Sent': { label: 'View Drafts', href: `/mc/outreach-drafts?pipeline=${pipeline}` },
+                'Responded': { label: 'View Sheet', href: sheetUrl },
+                'Proposal': { label: 'View Sheet', href: sheetUrl },
+                'Client': { label: 'View Sheet', href: sheetUrl },
+                'Upsell': { label: 'View Sheet', href: sheetUrl }
+            };
+            // Cogs icon for stages with config (top-right of stage)
+            const stageConfig = {
+                'Lead Generation': `/mc/config?pipeline=${pipeline}`,
+                'Audited': `/mc/prompt/audit?pipeline=${pipeline}`,
+                'Outreach Sent': `/mc/prompt/outreach?pipeline=${pipeline}`
+            };
+
             let funnelHtml = '';
             stageOrder.forEach((stage, i) => {
                 const count = stages[stage] || 0;
-                const barHeight = (count / maxCount) * 70;
                 const cls = stageClasses[stage] || 'new';
+                const link = stageLinks[stage];
+                const linkHtml = link ? `<a class="stage-action" href="${link.href}" target="_blank">${link.label}</a>` : '';
+                const configUrl = stageConfig[stage];
+                const cogsHtml = configUrl ? `<a href="${configUrl}" target="_blank" class="stage-cogs" title="Settings">⚙</a>` : '';
                 funnelHtml += `<div class="funnel-stage stage-${cls}">
+                    ${cogsHtml}
                     <div class="count">${count}</div>
                     <div class="name">${esc(stage)}</div>
-                    <div class="bar" style="height:${Math.max(barHeight, 2)}px;"></div>
+                    ${linkHtml}
+                    <div class="bar"></div>
                 </div>`;
                 if (i < stageOrder.length - 1) {
                     const convKey = stage + ' → ' + stageOrder[i + 1];
@@ -279,9 +343,12 @@
             stageOrder.forEach((s, i) => stageWeight[s] = stageOrder.length - i);
             prospects.sort((a, b) => (stageWeight[a.Funnel_Stage] || 0) - (stageWeight[b.Funnel_Stage] || 0));
 
+            const pipeline = document.getElementById('pipeline-select').value;
             tbody.innerHTML = prospects.map(p => {
                 const cls = stageClasses[p.Funnel_Stage] || 'new';
                 const fundCls = (p.Funding_Signal || '').toLowerCase() === 'yes' ? 'funding-yes' : (p.Funding_Signal || '').toLowerCase() === 'maybe' ? 'funding-maybe' : 'funding-no';
+                const hasAudit = p.Funnel_Stage && p.Funnel_Stage !== 'New' && p.Audit_Score;
+                const auditLink = hasAudit ? `<a class="audit-link" href="/mc/audit-report/${esc(p.Lead_ID)}?pipeline=${pipeline}" target="_blank">View</a>` : '<span style="color:rgba(255,255,255,0.15);font-size:0.6rem;">—</span>';
                 return `<tr>
                     <td style="color:rgba(255,255,255,0.4); font-size:0.7rem;">${esc(p.Lead_ID || '')}</td>
                     <td><span style="color:#fff;">${esc(p.Business_Name || '—')}</span><br><span style="color:rgba(255,255,255,0.3); font-size:0.6rem;">${esc(p.URL || '')}</span></td>
@@ -289,6 +356,7 @@
                     <td class="center"><span class="stage-badge ${cls}">${esc(p.Funnel_Stage || 'New')}</span></td>
                     <td class="center"><span class="${fundCls}">${esc(p.Funding_Signal || '—')}</span></td>
                     <td class="right" style="color:#00ff88; font-weight:500;">${p.Monthly_Value ? '$' + esc(p.Monthly_Value) : '—'}</td>
+                    <td class="center">${auditLink}</td>
                 </tr>`;
             }).join('');
         }

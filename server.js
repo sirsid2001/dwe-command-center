@@ -119,7 +119,13 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'funnel.html'), 'text/html');
         return;
     }
-    
+
+    // CEO's Corner page
+    if (pathname === '/ceo-corner' || pathname === '/ceo-corner.html') {
+        serveFile(res, path.join(__dirname, 'ceo-corner.html'), 'text/html');
+        return;
+    }
+
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
         const filePath = path.join(__dirname, pathname);
@@ -363,6 +369,12 @@ const server = http.createServer((req, res) => {
         case '/mc/change-log':
             getChangeLog(req, res);
             break;
+        case '/mc/ceo-corner/drills':
+            getCeoCornerDrills(req, res);
+            break;
+        case '/mc/ceo-corner/review':
+            getCeoCornerReview(req, res);
+            break;
         case '/mc/pipeline':
             getPipeline(req, res);
             break;
@@ -438,7 +450,49 @@ const server = http.createServer((req, res) => {
         case '/mc/pipelines':
             listPipelines(req, res);
             break;
+        case '/mc/logs/audit':
+            servePipelineLog(res, 'audit_runner.log');
+            break;
+        case '/mc/logs/outreach':
+            servePipelineLog(res, 'outreach_sender.log');
+            break;
+        case '/mc/config':
+            servePipelineConfig(res, parsedUrl.query);
+            break;
+        case '/mc/audit-reports':
+            serveAuditReportsList(res, parsedUrl.query);
+            break;
+        case '/mc/outreach-drafts':
+            serveOutreachDrafts(res, parsedUrl.query);
+            break;
+        case '/mc/prompt/audit':
+            servePipelinePrompt(res, parsedUrl.query, 'audit_prompt.md', 'Audit Prompt');
+            break;
+        case '/mc/prompt/outreach':
+            servePipelinePrompt(res, parsedUrl.query, 'outreach_prompt.md', 'Outreach Prompt');
+            break;
         default:
+            // Check for /mc/audit-report/PP-XXXX pattern
+            if (pathname.startsWith('/mc/audit-report/')) {
+                const leadId = pathname.split('/mc/audit-report/')[1];
+                serveAuditReport(res, leadId, parsedUrl.query);
+                break;
+            }
+            // Serve PDF: /mc/audit-pdf/PP-XXXX?pipeline=xxx
+            if (pathname.startsWith('/mc/audit-pdf/')) {
+                const leadId = pathname.split('/mc/audit-pdf/')[1];
+                const pipelineId = (parsedUrl.query && parsedUrl.query.pipeline) || 'dwe-marketing';
+                const pdfPath = path.join(AUDITS_DIR, pipelineId, leadId, 'AUDIT-REPORT.pdf');
+                if (fs.existsSync(pdfPath)) {
+                    const pdfData = fs.readFileSync(pdfPath);
+                    res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="Audit-${leadId}.pdf"` });
+                    res.end(pdfData);
+                } else {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('PDF not generated yet. Run: node generate-audit-pdf.js ' + pipelineId + ' ' + leadId);
+                }
+                break;
+            }
             res.writeHead(404, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Not found' }));
     }
@@ -716,6 +770,224 @@ function loadPipelineConfig(pipelineId) {
     catch(e) { return null; }
 }
 
+// ── Pipeline Operations Endpoints ────────────────────────────────────
+
+const LOGS_DIR = path.join(require('os').homedir(), 'openclaw/logs');
+const AUDITS_DIR = path.join(require('os').homedir(), 'openclaw/shared/audits');
+
+function darkPageWrapper(title, bodyHtml) {
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} | DWE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0e27;color:#fff;min-height:100vh;padding:1.5rem}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.top-bar h1{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#ff6600,#ffaa00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.back-link{color:#ffaa00;text-decoration:none;font-size:0.8rem;padding:0.3rem 0.75rem;border:1px solid rgba(255,170,0,0.3);border-radius:8px}
+.back-link:hover{background:rgba(255,170,0,0.1)}
+.card{background:rgba(20,20,40,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:1rem;padding:1.25rem;backdrop-filter:blur(12px);margin-bottom:1rem}
+pre{font-family:'JetBrains Mono',monospace;font-size:0.75rem;line-height:1.6;color:rgba(255,255,255,0.85);white-space:pre-wrap;word-wrap:break-word;overflow-x:auto}
+.log-line{padding:0.1rem 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.log-ts{color:#ffaa00}
+.log-err{color:#ff4444}
+.log-ok{color:#00ff88}
+.json-key{color:#00c8ff}
+.json-str{color:#00ff88}
+.json-num{color:#ffaa00}
+.json-bool{color:#b829dd}
+h2{font-size:0.85rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem}
+a.report-link{color:#00c8ff;text-decoration:none;font-size:0.85rem}
+a.report-link:hover{text-decoration:underline}
+.score-badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:1rem;font-size:0.7rem;font-weight:600;margin-left:0.5rem}
+.md-content h1{font-size:1.1rem;color:#ffaa00;margin:1rem 0 0.5rem}
+.md-content h2{font-size:0.95rem;color:#00c8ff;margin:1rem 0 0.5rem;text-transform:none;letter-spacing:normal}
+.md-content h3{font-size:0.85rem;color:#fff;margin:0.75rem 0 0.4rem}
+.md-content p{color:rgba(255,255,255,0.8);font-size:0.8rem;line-height:1.6;margin:0.3rem 0}
+.md-content strong{color:#ffaa00}
+.md-content li{font-size:0.8rem;color:rgba(255,255,255,0.75);margin:0.2rem 0 0.2rem 1.5rem}
+.md-content table{border-collapse:collapse;margin:0.5rem 0}
+.md-content th,.md-content td{padding:0.3rem 0.75rem;border:1px solid rgba(255,255,255,0.1);font-size:0.75rem}
+.md-content th{color:rgba(255,255,255,0.5);font-weight:500}
+.md-content code{font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.06);padding:0.1rem 0.3rem;border-radius:4px;font-size:0.75rem}
+.draft-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:0.75rem;padding:1rem;margin-bottom:0.75rem}
+.draft-to{color:#00c8ff;font-size:0.8rem}
+.draft-subject{color:#ffaa00;font-weight:600;font-size:0.85rem;margin:0.25rem 0}
+.draft-body{color:rgba(255,255,255,0.7);font-size:0.78rem;line-height:1.5;white-space:pre-wrap;margin-top:0.5rem}
+</style></head><body>
+<div class="top-bar"><h1>${title}</h1><a href="/funnel" class="back-link">← Funnel</a></div>
+${bodyHtml}
+</body></html>`;
+}
+
+function servePipelineLog(res, logFilename) {
+    try {
+        const logPath = path.join(LOGS_DIR, logFilename);
+        const content = fs.readFileSync(logPath, 'utf8');
+        const lines = content.trim().split('\n').slice(-50);
+        const formatted = lines.map(line => {
+            let cls = 'log-line';
+            let html = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            html = html.replace(/\[([\d-]+\s[\d:]+)\]/g, '<span class="log-ts">[$1]</span>');
+            if (/ERROR|FAIL/i.test(line)) html = `<span class="log-err">${html}</span>`;
+            else if (/complete|Updated|success/i.test(line)) html = `<span class="log-ok">${html}</span>`;
+            return `<div class="${cls}">${html}</div>`;
+        }).join('');
+        const title = logFilename.includes('audit') ? 'Audit Runner Log' : 'Outreach Sender Log';
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(title, `<div class="card"><pre>${formatted}</pre></div>`));
+    } catch(e) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper('Log', '<div class="card"><p style="color:rgba(255,255,255,0.4)">Log file not found or empty.</p></div>'));
+    }
+}
+
+function servePipelineConfig(res, query) {
+    const pipelineId = query.pipeline || 'dwe-marketing';
+    const cfg = loadPipelineConfig(pipelineId);
+    if (!cfg) { res.writeHead(404, { 'Content-Type': 'text/html' }); res.end(darkPageWrapper('Config', '<div class="card"><p>Pipeline not found.</p></div>')); return; }
+    let json = JSON.stringify(cfg, null, 2);
+    json = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    json = json.replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:');
+    json = json.replace(/: "([^"]*)"/g, ': <span class="json-str">"$1"</span>');
+    json = json.replace(/: (\d+)/g, ': <span class="json-num">$1</span>');
+    json = json.replace(/: (true|false)/g, ': <span class="json-bool">$1</span>');
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(darkPageWrapper(`Config: ${pipelineId}`, `<div class="card"><pre>${json}</pre></div>`));
+}
+
+function simpleMarkdownToHtml(md) {
+    let html = md.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/^\| (.+) \|$/gm, (match, inner) => {
+        const cells = inner.split(' | ').map(c => `<td>${c.trim()}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+    });
+    html = html.replace(/(<tr>.*<\/tr>\n?)+/g, (m) => `<table>${m}</table>`);
+    html = html.replace(/^(?!<[hltup])(.*\S.*)$/gm, '<p>$1</p>');
+    return html;
+}
+
+function serveAuditReport(res, leadId, query) {
+    const pipelineId = query.pipeline || 'dwe-marketing';
+    const reportPath = path.join(AUDITS_DIR, pipelineId, leadId, 'AUDIT-SUMMARY.md');
+    try {
+        const md = fs.readFileSync(reportPath, 'utf8');
+        const html = simpleMarkdownToHtml(md);
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(`Audit: ${leadId}`, `<div class="card md-content">${html}</div>`));
+    } catch(e) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper('Audit Report', `<div class="card"><p style="color:rgba(255,255,255,0.4)">No audit report found for ${leadId}.</p></div>`));
+    }
+}
+
+function serveAuditReportsList(res, query) {
+    const pipelineId = query.pipeline || 'dwe-marketing';
+    const auditsPath = path.join(AUDITS_DIR, pipelineId);
+    try {
+        const dirs = fs.readdirSync(auditsPath).filter(d => fs.existsSync(path.join(auditsPath, d, 'AUDIT-SUMMARY.md')));
+        if (dirs.length === 0) {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(darkPageWrapper('Audit Reports', '<div class="card"><p style="color:rgba(255,255,255,0.4)">No audit reports yet.</p></div>'));
+            return;
+        }
+        let html = '<div class="card"><h2>Audit Reports</h2>';
+        html += `<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:0.5rem 0 0.3rem;border-bottom:1px solid rgba(255,255,255,0.1);">
+            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Business</span>
+            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Score</span>
+            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;text-align:center;">Markdown</span>
+            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;text-align:center;">PDF</span>
+        </div>`;
+        dirs.forEach(d => {
+            try {
+                const md = fs.readFileSync(path.join(auditsPath, d, 'AUDIT-SUMMARY.md'), 'utf8');
+                const titleMatch = md.match(/^# (.+)$/m);
+                const scoreMatch = md.match(/\*\*Score:\*\* (\d+)\/100/);
+                const gradeMatch = md.match(/Grade: ([A-F][+-]?)\)/);
+                const title = titleMatch ? titleMatch[1] : d;
+                const score = scoreMatch ? scoreMatch[1] : '?';
+                const grade = gradeMatch ? gradeMatch[1] : '?';
+                const scoreColor = parseInt(score) >= 70 ? '#00ff88' : parseInt(score) >= 50 ? '#ffaa00' : '#ff4444';
+                const hasPdf = fs.existsSync(path.join(auditsPath, d, 'AUDIT-REPORT.pdf'));
+                const pdfLink = hasPdf
+                    ? `<a href="/mc/audit-pdf/${d}?pipeline=${pipelineId}" target="_blank" style="color:#ffaa00;text-decoration:none;font-size:0.8rem;font-weight:600;">View PDF</a>`
+                    : `<span style="color:rgba(255,255,255,0.2);font-size:0.7rem;">Not generated</span>`;
+                html += `<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.06);align-items:center;">
+                    <span style="font-size:0.85rem;color:#fff;">${title.replace(/&/g,'&amp;').replace(/</g,'&lt;')} <span style="color:rgba(255,255,255,0.3);font-size:0.7rem;">${d}</span></span>
+                    <span style="text-align:center;"><span class="score-badge" style="background:${scoreColor}22;color:${scoreColor}">${score}/100 (${grade})</span></span>
+                    <span style="text-align:center;"><a href="/mc/audit-report/${d}?pipeline=${pipelineId}" target="_blank" style="color:#00c8ff;text-decoration:none;font-size:0.8rem;">View MD</a></span>
+                    <span style="text-align:center;">${pdfLink}</span>
+                </div>`;
+            } catch(e) {
+                html += `<div style="padding:0.5rem 0;"><a class="report-link" href="/mc/audit-report/${d}?pipeline=${pipelineId}">${d}</a></div>`;
+            }
+        });
+        html += '</div>';
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(`Audit Reports: ${pipelineId}`, html));
+    } catch(e) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper('Audit Reports', '<div class="card"><p style="color:rgba(255,255,255,0.4)">No audits directory found.</p></div>'));
+    }
+}
+
+function serveOutreachDrafts(res, query) {
+    const pipelineId = query.pipeline || 'dwe-marketing';
+    const auditsPath = path.join(AUDITS_DIR, pipelineId);
+    try {
+        const dirs = fs.readdirSync(auditsPath).filter(d => fs.existsSync(path.join(auditsPath, d, 'outreach_draft.txt')));
+        if (dirs.length === 0) {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(darkPageWrapper('Outreach Drafts', '<div class="card"><p style="color:rgba(255,255,255,0.4)">No outreach drafts yet.</p></div>'));
+            return;
+        }
+        let html = '<div class="card"><h2>Outreach Drafts</h2>';
+        dirs.forEach(d => {
+            try {
+                const draft = fs.readFileSync(path.join(auditsPath, d, 'outreach_draft.txt'), 'utf8');
+                const lines = draft.split('\n');
+                const to = (lines.find(l => l.startsWith('To:')) || '').replace('To: ', '');
+                const subject = (lines.find(l => l.startsWith('Subject:')) || '').replace('Subject: ', '');
+                const body = lines.slice(lines.indexOf('') + 1).join('\n').trim();
+                html += `<div class="draft-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:rgba(255,255,255,0.4);font-size:0.7rem;">${d}</span>
+                        <span class="draft-to">${to.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>
+                    </div>
+                    <div class="draft-subject">${subject.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+                    <div class="draft-body">${body.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+                </div>`;
+            } catch(e) {}
+        });
+        html += '</div>';
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(`Outreach Drafts: ${pipelineId}`, html));
+    } catch(e) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper('Outreach Drafts', '<div class="card"><p style="color:rgba(255,255,255,0.4)">No audits directory found.</p></div>'));
+    }
+}
+
+function servePipelinePrompt(res, query, filename, title) {
+    const pipelineId = query.pipeline || 'dwe-marketing';
+    const promptPath = path.join(PIPELINES_DIR, pipelineId, filename);
+    try {
+        const md = fs.readFileSync(promptPath, 'utf8');
+        const html = simpleMarkdownToHtml(md);
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(`${title}: ${pipelineId}`, `<div class="card md-content">${html}</div>`));
+    } catch(e) {
+        res.writeHead(404, { 'Content-Type': 'text/html' });
+        res.end(darkPageWrapper(title, `<div class="card"><p style="color:rgba(255,255,255,0.4)">Prompt file not found: ${filename}</p></div>`));
+    }
+}
+
 function listPipelines(req, res) {
     try {
         const dirs = fs.readdirSync(PIPELINES_DIR).filter(d =>
@@ -941,7 +1213,7 @@ function getProspectStats(req, res, query) {
                 const fundingIdx = header.indexOf('Funding_Signal');
 
                 const stages = {};
-                const stageOrder = ['New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
+                const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
                 stageOrder.forEach(s => stages[s] = 0);
 
                 let totalValue = 0;
@@ -959,13 +1231,18 @@ function getProspectStats(req, res, query) {
                     if ((r[fundingIdx] || '').trim().toLowerCase() !== 'no' && (r[fundingIdx] || '').trim() !== '') fundingLeads++;
                 });
 
-                // Conversion rates
+                // Lead Generation = total prospects sourced (everyone who entered the pipeline)
+                stages['Lead Generation'] = data.length;
+
+                // Conversion rates (skip Lead Generation → New since LG is cumulative)
                 const conversions = {};
-                for (let i = 0; i < stageOrder.length - 1; i++) {
-                    const from = stageOrder[i];
-                    const laterSum = stageOrder.slice(i + 1).reduce((s, st) => s + (stages[st] || 0), 0);
+                const convStages = stageOrder.slice(1); // Start from New for conversion math
+                conversions['Lead Generation → New'] = data.length > 0 ? '100%' : '0%';
+                for (let i = 0; i < convStages.length - 1; i++) {
+                    const from = convStages[i];
+                    const laterSum = convStages.slice(i + 1).reduce((s, st) => s + (stages[st] || 0), 0);
                     const fromTotal = (stages[from] || 0) + laterSum;
-                    conversions[from + ' → ' + stageOrder[i + 1]] = fromTotal > 0 ? Math.round((laterSum / fromTotal) * 100) + '%' : '0%';
+                    conversions[from + ' → ' + convStages[i + 1]] = fromTotal > 0 ? Math.round((laterSum / fromTotal) * 100) + '%' : '0%';
                 }
 
                 res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
@@ -1984,11 +2261,20 @@ function getMigrationStatus(req, res) {
             result.reseedProcessed = lines.filter(l => l.includes('Queued:')).length;
             // Count failures
             result.reseedFailed = lines.filter(l => l.includes('FAILED to copy')).length;
-            // Check if complete
-            result.complete = lines.some(l => l.includes('RE-SEED COMPLETE'));
+            // Check if reseed script said complete
+            const scriptDone = lines.some(l => l.includes('RE-SEED COMPLETE'));
             // Check if running
             const { execSync } = require('child_process');
             try { result.isRunning = execSync('pgrep -f reseed_v3.py 2>/dev/null', { stdio: 'pipe' }).toString().trim().length > 0; } catch(e) {}
+            // Check if seed watcher still has files to process
+            const SEED_DIR = '/Users/elf-6/openclaw/shared/4_Ready_to_Seed';
+            let queueCount = 0;
+            try {
+                queueCount = fs.readdirSync(SEED_DIR).filter(f => !f.startsWith('.') && f !== 'placeholder.txt' && f !== '.gitkeep').length;
+            } catch(e) {}
+            result.queueRemaining = queueCount;
+            // Only truly complete when script is done AND queue is drained
+            result.complete = scriptDone && queueCount === 0 && !result.isRunning;
         }
     } catch(e) {}
 
@@ -3305,6 +3591,82 @@ function runNewsletterDigest(req, res, query) {
             res.end(JSON.stringify({ error: 'JSON parse error: ' + e.message, raw: stdout.substring(0, 500) }));
         }
     });
+}
+
+// ═══ CEO's Corner API Handlers ═══
+
+const DRILL_STATE_PATH = '/Users/elf-6/openclaw/logs/drill_state.json';
+const DRILL_RESULTS_DIR = '/Users/elf-6/openclaw/shared/drill_results';
+const CEO_REVIEW_DIR = '/Users/elf-6/openclaw/shared/2_CEO_review';
+
+function getCeoCornerDrills(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    try {
+        let state = { day: 0, last_run: '', scores: [], total_drills: 0 };
+        if (fs.existsSync(DRILL_STATE_PATH)) {
+            state = JSON.parse(fs.readFileSync(DRILL_STATE_PATH, 'utf8'));
+        }
+
+        const history = (state.scores || []).map(s => ({
+            day: s.day,
+            date: s.date,
+            total: s.score || s.total || 0,
+            s1: s.s1 || 0,
+            s2: s.s2 || 0,
+            s3: s.s3 || 0,
+            s4: s.s4 || 0,
+            s5: s.s5 || 0
+        }));
+
+        const latest = history.length > 0 ? history[history.length - 1] : null;
+        const avgScore = history.length > 0
+            ? (history.reduce((sum, h) => sum + h.total, 0) / history.length).toFixed(1)
+            : null;
+
+        res.end(JSON.stringify({
+            latest,
+            history,
+            totalDrills: state.total_drills || history.length,
+            avgScore,
+            currentDay: state.day,
+            lastRun: state.last_run
+        }));
+    } catch (e) {
+        res.end(JSON.stringify({ latest: null, history: [], totalDrills: 0, avgScore: null, error: e.message }));
+    }
+}
+
+function getCeoCornerReview(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    try {
+        const items = [];
+        if (fs.existsSync(CEO_REVIEW_DIR)) {
+            const files = fs.readdirSync(CEO_REVIEW_DIR)
+                .filter(f => !f.startsWith('.') && f !== 'Strategy')
+                .map(f => {
+                    const stat = fs.statSync(path.join(CEO_REVIEW_DIR, f));
+                    return { name: f, date: stat.mtime.toISOString().split('T')[0], size: formatSize(stat.size), mtime: stat.mtimeMs };
+                })
+                .sort((a, b) => b.mtime - a.mtime);
+            items.push(...files.map(f => {
+                let badge = '';
+                if (f.name.startsWith('TAS-')) badge = 'Task';
+                else if (f.name.includes('POC')) badge = 'POC';
+                else if (f.name.includes('Audit') || f.name.includes('audit')) badge = 'Audit';
+                else if (f.name.includes('Strategy') || f.name.includes('Doctrine')) badge = 'Strategy';
+                return { name: f.name.replace(/\.md$/, '').replace(/_/g, ' '), date: f.date, size: f.size, badge };
+            }));
+        }
+        res.end(JSON.stringify({ items }));
+    } catch (e) {
+        res.end(JSON.stringify({ items: [], error: e.message }));
+    }
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 // Handle errors gracefully
