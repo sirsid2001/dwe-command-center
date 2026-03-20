@@ -1,0 +1,73 @@
+{
+  "lastScan": "2026-03-18T23:24:11.792Z",
+  "weeklyStats": {
+    "nuggets": 1,
+    "videos": 1,
+    "avgScore": 9
+  },
+  "recentNuggets": [
+    {
+      "videoId": "sample123",
+      "title": "How to Build a $50K/mo AI Agent Business",
+      "channel": "Nick Saraev",
+      "score": 9,
+      "verdict": "WATCH",
+      "verdict_reason": "Directly applicable strategy for DWE agent monetization",
+      "video_summary": [
+        "Step-by-step white-label AI agent guide",
+        "Pricing: $500-2K/mo per agent",
+        "Tech: n8n + Voiceflow",
+        "$0 to $50K in 6 months case study",
+        "Compliance agents undersupplied"
+      ],
+      "key_highlights": [
+        {
+          "highlight": "White-label AI agents = $2B underserved market",
+          "dwe_application": "Steve: Build agent template in n8n + OpenClaw",
+          "urgency": "act_now"
+        },
+        {
+          "highlight": "n8n + Voiceflow is fastest client-facing stack",
+          "dwe_application": "CE: Test Voiceflow integration this week",
+          "urgency": "this_week"
+        }
+      ],
+      "agent_assignments": [
+        {
+          "agent": "Steve",
+          "task": "Research Voiceflow API"
+        },
+        {
+          "agent": "Nicole",
+          "task": "Score compliance agent opportunity"
+        }
+      ],
+      "tools_mentioned": [
+        "n8n",
+        "Voiceflow",
+        "OpenAI"
+      ],
+      "revenue_potential": "White-label agents at $500-2K/mo — 10 clients = $5K-20K/mo",
+      "nuggets": [],
+      "summary": "",
+      "tags": [
+        "AI agents",
+        "agency",
+        "revenue"
+      ],
+      "actionItems": [
+        "Research Voiceflow",
+        "Build demo agent"
+      ],
+      "url": "https://youtube.com/watch?v=sample123",
+      "timestamp": "2026-03-18T23:24:11.792Z"
+    }
+  ],
+  "channelStats": {
+    "Nick Saraev": {
+      "videos": 1,
+      "totalScore": 9,
+      "avgScore": 9
+    }
+  }
+}

@@ -12,7 +12,7 @@ const path = require('path');
 const url = require('url');
 
 // DWE Widget API
-const { getDWEStats, fetchAllNotionTasks } = require('./dwe-widget-api.js');
+const { getDWEStats, fetchAllNotionTasks, createNotionTask } = require('./dwe-widget-api.js');
 
 // Sprint Orchestrator
 const sprint = require('./sprint-orchestrator.js');
@@ -22,6 +22,8 @@ const opsLog = require('./ops-log.js');
 
 // Sprint Retrospective Engine
 const sprintRetro = require('./sprint-retro.js');
+const skoolScraper = require('./skool-scraper.js');
+const skoolPipeline = require('./skool-pipeline.js');
 
 // PID file management — prevents zombie processes on restart
 const PID_FILE = path.join(__dirname, 'mc-server.pid');
@@ -74,7 +76,7 @@ const startTime = Date.now();
 const server = http.createServer((req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
     if (req.method === 'OPTIONS') {
@@ -123,6 +125,12 @@ const server = http.createServer((req, res) => {
     // CEO's Corner page
     if (pathname === '/ceo-corner' || pathname === '/ceo-corner.html') {
         serveFile(res, path.join(__dirname, 'ceo-corner.html'), 'text/html');
+        return;
+    }
+
+    // n8n Workflows page
+    if (pathname === '/n8n-workflows' || pathname === '/n8n-workflows.html') {
+        serveFile(res, path.join(__dirname, 'n8n-workflows.html'), 'text/html');
         return;
     }
 
@@ -262,6 +270,47 @@ const server = http.createServer((req, res) => {
         case '/mc/newsletters':
             runNewsletterDigest(req, res, parsedUrl.query);
             break;
+        case '/mc/newsletters/refresh':
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            refreshNewsletterCache();
+            res.end(JSON.stringify({ ok: true, message: 'Newsletter refresh started' }));
+            break;
+        case '/mc/messages':
+            getScreenedMessages(req, res);
+            break;
+        case '/mc/messages/refresh':
+            messagesCache.timestamp = 0;
+            getScreenedMessages(req, res);
+            break;
+        case '/mc/messages/archive':
+            archiveGmailMessage(req, res, parsedUrl.query);
+            break;
+        case '/mc/messages/invalidate':
+            messagesCache.timestamp = 0;
+            res.end('{"ok":true}');
+            break;
+        case '/mc/gmail-interest':
+            getGmailInterest(req, res);
+            break;
+        case '/mc/messages/label':
+            labelGmailMessage(req, res, parsedUrl.query);
+            break;
+        case '/mc/skool-digest':
+            runSkoolDigest(req, res, parsedUrl.query);
+            break;
+        case '/mc/skool-scrape':
+            handleSkoolScrape(req, res);
+            break;
+        case '/mc/skool-config':
+            handleSkoolConfig(req, res);
+            break;
+        case '/mc/skool-auth':
+            handleSkoolAuth(req, res);
+            break;
+        case '/mc/gmail-archive':
+            archiveGmailMessage(req, res, parsedUrl.query);
+            break;
         case '/mc/openclaw-version':
             getOpenclawVersion(req, res);
             break;
@@ -324,11 +373,20 @@ const server = http.createServer((req, res) => {
         case '/mc/digitalocean-status':
             getDigitalOceanStatus(req, res);
             break;
+        case '/mc/n8n-workflows':
+            getN8nWorkflows(req, res);
+            break;
         case '/mc/sidney-devices':
             getSidneyDevices(req, res);
             break;
         case '/mc/notion-tasks':
             getNotionTasks(req, res);
+            break;
+        case '/mc/notion-tasks/create':
+            handleCreateTask(req, res);
+            break;
+        case '/mc/command-briefing':
+            getCommandBriefing(req, res);
             break;
         case '/mc/heartbeat':
             getHeartbeats(req, res);
@@ -465,11 +523,38 @@ const server = http.createServer((req, res) => {
         case '/mc/outreach-drafts':
             serveOutreachDrafts(res, parsedUrl.query);
             break;
+        case '/mc/outreach-queue':
+            getOutreachQueue(req, res, parsedUrl.query);
+            break;
+        case '/mc/outreach-approve':
+            approveOutreachEmail(req, res);
+            break;
+        case '/mc/outreach-skip':
+            skipOutreachEmail(req, res);
+            break;
         case '/mc/prompt/audit':
             servePipelinePrompt(res, parsedUrl.query, 'audit_prompt.md', 'Audit Prompt');
             break;
         case '/mc/prompt/outreach':
             servePipelinePrompt(res, parsedUrl.query, 'outreach_prompt.md', 'Outreach Prompt');
+            break;
+        case '/mc/content-intel':
+            handleContentIntel(req, res);
+            break;
+        case '/mc/content-intel/ceo-brief':
+            handleCeoIntelBrief(req, res);
+            break;
+        case '/mc/night-mode':
+            handleNightMode(req, res);
+            break;
+        case '/mc/drill/inject':
+            handleDrillInject(req, res);
+            break;
+        case '/mc/drill/status':
+            handleDrillStatus(req, res);
+            break;
+        case '/mc/ceo-corner/drills-real':
+            getCeoCornerDrillsReal(req, res);
             break;
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
@@ -497,6 +582,147 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify({ error: 'Not found' }));
     }
 });
+
+// ── Night Mode — start/stop via Alexa → HA → MC ─────────────────────
+function handleNightMode(req, res) {
+    const STATE_FILE = path.join(process.env.HOME, 'openclaw/shared/night_mode.json');
+    if (req.method === 'GET') {
+        try {
+            const state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(state));
+        } catch (e) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ active: false, error: 'no state file' }));
+        }
+        return;
+    }
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', c => body += c);
+        req.on('end', () => {
+            let action = 'start';
+            try { action = JSON.parse(body).action || 'start'; } catch(e) {}
+            const script = action === 'stop'
+                ? path.join(process.env.HOME, 'openclaw/bin/night_mode_stop.sh')
+                : path.join(process.env.HOME, 'openclaw/bin/night_mode_start.sh');
+            const { exec } = require('child_process');
+            exec(`bash "${script}"`, { timeout: 30000 }, (err, stdout, stderr) => {
+                // Lock screen when starting night mode
+                if (action === 'start') {
+                    exec('pmset displaysleepnow', () => {});
+                }
+                const state = fs.existsSync(STATE_FILE)
+                    ? JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'))
+                    : { active: action === 'start' };
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, action, state, output: stdout.slice(0, 200) }));
+            });
+        });
+        return;
+    }
+    res.writeHead(405, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'GET or POST only' }));
+}
+
+// ── Drill Inject — POST scenario to inbox, spawn realtime drill ──────
+function handleDrillInject(req, res) {
+    if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'POST required' }));
+        return;
+    }
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+        try {
+            const data = JSON.parse(body);
+            const scenarioText = data.scenario_text || '';
+            const source = data.source || 'dashboard';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '').slice(0, 15);
+            const inboxDir = path.join(process.env.HOME, 'openclaw/shared/drill_inbox');
+            const inboxFile = path.join(inboxDir, `drill_${timestamp}.json`);
+
+            fs.writeFileSync(inboxFile, JSON.stringify({
+                source,
+                scenario_text: scenarioText,
+                submitted_by: 'Sidney',
+                submitted_at: new Date().toISOString(),
+                type: scenarioText ? 'adhoc' : 'real'
+            }, null, 2));
+
+            const { exec } = require('child_process');
+            const script = path.join(process.env.HOME, 'openclaw/bin/command_drill_realtime.sh');
+            const flag = scenarioText ? '--inbox' : '--auto';
+            exec(`bash "${script}" ${flag}`, { timeout: 600000 }, () => {});
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, message: 'Drill queued', type: scenarioText ? 'adhoc' : 'auto-detect' }));
+        } catch (e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
+}
+
+// ── Drill Status — check if drill is running ────────────────────────
+function handleDrillStatus(req, res) {
+    const pidFile = path.join(process.env.HOME, 'openclaw/logs/drill_realtime.pid');
+    let running = false;
+    if (fs.existsSync(pidFile)) {
+        try {
+            const pid = parseInt(fs.readFileSync(pidFile, 'utf8').trim());
+            process.kill(pid, 0); // Check if process exists
+            running = true;
+        } catch (e) {
+            running = false;
+        }
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ running }));
+}
+
+// ── CEO Corner Drills (Real + Ad-hoc) ───────────────────────────────
+function getCeoCornerDrillsReal(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    try {
+        let state = {};
+        if (fs.existsSync(DRILL_STATE_PATH)) {
+            state = JSON.parse(fs.readFileSync(DRILL_STATE_PATH, 'utf8'));
+        }
+
+        const mapScores = (arr) => (arr || []).map(s => ({
+            date: s.date,
+            total: s.score || s.total || 0,
+            s1: s.s1 || 0, s2: s.s2 || 0, s3: s.s3 || 0,
+            s4: s.s4 || 0, s5: s.s5 || 0, s6: s.s6 || 0,
+            type: s.type || 'unknown',
+            source: s.source || 'unknown',
+            summary: s.scenario_summary || ''
+        }));
+
+        const realScores = mapScores(state.real_scores);
+        const adhocScores = mapScores(state.adhoc_scores);
+        const allScores = [...realScores, ...adhocScores].sort((a, b) => a.date.localeCompare(b.date));
+
+        const latest = allScores.length > 0 ? allScores[allScores.length - 1] : null;
+        const avgScore = allScores.length > 0
+            ? (allScores.reduce((sum, h) => sum + h.total, 0) / allScores.length).toFixed(1)
+            : null;
+
+        res.end(JSON.stringify({
+            latest,
+            real: realScores,
+            adhoc: adhocScores,
+            all: allScores,
+            totalReal: state.total_real_drills || realScores.length,
+            totalAdhoc: state.total_adhoc_drills || adhocScores.length,
+            avgScore
+        }));
+    } catch (e) {
+        res.end(JSON.stringify({ latest: null, real: [], adhoc: [], all: [], error: e.message }));
+    }
+}
 
 // ── WF2 Config — dynamic keywords & subreddits via Google Sheets ─────
 function handleWF2Config(req, res) {
@@ -974,6 +1200,175 @@ function serveOutreachDrafts(res, query) {
     }
 }
 
+// === Outreach Queue (JSON-based, CEO approval before SES send) ===
+
+const OUTREACH_QUEUE_DIR = path.join(process.env.HOME || '/Users/elf-6', 'openclaw/shared/outreach_queue');
+const SES_CONFIG_FILE = path.join(process.env.HOME || '/Users/elf-6', 'openclaw/shared/config/ses_config.json');
+
+function getOutreachQueue(req, res, query) {
+    try {
+        const pipeline = query.pipeline || '';
+        if (!fs.existsSync(OUTREACH_QUEUE_DIR)) {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, queue: [], total: 0 }));
+            return;
+        }
+        const files = fs.readdirSync(OUTREACH_QUEUE_DIR).filter(f => f.endsWith('.json'));
+        const queue = [];
+        files.forEach(f => {
+            try {
+                const item = JSON.parse(fs.readFileSync(path.join(OUTREACH_QUEUE_DIR, f), 'utf8'));
+                if (pipeline && item.pipeline !== pipeline) return;
+                item._file = f;
+                queue.push(item);
+            } catch(e) {}
+        });
+        // Sort by queued_at descending (newest first)
+        queue.sort((a, b) => (b.queued_at || '').localeCompare(a.queued_at || ''));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, queue, total: queue.length }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+function approveOutreachEmail(req, res) {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+        try {
+            const data = JSON.parse(body);
+            const leadId = data.lead_id;
+            if (!leadId) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'lead_id required' }));
+                return;
+            }
+            const filePath = path.join(OUTREACH_QUEUE_DIR, leadId + '.json');
+            if (!fs.existsSync(filePath)) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Queue item not found' }));
+                return;
+            }
+            const item = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+            // Allow editing subject/body before approval
+            if (data.subject) item.subject = data.subject;
+            if (data.body_text) item.body_text = data.body_text;
+
+            // Read SES config
+            let sesConfig = { mode: 'draft', sender: '', region: 'us-east-1', reply_to: '' };
+            try { sesConfig = JSON.parse(fs.readFileSync(SES_CONFIG_FILE, 'utf8')); } catch(e) {}
+
+            if (sesConfig.mode === 'draft') {
+                // Draft mode — mark approved but don't send
+                item.status = 'approved';
+                item.approved_at = new Date().toISOString();
+                fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, message: 'Approved (draft mode — SES not configured yet)', status: 'approved' }));
+                return;
+            }
+
+            // Send mode — use AWS SES
+            const { execSync } = require('child_process');
+            try {
+                const sender = sesConfig.sender || 'DWE Marketing <outreach@tvcpulse.com>';
+                const region = sesConfig.region || 'us-east-1';
+                const replyTo = sesConfig.reply_to || '';
+
+                // Build SES send-email command
+                const sesPayload = {
+                    Source: sender,
+                    Destination: { ToAddresses: [item.to] },
+                    Message: {
+                        Subject: { Data: item.subject, Charset: 'UTF-8' },
+                        Body: { Text: { Data: item.body_text, Charset: 'UTF-8' } }
+                    }
+                };
+                if (replyTo) sesPayload.ReplyToAddresses = [replyTo];
+
+                const tmpFile = `/tmp/ses_email_${leadId}.json`;
+                fs.writeFileSync(tmpFile, JSON.stringify(sesPayload));
+
+                const result = execSync(
+                    `aws ses send-email --cli-input-json file://${tmpFile} --region ${region}`,
+                    { timeout: 30000, encoding: 'utf8' }
+                );
+                const messageId = JSON.parse(result).MessageId || 'unknown';
+
+                // Clean up temp file
+                try { fs.unlinkSync(tmpFile); } catch(e) {}
+
+                // Update queue item
+                item.status = 'sent';
+                item.sent_at = new Date().toISOString();
+                item.ses_message_id = messageId;
+                fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+
+                // Update prospect stage via internal API
+                try {
+                    const updateUrl = `http://localhost:${PORT}/mc/prospects/update?pipeline=${item.pipeline}`;
+                    const updateData = JSON.stringify({
+                        lead_id: leadId,
+                        Funnel_Stage: 'Outreach Sent',
+                        Outreach_Status: 'Sent',
+                        Last_Activity: new Date().toISOString().split('T')[0]
+                    });
+                    const updateReq = http.request(updateUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' } });
+                    updateReq.write(updateData);
+                    updateReq.end();
+                } catch(e) {}
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, message: `Sent via SES (MessageId: ${messageId})`, status: 'sent' }));
+            } catch(e) {
+                item.status = 'send_failed';
+                item.error = e.message;
+                fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'SES send failed: ' + e.message }));
+            }
+        } catch(e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Invalid JSON: ' + e.message }));
+        }
+    });
+}
+
+function skipOutreachEmail(req, res) {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+        try {
+            const data = JSON.parse(body);
+            const leadId = data.lead_id;
+            if (!leadId) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'lead_id required' }));
+                return;
+            }
+            const filePath = path.join(OUTREACH_QUEUE_DIR, leadId + '.json');
+            if (!fs.existsSync(filePath)) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Queue item not found' }));
+                return;
+            }
+            const item = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            item.status = 'skipped';
+            item.skipped_at = new Date().toISOString();
+            if (data.reason) item.skip_reason = data.reason;
+            fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, message: 'Email skipped', status: 'skipped' }));
+        } catch(e) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Invalid JSON: ' + e.message }));
+        }
+    });
+}
+
 function servePipelinePrompt(res, query, filename, title) {
     const pipelineId = query.pipeline || 'dwe-marketing';
     const promptPath = path.join(PIPELINES_DIR, pipelineId, filename);
@@ -1213,7 +1608,7 @@ function getProspectStats(req, res, query) {
                 const fundingIdx = header.indexOf('Funding_Signal');
 
                 const stages = {};
-                const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
+                const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified'];
                 stageOrder.forEach(s => stages[s] = 0);
 
                 let totalValue = 0;
@@ -1579,22 +1974,20 @@ function handleActivity(req, res) {
             try {
                 const entry = JSON.parse(body);
                 entry.timestamp = new Date().toISOString();
-                // Update traffic blip log if entry has a service field
+                // Update in-memory traffic blip log immediately
                 if (entry.service) activityLog[entry.service] = Date.now();
 
-                fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
-                    const activity = JSON.parse(data || '{"entries":[]}');
-                    activity.entries.push(entry);
+                // Respond immediately — HUD reads from memory, not disk
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
 
-                    fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2), err => {
-                        if (err) {
-                            res.writeHead(500);
-                            res.end(JSON.stringify({ error: 'Failed to save' }));
-                            return;
-                        }
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ success: true }));
-                    });
+                // Persist to disk in background (non-blocking)
+                fs.readFile(ACTIVITY_FILE, 'utf8', (err, data) => {
+                    try {
+                        const activity = JSON.parse(data || '{"entries":[]}');
+                        activity.entries.push(entry);
+                        fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2), () => {});
+                    } catch (_) {}
                 });
             } catch (e) {
                 res.writeHead(400);
@@ -2352,6 +2745,140 @@ function getOpenRouterCredits(req, res) {
     res.end(JSON.stringify(orCreditsCache || { remaining: null, fetchedAt: null }));
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// n8n Workflow Inventory — cached, refreshed every 3 minutes
+// ══════════════════════════════════════════════════════════════════════
+const N8N_API_KEY = (() => {
+    if (process.env.N8N_API_KEY && !process.env.N8N_API_KEY.startsWith('your_')) return process.env.N8N_API_KEY;
+    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/N8N_API_KEY="?([^"\n]+)"?/)?.[1]?.trim() || ''; } catch(e) { return ''; }
+})();
+
+let n8nWorkflowsCache = null;
+let n8nWorkflowsCacheTime = 0;
+const N8N_WF_TTL = 3 * 60 * 1000;
+
+const N8N_WORKFLOW_GROUPS = [
+    { id: 'strategic', label: 'Strategic Pipeline', icon: '🎯', patterns: [
+        'RSS', 'Reddit', 'Email Monitor', 'Email Newsletter', 'Google Search', 'Twitter', 'Telegram Channel',
+        'ProductHunt', 'Product Hunt', 'Anita Morning', 'Tri-Factor', 'Substack', 'Manual.*Intake',
+        'Daily Top', 'Setup.*Sheet', 'Opportunity'
+    ]},
+    { id: 'gmail', label: 'Gmail & Email', icon: '📧', patterns: ['Gmail'] },
+    { id: 'brain', label: 'Brain & Knowledge', icon: '🧠', patterns: ['Brain', 'Pinecone', 'openclaw', 'Seed', 'RAG', 'Ingest'] },
+    { id: 'ops', label: 'Operations & Monitoring', icon: '📊', patterns: ['COO', 'Monitor', 'Alert', 'Heartbeat', 'Health', 'Notion', 'Agent'] },
+    { id: 'utility', label: 'Utility & Integration', icon: '🔧', patterns: ['Webhook', 'BTCC', 'Price', 'Calendar', 'Backup'] },
+];
+
+function deriveTriggerType(workflow) {
+    const nodes = workflow.nodes || [];
+    for (const n of nodes) {
+        const t = (n.type || '').toLowerCase();
+        if (t.includes('scheduletrigger') || t.includes('cron')) return 'schedule';
+        if (t.includes('webhook')) return 'webhook';
+        if (t.includes('executeworkflowtrigger')) return 'sub-workflow';
+        if (t.includes('telegramtrigger')) return 'trigger';
+        if (t.includes('imapEmail') || t.includes('imap')) return 'schedule';
+        if (t.includes('trigger')) return 'trigger';
+    }
+    return 'manual';
+}
+
+function categorizeWorkflow(name) {
+    for (const group of N8N_WORKFLOW_GROUPS) {
+        for (const pat of group.patterns) {
+            if (new RegExp(pat, 'i').test(name)) return group.id;
+        }
+    }
+    return 'other';
+}
+
+function fetchN8nWorkflows() {
+    return new Promise((resolve, reject) => {
+        if (!N8N_API_KEY) { reject(new Error('No N8N_API_KEY')); return; }
+        const opts = {
+            hostname: 'n8n.tvcpulse.com',
+            path: '/api/v1/workflows?limit=250',
+            method: 'GET',
+            headers: { 'X-N8N-API-KEY': N8N_API_KEY }
+        };
+        const req = https.request(opts, res => {
+            let data = '';
+            res.on('data', c => data += c);
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    const workflows = (parsed.data || []).filter(w => !w.isArchived);
+                    // Build groups
+                    const groupMap = {};
+                    for (const g of N8N_WORKFLOW_GROUPS) {
+                        groupMap[g.id] = { id: g.id, label: g.label, icon: g.icon, workflows: [], activeCount: 0, totalCount: 0 };
+                    }
+                    groupMap['other'] = { id: 'other', label: 'Other / Legacy', icon: '📦', workflows: [], activeCount: 0, totalCount: 0 };
+
+                    let totalActive = 0, totalInactive = 0;
+                    for (const wf of workflows) {
+                        const groupId = categorizeWorkflow(wf.name);
+                        const triggerType = deriveTriggerType(wf);
+                        const item = {
+                            id: wf.id,
+                            name: wf.name,
+                            active: wf.active,
+                            triggerType,
+                            updatedAt: wf.updatedAt,
+                            tags: (wf.tags || []).map(t => t.name || t)
+                        };
+                        groupMap[groupId].workflows.push(item);
+                        groupMap[groupId].totalCount++;
+                        if (wf.active) { groupMap[groupId].activeCount++; totalActive++; }
+                        else { totalInactive++; }
+                    }
+                    // Sort workflows: active first, then alphabetical
+                    for (const g of Object.values(groupMap)) {
+                        g.workflows.sort((a, b) => {
+                            if (a.active !== b.active) return a.active ? -1 : 1;
+                            return a.name.localeCompare(b.name);
+                        });
+                    }
+                    // Build ordered groups array (skip empty)
+                    const groupOrder = ['strategic', 'gmail', 'brain', 'ops', 'utility', 'other'];
+                    const groups = groupOrder.map(id => groupMap[id]).filter(g => g.totalCount > 0);
+
+                    const result = {
+                        groups,
+                        summary: { total: workflows.length, active: totalActive, inactive: totalInactive },
+                        timestamp: new Date().toISOString()
+                    };
+                    n8nWorkflowsCache = result;
+                    n8nWorkflowsCacheTime = Date.now();
+                    resolve(result);
+                } catch(e) { reject(e); }
+            });
+        });
+        req.on('error', reject);
+        req.setTimeout(10000, () => { req.destroy(); reject(new Error('Timeout')); });
+        req.end();
+    });
+}
+
+function getN8nWorkflows(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (!N8N_API_KEY) {
+        res.end(JSON.stringify({ error: 'No N8N_API_KEY configured', groups: [], summary: { total: 0, active: 0, inactive: 0 } }));
+        return;
+    }
+    if (n8nWorkflowsCache && (Date.now() - n8nWorkflowsCacheTime) < N8N_WF_TTL) {
+        res.end(JSON.stringify(n8nWorkflowsCache));
+        return;
+    }
+    fetchN8nWorkflows().then(data => {
+        res.end(JSON.stringify(data));
+    }).catch(e => {
+        // Return stale cache if available
+        if (n8nWorkflowsCache) { res.end(JSON.stringify(n8nWorkflowsCache)); return; }
+        res.end(JSON.stringify({ error: e.message, groups: [], summary: { total: 0, active: 0, inactive: 0 } }));
+    });
+}
+
 // DigitalOcean droplet monitoring — cached, refreshed every 2 minutes
 const DO_API_TOKEN = (() => {
     if (process.env.DIGITALOCEAN_TOKEN && !process.env.DIGITALOCEAN_TOKEN.startsWith('your_')) return process.env.DIGITALOCEAN_TOKEN;
@@ -2652,11 +3179,13 @@ let lastSystemHealth = null; // populated by getSystemHealth, read by sampleLoca
 
 function sampleLocalTraffic() {
     // Ollama: connections + CPU — high CPU = actively generating tokens
-    // Also check if n8n (64.23.238.56) is connected to Ollama
+    // n8n connects to Ollama via reverse SSH tunnel (ai.dwe.ollama-tunnel)
+    // which shows as ssh process on 127.0.0.1:11434 — detect by ssh PID in lsof
     exec("lsof -i :11434 -n -P 2>/dev/null | grep ESTABLISHED", (e1, ollamaRaw) => {
         const ollamaLines = (ollamaRaw || '').trim().split('\n').filter(l => l.length > 0);
         const ollamaConns = ollamaLines.length;
-        const n8nToOllama = ollamaLines.some(l => l.includes('64.23.238.56')) ? 1 : 0;
+        // SSH tunnel = n8n VPS calling Ollama through reverse port forward
+        const n8nToOllama = ollamaLines.some(l => /^ssh\s/.test(l)) ? 1 : 0;
         exec("ps -p 924 -o %cpu= 2>/dev/null", (ec, cpuOut) => {
             const ollamaCpu = parseFloat((cpuOut || '0').trim()) || 0;
             // Scale: idle=0, connection but low cpu=1, generating=2-6 based on cpu%
@@ -3336,6 +3865,63 @@ function getPipeline(req, res) {
     res.end(JSON.stringify({ stages: result, timestamp: new Date().toISOString() }));
 }
 
+// ── Telegram notification helper ──────────────────────────────────────
+function sendTelegramNotification(botToken, chatId, threadId, message) {
+    const postData = JSON.stringify({
+        chat_id: chatId,
+        message_thread_id: threadId,
+        text: message,
+        parse_mode: 'HTML'
+    });
+    const req = https.request({
+        hostname: 'api.telegram.org',
+        path: `/bot${botToken}/sendMessage`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(postData) }
+    }, (res) => {
+        let d = '';
+        res.on('data', c => d += c);
+        res.on('end', () => {
+            if (res.statusCode !== 200) console.log(`[telegram] Send failed (${res.statusCode}): ${d.slice(0, 200)}`);
+            else console.log('[telegram] Notification sent');
+        });
+    });
+    req.on('error', e => console.log(`[telegram] Error: ${e.message}`));
+    req.write(postData);
+    req.end();
+}
+
+// Notify Anita (PM topic) when a file is approved
+function notifyPMOnApproval(fileName, filePath) {
+    let botToken = process.env.OPENCLAW_TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+        // Fallback: read from env file
+        try {
+            const envFile = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8');
+            botToken = (envFile.match(/OPENCLAW_TELEGRAM_BOT_TOKEN="?([^"\n]+)"?/)?.[1] || '').trim();
+        } catch(e) {}
+    }
+    if (!botToken) { console.log('[pipeline] No Telegram token for PM notification'); return; }
+
+    const TELEGRAM_GROUP = '-1003704478785';
+    const PM_THREAD = '83';  // Anita's PM topic
+
+    // Read first 500 chars of the file for context
+    let preview = '';
+    try {
+        const content = fs.readFileSync(filePath, 'utf8');
+        preview = content.slice(0, 500).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+        if (content.length > 500) preview += '…';
+    } catch(e) { preview = '(could not read file)'; }
+
+    const msg = `📋 <b>New Approved Document</b>\n\n`
+        + `Sidney approved: <b>${fileName.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</b>\n\n`
+        + `<b>Preview:</b>\n<pre>${preview}</pre>\n\n`
+        + `Please review and create a project plan if this requires execution.`;
+
+    sendTelegramNotification(botToken, TELEGRAM_GROUP, PM_THREAD, msg);
+}
+
 function movePipelineFile(req, res) {
     let body = '';
     req.on('data', c => body += c);
@@ -3353,6 +3939,12 @@ function movePipelineFile(req, res) {
             if (!fs.existsSync(src)) { res.writeHead(404); res.end(JSON.stringify({ ok: false, error: 'File not found' })); return; }
             fs.renameSync(src, dst);
             console.log(`[pipeline] Moved ${safeName}: ${from} → ${to}`);
+
+            // Notify Anita when a file is approved
+            if (to === '3_Approved') {
+                notifyPMOnApproval(safeName, dst);
+            }
+
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ ok: true, file: safeName, from, to }));
         } catch(e) {
@@ -3449,13 +4041,16 @@ function getOpenclawVersion(req, res) {
 
 function runOpenclawUpdateCheck(req, res) {
     res.setHeader('Content-Type', 'application/json');
-    exec('npx openclaw update --dry-run --json 2>/dev/null', { timeout: 30000 }, (err, stdout) => {
+    exec('/opt/homebrew/bin/npx openclaw update --dry-run --json 2>/dev/null', { timeout: 30000, env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout) => {
         if (err) {
             res.end(JSON.stringify({ ok: false, error: err.message }));
             return;
         }
         try {
-            const data = JSON.parse(stdout.trim());
+            // Strip plugin registration lines that leak to stdout before JSON
+            const jsonStart = stdout.indexOf('{');
+            const cleanOutput = jsonStart >= 0 ? stdout.substring(jsonStart) : stdout;
+            const data = JSON.parse(cleanOutput.trim());
             const current = data.currentVersion || 'unknown';
             const target = data.targetVersion || current;
             const updateAvailable = current !== target;
@@ -3501,6 +4096,10 @@ server.listen(PORT, HOST, () => {
 
     // Start Apple Watch presence detector (auto-triggers Sprint Mode)
     sprint.startPresenceDetector();
+
+    // Pre-warm newsletter cache on boot so results are instant at 7 AM
+    console.log('[Newsletter Cache] Pre-warming on boot...');
+    refreshNewsletterCache();
 });
 
 // ── Google Drive File Browser ────────────────────────────────────────────────
@@ -3563,22 +4162,226 @@ function copyDriveFile(res, filename) {
 }
 
 // ═══ Newsletter Digest ═══
-function runNewsletterDigest(req, res, query) {
-    const telegram = query && query.telegram === '1' ? '--telegram' : '';
-    const args = ['all', '--json', telegram].filter(Boolean).join(' ');
-    const cmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /opt/homebrew/bin/python3 /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh.json ${args}`;
+// ── Newsletter Cache ──
+const NEWSLETTER_CACHE_MAX_AGE = 4 * 60 * 60 * 1000; // 4 hours
+let newsletterCache = { data: null, timestamp: 0, refreshing: false };
 
-    // Use the bash script directly but with --json mode
-    const digestCmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh all --json ${telegram}`;
-
+function runNewsletterScan(callback) {
+    const digestCmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh all --json`;
     exec(digestCmd, { timeout: 300000, maxBuffer: 1024 * 1024 * 5, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout, stderr) => {
+        if (err) { callback(err, null); return; }
+        try {
+            const jsonStart = stdout.indexOf('{"');
+            if (jsonStart >= 0) {
+                const data = JSON.parse(stdout.substring(jsonStart));
+                callback(null, data);
+            } else {
+                callback(new Error('No JSON output found'), null);
+            }
+        } catch (e) {
+            callback(new Error('JSON parse error: ' + e.message), null);
+        }
+    });
+}
+
+function refreshNewsletterCache() {
+    if (newsletterCache.refreshing) return;
+    newsletterCache.refreshing = true;
+    console.log('[Newsletter Cache] Refreshing...');
+    runNewsletterScan((err, data) => {
+        newsletterCache.refreshing = false;
+        if (!err && data) {
+            newsletterCache.data = data;
+            newsletterCache.timestamp = Date.now();
+            console.log('[Newsletter Cache] Updated at', new Date().toLocaleTimeString());
+        } else {
+            console.log('[Newsletter Cache] Refresh failed:', err?.message);
+        }
+    });
+}
+
+function runNewsletterDigest(req, res, query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const telegram = query && query.telegram === '1';
+
+    // Telegram requests always run live (they send a message, not just read)
+    if (telegram) {
+        const digestCmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/newsletter_digest.sh all --json --telegram`;
+        exec(digestCmd, { timeout: 300000, maxBuffer: 1024 * 1024 * 5, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout, stderr) => {
+            if (err) { res.end(JSON.stringify({ error: err.message, stderr })); return; }
+            try {
+                const jsonStart = stdout.indexOf('{"');
+                if (jsonStart >= 0) {
+                    const data = JSON.parse(stdout.substring(jsonStart));
+                    // Also update cache with these results
+                    newsletterCache.data = data;
+                    newsletterCache.timestamp = Date.now();
+                    res.end(JSON.stringify(data));
+                } else {
+                    res.end(JSON.stringify({ error: 'No JSON output found', raw: stdout.substring(0, 500) }));
+                }
+            } catch (e) {
+                res.end(JSON.stringify({ error: 'JSON parse error: ' + e.message, raw: stdout.substring(0, 500) }));
+            }
+        });
+        return;
+    }
+
+    // Non-telegram: serve from cache if fresh
+    const cacheAge = Date.now() - newsletterCache.timestamp;
+    if (newsletterCache.data && cacheAge < NEWSLETTER_CACHE_MAX_AGE) {
+        const cacheAgeMin = Math.round(cacheAge / 60000);
+        res.end(JSON.stringify({ ...newsletterCache.data, cached: true, cache_age_min: cacheAgeMin }));
+        return;
+    }
+
+    // Cache stale or empty
+    if (newsletterCache.data) {
+        // Return stale cache immediately, refresh in background
+        const cacheAgeMin = Math.round(cacheAge / 60000);
+        res.end(JSON.stringify({ ...newsletterCache.data, cached: true, cache_age_min: cacheAgeMin, stale: true }));
+        refreshNewsletterCache();
+        return;
+    }
+
+    // No cache at all — must run live (first-ever load)
+    runNewsletterScan((err, data) => {
+        if (err) {
+            res.end(JSON.stringify({ error: err.message }));
+        } else {
+            newsletterCache.data = data;
+            newsletterCache.timestamp = Date.now();
+            res.end(JSON.stringify(data));
+        }
+    });
+}
+
+// ── Communications Center: Unified Inbox with AI Screening ──
+const MESSAGES_CACHE_TTL = 30 * 60 * 1000; // 30 min
+let messagesCache = { data: null, timestamp: 0, refreshing: false };
+
+function getScreenedMessages(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const cacheAge = Date.now() - messagesCache.timestamp;
+    if (messagesCache.data && cacheAge < MESSAGES_CACHE_TTL) {
+        res.end(JSON.stringify({ ...messagesCache.data, cached: true, cache_age_min: Math.round(cacheAge / 60000) }));
+        return;
+    }
+
+    if (messagesCache.refreshing && messagesCache.data) {
+        res.end(JSON.stringify({ ...messagesCache.data, cached: true, cache_age_min: Math.round(cacheAge / 60000), stale: true }));
+        return;
+    }
+
+    messagesCache.refreshing = true;
+    const collectScript = path.join(__dirname, 'collect_messages.py');
+    exec(`/opt/homebrew/bin/python3 ${collectScript}`, { timeout: 120000, maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
+        if (err) {
+            messagesCache.refreshing = false;
+            res.end(JSON.stringify({ ok: false, error: 'Collection failed: ' + err.message, messages: [] }));
+            return;
+        }
+
+        let rawMessages;
+        try {
+            rawMessages = JSON.parse(stdout);
+        } catch (e) {
+            messagesCache.refreshing = false;
+            res.end(JSON.stringify({ ok: false, error: 'Parse error', messages: [] }));
+            return;
+        }
+
+        // No filtering — show ALL messages, just tag importance
+        const allMessages = rawMessages.messages;
+        // Opportunity keywords — things that signal a potential deal/lead
+        const oppKeywords = ['looking for', 'need help', 'anyone know', 'recommend', 'who does',
+            'partnership', 'collab', 'project', 'contract', 'client', 'deal', 'revenue',
+            'opportunity', 'budget', 'proposal', 'quote', 'pitch', 'gig', 'freelance',
+            'hire', 'hiring', 'agency', 'service', 'outsource', 'marketing', 'website',
+            'lead gen', 'ads', 'seo', 'funnel', 'saas', 'startup', 'invest', 'funding'];
+
+        const kept = allMessages.map(m => {
+            let importance = 'medium';
+            let ai_reason = '';
+            let is_opportunity = false;
+            const preview = (m.preview || '').toLowerCase();
+            const from = (m.from || '').toLowerCase();
+            // Rocket Community = lawsuit-related, always high priority
+            if (from.includes('rocket') && m.channel === 'telegram') {
+                importance = 'high';
+                ai_reason = 'Rocket Community — lawsuit action item';
+            // TLV.zone = important group, auto-task + high priority
+            } else if (from.includes('tlv') && m.channel === 'telegram') {
+                importance = 'high';
+                ai_reason = 'TLV.zone — important group';
+                m._auto_task = true;
+            // Liquid Pay / Bank / Bitcoin Code — flag announcements & US-related news
+            } else if (m.channel === 'telegram' && (from.includes('liquid') || from.includes('bank') || from.includes('bitcoin code'))) {
+                const flagWords = ['announcement', 'major', 'united states', 'usa', 'u.s.', 'america', 'us market', 'us launch', 'regulation', 'sec', 'federal', 'congress'];
+                const matched = flagWords.find(kw => preview.includes(kw));
+                if (matched) {
+                    importance = 'high';
+                    ai_reason = `${from.split('›')[0].trim()} — "${matched}"`;
+                }
+            } else if (preview.includes('blocked') || preview.includes('urgent') || preview.includes('asap') || preview.includes('waiting on you')) {
+                importance = 'high';
+            }
+            // Opportunity detection for Telegram messages
+            if (m.channel === 'telegram' && !from.startsWith('→')) {
+                const matchedKw = oppKeywords.find(kw => preview.includes(kw));
+                if (matchedKw) {
+                    is_opportunity = true;
+                    ai_reason = ai_reason || `Potential opportunity — "${matchedKw}"`;
+                }
+            }
+            return { ...m, importance, ai_reason, is_opportunity };
+        });
+        const screenedOut = 0;
+
+        // Auto-create tasks for TLV.zone messages (fire-and-forget, don't block response)
+        const autoTaskFile = path.join(__dirname, '.auto_tasks_created.json');
+        let createdIds = {};
+        try { createdIds = JSON.parse(fs.readFileSync(autoTaskFile, 'utf8')); } catch(e) {}
+        for (const m of kept) {
+            if (m._auto_task && !createdIds[m.id]) {
+                createdIds[m.id] = Date.now();
+                const taskName = `[TLV.zone] ${(m.preview || '').substring(0, 80)}`;
+                createNotionTask({ name: taskName, priority: 'High', role: 'CEO', url: m.url || '' }).catch(() => {});
+            }
+            delete m._auto_task;
+        }
+        try { fs.writeFileSync(autoTaskFile, JSON.stringify(createdIds)); } catch(e) {}
+
+        messagesCache.data = {
+            ok: true,
+            messages: kept,
+            screened_out: screenedOut,
+            total_raw: allMessages.length,
+            generated: new Date().toISOString(),
+            channels: rawMessages.channels
+        };
+        messagesCache.timestamp = Date.now();
+        messagesCache.refreshing = false;
+        res.end(JSON.stringify(messagesCache.data));
+    });
+}
+
+
+function runSkoolDigest(req, res, query) {
+    const telegram = query && query.telegram === '1' ? '--telegram' : '';
+    const digestCmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/skool_digest.sh --json ${telegram}`;
+
+    exec(digestCmd, { timeout: 600000, maxBuffer: 1024 * 1024 * 10, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout, stderr) => {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Access-Control-Allow-Origin', '*');
         if (err) {
             res.end(JSON.stringify({ error: err.message, stderr: stderr }));
             return;
         }
-        // Find JSON in output (script prints JSON when --json flag used)
         try {
             const jsonStart = stdout.indexOf('{"');
             if (jsonStart >= 0) {
@@ -3589,6 +4392,232 @@ function runNewsletterDigest(req, res, query) {
             }
         } catch (e) {
             res.end(JSON.stringify({ error: 'JSON parse error: ' + e.message, raw: stdout.substring(0, 500) }));
+        }
+    });
+}
+
+// ═══ Skool Direct Scraper Endpoints ═══
+
+async function handleSkoolScrape(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const parsedUrl = require('url').parse(req.url, true);
+    const method = parsedUrl.query.method || 'api'; // 'api' (default, fast) or 'browser' (Puppeteer fallback)
+
+    try {
+        let scraperResult;
+
+        if (method === 'api') {
+            // API approach — lightweight HTTP requests, no browser needed
+            console.log('[Skool Scrape] Starting API scrape...');
+            const configPath = skoolScraper.CONFIG_PATH;
+            const unreads = parsedUrl.query.unreads === '1';
+            scraperResult = await new Promise((resolve, reject) => {
+                const args = [
+                    path.join(__dirname, 'skool-api', 'skool_api_scrape.py'),
+                    '--config', configPath
+                ];
+                if (unreads) args.push('--unreads');
+
+                const { execFile } = require('child_process');
+                execFile('python3', args, { timeout: 120000 }, (err, stdout, stderr) => {
+                    if (stderr) console.log('[Skool API]', stderr.trim());
+                    if (err) {
+                        console.error('[Skool API] Error:', err.message);
+                        reject(err);
+                        return;
+                    }
+                    try {
+                        resolve(JSON.parse(stdout));
+                    } catch (e) {
+                        reject(new Error('Failed to parse API scraper output'));
+                    }
+                });
+            });
+        } else {
+            // Puppeteer approach — full browser, slower but handles JS-heavy pages
+            console.log('[Skool Scrape] Starting browser scrape...');
+            scraperResult = await skoolScraper.scrapeAllCommunities();
+        }
+
+        if (!scraperResult.meta.session_ok) {
+            res.end(JSON.stringify({ error: scraperResult.meta.error || 'Session expired', session_ok: false }));
+            return;
+        }
+
+        if (scraperResult.meta.total_posts === 0) {
+            const cached = skoolPipeline.getCachedResults();
+            if (cached) {
+                cached.from_cache = true;
+                res.end(JSON.stringify(cached));
+            } else {
+                res.end(JSON.stringify({ total: 0, classrooms: [], videos: [], themes: null, theme_count: 0, video_count: 0 }));
+            }
+            return;
+        }
+
+        const config = skoolScraper.loadConfig();
+        const enriched = await skoolPipeline.enrichScrapeResults(scraperResult, config);
+        console.log(`[Skool Scrape] Done (${method}): ${enriched.total} posts, ${enriched.video_count} videos`);
+        res.end(JSON.stringify(enriched));
+    } catch (e) {
+        console.error('[Skool Scrape] Error:', e);
+        res.end(JSON.stringify({ error: e.message }));
+    }
+}
+
+function getCommandBriefing(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const briefPath = '/Users/elf-6/openclaw/shared/COMMAND_BRIEFING.md';
+    try {
+        const content = fs.readFileSync(briefPath, 'utf8');
+        const genMatch = content.match(/\*\*Generated:\*\*\s*(.+)/);
+        const generated = genMatch ? genMatch[1].trim() : '';
+        res.end(JSON.stringify({ ok: true, content, generated }));
+    } catch (e) {
+        res.end(JSON.stringify({ ok: false, error: 'Briefing not available: ' + e.message }));
+    }
+}
+
+function handleSkoolConfig(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const updates = JSON.parse(body);
+                const config = skoolScraper.loadConfig();
+                if (updates.communities) config.communities = updates.communities;
+                if (updates.scrollDepth) config.scrollDepth = updates.scrollDepth;
+                if (updates.maxVideosPerRun) config.maxVideosPerRun = updates.maxVideosPerRun;
+                skoolScraper.saveConfig(config);
+                res.end(JSON.stringify({ ok: true, config }));
+            } catch (e) {
+                res.end(JSON.stringify({ ok: false, error: e.message }));
+            }
+        });
+    } else {
+        const config = skoolScraper.loadConfig();
+        res.end(JSON.stringify(config));
+    }
+}
+
+async function handleSkoolAuth(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    if (req.method === 'POST') {
+        // Launch visible browser for auth — non-blocking, just starts it
+        skoolScraper.launchAuth().catch(() => {});
+        res.end(JSON.stringify({ ok: true, message: 'Browser launched for Skool login. Close the browser when done.' }));
+    } else {
+        // Check session status
+        const ok = await skoolScraper.checkSession();
+        res.end(JSON.stringify({ session_ok: ok }));
+    }
+}
+
+function handleCreateTask(req, res) {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        try {
+            const data = JSON.parse(body);
+            const result = await createNotionTask({ name: data.name, priority: data.priority, role: data.role, url: data.url || '' });
+            res.end(JSON.stringify(result));
+        } catch(e) {
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
+}
+
+function archiveGmailMessage(req, res, query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const msgId = query && query.id;
+    if (!msgId) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Missing ?id= parameter' }));
+        return;
+    }
+    // Sanitize — Gmail API IDs are alphanumeric
+    const cleanId = String(msgId).replace(/[^a-zA-Z0-9]/g, '');
+    if (!cleanId) {
+        res.end(JSON.stringify({ ok: false, error: 'Invalid id' }));
+        return;
+    }
+    // Use Gmail API skill to archive (removes INBOX label)
+    const cmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/gmail_skill.sh archive ${cleanId}`;
+    exec(cmd, { timeout: 15000, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout) => {
+        if (err) {
+            res.end(JSON.stringify({ ok: false, error: err.message }));
+        } else {
+            res.end(JSON.stringify({ ok: true, archived: cleanId }));
+        }
+    });
+}
+
+function labelGmailMessage(req, res, query) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    const msgId = query && query.id;
+    const label = query && query.label;
+    if (!msgId || !label) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: 'Missing ?id= or ?label= parameter' }));
+        return;
+    }
+    const cleanId = String(msgId).replace(/[^a-zA-Z0-9]/g, '');
+    const cleanLabel = String(label).replace(/[^a-zA-Z0-9_ -]/g, '');
+    if (!cleanId || !cleanLabel) {
+        res.end(JSON.stringify({ ok: false, error: 'Invalid id or label' }));
+        return;
+    }
+    const cmd = `SKILL_DIR=/Users/elf-6/.openclaw/skills/gmail-api /bin/bash /Users/elf-6/.openclaw/skills/gmail-api/gmail_skill.sh label ${cleanId} ${cleanLabel}`;
+    exec(cmd, { timeout: 15000, env: { ...process.env, SKILL_DIR: '/Users/elf-6/.openclaw/skills/gmail-api', PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin' } }, (err, stdout) => {
+        if (err) {
+            res.end(JSON.stringify({ ok: false, error: err.message }));
+        } else {
+            res.end(JSON.stringify({ ok: true, labeled: cleanId, label: cleanLabel }));
+        }
+    });
+}
+
+// ═══ Gmail Interest Feed ═══
+let interestCache = { data: null, timestamp: 0 };
+const INTEREST_CACHE_TTL = 15 * 60 * 1000; // 15 min (Ollama summaries are expensive)
+
+function getGmailInterest(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const bust = url.parse(req.url, true).query.bust;
+    const cacheAge = Date.now() - interestCache.timestamp;
+    if (!bust && interestCache.data && cacheAge < INTEREST_CACHE_TTL) {
+        res.end(JSON.stringify({ ...interestCache.data, cached: true, cache_age_min: Math.round(cacheAge / 60000) }));
+        return;
+    }
+
+    const scriptPath = path.join(__dirname, 'gmail_interest.py');
+    exec(`/opt/homebrew/bin/python3 ${scriptPath}`, { timeout: 300000, maxBuffer: 1024 * 1024 * 5 }, (err, stdout, stderr) => {
+        if (err) {
+            res.end(JSON.stringify({ error: err.message, messages: [], total: 0, senders: [] }));
+            return;
+        }
+        try {
+            const data = JSON.parse(stdout);
+            interestCache.data = data;
+            interestCache.timestamp = Date.now();
+            res.end(JSON.stringify(data));
+        } catch(e) {
+            res.end(JSON.stringify({ error: 'Parse error: ' + e.message, messages: [], total: 0 }));
         }
     });
 }
@@ -3615,7 +4644,8 @@ function getCeoCornerDrills(req, res) {
             s2: s.s2 || 0,
             s3: s.s3 || 0,
             s4: s.s4 || 0,
-            s5: s.s5 || 0
+            s5: s.s5 || 0,
+            s6: s.s6 || 0
         }));
 
         const latest = history.length > 0 ? history[history.length - 1] : null;
@@ -3667,6 +4697,107 @@ function formatSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ── Content Intelligence Pipeline ──────────────────────────────────
+const CONTENT_INTEL_FILE = path.join(__dirname, 'content-intel-data.json');
+
+function loadContentIntel() {
+    try {
+        return JSON.parse(fs.readFileSync(CONTENT_INTEL_FILE, 'utf8'));
+    } catch(e) {
+        return { lastScan: null, weeklyStats: { nuggets: 0, videos: 0, avgScore: 0 }, recentNuggets: [], channelStats: {} };
+    }
+}
+
+function saveContentIntel(data) {
+    fs.writeFileSync(CONTENT_INTEL_FILE, JSON.stringify(data, null, 2));
+}
+
+function handleContentIntel(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+
+    if (req.method === 'GET') {
+        res.end(JSON.stringify(loadContentIntel()));
+        return;
+    }
+
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', c => body += c);
+        req.on('end', () => {
+            try {
+                const nugget = JSON.parse(body);
+                const data = loadContentIntel();
+                data.lastScan = new Date().toISOString();
+
+                // Add nugget to recent list (keep last 50)
+                data.recentNuggets.unshift({
+                    videoId: nugget.videoId || '',
+                    title: nugget.title || '',
+                    channel: nugget.channelName || nugget.channel || '',
+                    score: nugget.relevance_score || nugget.score || 0,
+                    verdict: nugget.verdict || '',
+                    verdict_reason: nugget.verdict_reason || '',
+                    video_summary: nugget.video_summary || [],
+                    key_highlights: (nugget.key_highlights || []).slice(0, 5),
+                    agent_assignments: nugget.agent_assignments || [],
+                    tools_mentioned: nugget.tools_mentioned || [],
+                    revenue_potential: nugget.revenue_potential || null,
+                    nuggets: (nugget.nuggets || []).slice(0, 5),
+                    summary: nugget.summary || '',
+                    tags: nugget.tags || [],
+                    actionItems: nugget.action_items || nugget.actionItems || [],
+                    url: nugget.url || '',
+                    timestamp: new Date().toISOString()
+                });
+                if (data.recentNuggets.length > 50) data.recentNuggets = data.recentNuggets.slice(0, 50);
+
+                // Update channel stats
+                const ch = nugget.channelName || nugget.channel || 'Unknown';
+                if (!data.channelStats[ch]) data.channelStats[ch] = { videos: 0, totalScore: 0, avgScore: 0 };
+                data.channelStats[ch].videos++;
+                data.channelStats[ch].totalScore += (nugget.relevance_score || nugget.score || 0);
+                data.channelStats[ch].avgScore = Math.round((data.channelStats[ch].totalScore / data.channelStats[ch].videos) * 10) / 10;
+
+                // Recalculate weekly stats (last 7 days)
+                const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                const weekNuggets = data.recentNuggets.filter(n => new Date(n.timestamp).getTime() > weekAgo);
+                data.weeklyStats = {
+                    nuggets: weekNuggets.reduce((sum, n) => sum + (n.nuggets?.length || 1), 0),
+                    videos: weekNuggets.length,
+                    avgScore: weekNuggets.length ? Math.round(weekNuggets.reduce((s, n) => s + n.score, 0) / weekNuggets.length * 10) / 10 : 0
+                };
+
+                saveContentIntel(data);
+                res.end(JSON.stringify({ ok: true, totalNuggets: data.recentNuggets.length }));
+            } catch(e) {
+                res.end(JSON.stringify({ error: e.message }));
+            }
+        });
+        return;
+    }
+
+    res.end(JSON.stringify({ error: 'GET or POST only' }));
+}
+
+function handleCeoIntelBrief(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    if (req.method !== 'POST') { res.end(JSON.stringify({ error: 'POST only' })); return; }
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+        try {
+            const { filename, content } = JSON.parse(body);
+            if (!filename || !content) { res.end(JSON.stringify({ error: 'filename and content required' })); return; }
+            const safeName = filename.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+            const filePath = path.join(CEO_REVIEW_DIR, safeName);
+            fs.writeFileSync(filePath, content, 'utf8');
+            res.end(JSON.stringify({ ok: true, path: filePath }));
+        } catch(e) {
+            res.end(JSON.stringify({ error: e.message }));
+        }
+    });
 }
 
 // Handle errors gracefully

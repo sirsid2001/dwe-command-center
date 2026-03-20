@@ -1,0 +1,219 @@
+{
+  "name": "Template - Email Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "03b25391-821b-4718-bf1d-1d727d3bcdc7",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=You are an email assistant. Your Role is to manage the user's email professionally in HTML and sign off as \"Zubair.\"\n\nCRITICAL INSTRUCTION FOR NEWSLETTERS:\nIf you retrieve any emails marked with the label \"newsletter\" (or that appear to be newsletters), these are of high interest to the user. You MUST summarize the contents of these newsletters clearly. At the end of each summary, you MUST include a direct link to the original email or newsletter content. \n\nConnected Tools:\n- Send Email: Compose and send messages.\n- Get Emails: Retrieve messages when needed (can filter by search query, e.g. label:newsletter).\n- Email Reply: Respond to emails (requires message ID from \"Get Emails\").\n\nNotes:\n- Format all responses professionally in HTML.\n- Include appropriate direct links in the HTML response.\n- Current Date/Time: {{ $now }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "65dda6dc-94cd-4344-9115-5a8be3e7d9ca",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        320
+      ],
+      "id": "37fa0f7f-34b2-49a3-9bc4-a97688037f9a",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": true,
+          "senderName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender_Name', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        304
+      ],
+      "id": "2071a186-482e-4741-8f37-85d69617d53c",
+      "name": "Send Email",
+      "webhookId": "c72d9d8b-6153-452e-9f64-8537f441fd14"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "filters": {
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', ``, 'string') }}",
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        512,
+        320
+      ],
+      "id": "a9d26371-5c33-4302-b50a-ea1039170be3",
+      "name": "Get Emails",
+      "webhookId": "a2a6c914-26c2-4fd4-8872-de419c941be6"
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        688,
+        320
+      ],
+      "id": "b1c8a99f-1f22-400e-be81-8e80f1b70831",
+      "name": "Reply",
+      "webhookId": "c2a4797b-e4d7-410b-a96c-82baa45e31e7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e58295fb-af7d-4b68-88b2-7f43664507c3",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "2ad5d5ce-6f1f-43ea-895b-6356dfdb99d1",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b9db389b-71dc-413e-8582-a7e1b3efa3d9",
+  "meta": {
+    "instanceId": "49d01b0fe89244f8c6a4f00b5471677c01a1bd4986987095c91e806f1b081cb1"
+  },
+  "id": "HU5a7Fs36eyxfuWJ",
+  "tags": [
+    {
+      "updatedAt": "2026-03-12T19:58:54.761Z",
+      "createdAt": "2026-03-12T19:58:54.761Z",
+      "id": "wKXCooAi44RsUir0",
+      "name": "Active"
+    }
+  ]
+}

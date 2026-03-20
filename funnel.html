@@ -63,6 +63,7 @@
         .stage-proposal .count { color: #ff6600; } .stage-proposal .bar { background: rgba(255,102,0,0.2); }
         .stage-client .count { color: #00ff88; } .stage-client .bar { background: rgba(0,255,136,0.2); }
         .stage-upsell .count { color: #b829dd; } .stage-upsell .bar { background: rgba(184,41,221,0.2); }
+        .stage-disqualified .count { color: #555; } .stage-disqualified .bar { background: rgba(85,85,85,0.2); }
 
         /* Products */
         .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
@@ -89,6 +90,7 @@
         .stage-badge.proposal { background: rgba(255,102,0,0.1); color: #ff6600; }
         .stage-badge.client { background: rgba(0,255,136,0.1); color: #00ff88; }
         .stage-badge.upsell { background: rgba(184,41,221,0.1); color: #b829dd; }
+        .stage-badge.disqualified { background: rgba(85,85,85,0.15); color: #555; }
 
         .funding-yes { color: #00ff88; font-weight: 600; }
         .funding-maybe { color: #ffaa00; }
@@ -100,6 +102,28 @@
 
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .empty-msg { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
+
+        /* Outreach Queue */
+        .queue-item { padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; margin-bottom: 0.75rem; }
+        .queue-item .qi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .queue-item .qi-to { font-size: 0.8rem; font-weight: 600; color: #00c8ff; }
+        .queue-item .qi-meta { font-size: 0.6rem; color: rgba(255,255,255,0.3); }
+        .queue-item .qi-subject { font-size: 0.8rem; font-weight: 500; color: #ffaa00; margin-bottom: 0.4rem; }
+        .queue-item .qi-body { font-size: 0.72rem; color: rgba(255,255,255,0.6); line-height: 1.5; max-height: 120px; overflow-y: auto; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+        .queue-item .qi-actions { display: flex; gap: 0.5rem; }
+        .queue-btn { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1px solid; font-size: 0.7rem; font-family: Inter, sans-serif; cursor: pointer; transition: all 0.2s; }
+        .queue-btn.approve { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.3); color: #00ff88; }
+        .queue-btn.approve:hover { background: rgba(0,255,136,0.2); }
+        .queue-btn.skip { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); }
+        .queue-btn.skip:hover { background: rgba(255,255,255,0.1); }
+        .queue-btn.edit { background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.3); color: #00c8ff; }
+        .queue-btn.edit:hover { background: rgba(0,200,255,0.2); }
+        .queue-status { padding: 0.15rem 0.5rem; border-radius: 1rem; font-size: 0.6rem; font-weight: 500; }
+        .queue-status.pending { background: rgba(255,170,0,0.1); color: #ffaa00; }
+        .queue-status.approved { background: rgba(0,255,136,0.1); color: #00ff88; }
+        .queue-status.sent { background: rgba(0,200,255,0.1); color: #00c8ff; }
+        .queue-status.skipped { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+        .queue-count-badge { background: rgba(255,170,0,0.15); color: #ffaa00; padding: 0.1rem 0.45rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 600; margin-left: 0.4rem; }
 
         @media (max-width: 900px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -165,6 +189,14 @@
             <div class="card-title">Pipeline Funnel</div>
             <div class="funnel-stages" id="funnel-viz">
                 <div class="empty-msg">Loading funnel data...</div>
+            </div>
+        </div>
+
+        <!-- Outreach Queue -->
+        <div class="card" id="outreach-queue-card" style="display:none;">
+            <div class="card-title">Outreach Queue <span class="queue-count-badge" id="queue-count-badge">0</span></div>
+            <div id="outreach-queue-list">
+                <div class="empty-msg">No emails in queue</div>
             </div>
         </div>
 
@@ -251,12 +283,13 @@
                 document.getElementById('stats-api-link').href = '/mc/prospects/stats?pipeline=' + p;
                 document.getElementById('audit-prompt-link').href = '/mc/prompt/audit?pipeline=' + p;
                 document.getElementById('outreach-prompt-link').href = '/mc/prompt/outreach?pipeline=' + p;
+                fetchOutreachQueue();
             } catch(e) { console.error('Failed to fetch', e); }
         }
 
-        const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell'];
-        const stageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell' };
-        const stageColors = { 'Lead Generation': '#22d3ee', 'New': '#888', 'Audited': '#00c8ff', 'Outreach Sent': '#00f5ff', 'Responded': '#ffaa00', 'Proposal': '#ff6600', 'Client': '#00ff88', 'Upsell': '#b829dd' };
+        const stageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified'];
+        const stageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified' };
+        const stageColors = { 'Lead Generation': '#22d3ee', 'New': '#888', 'Audited': '#00c8ff', 'Outreach Sent': '#00f5ff', 'Responded': '#ffaa00', 'Proposal': '#ff6600', 'Client': '#00ff88', 'Upsell': '#b829dd', 'Disqualified': '#555' };
 
         function render() {
             if (!statsData) return;
@@ -278,7 +311,7 @@
                 'Lead Generation': { label: 'Sourcing', href: sheetUrl + '/edit#gid=1468071313' },
                 'New': { label: 'View Sheet', href: sheetUrl },
                 'Audited': { label: 'View Reports', href: `/mc/audit-reports?pipeline=${pipeline}` },
-                'Outreach Sent': { label: 'View Drafts', href: `/mc/outreach-drafts?pipeline=${pipeline}` },
+                'Outreach Sent': { label: 'View Queue', href: '#outreach-queue-card' },
                 'Responded': { label: 'View Sheet', href: sheetUrl },
                 'Proposal': { label: 'View Sheet', href: sheetUrl },
                 'Client': { label: 'View Sheet', href: sheetUrl },
@@ -383,6 +416,115 @@
             });
             html += '</div>';
             area.innerHTML = html;
+        }
+
+        // === Outreach Queue ===
+        let queueData = [];
+
+        async function fetchOutreachQueue() {
+            const pipeline = document.getElementById('pipeline-select').value;
+            if (!pipeline) return;
+            try {
+                const r = await fetch('/mc/outreach-queue?pipeline=' + pipeline);
+                const json = await r.json();
+                if (json.ok) {
+                    queueData = json.queue;
+                    renderOutreachQueue();
+                }
+            } catch(e) { console.error('Failed to fetch outreach queue', e); }
+        }
+
+        function renderOutreachQueue() {
+            const card = document.getElementById('outreach-queue-card');
+            const list = document.getElementById('outreach-queue-list');
+            const badge = document.getElementById('queue-count-badge');
+            const pending = queueData.filter(q => q.status === 'pending');
+
+            if (queueData.length === 0) { card.style.display = 'none'; return; }
+            card.style.display = '';
+            badge.textContent = pending.length;
+
+            if (queueData.length === 0) {
+                list.innerHTML = '<div class="empty-msg">No emails in queue</div>';
+                return;
+            }
+
+            list.innerHTML = queueData.map(q => {
+                const statusCls = q.status || 'pending';
+                const isPending = q.status === 'pending';
+                const actionsHtml = isPending ? `
+                    <button class="queue-btn approve" onclick="approveEmail('${esc(q.lead_id)}')">Approve &amp; Send</button>
+                    <button class="queue-btn edit" onclick="editEmail('${esc(q.lead_id)}')">Edit</button>
+                    <button class="queue-btn skip" onclick="skipEmail('${esc(q.lead_id)}')">Skip</button>
+                ` : `<span class="queue-status ${statusCls}">${esc(q.status)}</span>`;
+
+                return `<div class="queue-item" id="qi-${esc(q.lead_id)}">
+                    <div class="qi-header">
+                        <span class="qi-to">${esc(q.name || '')} &lt;${esc(q.to || '')}&gt;</span>
+                        <span class="qi-meta">Score: ${esc(q.audit_score || '?')} | ${esc(q.lead_id || '')} | ${esc((q.queued_at || '').slice(0,10))}</span>
+                    </div>
+                    <div class="qi-subject" id="qi-subject-${esc(q.lead_id)}">${esc(q.subject || '(no subject)')}</div>
+                    <div class="qi-body" id="qi-body-${esc(q.lead_id)}">${esc(q.body_text || '')}</div>
+                    <div class="qi-actions" id="qi-actions-${esc(q.lead_id)}">${actionsHtml}</div>
+                </div>`;
+            }).join('');
+        }
+
+        async function approveEmail(leadId) {
+            if (!confirm('Approve and send this email?')) return;
+            try {
+                const r = await fetch('/mc/outreach-approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lead_id: leadId })
+                });
+                const json = await r.json();
+                alert(json.message || json.error);
+                fetchOutreachQueue();
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        async function skipEmail(leadId) {
+            try {
+                const r = await fetch('/mc/outreach-skip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lead_id: leadId })
+                });
+                const json = await r.json();
+                fetchOutreachQueue();
+            } catch(e) { alert('Error: ' + e.message); }
+        }
+
+        function editEmail(leadId) {
+            const subjectEl = document.getElementById('qi-subject-' + leadId);
+            const bodyEl = document.getElementById('qi-body-' + leadId);
+            const actionsEl = document.getElementById('qi-actions-' + leadId);
+            const origSubject = subjectEl.textContent;
+            const origBody = bodyEl.textContent;
+
+            subjectEl.innerHTML = `<input type="text" value="${origSubject.replace(/"/g, '&quot;')}" id="qi-edit-subject-${leadId}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.3rem;border-radius:4px;font-family:Inter,sans-serif;font-size:0.8rem;">`;
+            bodyEl.innerHTML = `<textarea id="qi-edit-body-${leadId}" style="width:100%;min-height:100px;background:rgba(0,0,0,0.3);border:1px solid rgba(0,200,255,0.3);color:rgba(255,255,255,0.8);padding:0.5rem;border-radius:4px;font-family:Inter,sans-serif;font-size:0.72rem;resize:vertical;">${esc(origBody)}</textarea>`;
+            actionsEl.innerHTML = `
+                <button class="queue-btn approve" onclick="saveAndApprove('${leadId}')">Save &amp; Approve</button>
+                <button class="queue-btn skip" onclick="fetchOutreachQueue()">Cancel</button>
+            `;
+        }
+
+        async function saveAndApprove(leadId) {
+            const subject = document.getElementById('qi-edit-subject-' + leadId).value;
+            const bodyText = document.getElementById('qi-edit-body-' + leadId).value;
+            if (!confirm('Approve and send this edited email?')) return;
+            try {
+                const r = await fetch('/mc/outreach-approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lead_id: leadId, subject, body_text: bodyText })
+                });
+                const json = await r.json();
+                alert(json.message || json.error);
+                fetchOutreachQueue();
+            } catch(e) { alert('Error: ' + e.message); }
         }
 
         // Init

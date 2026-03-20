@@ -1,0 +1,839 @@
+{
+  "name": "Reddit Scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -160
+      ],
+      "id": "bb6de749-bc4f-410a-b825-903edbf028a9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## ⏰ Schedule Trigger\nThis triggers the workflow every 6 hours to scrape Reddit posts. You can adjust the interval as needed.\n\nClick the 'Execute node' button to test manually.",
+        "height": 200,
+        "width": 280,
+        "color": 2
+      },
+      "id": "0b885786-6414-4ebd-9944-d4a2757ae490",
+      "name": "Sticky Note - Trigger",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -832,
+        -192
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"subreddits\": [\n    \"AskReddit\",\n    \"todayilearned\",\n    \"funny\",\n    \"worldnews\",\n    \"science\",\n    \"technology\",\n    \"gaming\",\n    \"movies\",\n    \"books\",\n    \"fitness\",\n    \"LifeProTips\",\n    \"explainlikeimfive\",\n    \"IAmA\",\n    \"relationships\",\n    \"personalfinance\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        -160
+      ],
+      "id": "d71ca181-b7ef-4ee7-8ff3-7fed6f073612",
+      "name": "Subreddit List"
+    },
+    {
+      "parameters": {
+        "content": "## 📋 Subreddit List\nDefine your target subreddits here. You can add or remove subreddits from this list.\n\nEach subreddit will be processed to find random posts.\n\n**Popular subreddits included:**\n- AskReddit (Q&A)\n- todayilearned (TIL)\n- LifeProTips (advice)\n- explainlikeimfive (ELI5)\n- relationships (advice)",
+        "height": 320,
+        "width": 424,
+        "color": 3
+      },
+      "id": "102d58ad-b59e-4a3a-ba0c-9c979f7c6efd",
+      "name": "Sticky Note - Subreddits",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the subreddits array and create separate items for each subreddit\nconst subreddits = $input.first().json.subreddits;\n\nreturn subreddits.map(subreddit => {\n  return {\n    json: {\n      current_subreddit: subreddit\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -160
+      ],
+      "id": "0cd68f1b-89bd-4d9b-9b89-bc66e0e1629c",
+      "name": "Split Subreddits"
+    },
+    {
+      "parameters": {
+        "content": "## ⚡ Split Subreddits (Fixed)\nThis Code node solves the data flow issue:\n- Takes the subreddits array from the previous node\n- Creates a separate item for each subreddit\n- Sets current_subreddit field for each item\n- Allows the workflow to process each subreddit individually\n\n**This replaces Split in Batches + Set nodes.**",
+        "height": 264,
+        "width": 408,
+        "color": 5
+      },
+      "id": "f7a81866-5937-429c-8571-9f3d812f6632",
+      "name": "Sticky Note - Split Logic",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        -576
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "=https://www.reddit.com/r/{{ $json.current_subreddit }}/hot.json?limit=20&raw_json=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-reddit-scraper/1.0 by Obvious_Value4937"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        -160
+      ],
+      "id": "3c6cbb9f-c40a-470a-9778-e4f5e761caf3",
+      "name": "Fetch Reddit Posts"
+    },
+    {
+      "parameters": {
+        "content": "## 🔐 Reddit API Setup (Simplified)\n**GOOD NEWS:** Using Reddit's public JSON API - no authentication needed!\n\n**How it works:**\n- Uses www.reddit.com/r/subreddit/hot.json\n- Public endpoint, no OAuth required\n- Just needs a proper User-Agent header\n- Fetches 50 hot posts per subreddit\n- raw_json=1 prevents HTML encoding\n\n**User-Agent Requirement:**\n- Change 'your_reddit_username' to your actual Reddit username\n- Reddit requires descriptive User-Agent strings\n- Format: 'app_name/version by username'\n\n**This approach is much simpler and avoids authentication issues!**",
+        "height": 420,
+        "width": 512,
+        "color": 4
+      },
+      "id": "84d4b6a5-0f0b-48cf-a0dd-6598c956faf0",
+      "name": "Sticky Note - Reddit API",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        -736
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\n\n// Check if we have a valid response\nif (!response || !response.data || !response.data.children) {\n  return { json: { error: 'Invalid Reddit API response' } };\n}\n\nconst posts = response.data.children;\nconsole.log(`Total posts fetched: ${posts.length}`);\n\n// More flexible filtering - accept various post types\nconst validPosts = posts.filter(post => {\n  const data = post.data;\n  \n  // Basic filtering\n  if (data.stickied || data.pinned || data.over_18) {\n    return false;\n  }\n  \n  // Must have a decent title\n  if (!data.title || data.title.length < 15) {\n    return false;\n  }\n  \n  // For self posts\n  if (data.is_self) {\n    // Accept self posts with either:\n    // 1. Good selftext content, OR\n    // 2. Just a good title (like AskReddit questions)\n    if (data.selftext && data.selftext.length > 20 && \n        data.selftext !== '[removed]' && data.selftext !== '[deleted]') {\n      return true; // Has good body text\n    }\n    \n    // Or just a good title with decent engagement\n    return data.title.length > 30 && (data.score > 50 || data.num_comments > 10);\n  }\n  \n  // For link posts, check engagement\n  return data.score > 10 || data.num_comments > 5;\n});\n\nconsole.log(`Valid posts after filtering: ${validPosts.length}`);\n\nif (validPosts.length === 0) {\n  // Return more detailed debug info\n  const samplePosts = posts.slice(0, 3).map(post => ({\n    title_length: post.data.title?.length || 0,\n    is_self: post.data.is_self,\n    selftext_length: post.data.selftext?.length || 0,\n    score: post.data.score,\n    comments: post.data.num_comments,\n    stickied: post.data.stickied,\n    over_18: post.data.over_18\n  }));\n  \n  return { \n    json: { \n      error: 'No valid posts found in this subreddit',\n      debug: {\n        total_posts: posts.length,\n        sample_posts: samplePosts\n      }\n    } \n  };\n}\n\n// Select a random post\nconst randomIndex = Math.floor(Math.random() * validPosts.length);\nconst selectedPost = validPosts[randomIndex].data;\n\n// Create content based on what's available\nlet content;\nif (selectedPost.is_self) {\n  if (selectedPost.selftext && selectedPost.selftext.trim()) {\n    // Self post with body text\n    content = selectedPost.selftext;\n  } else {\n    // Self post with just title (like AskReddit questions)\n    content = selectedPost.title;\n  }\n} else {\n  // Link post\n  content = selectedPost.url && selectedPost.url !== `https://reddit.com${selectedPost.permalink}` ? \n           `Link: ${selectedPost.url}` : selectedPost.title;\n}\n\n// Return formatted post data\nreturn {\n  json: {\n    subreddit: selectedPost.subreddit,\n    title: selectedPost.title,\n    content: content,\n    author: selectedPost.author,\n    permalink: selectedPost.permalink,\n    url: `https://reddit.com${selectedPost.permalink}`,\n    created_utc: selectedPost.created_utc,\n    score: selectedPost.score,\n    num_comments: selectedPost.num_comments,\n    id: selectedPost.id,\n    fullname: selectedPost.name,\n    post_type: selectedPost.is_self ? \n      (selectedPost.selftext && selectedPost.selftext.trim() ? 'self_post_with_text' : 'self_post_title_only') : \n      'link_post',\n    original_url: selectedPost.url\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -160
+      ],
+      "id": "1dc02012-349b-4a84-adb9-abd78e916805",
+      "name": "Select Random Post"
+    },
+    {
+      "parameters": {
+        "content": "## 🎲 Smart Post Selection\nNow handles ALL Reddit post types:\n\n**Self Posts with Text:**\n- Uses the text content (20+ chars)\n- Perfect for stories, advice, etc.\n\n**Self Posts Title-Only:**\n- Uses the title as content (AskReddit style)\n- Requires 30+ char titles + good engagement\n- Great for questions and discussions\n\n**Link Posts:**\n- Uses URL + title as content\n- Good for sharing interesting links\n\n**The key insight: Many Reddit posts are just great titles (like AskReddit questions)!**",
+        "height": 412,
+        "width": 444,
+        "color": 5
+      },
+      "id": "cf36f691-e5ad-4796-893e-a91404f3fe2e",
+      "name": "Sticky Note - Selection",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "error-check",
+              "operator": {
+                "type": "string",
+                "operation": "notExists"
+              },
+              "leftValue": "={{ $json.error }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -160
+      ],
+      "id": "5819fc9a-18bb-4392-90e6-c812c4cff05f",
+      "name": "Check Valid Post"
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Error Handling\nThis IF node checks if a valid post was found. If no valid posts are available in the subreddit, the workflow will skip processing and continue to the next subreddit.\n\n**Common reasons for no valid posts:**\n- All posts are stickied/pinned\n- No self-posts with sufficient content\n- All posts are NSFW or removed",
+        "height": 264,
+        "width": 424
+      },
+      "id": "ec082760-4240-4844-93b8-52423fbd0509",
+      "name": "Sticky Note - Error Handling",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        304,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 AI Analysis & Enhancement\n\n**Perspective Analysis:**\n- Uses GPT-4o for accurate gender perspective detection\n- Analyzes language patterns, topics, and context\n- Temperature 0.3 for consistent results\n\n**Content Revision:**\n- Improves readability and emotional appeal\n- Optimizes for social media sharing\n- Maintains authenticity and original tone\n- Temperature 0.7 for creative enhancement\n\n**Both processes preserve the original message while making it more suitable for your content strategy.**",
+        "height": 404,
+        "width": 464,
+        "color": 6
+      },
+      "id": "a634d4da-de7d-4dd5-a9ed-2fadac2cd074",
+      "name": "Sticky Note - AI Analysis",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}"
+            },
+            {
+              "id": "subreddit",
+              "name": "subreddit",
+              "type": "string",
+              "value": "={{ $('Check Valid Post').item.json.subreddit }}"
+            },
+            {
+              "id": "post-content",
+              "name": "post_content",
+              "type": "string",
+              "value": "={{ $('Check Valid Post').item.json.content }}"
+            },
+            {
+              "id": "post-user",
+              "name": "post_user",
+              "type": "string",
+              "value": "={{ $('Check Valid Post').item.json.author }}"
+            },
+            {
+              "id": "facebook-url",
+              "name": "facebook_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "instagram-url",
+              "name": "instagram_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "tiktok-url",
+              "name": "tiktok_url",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "reddit-url",
+              "name": "reddit_url",
+              "type": "string",
+              "value": "={{ $('Check Valid Post').item.json.url }}"
+            },
+            {
+              "id": "post-score",
+              "name": "post_score",
+              "type": "number",
+              "value": "={{ $('Check Valid Post').item.json.score }}"
+            },
+            {
+              "id": "post-comments",
+              "name": "post_comments",
+              "type": "number",
+              "value": "={{ $('Select Random Post').item.json.num_comments }}"
+            },
+            {
+              "id": "reddit-id",
+              "name": "reddit_id",
+              "type": "string",
+              "value": "={{ $('Check Valid Post').item.json.id }}"
+            },
+            {
+              "id": "post-type",
+              "name": "post_type",
+              "type": "string",
+              "value": "={{ $('Select Random Post').item.json.post_type }}"
+            },
+            {
+              "id": "f9c4fb8c-0007-4fd3-9078-60bdffcd923f",
+              "name": "perspective",
+              "value": "={{ $json.message.content.perspective }}",
+              "type": "string"
+            },
+            {
+              "id": "465aba6c-99f8-46ea-8634-36b01fb14a9b",
+              "name": "sentimentAnalysis.category",
+              "value": "={{ $('Sentiment Analysis').item.json.sentimentAnalysis.category }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        -96
+      ],
+      "id": "a4c99e21-0169-4d19-8272-b819770e30dd",
+      "name": "Prepare Sheet Data"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1lIS_3E8ikZdJcvMdQ_dygiRIQePf4XSP_-OPtsMLeB4",
+          "mode": "list",
+          "cachedResultName": "Subreddit Content",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lIS_3E8ikZdJcvMdQ_dygiRIQePf4XSP_-OPtsMLeB4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lIS_3E8ikZdJcvMdQ_dygiRIQePf4XSP_-OPtsMLeB4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Timestamp"
+          ],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subreddit",
+              "displayName": "subreddit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_content",
+              "displayName": "post_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_user",
+              "displayName": "post_user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "facebook_url",
+              "displayName": "facebook_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "instagram_url",
+              "displayName": "instagram_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tiktok_url",
+              "displayName": "tiktok_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_url",
+              "displayName": "reddit_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_score",
+              "displayName": "post_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_comments",
+              "displayName": "post_comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reddit_id",
+              "displayName": "reddit_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "post_type",
+              "displayName": "post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "perspective",
+              "displayName": "perspective",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentimentAnalysis",
+              "displayName": "sentimentAnalysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1536,
+        -96
+      ],
+      "id": "40a03eaf-b54d-477c-aef0-dc46481fcfef",
+      "name": "Save to Google Sheets",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "tRkBE2XpjQdDkaWS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Data Storage & Final Steps\n\n**Enhanced Data Structure:**\n- All your requested columns plus bonus metrics\n- Post score and comment count for engagement tracking\n- Reddit ID for reference\n- Properly formatted content with title + body\n\n**Setup Requirements:**\n1. Configure Google Sheets OAuth2 credentials\n2. Select Google Sheet from list\n3. Map columns automatically\n\n\n**The workflow now handles both text posts and link posts, giving you more diverse content for your social media strategy.**",
+        "height": 480,
+        "width": 596,
+        "color": 7
+      },
+      "id": "fb691d6d-7dc4-4207-a21a-8d97db5cd2ac",
+      "name": "Sticky Note - Final Steps",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1312,
+        192
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=is {{ $json.title }}, written by {{ $json.author }} ",
+              "role": "system"
+            },
+            {
+              "content": "is this post in a female or male perspective?"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        800,
+        -256
+      ],
+      "id": "262ee88c-52c5-47fa-b1dd-9b3f0fdfe2c5",
+      "name": "Gather Perspective",
+      "credentials": {
+        "openAiApi": {
+          "id": "Wf8K5YJ7FhfVIM5i",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $('Check Valid Post').item.json.content }}",
+        "options": {
+          "categories": "inspirational, educational, entertaining, controversial, relatable, emotional, practical, curious, frustrating, wholesome",
+          "systemPromptTemplate": "=You are highly intelligent and accurate sentiment analyzer. Analyze the sentiment of the provided text. Categorize it into one of the following: {categories}. Only output the category name.",
+          "includeDetailedResults": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        -48
+      ],
+      "id": "a799e0d2-b56e-4162-883f-9cc277fa0525",
+      "name": "Sentiment Analysis",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        416
+      ],
+      "id": "c95c8cf0-630a-4a58-971d-ed6cf1d3666e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Wf8K5YJ7FhfVIM5i",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "a82f71b3-2043-45e8-b30f-d4517bc91888",
+      "name": "Retry if no valid post"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Subreddit List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subreddit List": {
+      "main": [
+        [
+          {
+            "node": "Split Subreddits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Subreddits": {
+      "main": [
+        [
+          {
+            "node": "Fetch Reddit Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Reddit Posts": {
+      "main": [
+        [
+          {
+            "node": "Select Random Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Random Post": {
+      "main": [
+        [
+          {
+            "node": "Check Valid Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Valid Post": {
+      "main": [
+        [
+          {
+            "node": "Gather Perspective",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry if no valid post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gather Perspective": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry if no valid post": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Select Random Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7fa8d5e5-99fc-48c2-b347-ac5e593ea3cd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b47e6b1b14a76177ba08407b198033df5d17a519a21559eb1a05933dfd7f0de7"
+  },
+  "id": "9PjJUsUPFaH2ib5H",
+  "tags": []
+}

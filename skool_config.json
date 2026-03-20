@@ -1,0 +1,4 @@
+{
+  "cookie": "",
+  "note": "Cookie moved to .env as SKOOL_COOKIE. This file is kept as fallback only."
+}

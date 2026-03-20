@@ -1591,7 +1591,36 @@
                 </div>
             </div>
 
+            <!-- Content Intelligence Card -->
+            <div class="service-panel" style="margin-bottom:1.5rem;">
+                <div class="panel-header" style="padding:0.65rem 1rem;">
+                    <div class="panel-icon">🧠</div>
+                    <div class="panel-title">Content Intelligence</div>
+                    <div id="ci-status-dot" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);margin-left:0.5rem;" title="No data yet"></div>
+                    <div id="ci-badge" style="margin-left:0.4rem;font-size:0.6rem;font-weight:600;color:rgba(255,255,255,0.3);">—</div>
+                </div>
+                <div id="ci-stats" class="ci-stats">
+                    <span>This Week: <span class="ci-stat-val" id="ci-week-nuggets">0</span> nuggets from <span class="ci-stat-val" id="ci-week-videos">0</span> videos</span>
+                    <span>Avg Score: <span class="ci-stat-val" id="ci-week-avg">—</span></span>
+                </div>
+                <div id="ci-nuggets" class="ci-nuggets">
+                    <div class="ci-empty">No nuggets yet — pipeline will populate once YouTube channels are monitored</div>
+                </div>
+                <div id="ci-scan-time" class="ci-scan-time"></div>
+            </div>
 
+            <!-- Quick Actions: Content Processing -->
+            <div style="display:flex; gap:0.75rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                <button onclick="toggleNewsletters()" style="flex:1; min-width:140px; background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.2); color:#00c8ff; border-radius:0.75rem; padding:0.75rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,200,255,0.15)'" onmouseout="this.style.background='rgba(0,200,255,0.08)'">
+                    📰 Newsletters
+                </button>
+                <button onclick="toggleSkool()" style="flex:1; min-width:140px; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); color:#b480ff; border-radius:0.75rem; padding:0.75rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='rgba(139,92,246,0.15)'" onmouseout="this.style.background='rgba(139,92,246,0.08)'">
+                    🎓 Skool Digest
+                </button>
+                <button onclick="toggleWF2Config()" style="flex:1; min-width:140px; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); color:#00ff88; border-radius:0.75rem; padding:0.75rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.15)'" onmouseout="this.style.background='rgba(0,255,136,0.08)'">
+                    🎯 Reddit Config
+                </button>
+            </div>
 
             <!-- ═══ ECOSYSTEM HUD ═══ -->
             <style>
@@ -2434,8 +2463,163 @@
                 </style>
             </div>
 
+            <!-- ═══ NEWSLETTER DIGEST PANEL ═══ -->
+            <div id="newsletters-panel" style="display:none; padding: 1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+                    <h2 style="color:#fff; font-family:Inter,sans-serif; font-size:1.3rem; margin:0;">📰 Newsletter Digest</h2>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button onclick="newsRunDigest()" id="news-run-btn" style="background:linear-gradient(135deg, #00c8ff, #0080ff); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Run Digest
+                        </button>
+                        <button onclick="newsRunDigest(true)" id="news-tg-btn" style="background:linear-gradient(135deg, #0088cc, #00aaee); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Run + Telegram
+                        </button>
+                        <button onclick="toggleNewsletters()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Close
+                        </button>
+                    </div>
+                </div>
 
+                <!-- Status bar -->
+                <div id="news-status" style="display:none; background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.2); border-radius:0.75rem; padding:0.75rem 1rem; margin-bottom:1rem; font-family:Inter,sans-serif; font-size:0.85rem; color:rgba(255,255,255,0.7);">
+                    Scanning newsletters...
+                </div>
 
+                <!-- Synergy section -->
+                <div id="news-synergy" style="display:none; background:linear-gradient(135deg, rgba(255,100,0,0.08), rgba(255,200,0,0.06)); border:1px solid rgba(255,150,0,0.25); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                        <span style="font-size:1.1rem;">🔗</span>
+                        <h3 style="color:#ff9500; font-family:Inter,sans-serif; font-size:0.95rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Cross-Sender Intelligence</h3>
+                    </div>
+                    <div id="news-synergy-content" style="color:rgba(255,255,255,0.85); font-family:Inter,sans-serif; font-size:0.85rem; line-height:1.6;"></div>
+                </div>
+
+                <!-- Sender cards -->
+                <div id="news-senders" style="display:flex; flex-direction:column; gap:1rem;"></div>
+
+                <!-- Footer -->
+                <div id="news-footer" style="display:none; margin-top:1.5rem; padding:1rem; background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; text-align:center; font-family:Inter,sans-serif; font-size:0.9rem; color:rgba(255,255,255,0.6);"></div>
+            </div>
+
+            <!-- ═══ SKOOL DIGEST PANEL ═══ -->
+            <div id="skool-panel" style="display:none; padding: 1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+                    <h2 style="color:#fff; font-family:Inter,sans-serif; font-size:1.3rem; margin:0;">🎓 Skool Digest</h2>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button onclick="skoolRunDigest()" id="skool-email-btn" style="background:linear-gradient(135deg, #b480ff, #8b5cf6); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Email Scan
+                        </button>
+                        <button onclick="skoolDirectScrape()" id="skool-direct-btn" style="background:linear-gradient(135deg, #ff8844, #ff6600); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Direct Scrape
+                        </button>
+                        <button onclick="skoolDirectScrape(true)" id="skool-unreads-btn" style="background:linear-gradient(135deg, #00cc88, #00aa66); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Unreads Only
+                        </button>
+                        <button onclick="skoolRunDigest(true)" id="skool-tg-btn" style="background:linear-gradient(135deg, #0088cc, #00aaee); border:none; color:#fff; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            + Telegram
+                        </button>
+                        <button onclick="toggleSkool()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status bar -->
+                <div id="skool-status" style="display:none; background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:0.75rem; padding:0.75rem 1rem; margin-bottom:1rem; font-family:Inter,sans-serif; font-size:0.85rem; color:rgba(255,255,255,0.7);">
+                    Scanning Skool...
+                </div>
+
+                <!-- Cross-Classroom Intelligence -->
+                <div id="skool-themes" style="display:none; background:linear-gradient(135deg, rgba(139,92,246,0.08), rgba(200,100,255,0.06)); border:1px solid rgba(139,92,246,0.25); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                        <span style="font-size:1.1rem;">🎓</span>
+                        <h3 style="color:#b480ff; font-family:Inter,sans-serif; font-size:0.95rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Cross-Classroom Intelligence</h3>
+                        <button onclick="skoolTTSThemes()" id="skool-themes-tts-btn" style="margin-left:auto; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.25); color:rgba(255,255,255,0.5); border-radius:0.4rem; padding:0.3rem 0.6rem; cursor:pointer; font-size:0.75rem; font-family:Inter,sans-serif; transition:all 0.2s;" title="Listen">🔊 Listen</button>
+                    </div>
+                    <div id="skool-themes-content" style="color:rgba(255,255,255,0.85); font-family:Inter,sans-serif; font-size:0.85rem; line-height:1.6;"></div>
+                </div>
+
+                <!-- Video Golden Nuggets -->
+                <div id="skool-videos" style="display:none; background:linear-gradient(135deg, rgba(255,100,0,0.06), rgba(255,200,0,0.04)); border:1px solid rgba(255,150,0,0.2); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                        <span style="font-size:1.1rem;">🎬</span>
+                        <h3 style="color:#ff9500; font-family:Inter,sans-serif; font-size:0.95rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Video Golden Nuggets</h3>
+                        <span id="skool-video-count" style="background:rgba(255,150,0,0.15); color:#ff9500; border-radius:1rem; padding:0.15rem 0.6rem; font-size:0.72rem; font-weight:600;">0</span>
+                    </div>
+                    <div id="skool-videos-content" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+                </div>
+
+                <!-- Classroom cards -->
+                <div id="skool-classrooms" style="display:flex; flex-direction:column; gap:1rem;"></div>
+
+                <!-- Skool Config (inline) -->
+                <div style="margin-top:1.5rem; background:rgba(20,20,40,0.5); border:1px solid rgba(139,92,246,0.15); border-radius:1rem; padding:1.25rem 1.5rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+                        <span style="font-size:1rem;">📚</span>
+                        <h3 style="color:#b480ff; font-family:Inter,sans-serif; font-size:0.95rem; margin:0;">Skool Communities</h3>
+                        <span id="skool-session-status" style="font-size:0.72rem; padding:0.2rem 0.6rem; border-radius:1rem; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.4);">Checking...</span>
+                        <div style="margin-left:auto; display:flex; gap:0.4rem;">
+                            <button onclick="skoolReauth()" id="skool-reauth-btn" style="background:rgba(255,170,0,0.1); border:1px solid rgba(255,170,0,0.2); color:#ffaa00; border-radius:0.4rem; padding:0.35rem 0.7rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.75rem; font-weight:600;">Re-auth</button>
+                            <button onclick="skoolSaveConfig()" id="skool-save-btn" style="background:linear-gradient(135deg, #b480ff, #8b5cf6); border:none; color:#fff; border-radius:0.4rem; padding:0.35rem 0.8rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.75rem; font-weight:600;">Save</button>
+                        </div>
+                    </div>
+                    <div id="skool-community-tags" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.75rem;"></div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <input id="skool-community-input" type="text" placeholder="Add Skool community URL (e.g. https://www.skool.com/community-name)" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.5rem; padding:0.5rem 0.75rem; font-family:Inter,sans-serif; font-size:0.85rem; outline:none;" onkeydown="if(event.key==='Enter')skoolAddCommunity()">
+                        <button onclick="skoolAddCommunity()" style="background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.3); color:#b480ff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="skool-config-footer" style="margin-top:0.5rem; font-size:0.72rem; color:rgba(255,255,255,0.3); text-align:center;"></div>
+                </div>
+
+                <!-- Footer -->
+                <div id="skool-footer" style="display:none; margin-top:1.5rem; padding:1rem; background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; text-align:center; font-family:Inter,sans-serif; font-size:0.9rem; color:rgba(255,255,255,0.6);"></div>
+            </div>
+
+            <!-- WF2 Reddit Config Panel -->
+            <div id="wf2-config-panel" style="display:none; padding: 1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+                    <h2 style="color:#fff; font-family:Inter,sans-serif; font-size:1.3rem; margin:0;">🎯 Reddit Pain Point Config (WF2)</h2>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button onclick="wf2SaveConfig()" id="wf2-save-btn" style="background:linear-gradient(135deg, #00ff88, #00c853); border:none; color:#111; border-radius:0.5rem; padding:0.5rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">
+                            Save to Sheet
+                        </button>
+                        <button onclick="wf2FetchConfig()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Refresh
+                        </button>
+                        <button onclick="toggleWF2Config()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status bar -->
+                <div id="wf2-status" style="display:none; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:0.75rem; padding:0.75rem 1rem; margin-bottom:1rem; font-family:Inter,sans-serif; font-size:0.85rem; color:rgba(255,255,255,0.7);"></div>
+
+                <!-- Subreddits Section -->
+                <div style="background:rgba(20,20,40,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1rem; backdrop-filter:blur(12px);">
+                    <h3 style="color:#00f5ff; font-family:Inter,sans-serif; font-size:0.95rem; margin:0 0 0.75rem 0; text-transform:uppercase; letter-spacing:0.05em;">Subreddits</h3>
+                    <div id="wf2-subs-tags" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.75rem;"></div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <input id="wf2-sub-input" type="text" placeholder="Add subreddit (e.g. smallbusiness)" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.5rem; padding:0.5rem 0.75rem; font-family:Inter,sans-serif; font-size:0.85rem; outline:none;" onkeydown="if(event.key==='Enter')wf2AddSub()">
+                        <button onclick="wf2AddSub()" style="background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.3); color:#00f5ff; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Keywords Section -->
+                <div style="background:rgba(20,20,40,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1rem; backdrop-filter:blur(12px);">
+                    <h3 style="color:#b829dd; font-family:Inter,sans-serif; font-size:0.95rem; margin:0 0 0.75rem 0; text-transform:uppercase; letter-spacing:0.05em;">Pain Signal Keywords <span id="wf2-kw-count" style="color:rgba(255,255,255,0.4); font-size:0.8rem; font-weight:400;"></span></h3>
+                    <div id="wf2-kw-tags" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.75rem;"></div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <input id="wf2-kw-input" type="text" placeholder="Add keyword or phrase (e.g. need funding)" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.5rem; padding:0.5rem 0.75rem; font-family:Inter,sans-serif; font-size:0.85rem; outline:none;" onkeydown="if(event.key==='Enter')wf2AddKw()">
+                        <button onclick="wf2AddKw()" style="background:rgba(184,41,221,0.15); border:1px solid rgba(184,41,221,0.3); color:#b829dd; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.85rem; font-weight:600;">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Footer info -->
+                <div id="wf2-footer" style="padding:0.75rem 1rem; background:rgba(20,20,40,0.4); border:1px solid rgba(255,255,255,0.06); border-radius:0.75rem; text-align:center; font-family:Inter,sans-serif; font-size:0.8rem; color:rgba(255,255,255,0.4);">
+                    Changes apply on next WF2 run (every 3 hours)
+                </div>
+            </div>
 
         </main>
     </div>
@@ -2739,9 +2923,642 @@
             }
         }
 
+        // ═══ NEWSLETTER DIGEST ═══
+        let newsData = null;
 
+        function toggleNewsletters() {
+            const panel = document.getElementById('newsletters-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                if (newsData) newsRender();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
 
+        // ═══ SKOOL DIGEST ═══
+        let skoolData = null;
+        const skoolProcessed = new Set();
+        let skoolConfigData = { communities: [] };
+        let currentSkoolTTSBtn = null;
 
+        function toggleSkool() {
+            const panel = document.getElementById('skool-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                skoolLoadConfig();
+                if (skoolData) skoolRender();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function styleHypeCheck(summary) {
+            summary = summary.replace(/HYPE CHECK: 🟢 Solid/g, '<span style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:#00ff88;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟢 SOLID</span>');
+            summary = summary.replace(/HYPE CHECK: 🟡 Mixed/g, '<span style="background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟡 MIXED</span>');
+            summary = summary.replace(/HYPE CHECK: 🔴 Hype/g, '<span style="background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);color:#ff6b6b;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🔴 HYPE</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🟢[^\]]*\]?/g, '<span style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:#00ff88;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟢 SOLID</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🟡[^\]]*\]?/g, '<span style="background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟡 MIXED</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🔴[^\]]*\]?/g, '<span style="background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);color:#ff6b6b;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🔴 HYPE</span>');
+            return summary;
+        }
+
+        async function skoolRunDigest(telegram = false) {
+            const btn = document.getElementById(telegram ? 'skool-tg-btn' : 'skool-email-btn');
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Scanning...';
+            const status = document.getElementById('skool-status');
+            status.style.display = 'block';
+            status.textContent = '🎓 Scanning Skool emails + pulling video transcripts... this may take 2-5 minutes';
+            status.style.borderColor = 'rgba(139,92,246,0.2)';
+            status.style.background = 'rgba(139,92,246,0.08)';
+            try {
+                const url = telegram ? '/mc/skool-digest?telegram=1' : '/mc/skool-digest';
+                const resp = await fetch(url);
+                skoolData = await resp.json();
+                if (skoolData.error) {
+                    status.textContent = '❌ ' + skoolData.error;
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                } else {
+                    status.style.display = 'none';
+                    skoolRender();
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+
+        async function skoolDirectScrape(unreadsOnly = false) {
+            const btnId = unreadsOnly ? 'skool-unreads-btn' : 'skool-direct-btn';
+            const btn = document.getElementById(btnId);
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = unreadsOnly ? 'Fetching...' : 'Scraping...';
+            const status = document.getElementById('skool-status');
+            status.style.display = 'block';
+            const label = unreadsOnly ? 'unread posts (API)' : 'all posts (API)';
+            status.textContent = `🎓 Fetching ${label} + pulling transcripts... this may take 1-5 minutes`;
+            status.style.borderColor = 'rgba(139,92,246,0.2)';
+            status.style.background = 'rgba(139,92,246,0.08)';
+            try {
+                let url = '/mc/skool-scrape?method=api';
+                if (unreadsOnly) url += '&unreads=1';
+                const resp = await fetch(url);
+                skoolData = await resp.json();
+                if (skoolData.error) {
+                    status.textContent = '❌ ' + skoolData.error;
+                    if (skoolData.session_ok === false) {
+                        status.textContent += ' — Set SKOOL_AUTH_TOKEN in .env or click Re-auth below.';
+                    }
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                } else {
+                    status.style.display = 'none';
+                    skoolRender();
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+
+        function skoolRender() {
+            if (!skoolData) return;
+            const { themes, classrooms, videos, total, theme_count, video_count } = skoolData;
+
+            // Cross-Classroom Intelligence
+            const themesEl = document.getElementById('skool-themes');
+            if (themes) {
+                themesEl.style.display = 'block';
+                let html = themes.replace(/🎓 THEME DETECTED: ([^\n]*)/g,
+                    '<div style="color:#b480ff;font-weight:700;font-size:0.95rem;margin-top:0.5rem;">🎓 THEME DETECTED: $1</div>');
+                html = html.replace(/Classrooms: ([^\n]*)/g,
+                    '<div style="color:rgba(255,255,255,0.5);font-size:0.8rem;font-style:italic;">Classrooms: $1</div>');
+                html = html.replace(/Signal: ([^\n]*)/g,
+                    '<div style="color:rgba(255,255,255,0.8);font-size:0.85rem;margin-bottom:0.4rem;">$1</div>');
+                html = html.replace(/📈 LEARNING PULSE:/g,
+                    '<div style="color:#00c8ff;font-weight:700;font-size:0.95rem;margin-top:0.75rem;">📈 LEARNING PULSE:</div>');
+                document.getElementById('skool-themes-content').innerHTML = html;
+            } else { themesEl.style.display = 'none'; }
+
+            // Video Golden Nuggets
+            const videosEl = document.getElementById('skool-videos');
+            if (videos && videos.length > 0) {
+                videosEl.style.display = 'block';
+                document.getElementById('skool-video-count').textContent = videos.length;
+                const vcontent = document.getElementById('skool-videos-content');
+                vcontent.innerHTML = videos.map(v => {
+                    let summary = v.summary || '';
+                    summary = styleHypeCheck(summary);
+                    summary = summary.replace(/GOLDEN NUGGETS:/g, '<span style="color:#ff9500;font-weight:600;">GOLDEN NUGGETS:</span>');
+                    summary = summary.replace(/TOOLS\/TECH MENTIONED:/g, '<span style="color:#00c8ff;font-weight:600;">TOOLS/TECH MENTIONED:</span>');
+                    summary = summary.replace(/DWE ACTION ITEMS:/g, '<span style="color:#00ff88;font-weight:600;">DWE ACTION ITEMS:</span>');
+                    summary = summary.replace(/\n/g, '<br>');
+                    summary = summary.replace(/• /g, '&nbsp;&nbsp;• ');
+                    const rawText = (v.summary || '').replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                    return `<div style="border-left:3px solid rgba(255,150,0,0.3); padding:0.75rem 1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.4rem;">
+                            <div>
+                                <a href="${escH(v.url)}" target="_blank" style="color:#fff;font-weight:600;font-size:0.9rem;text-decoration:none;">🎬 ${escH(v.title)}</a>
+                                <div style="color:rgba(255,255,255,0.4);font-size:0.72rem;margin-top:0.15rem;">📍 ${escH(v.classroom)} ${v.has_transcript ? '✅ Transcript' : '⚠️ No transcript'}</div>
+                            </div>
+                            <div style="display:flex;gap:0.4rem;align-items:center;flex-shrink:0;margin-left:0.5rem;">
+                                <button onclick="skoolTTS(this)" data-text="${rawText}" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.2rem 0.4rem;cursor:pointer;font-size:0.65rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Listen">🔊</button>
+                                <button onclick="skoolAddTask('${escH(v.title).replace(/'/g,"\\'")}','Skool Video',this,'${escH(v.url)}')" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.2rem 0.4rem;cursor:pointer;font-size:0.65rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Add to Task">+ Task</button>
+                            </div>
+                        </div>
+                        <div style="color:rgba(255,255,255,0.75);font-size:0.85rem;line-height:1.6;">${summary}</div>
+                    </div>`;
+                }).join('');
+            } else { videosEl.style.display = 'none'; }
+
+            // Classrooms
+            const container = document.getElementById('skool-classrooms');
+            if (!classrooms || classrooms.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:1.5rem;font-size:0.9rem;">✅ No unread Skool content.</div>';
+                return;
+            }
+            container.innerHTML = classrooms.map((cr, cIdx) => {
+                const items = cr.emails.map(em => {
+                    let summary = em.summary || '';
+                    summary = styleHypeCheck(summary);
+                    summary = summary.replace(/KEY POINTS:/g, '<span style="color:#b480ff;font-weight:600;">KEY POINTS:</span>');
+                    summary = summary.replace(/LINKS:/g, '<span style="color:#00ff88;font-weight:600;">LINKS:</span>');
+                    summary = summary.replace(/RELEVANCE:/g, '<span style="color:#ff9500;font-weight:600;">RELEVANCE:</span>');
+                    summary = summary.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#b480ff;text-decoration:underline;">$1</a>');
+                    summary = summary.replace(/\n/g, '<br>');
+                    summary = summary.replace(/• /g, '&nbsp;&nbsp;• ');
+                    const rawText = (em.summary || '').replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                    const ytLinks = (em.youtube_urls || []).map(u =>
+                        `<a href="${escH(u)}" target="_blank" style="color:#ff9500;font-size:0.75rem;text-decoration:none;">🎬 Video</a>`
+                    ).join(' ');
+                    return `<div style="border-left:3px solid rgba(139,92,246,0.3);padding:0.75rem 1rem;margin:0.4rem 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.4rem;">
+                            <div style="color:#fff;font-weight:600;font-size:0.9rem;">📧 ${escH(em.subject)} ${ytLinks}</div>
+                            <div style="display:flex;gap:0.4rem;align-items:center;flex-shrink:0;margin-left:0.5rem;">
+                                <button onclick="skoolTTS(this)" data-text="${rawText}" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.2rem 0.4rem;cursor:pointer;font-size:0.65rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Listen">🔊</button>
+                                <button onclick="skoolAddTask('${escH(em.subject).replace(/'/g,"\\'")}','Skool: ${escH(cr.name).replace(/'/g,"\\'")}',this,'${escH(em.postUrl || (em.msg_id ? "https://mail.google.com/mail/u/0/#inbox/" + em.msg_id : ""))}')" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.2rem 0.4rem;cursor:pointer;font-size:0.65rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Add to Task">+ Task</button>
+                                <span style="color:rgba(255,255,255,0.35);font-size:0.72rem;white-space:nowrap;">${escH(em.date)}</span>
+                            </div>
+                        </div>
+                        <div style="color:rgba(255,255,255,0.75);font-size:0.85rem;line-height:1.6;">${summary}</div>
+                    </div>`;
+                }).join('');
+                const msgIds = cr.emails.map(em => em.msg_id || '').filter(Boolean);
+                return `<div id="skool-classroom-${cIdx}" data-msgids="${msgIds.join(',')}" style="background:rgba(20,20,40,0.6);border:1px solid rgba(139,92,246,0.12);border-radius:1rem;padding:1.25rem 1.5rem;transition:all 0.3s;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+                        <div onclick="skoolToggleClassroom(${cIdx})" style="width:22px;height:22px;border:2px solid rgba(139,92,246,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;transition:all 0.2s;flex-shrink:0;" id="skool-check-${cIdx}" title="Archive all from this classroom">
+                        </div>
+                        <span style="font-size:1.1rem;">📚</span>
+                        <h3 style="color:#fff;font-family:Inter,sans-serif;font-size:0.95rem;margin:0;">${escH(cr.name)}</h3>
+                        <span style="background:rgba(139,92,246,0.15);color:#b480ff;border-radius:1rem;padding:0.15rem 0.6rem;font-size:0.72rem;font-weight:600;">${cr.emails.length} new</span>
+                    </div>
+                    ${items}
+                </div>`;
+            }).join('');
+
+            const footer = document.getElementById('skool-footer');
+            footer.style.display = 'block';
+            let footerText = `📊 ${total} Skool posts from ${classrooms.length} classrooms`;
+            if (video_count > 0) footerText += ` | 🎬 ${video_count} video${video_count > 1 ? 's' : ''} processed`;
+            if (theme_count > 0) footerText += ` | 🎓 ${theme_count} theme${theme_count > 1 ? 's' : ''} detected`;
+            footer.textContent = footerText;
+        }
+
+        function skoolToggleClassroom(idx) {
+            const card = document.getElementById('skool-classroom-' + idx);
+            const check = document.getElementById('skool-check-' + idx);
+            if (skoolProcessed.has(idx)) {
+                skoolProcessed.delete(idx);
+                check.innerHTML = '';
+                check.style.background = 'transparent';
+                check.style.borderColor = 'rgba(139,92,246,0.4)';
+                card.style.opacity = '1';
+                card.style.borderColor = 'rgba(139,92,246,0.12)';
+            } else {
+                skoolProcessed.add(idx);
+                check.innerHTML = '✓';
+                check.style.background = 'rgba(0,255,136,0.15)';
+                check.style.borderColor = 'rgba(0,255,136,0.5)';
+                check.style.color = '#00ff88';
+                card.style.opacity = '0.5';
+                card.style.borderColor = 'rgba(0,255,136,0.15)';
+                const msgIds = (card.dataset.msgids || '').split(',').filter(Boolean);
+                msgIds.forEach(id => {
+                    fetch('/mc/gmail-archive?id=' + encodeURIComponent(id)).catch(() => {});
+                });
+            }
+        }
+
+        function skoolTTS(btn) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                if (currentSkoolTTSBtn) currentSkoolTTSBtn.textContent = '🔊';
+                if (currentSkoolTTSBtn === btn) { currentSkoolTTSBtn = null; return; }
+            }
+            const text = btn.dataset.text;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            utter.onend = () => { btn.textContent = '🔊'; currentSkoolTTSBtn = null; };
+            btn.textContent = '⏹';
+            currentSkoolTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        function skoolTTSThemes() {
+            const btn = document.getElementById('skool-themes-tts-btn');
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                btn.textContent = '🔊 Listen';
+                if (currentSkoolTTSBtn === btn) { currentSkoolTTSBtn = null; return; }
+            }
+            const el = document.getElementById('skool-themes-content');
+            if (!el) return;
+            const text = el.innerText;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            utter.onend = () => { btn.textContent = '🔊 Listen'; currentSkoolTTSBtn = null; };
+            btn.textContent = '⏹ Stop';
+            currentSkoolTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        async function skoolAddTask(subject, source, btn, sourceUrl) {
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const taskName = `Review: ${subject} (${source})`;
+                const payload = { name: taskName, priority: 'Medium', role: 'CEO' };
+                if (sourceUrl) payload.url = sourceUrl;
+                const resp = await fetch('/mc/notion-tasks/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                btn.textContent = (data.ok || data.id) ? '✅' : '❌';
+            } catch (e) {
+                btn.textContent = '❌';
+            }
+        }
+
+        async function skoolLoadConfig() {
+            try {
+                const resp = await fetch('/mc/skool-config');
+                skoolConfigData = await resp.json();
+                skoolRenderConfig();
+                const authResp = await fetch('/mc/skool-auth');
+                const authData = await authResp.json();
+                const statusEl = document.getElementById('skool-session-status');
+                if (authData.session_ok) {
+                    statusEl.textContent = '✅ Logged In';
+                    statusEl.style.background = 'rgba(0,255,136,0.12)';
+                    statusEl.style.color = '#00ff88';
+                } else {
+                    statusEl.textContent = '❌ Not Logged In';
+                    statusEl.style.background = 'rgba(255,60,60,0.12)';
+                    statusEl.style.color = '#ff6b6b';
+                }
+                const footer = document.getElementById('skool-config-footer');
+                if (skoolConfigData.lastRun) {
+                    footer.textContent = 'Last scrape: ' + new Date(skoolConfigData.lastRun).toLocaleString();
+                } else {
+                    footer.textContent = 'No scrapes yet — click Direct Scrape above to start';
+                }
+            } catch (e) {
+                console.error('Skool config load error:', e);
+            }
+        }
+
+        function skoolRenderConfig() {
+            const container = document.getElementById('skool-community-tags');
+            const communities = skoolConfigData.communities || [];
+            container.innerHTML = communities.map((c, i) => {
+                const enabledStyle = c.enabled !== false
+                    ? 'background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#b480ff;'
+                    : 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);';
+                return `<span style="${enabledStyle}border-radius:2rem;padding:0.3rem 0.7rem;font-size:0.8rem;display:flex;align-items:center;gap:0.3rem;">
+                    📚 ${escH(c.name)}
+                    <span onclick="skoolRemoveCommunity(${i})" style="cursor:pointer;color:rgba(255,255,255,0.3);font-size:0.9rem;margin-left:0.2rem;" title="Remove">×</span>
+                </span>`;
+            }).join('');
+        }
+
+        function skoolAddCommunity() {
+            const input = document.getElementById('skool-community-input');
+            const val = input.value.trim();
+            if (!val) return;
+            let name = val;
+            let url = val;
+            const match = val.match(/skool\.com\/([^?#/]+)/);
+            if (match) {
+                name = match[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                url = 'https://www.skool.com/' + match[1];
+            } else if (!val.includes('skool.com')) {
+                url = 'https://www.skool.com/' + val.replace(/\s+/g, '-').toLowerCase();
+                name = val;
+            }
+            skoolConfigData.communities = skoolConfigData.communities || [];
+            skoolConfigData.communities.push({ name, url, enabled: true });
+            input.value = '';
+            skoolRenderConfig();
+        }
+
+        function skoolRemoveCommunity(idx) {
+            skoolConfigData.communities.splice(idx, 1);
+            skoolRenderConfig();
+        }
+
+        async function skoolSaveConfig() {
+            const btn = document.getElementById('skool-save-btn');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/mc/skool-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ communities: skoolConfigData.communities })
+                });
+                const data = await resp.json();
+                btn.textContent = data.ok ? '✅ Saved' : '❌ Error';
+            } catch (e) {
+                btn.textContent = '❌ Failed';
+            }
+            setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 2000);
+        }
+
+        async function skoolReauth() {
+            const btn = document.getElementById('skool-reauth-btn');
+            btn.textContent = 'Launching...';
+            btn.disabled = true;
+            try {
+                await fetch('/mc/skool-auth', { method: 'POST' });
+                btn.textContent = 'Browser Open';
+                setTimeout(async () => {
+                    await skoolLoadConfig();
+                    btn.textContent = 'Re-auth';
+                    btn.disabled = false;
+                }, 30000);
+            } catch (e) {
+                btn.textContent = 'Failed';
+                setTimeout(() => { btn.textContent = 'Re-auth'; btn.disabled = false; }, 3000);
+            }
+        }
+
+        // ── WF2 Reddit Config Panel ─────────────────────────────────────────
+        let wf2Subs = [];
+        let wf2Kws = [];
+        let wf2Loaded = false;
+
+        function toggleWF2Config() {
+            const panel = document.getElementById('wf2-config-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                if (!wf2Loaded) wf2FetchConfig();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        async function wf2FetchConfig() {
+            try {
+                const resp = await fetch('/mc/wf2-config');
+                const data = await resp.json();
+                if (data.ok) {
+                    wf2Subs = data.subreddits || [];
+                    wf2Kws = data.keywords || [];
+                    wf2Loaded = true;
+                    wf2RenderTags();
+                    const footer = document.getElementById('wf2-footer');
+                    if (data.last_updated) {
+                        const d = new Date(data.last_updated);
+                        footer.textContent = 'Last saved: ' + d.toLocaleString() + ' — Changes apply on next WF2 run (every 3h)';
+                    }
+                } else {
+                    wf2ShowStatus('Failed to load config: ' + (data.error || 'unknown'), true);
+                }
+            } catch(e) {
+                wf2ShowStatus('Network error: ' + e.message, true);
+            }
+        }
+
+        function wf2RenderTags() {
+            const subsEl = document.getElementById('wf2-subs-tags');
+            const kwsEl = document.getElementById('wf2-kw-tags');
+            const countEl = document.getElementById('wf2-kw-count');
+
+            subsEl.innerHTML = wf2Subs.map((s, i) =>
+                '<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.25);color:#00f5ff;border-radius:2rem;padding:0.25rem 0.6rem 0.25rem 0.75rem;font-family:Inter,sans-serif;font-size:0.8rem;">' +
+                'r/' + s +
+                '<span onclick="wf2RemoveSub(' + i + ')" style="cursor:pointer;opacity:0.6;font-size:0.9rem;line-height:1;" title="Remove">&times;</span>' +
+                '</span>'
+            ).join('');
+
+            kwsEl.innerHTML = wf2Kws.map((k, i) =>
+                '<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(184,41,221,0.1);border:1px solid rgba(184,41,221,0.25);color:#d070ff;border-radius:2rem;padding:0.25rem 0.6rem 0.25rem 0.75rem;font-family:Inter,sans-serif;font-size:0.78rem;">' +
+                k +
+                '<span onclick="wf2RemoveKw(' + i + ')" style="cursor:pointer;opacity:0.6;font-size:0.9rem;line-height:1;" title="Remove">&times;</span>' +
+                '</span>'
+            ).join('');
+
+            countEl.textContent = '(' + wf2Kws.length + ')';
+        }
+
+        function wf2AddSub() {
+            const input = document.getElementById('wf2-sub-input');
+            let val = input.value.trim().replace(/^r\//, '').replace(/[^a-zA-Z0-9_]/g, '');
+            if (!val) return;
+            if (wf2Subs.includes(val)) { wf2ShowStatus('Subreddit already exists', true); return; }
+            wf2Subs.push(val);
+            input.value = '';
+            wf2RenderTags();
+        }
+
+        function wf2RemoveSub(idx) {
+            wf2Subs.splice(idx, 1);
+            wf2RenderTags();
+        }
+
+        function wf2AddKw() {
+            const input = document.getElementById('wf2-kw-input');
+            let val = input.value.trim().toLowerCase();
+            if (!val) return;
+            if (wf2Kws.includes(val)) { wf2ShowStatus('Keyword already exists', true); return; }
+            wf2Kws.push(val);
+            input.value = '';
+            wf2RenderTags();
+        }
+
+        function wf2RemoveKw(idx) {
+            wf2Kws.splice(idx, 1);
+            wf2RenderTags();
+        }
+
+        async function wf2SaveConfig() {
+            const btn = document.getElementById('wf2-save-btn');
+            const orig = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                const resp = await fetch('/mc/wf2-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subreddits: wf2Subs.join(','),
+                        keywords: wf2Kws.join(',')
+                    })
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    wf2ShowStatus('Saved! ' + wf2Subs.length + ' subreddits, ' + wf2Kws.length + ' keywords. Next run picks up changes automatically.', false);
+                    const footer = document.getElementById('wf2-footer');
+                    footer.textContent = 'Last saved: ' + new Date(data.updated).toLocaleString() + ' — Changes apply on next WF2 run (every 3h)';
+                } else {
+                    wf2ShowStatus('Save failed: ' + (data.error || 'unknown'), true);
+                }
+            } catch(e) {
+                wf2ShowStatus('Network error: ' + e.message, true);
+            }
+            btn.disabled = false;
+            btn.textContent = orig;
+        }
+
+        function wf2ShowStatus(msg, isError) {
+            const el = document.getElementById('wf2-status');
+            el.style.display = 'block';
+            el.textContent = msg;
+            el.style.borderColor = isError ? 'rgba(255,80,80,0.3)' : 'rgba(0,255,136,0.3)';
+            el.style.background = isError ? 'rgba(255,80,80,0.08)' : 'rgba(0,255,136,0.08)';
+            el.style.color = isError ? '#ff6b6b' : '#00ff88';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        async function newsRunDigest(telegram = false) {
+            const btn = document.getElementById(telegram ? 'news-tg-btn' : 'news-run-btn');
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Scanning...';
+            const status = document.getElementById('news-status');
+            status.style.display = 'block';
+            status.textContent = '📡 Scanning 5 priority senders... this takes 1-2 minutes';
+            status.style.borderColor = 'rgba(0,200,255,0.2)';
+            status.style.background = 'rgba(0,200,255,0.08)';
+
+            try {
+                const url = telegram ? '/mc/newsletters?telegram=1' : '/mc/newsletters';
+                const resp = await fetch(url);
+                newsData = await resp.json();
+                if (newsData.error) {
+                    status.textContent = '❌ ' + newsData.error;
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                } else {
+                    status.style.display = 'none';
+                    newsRender();
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+
+        function newsRender() {
+            if (!newsData) return;
+            const { synergy, senders, total, synergy_count } = newsData;
+
+            // Synergy section
+            const synergyEl = document.getElementById('news-synergy');
+            if (synergy) {
+                synergyEl.style.display = 'block';
+                let html = synergy.replace(/🔥 SYNERGY DETECTED: ([^\n]*)/g,
+                    '<div style="color:#ff9500; font-weight:700; font-size:0.95rem; margin-top:0.75rem;">🔥 SYNERGY DETECTED: $1</div>');
+                html = html.replace(/Sources: ([^\n]*)/g,
+                    '<div style="color:rgba(255,255,255,0.5); font-size:0.8rem; font-style:italic;">Sources: $1</div>');
+                html = html.replace(/Signal: ([^\n]*)/g,
+                    '<div style="color:rgba(255,255,255,0.8); font-size:0.85rem; margin-bottom:0.5rem;">$1</div>');
+                html = html.replace(/📈 MARKET PULSE:/g,
+                    '<div style="color:#00c8ff; font-weight:700; font-size:0.95rem; margin-top:1rem;">📈 MARKET PULSE:</div>');
+                document.getElementById('news-synergy-content').innerHTML = html;
+            } else {
+                synergyEl.style.display = 'none';
+            }
+
+            // Sender cards
+            const container = document.getElementById('news-senders');
+            if (!senders || senders.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:rgba(255,255,255,0.5); padding:2rem; font-family:Inter,sans-serif;">✅ All caught up — nothing new from any sender.</div>';
+                return;
+            }
+
+            container.innerHTML = senders.map(sender => {
+                const items = sender.newsletters.map(nl => {
+                    let summary = nl.summary || '';
+                    // Style sections
+                    summary = summary.replace(/KEY POINTS:/g, '<span style="color:#00c8ff; font-weight:600;">KEY POINTS:</span>');
+                    summary = summary.replace(/LINKS:/g, '<span style="color:#00ff88; font-weight:600;">LINKS:</span>');
+                    summary = summary.replace(/SALES OPP:/g, '<span style="color:#ff9500; font-weight:600;">SALES OPP:</span>');
+                    // Make markdown links clickable
+                    summary = summary.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#00c8ff; text-decoration:underline;">$1</a>');
+                    summary = summary.replace(/\n/g, '<br>');
+                    summary = summary.replace(/• /g, '&nbsp;&nbsp;• ');
+
+                    return `<div style="border-left:3px solid rgba(0,200,255,0.3); padding:0.75rem 1rem; margin:0.5rem 0;">
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
+                            <div style="color:#fff; font-weight:600; font-size:0.9rem;">📧 ${escH(nl.subject)}</div>
+                            <div style="color:rgba(255,255,255,0.35); font-size:0.7rem; white-space:nowrap; margin-left:0.5rem;">${escH(nl.date)}</div>
+                        </div>
+                        <div style="color:rgba(255,255,255,0.75); font-size:0.82rem; line-height:1.6;">${summary}</div>
+                        <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+                            <button onclick="newsAction('nicole', '${escAttr(nl.subject)}')" style="background:rgba(200,100,255,0.1); border:1px solid rgba(200,100,255,0.25); color:#c864ff; border-radius:0.4rem; padding:0.3rem 0.6rem; cursor:pointer; font-size:0.72rem; font-family:Inter,sans-serif;">
+                                👉 Send to Nicole
+                            </button>
+                            <button onclick="newsAction('task', '${escAttr(nl.subject)}')" style="background:rgba(0,200,255,0.1); border:1px solid rgba(0,200,255,0.25); color:#00c8ff; border-radius:0.4rem; padding:0.3rem 0.6rem; cursor:pointer; font-size:0.72rem; font-family:Inter,sans-serif;">
+                                📋 Create Task
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                return `<div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:1rem; padding:1.25rem; backdrop-filter:blur(12px);">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                        <span style="font-size:1.2rem;">${sender.emoji}</span>
+                        <h3 style="color:#fff; font-family:Inter,sans-serif; font-size:1rem; margin:0;">${escH(sender.name)}</h3>
+                        <span style="background:rgba(0,200,255,0.15); color:#00c8ff; border-radius:1rem; padding:0.15rem 0.6rem; font-size:0.72rem; font-family:Inter,sans-serif; font-weight:600;">${sender.newsletters.length} new</span>
+                    </div>
+                    ${items}
+                </div>`;
+            }).join('');
+
+            // Footer
+            const footer = document.getElementById('news-footer');
+            footer.style.display = 'block';
+            let footerText = `📊 ${total} newsletters from ${senders.length} senders`;
+            if (synergy_count > 0) footerText += ` | 🔗 ${synergy_count} synergy signal${synergy_count > 1 ? 's' : ''}`;
+            footer.textContent = footerText;
+        }
+
+        function newsAction(type, subject) {
+            const safe = subject.substring(0, 50);
+            if (type === 'nicole') {
+                alert('Send to Nicole:\\n/nicole review "' + safe + '"\\n\\nCopy this command to Telegram.');
+            } else {
+                alert('Create Task:\\n/task "Review: ' + safe + '"\\n\\nCopy this command to Telegram.');
+            }
+        }
 
         function escH(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
         function escAttr(s) { return s ? String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').substring(0, 60) : ''; }
@@ -3937,6 +4754,77 @@
             } catch(e) { /* silent */ }
         }
 
+        // ── Content Intelligence ────────────────────────────────────────
+        async function fetchContentIntel() {
+            try {
+                const d = await fetch('/mc/content-intel').then(r => r.json());
+                // Status dot
+                const dot = document.getElementById('ci-status-dot');
+                const badge = document.getElementById('ci-badge');
+                if (d.lastScan) {
+                    const ago = Date.now() - new Date(d.lastScan).getTime();
+                    const isRecent = ago < 4 * 60 * 60 * 1000;
+                    if (dot) { dot.style.background = isRecent ? '#00ff88' : 'rgba(255,200,60,0.5)'; dot.style.boxShadow = isRecent ? '0 0 6px rgba(0,255,136,0.4)' : 'none'; dot.title = isRecent ? 'Active' : 'Stale (>4h)'; }
+                }
+                // Badge
+                const totalNuggets = (d.recentNuggets || []).length;
+                if (badge) badge.textContent = totalNuggets > 0 ? totalNuggets + ' nuggets' : 'No data';
+
+                // Weekly stats
+                const ws = d.weeklyStats || {};
+                const wn = document.getElementById('ci-week-nuggets');
+                const wv = document.getElementById('ci-week-videos');
+                const wa = document.getElementById('ci-week-avg');
+                if (wn) wn.textContent = ws.nuggets || 0;
+                if (wv) wv.textContent = ws.videos || 0;
+                if (wa) wa.textContent = ws.avgScore || '—';
+
+                // Render top 5 recent nuggets
+                const container = document.getElementById('ci-nuggets');
+                if (!container) return;
+                const nuggets = (d.recentNuggets || []).slice(0, 5);
+                if (nuggets.length === 0) {
+                    container.innerHTML = '<div class="ci-empty">No nuggets yet — pipeline will populate once YouTube channels are monitored</div>';
+                    return;
+                }
+                container.innerHTML = nuggets.map(n => {
+                    const verdict = n.verdict || '';
+                    const verdictCls = verdict === 'WATCH' ? 'watch' : verdict === 'SKIM' ? 'skim' : 'skip';
+                    const verdictIcon = verdict === 'WATCH' ? '&#127919;' : verdict === 'SKIM' ? '&#128064;' : '&#9197;&#65039;';
+                    const topHighlight = (n.key_highlights && n.key_highlights[0]) ? n.key_highlights[0].highlight : ((n.nuggets && n.nuggets[0]) ? n.nuggets[0].insight : (n.summary || 'No details'));
+                    const dweApp = (n.key_highlights && n.key_highlights[0]) ? n.key_highlights[0].dwe_application : '';
+                    const timeAgo = timeAgoStr(n.timestamp);
+                    return `<div class="ci-nugget">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex-shrink:0;">
+                            <span class="ci-verdict ${verdictCls}">${verdictIcon} ${verdict}</span>
+                            <span class="ci-score ${n.score >= 8 ? 'high' : 'med'}">${n.score}/10</span>
+                        </div>
+                        <div class="ci-nugget-body">
+                            <div style="font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:0.15rem;">${escapeHtml(n.title || '')}</div>
+                            <div class="ci-nugget-text">${escapeHtml(topHighlight)}</div>
+                            ${dweApp ? '<div style="font-size:0.58rem;color:rgba(255,200,60,0.7);margin-top:0.15rem;">&#8594; ' + escapeHtml(dweApp) + '</div>' : ''}
+                            <div class="ci-nugget-meta">
+                                <span>${escapeHtml(n.channel || '')}</span>
+                                <span>${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // Last scan time
+                const scanEl = document.getElementById('ci-scan-time');
+                if (scanEl && d.lastScan) scanEl.textContent = 'Last scan: ' + timeAgoStr(d.lastScan);
+            } catch(e) { /* silent */ }
+        }
+        function timeAgoStr(ts) {
+            if (!ts) return '';
+            const ms = Date.now() - new Date(ts).getTime();
+            if (ms < 60000) return 'just now';
+            if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
+            if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';
+            return Math.floor(ms / 86400000) + 'd ago';
+        }
+        function escapeHtml(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
         async function brainQuery() {
             const input  = document.getElementById('brain-query-input');
@@ -4358,32 +5246,20 @@
                         return '#f59e0b';
                     }
                     function modelDisplayFor(m) {
-                        if (!m) return 'or/m2.7';
-                        if (m === 'openrouter/minimax/minimax-m2.7') return 'minimax/m2.7';
-                        if (m === 'ollama/qwen2.5:7b') return 'ollama/qwen2.5';
+                        if (!m) return 'or/auto';
                         return m.replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
                     }
-                    // Config-based model lookup per agent
-                    const agentModelConfig = {
-                        'main': 'openrouter/minimax/minimax-m2.7',
-                        'cto': 'openrouter/minimax/minimax-m2.7',
-                        'anita': 'ollama/qwen2.5:7b',
-                        'nicole': 'openrouter/minimax/minimax-m2.7',
-                        'chief-engineer': 'openrouter/minimax/minimax-m2.7',
-                        'cfo': 'openrouter/minimax/minimax-m2.7',
-                        'jarvis': 'openrouter/minimax/minimax-m2.7',
-                    };
                     if (!agent.isHuman) {
-                        const modelFull = s?.model || agentModelConfig[agent.id] || 'openrouter/minimax/minimax-m2.7';
-                        modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
+                        const modelFull = s?.model || 'openrouter/auto';
+                        modelHtml = `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
                             <span style="font-size:0.58rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
                         </div>`;
                     } else {
                         // Sidney: show main agent's model with same color logic
                         const mainSess = sessionById['main'];
-                        const mainFull = mainSess?.model || agentModelConfig['main'] || 'openrouter/minimax/minimax-m2.7';
-                        modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
+                        const mainFull = mainSess?.model || 'openrouter/auto';
+                        modelHtml = `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,215,0,0.1);display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
                             <span style="font-size:0.58rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
                         </div>`;
@@ -4460,8 +5336,8 @@
                         ${sessStatusHtml}
                         ${tasksHtml}
                         ${daemonHtml}
-                        ${delegHtml}
                         ${modelHtml}
+                        ${delegHtml}
                     </div>`;
                 }).join('');
 
@@ -5156,7 +6032,8 @@
                 fetchOpenclawVersion(),
                 fetchDOMetrics(),
                 fetchRevenuePipeline(),
-                fetchN8nWorkflows()
+                fetchN8nWorkflows(),
+                fetchContentIntel()
             ]);
             // refresh complete
         }

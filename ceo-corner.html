@@ -43,10 +43,15 @@
 
         /* Grid layout */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1.5rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; padding: 1.5rem; }
         .grid-full { padding: 0 1.5rem 1.5rem; }
 
+        @media (max-width: 1200px) {
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+        }
         @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; }
+            .grid-4 { grid-template-columns: 1fr; }
         }
 
         /* Cards */
@@ -59,13 +64,13 @@
             background: linear-gradient(135deg, rgba(255,170,0,0.12), rgba(255,100,0,0.08));
             border: 1px solid rgba(255,170,0,0.25);
             border-radius: 1rem;
-            padding: 2rem;
+            padding: 1.25rem;
             text-align: center;
             backdrop-filter: blur(12px);
         }
-        .drill-hero .day-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 0.5rem; }
-        .drill-hero .score-big { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #ffaa00, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-        .drill-hero .score-max { font-size: 1.5rem; color: rgba(255,255,255,0.3); font-weight: 300; }
+        .drill-hero .day-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 0.35rem; }
+        .drill-hero .score-big { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #ffaa00, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+        .drill-hero .score-max { font-size: 1.1rem; color: rgba(255,255,255,0.3); font-weight: 300; }
         .drill-hero .level { font-size: 0.85rem; margin-top: 0.5rem; padding: 0.3rem 1rem; border-radius: 2rem; display: inline-block; }
         .level-command { background: rgba(0,255,136,0.15); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
         .level-strong { background: rgba(0,200,255,0.15); color: #00c8ff; border: 1px solid rgba(0,200,255,0.3); }
@@ -74,7 +79,7 @@
 
         /* Score breakdown bars */
         .score-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .score-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); min-width: 140px; }
+        .score-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); min-width: 90px; }
         .score-bar-wrap { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
         .score-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
         .score-bar.high { background: linear-gradient(90deg, #00ff88, #00c8ff); }
@@ -83,7 +88,7 @@
         .score-val { font-size: 0.75rem; font-weight: 600; min-width: 30px; text-align: right; }
 
         /* Score history chart */
-        .history-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-top: 1rem; }
+        .history-chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; padding-top: 0.5rem; }
         .history-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
         .history-bar { width: 100%; min-width: 20px; max-width: 40px; border-radius: 4px 4px 0 0; transition: height 0.4s ease; }
         .history-label { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
@@ -113,6 +118,166 @@
         .drill-entry .score { font-size: 1.1rem; font-weight: 700; }
         .drill-entry .level-tag { font-size: 0.6rem; color: rgba(255,255,255,0.5); }
 
+        /* Decision / escalation items */
+        .decision-item {
+            padding: 0.875rem;
+            border-radius: 0.75rem;
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 0.625rem;
+            border-left: 3px solid rgba(255,170,0,0.4);
+            transition: all 0.2s;
+        }
+        .decision-item:hover { background: rgba(255,255,255,0.06); }
+        .decision-item .name { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .decision-item .meta { font-size: 0.7rem; color: rgba(255,255,255,0.4); display: flex; gap: 1rem; align-items: center; }
+        .escalation-item {
+            padding: 0.875rem;
+            border-radius: 0.75rem;
+            background: rgba(255,60,60,0.04);
+            margin-bottom: 0.625rem;
+            border-left: 3px solid rgba(255,60,60,0.5);
+            transition: all 0.2s;
+        }
+        .escalation-item:hover { background: rgba(255,60,60,0.08); }
+        .escalation-item .task-id { font-size: 0.65rem; font-weight: 700; color: rgba(255,100,100,0.7); font-family: monospace; margin-bottom: 0.15rem; }
+        .escalation-item .name { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .escalation-item .summary { font-size: 0.75rem; color: rgba(255,255,255,0.45); margin-bottom: 0.35rem; line-height: 1.4; }
+        .escalation-item .meta { font-size: 0.7rem; color: rgba(255,255,255,0.4); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .tag-critical { font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 0.25rem; background: rgba(255,60,60,0.2); color: #ff6b6b; font-weight: 700; }
+        .tag-blocked { font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 0.25rem; background: rgba(255,170,0,0.2); color: #ffaa00; font-weight: 700; }
+
+        /* CEO Productivity — Stepper UI */
+        .funnel-stages { display: flex; align-items: center; gap: 0; padding: 0.5rem 0; }
+        .funnel-stage {
+            flex: 1; text-align: center; padding: 0.6rem 0.15rem; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 70px; cursor: pointer; border-radius: 0.5rem;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .funnel-stage:hover { background: rgba(255,255,255,0.03); }
+        .funnel-stage.step-active {
+            background: rgba(255,170,0,0.08);
+            box-shadow: 0 0 0 1px rgba(255,170,0,0.25), 0 2px 8px rgba(255,170,0,0.1);
+        }
+        .funnel-stage .f-count { font-size: 1.2rem; font-weight: 800; }
+        .funnel-stage .f-name { font-size: 0.55rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem; }
+        .funnel-stage .f-bar { position: absolute; bottom: 0; left: 15%; right: 15%; height: 3px; border-radius: 2px; }
+        .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 20px; flex-shrink: 0; color: rgba(255,255,255,0.15); font-size: 0.7rem; }
+
+        .stage-leadgen .f-count { color: #22d3ee; } .stage-leadgen .f-bar { background: rgba(34,211,238,0.3); }
+        .stage-new .f-count { color: #888; } .stage-new .f-bar { background: rgba(136,136,136,0.3); }
+        .stage-audited .f-count { color: #00c8ff; } .stage-audited .f-bar { background: rgba(0,200,255,0.3); }
+        .stage-outreach .f-count { color: #00f5ff; } .stage-outreach .f-bar { background: rgba(0,245,255,0.3); }
+        .stage-responded .f-count { color: #ffaa00; } .stage-responded .f-bar { background: rgba(255,170,0,0.3); }
+        .stage-proposal .f-count { color: #ff6600; } .stage-proposal .f-bar { background: rgba(255,102,0,0.3); }
+        .stage-client .f-count { color: #00ff88; } .stage-client .f-bar { background: rgba(0,255,136,0.3); }
+        .stage-upsell .f-count { color: #b829dd; } .stage-upsell .f-bar { background: rgba(184,41,221,0.3); }
+
+        /* Checkbox overlay for checkable stages */
+        .funnel-stage .f-check {
+            width: 20px; height: 20px; border: 2px solid rgba(255,170,0,0.4);
+            border-radius: 5px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: transparent; cursor: pointer; transition: all 0.2s;
+            margin-bottom: 0.2rem;
+        }
+        .funnel-stage .f-check:hover { border-color: rgba(255,170,0,0.7); }
+        .funnel-stage .f-check.checked {
+            background: rgba(0,255,136,0.15); border-color: rgba(0,255,136,0.5); color: #00ff88;
+        }
+        .funnel-stage .f-link {
+            font-size: 0.5rem; color: rgba(255,255,255,0.25); text-decoration: none;
+            margin-top: 0.15rem; transition: color 0.2s;
+        }
+        .funnel-stage .f-link:hover { color: #ffaa00; }
+
+        /* Step content panels */
+        .step-panel { display: none; padding: 1rem 0; }
+        .step-panel.active { display: block; }
+
+        /* Communications Center */
+        .comms-center { margin-bottom: 1rem; }
+        .comms-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .comms-header h3 { font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.8); margin: 0; }
+        .comms-stats { font-size: 0.6rem; color: rgba(255,255,255,0.4); }
+        .comms-list { display: flex; flex-direction: column; gap: 0.4rem; }
+        .comms-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .comms-tile {
+            background: rgba(2,6,18,0.7); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; padding: 0.75rem 0.85rem; display: flex; flex-direction: column;
+            min-height: 140px;
+        }
+        .comms-tile.ch-gmail { border-color: rgba(234,67,53,0.3); background: rgba(234,67,53,0.04); }
+        .comms-tile.ch-imessage { border-color: rgba(52,199,89,0.3); background: rgba(52,199,89,0.04); }
+        .comms-tile.ch-telegram { border-color: rgba(0,136,204,0.3); background: rgba(0,136,204,0.04); }
+        .comms-tile.ch-gvoice { border-color: rgba(66,133,244,0.3); background: rgba(66,133,244,0.04); }
+        .comms-tile-header {
+            display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem;
+        }
+        .comms-tile-header .tile-icon { font-size: 0.85rem; }
+        .comms-tile-header .tile-label { font-size: 0.65rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.05em; }
+        .comms-tile-header .tile-count {
+            margin-left: auto; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px;
+            font-family: monospace; font-weight: 500;
+        }
+        .comms-tile.ch-gmail .tile-count { background: rgba(234,67,53,0.1); color: rgba(234,67,53,0.7); }
+        .comms-tile.ch-imessage .tile-count { background: rgba(52,199,89,0.1); color: rgba(52,199,89,0.7); }
+        .comms-tile.ch-telegram .tile-count { background: rgba(0,136,204,0.1); color: rgba(0,136,204,0.7); }
+        .comms-tile.ch-gvoice .tile-count { background: rgba(66,133,244,0.1); color: rgba(66,133,244,0.7); }
+        .comms-tile-msgs { display: flex; flex-direction: column; gap: 0.35rem; flex: 1; max-height:300px; overflow-y:auto; }
+        .comms-col-empty { font-size: 0.6rem; color: rgba(255,255,255,0.2); text-align: center; padding: 1.5rem 0.25rem; margin-top: auto; }
+        .comms-msg {
+            display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.7rem;
+            background: rgba(255,255,255,0.03); border-radius: 0.5rem;
+            border-left: 3px solid rgba(255,255,255,0.08); transition: background 0.15s;
+        }
+        .comms-msg:hover { background: rgba(255,255,255,0.06); }
+        .comms-msg.imp-high { border-left: 4px solid #ff3333; background: rgba(255,50,50,0.12); box-shadow: inset 0 0 12px rgba(255,50,50,0.1); }
+        .comms-msg.imp-high .comms-from { color: #ff6666; }
+        .comms-msg.imp-high .comms-reason { color: #ff5555; font-weight: 600; }
+        .comms-msg.imp-medium { border-left-color: #ffaa00; }
+        .comms-msg.imp-low { border-left-color: rgba(255,255,255,0.15); }
+        .comms-msg.opp-flag { border-left: 4px solid #00e676; background: rgba(0,230,118,0.1); box-shadow: inset 0 0 12px rgba(0,230,118,0.08); }
+        .comms-msg.opp-flag .comms-from { color: #69f0ae; }
+        .comms-msg.opp-flag .comms-reason { color: #00e676; font-weight: 600; font-style: normal; }
+        .comms-channel { font-size: 1rem; flex-shrink: 0; width: 24px; text-align: center; }
+        .comms-body { flex: 1; min-width: 0; }
+        .comms-from { font-size: 0.7rem; font-weight: 600; color: #ffffff; }
+        .comms-subject { font-size: 0.65rem; color: #e8cc5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .comms-preview { font-size: 0.6rem; color: rgba(255,255,255,0.8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.1rem; }
+        .comms-reason { font-size: 0.55rem; color: rgba(255,170,0,0.8); font-style: italic; margin-top: 0.1rem; }
+        .comms-time { font-size: 0.55rem; color: rgba(255,255,255,0.5); flex-shrink: 0; }
+        .comms-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+        .comms-actions button {
+            padding: 0.2rem 0.4rem; font-size: 0.55rem; border-radius: 0.25rem;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.15s;
+            font-family: Inter, sans-serif;
+        }
+        .comms-actions button:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+        .comms-actions .btn-task { border-color: rgba(255,170,0,0.3); color: #ffaa00; }
+        .comms-actions .btn-task:hover { background: rgba(255,170,0,0.15); }
+        .comms-actions .btn-interest { border-color: rgba(0,191,255,0.4); color: #00bfff; background: rgba(0,191,255,0.08); }
+        .comms-actions .btn-interest:hover { background: rgba(0,191,255,0.2); color: #5ad8ff; }
+        .comms-actions .btn-opp { border-color: rgba(0,230,118,0.4); color: #00e676; background: rgba(0,230,118,0.1); font-weight: 600; }
+        .comms-actions .btn-opp:hover { background: rgba(0,230,118,0.2); color: #69f0ae; }
+        .comms-empty { text-align: center; padding: 1.5rem; color: rgba(255,255,255,0.3); font-size: 0.75rem; }
+
+        /* Collapsible More section */
+        .more-section { margin-top: 1rem; }
+        .more-toggle {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;
+            cursor: pointer; color: rgba(255,255,255,0.3); font-size: 0.7rem;
+            border: none; background: none; font-family: Inter, sans-serif;
+            transition: color 0.2s;
+        }
+        .more-toggle:hover { color: rgba(255,255,255,0.6); }
+        .more-content { display: none; }
+        .more-content.expanded { display: block; }
+
+        @media (max-width: 768px) {
+            .funnel-stages { flex-wrap: wrap; }
+        }
+
         /* Empty state */
         .empty { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
 
@@ -120,6 +285,121 @@
         .loading { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); }
         .loading::after { content: ''; display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,170,0,0.3); border-top-color: #ffaa00; border-radius: 50%; animation: spin 0.8s linear infinite; margin-left: 0.5rem; vertical-align: middle; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Theme dropdown */
+        .theme-select {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 8px;
+            padding: 0.35rem 0.6rem;
+            font-family: Inter, sans-serif;
+            font-size: 0.75rem;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .theme-select:hover { background: rgba(255,255,255,0.1); }
+        .theme-select option { background: #1a1e3c; color: #fff; }
+
+        /* ── CSS2: Deep Neon ── */
+        [data-theme="css2"] { --bg: #050814; --header-bg: rgba(5,8,25,0.95); --header-border: rgba(0,220,255,0.15); --card-bg: rgba(8,10,30,0.7); --card-border: rgba(0,220,255,0.1); --accent: #00dcff; --accent2: #cc00ff; --title-grad-from: #00dcff; --title-grad-to: #cc00ff; }
+        [data-theme="css2"] body { background-color: var(--bg); background-image: radial-gradient(ellipse at 20% 30%, rgba(0,220,255,0.08) 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(255,0,200,0.06) 0%, transparent 55%), linear-gradient(135deg, #050814 0%, #090d1f 50%, #050814 100%); }
+        [data-theme="css2"] .header { background: var(--header-bg); border-bottom-color: var(--header-border); }
+        [data-theme="css2"] .header h1 { background: linear-gradient(135deg, var(--title-grad-from), var(--title-grad-to)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        [data-theme="css2"] .card { background: var(--card-bg); border-color: var(--card-border); }
+        [data-theme="css2"] .drill-hero { background: linear-gradient(135deg, rgba(0,220,255,0.12), rgba(204,0,255,0.08)); border-color: rgba(0,220,255,0.25); }
+        [data-theme="css2"] .refresh-btn { background: rgba(0,220,255,0.1); border-color: rgba(0,220,255,0.2); color: var(--accent); }
+        [data-theme="css2"] .refresh-btn:hover { background: rgba(0,220,255,0.2); }
+
+        /* ── CSS3: Amber/Gold ── */
+        [data-theme="css3"] { --bg: #0f0a00; --header-bg: rgba(12,9,0,0.95); --header-border: rgba(255,160,0,0.15); --card-bg: rgba(15,10,0,0.7); --card-border: rgba(255,160,0,0.1); --accent: #ffaa00; --accent2: #ff4400; }
+        [data-theme="css3"] body { background-color: var(--bg); background-image: radial-gradient(ellipse at 20% 30%, rgba(255,160,0,0.07) 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(255,80,0,0.05) 0%, transparent 55%), linear-gradient(135deg, #0a0800 0%, #120e01 50%, #0a0800 100%); }
+        [data-theme="css3"] .header { background: var(--header-bg); border-bottom-color: var(--header-border); }
+        [data-theme="css3"] .header h1 { background: linear-gradient(135deg, #fff, #ffaa00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        [data-theme="css3"] .card { background: var(--card-bg); border-color: var(--card-border); }
+        [data-theme="css3"] .drill-hero { background: linear-gradient(135deg, rgba(255,160,0,0.12), rgba(255,80,0,0.08)); border-color: rgba(255,160,0,0.25); }
+        [data-theme="css3"] .refresh-btn { background: rgba(255,160,0,0.1); border-color: rgba(255,160,0,0.2); color: var(--accent); }
+        [data-theme="css3"] .refresh-btn:hover { background: rgba(255,160,0,0.2); }
+
+        /* ── CSS4: Carbon ── */
+        [data-theme="css4"] { --bg: #111418; --header-bg: rgba(10,12,16,0.95); --header-border: rgba(255,255,255,0.08); --card-bg: rgba(18,20,26,0.7); --card-border: rgba(255,255,255,0.06); --accent: #20b2aa; --accent2: #64c864; }
+        [data-theme="css4"] body { background-color: var(--bg); background-image: radial-gradient(ellipse at 20% 30%, rgba(32,178,170,0.07) 0%, transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(100,200,100,0.05) 0%, transparent 55%), linear-gradient(135deg, #0d1014 0%, #111418 50%, #0d1014 100%); }
+        [data-theme="css4"] .header { background: var(--header-bg); border-bottom-color: var(--header-border); }
+        [data-theme="css4"] .header h1 { background: linear-gradient(135deg, #fff, #20b2aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        [data-theme="css4"] .card { background: var(--card-bg); border-color: var(--card-border); }
+        [data-theme="css4"] .drill-hero { background: linear-gradient(135deg, rgba(32,178,170,0.12), rgba(100,200,100,0.08)); border-color: rgba(32,178,170,0.25); }
+        [data-theme="css4"] .refresh-btn { background: rgba(32,178,170,0.1); border-color: rgba(32,178,170,0.2); color: var(--accent); }
+        [data-theme="css4"] .refresh-btn:hover { background: rgba(32,178,170,0.2); }
+
+        /* ── CSS6: Plasma ── */
+        [data-theme="css6"] { --bg: #050510; --header-bg: rgba(8,5,20,0.95); --header-border: rgba(100,50,200,0.18); --card-bg: rgba(12,8,28,0.7); --card-border: rgba(100,50,200,0.12); --accent: #8b5cf6; --accent2: #a855f7; }
+        [data-theme="css6"] body { background-color: var(--bg); }
+        [data-theme="css6"] .header { background: var(--header-bg); border-bottom-color: var(--header-border); }
+        [data-theme="css6"] .header h1 { background: linear-gradient(135deg, #fff, #b480ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        [data-theme="css6"] .card { background: var(--card-bg); border-color: var(--card-border); }
+        [data-theme="css6"] .drill-hero { background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(168,85,247,0.08)); border-color: rgba(139,92,246,0.25); }
+        [data-theme="css6"] .refresh-btn { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2); color: var(--accent); }
+        [data-theme="css6"] .refresh-btn:hover { background: rgba(139,92,246,0.2); }
+
+        /* Content Intelligence card */
+        .ci-stats { display:flex; gap:1rem; padding:0.4rem 0.75rem; font-size:0.65rem; color:rgba(255,255,255,0.4); }
+        .ci-stat-val { color:rgba(255,200,60,0.9); font-weight:700; }
+        .ci-nuggets { padding:0.3rem 0.75rem 0.6rem; display:flex; flex-direction:column; gap:0.4rem; max-height:320px; overflow-y:auto; }
+        .ci-nugget { background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:0.45rem 0.6rem; display:flex; gap:0.5rem; align-items:flex-start; transition:border-color 0.2s; cursor:pointer; }
+        .ci-nugget:hover { border-color:rgba(255,200,60,0.25); }
+        .ci-score { flex-shrink:0; font-size:0.6rem; font-weight:700; padding:2px 6px; border-radius:4px; }
+        .ci-score.high { background:rgba(0,255,136,0.12); color:#00ff88; }
+        .ci-score.med { background:rgba(255,200,60,0.12); color:#ffc83c; }
+        .ci-nugget-body { flex:1; min-width:0; }
+        .ci-nugget-text { font-size:0.67rem; color:rgba(255,255,255,0.7); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .ci-nugget-meta { display:flex; gap:0.5rem; margin-top:0.2rem; font-size:0.55rem; color:rgba(255,255,255,0.3); }
+        .ci-verdict { font-size:0.5rem; font-weight:700; padding:2px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:0.3px; white-space:nowrap; }
+        .ci-verdict.watch { background:rgba(0,255,136,0.15); color:#00ff88; }
+        .ci-verdict.skim { background:rgba(255,200,60,0.12); color:#ffc83c; }
+        .ci-verdict.skip { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.35); }
+        .ci-empty { text-align:center; padding:1.2rem; color:rgba(255,255,255,0.2); font-size:0.7rem; }
+        .ci-scan-time { font-size:0.55rem; color:rgba(255,255,255,0.2); padding:0 0.75rem 0.5rem; }
+        /* RSS-style feed */
+        .rss-feed { max-height:600px; overflow-y:auto; display:block; }
+        .rss-item { display:flex; justify-content:space-between; align-items:flex-start; padding:0.7rem 1rem; border-left:3px solid rgba(0,200,255,0.3); cursor:pointer; transition:background 0.2s; min-height:3rem; }
+        .rss-item:nth-child(odd) { background:rgba(255,255,255,0.05); }
+        .rss-item:nth-child(even) { background:rgba(0,0,0,0.2); }
+        .rss-item:hover { background:rgba(0,200,255,0.12); }
+        .rss-item-body { flex:1; min-width:0; }
+        .rss-item-title { font-size:0.85rem; font-weight:700; color:#ffffff !important; line-height:1.3; }
+        .rss-item-meta { font-size:0.65rem; color:rgba(0,200,255,0.8); margin-top:0.2rem; }
+        .rss-item-summary { font-size:0.72rem; color:rgba(255,255,255,0.7); margin-top:0.25rem; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .rss-item-actions { display:flex; gap:0.3rem; align-items:center; flex-shrink:0; margin-left:0.5rem; }
+        .rss-sender-group { margin-bottom:0.75rem; background:rgba(20,20,40,0.5); border:1px solid rgba(255,255,255,0.06); border-radius:0.6rem; }
+        .rss-sender-header { padding:0.6rem 0.8rem; background:rgba(0,200,255,0.06); border-bottom:1px solid rgba(0,200,255,0.15); }
+        .rss-sender-name { font-size:0.85rem; font-weight:700; color:#00c8ff; }
+        .rss-sender-count { font-size:0.6rem; color:rgba(255,255,255,0.4); margin-left:0.5rem; }
+        .rss-sender-summary { font-size:0.68rem; color:rgba(255,255,255,0.6); margin-top:0.25rem; line-height:1.4; }
+        .rss-sender-body { display:grid; grid-template-columns:1fr 2fr; }
+        .rss-sender-ai { padding:0.75rem 0.8rem; background:rgba(0,10,30,0.4); border-right:1px solid rgba(0,200,255,0.12); }
+        .rss-sender-ai-category { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.3rem; }
+        .rss-sender-ai-category.knowledge { color:#00ff88; }
+        .rss-sender-ai-category.sales { color:#ff6b6b; }
+        .rss-sender-ai-category.news { color:#00c8ff; }
+        .rss-sender-ai-category.community { color:#c084fc; }
+        .rss-sender-ai-category.transactional { color:#ffaa00; }
+        .rss-sender-ai-verdict { font-size:0.6rem; font-weight:600; margin-bottom:0.4rem; }
+        .rss-sender-ai-verdict.read { color:#00ff88; }
+        .rss-sender-ai-verdict.skip { color:rgba(255,255,255,0.4); }
+        .rss-sender-ai-text { font-size:0.68rem; color:rgba(255,255,255,0.65); line-height:1.4; font-style:italic; }
+        .rss-sender-emails { }
+        .rss-links { display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:0.3rem; }
+        .rss-link-badge { display:inline-flex; align-items:center; gap:0.25rem; padding:0.15rem 0.45rem; border-radius:0.25rem; font-size:0.55rem; font-weight:600; cursor:pointer; text-decoration:none; transition:opacity 0.2s; }
+        .rss-link-badge:hover { opacity:0.8; }
+        .rss-link-badge.video { background:rgba(255,0,0,0.15); color:#ff4444; border:1px solid rgba(255,0,0,0.25); }
+        .rss-link-badge.community { background:rgba(192,132,252,0.15); color:#c084fc; border:1px solid rgba(192,132,252,0.25); }
+        .rss-link-badge.code { background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); }
+        .rss-link-badge.meeting { background:rgba(0,200,255,0.15); color:#00c8ff; border:1px solid rgba(0,200,255,0.25); }
+        .rss-link-badge.document { background:rgba(0,255,136,0.12); color:#00ff88; border:1px solid rgba(0,255,136,0.2); }
+        .rss-link-badge.resource { background:rgba(255,170,0,0.12); color:#ffaa00; border:1px solid rgba(255,170,0,0.2); }
+        .rss-link-badge.link { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.5); border:1px solid rgba(255,255,255,0.1); }
+        @media (max-width: 768px) { .rss-sender-body { grid-template-columns:1fr; } }
     </style>
 </head>
 <body>
@@ -127,32 +407,183 @@
         <h1>CEO's Corner</h1>
         <div class="header-right">
             <span class="updated-text" id="updated-at"></span>
+            <select class="theme-select" id="theme-dropdown" onchange="setTheme(this.value)">
+                <option value="css1">CSS1</option>
+                <option value="css2">CSS2</option>
+                <option value="css3">CSS3</option>
+                <option value="css4">CSS4</option>
+                <option value="css6">CSS6</option>
+            </select>
             <button class="refresh-btn" onclick="loadAll()">Refresh</button>
             <a href="/" class="back-btn">← Dashboard</a>
         </div>
     </div>
 
     <div class="content">
-        <!-- Top row: Latest Drill Score + Score Breakdown -->
-        <div class="grid-2">
-            <div id="drill-hero-card" class="drill-hero">
-                <div class="loading">Loading drill data</div>
+        <!-- CEO Productivity -->
+        <div class="grid-full" style="padding-top:1.5rem;">
+            <div class="card" style="border-color:rgba(255,170,0,0.2);">
+                <div class="card-title">
+                    <span class="icon">⚡</span> CEO Productivity
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+                        <span id="pipeline-progress" style="font-size:0.65rem;color:rgba(255,255,255,0.4);"></span>
+                        <span id="pipeline-status-pill" style="padding:0.2rem 0.6rem;background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.25);border-radius:1rem;font-size:0.6rem;font-weight:600;"></span>
+                        <button onclick="resetCeoProductivity()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.15rem 0.5rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;" title="Reset checklist for today">Reset</button>
+                    </div>
+                </div>
+                <div class="funnel-stages" id="ceo-pipeline-list"></div>
             </div>
-            <div class="card">
-                <div class="card-title"><span class="icon">📊</span> Score Breakdown</div>
-                <div id="score-breakdown">
-                    <div class="loading">Loading scores</div>
+        </div>
+
+        <!-- Step Content Panels (shown based on active step) -->
+
+        <!-- STEP 1: Daily Praxus -->
+        <div id="step-panel-daily-praxus" class="step-panel active grid-full">
+            <!-- Communications Center -->
+            <div class="card comms-center" style="border-color:rgba(0,200,255,0.2);margin-bottom:1rem;">
+                <div class="comms-header">
+                    <h3>📨 Communications Center</h3>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span class="comms-stats" id="comms-stats"></span>
+                        <button onclick="loadMessages(true)" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;">Refresh</button>
+                    </div>
+                </div>
+                <div id="comms-list" class="comms-columns">
+                    <div class="comms-empty" style="grid-column:1/-1;">Loading messages...</div>
+                </div>
+            </div>
+
+            <!-- Overnight Briefing (moved from Intel Feed) -->
+            <div class="card" style="border-color:rgba(0,200,255,0.2);">
+                <div style="background:linear-gradient(135deg, rgba(0,200,255,0.08), rgba(100,50,255,0.08)); border:1px solid rgba(0,200,255,0.2); border-radius:0.75rem; padding:1rem 1.25rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🗞️</span>
+                        <h3 style="color:#00c8ff; font-size:0.8rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Overnight Briefing</h3>
+                        <span id="briefing-generated" style="color:rgba(255,255,255,0.4); font-size:0.7rem; margin-left:auto;"></span>
+                    </div>
+                    <div id="briefing-content" style="color:rgba(255,255,255,0.7); font-size:0.8rem; line-height:1.6;">
+                        <div style="color:rgba(255,255,255,0.4); font-size:0.75rem;">Loading briefing...</div>
+                    </div>
+                    <div id="briefing-details" style="display:none; margin-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.75rem;">
+                    </div>
+                    <button id="briefing-toggle" onclick="toggleBriefingDetails()" style="display:none; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); border-radius:0.3rem; padding:0.2rem 0.6rem; cursor:pointer; font-size:0.65rem; font-family:Inter,sans-serif; margin-top:0.5rem;">Show Details</button>
+                </div>
+                <div style="margin-top:0.75rem; text-align:center;">
+                    <a href="https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70" target="_blank" style="color:#ffaa00;text-decoration:none;font-size:0.75rem;font-weight:600;">Open Daily Praxus in Notion →</a>
                 </div>
             </div>
         </div>
 
-        <!-- Middle row: Score History + CEO Review Queue -->
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-title"><span class="icon">📈</span> Drill Score History</div>
-                <div id="score-history">
-                    <div class="loading">Loading history</div>
+        <!-- STEP 2: Process Newsletter -->
+        <div id="step-panel-process-newsletter" class="step-panel grid-full">
+            <!-- Newsletter Digest -->
+            <div class="card" style="border-color:rgba(0,200,255,0.2);margin-bottom:1rem;">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <span class="icon">📡</span> Interest Feed
+                    <span id="news-cache-badge" style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-left:0.5rem;"></span>
                 </div>
+                <div id="news-status" style="display:none;background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:0.5rem;padding:0.6rem 0.8rem;margin-bottom:0.75rem;font-size:0.8rem;color:rgba(255,255,255,0.7);">Scanning newsletters...</div>
+                <div id="news-synergy" style="display:none;"></div>
+                <div id="news-senders"></div>
+                <div id="news-footer" style="display:none;margin-top:1rem;padding:0.75rem;background:rgba(20,20,40,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;text-align:center;font-size:0.8rem;color:rgba(255,255,255,0.6);"></div>
+            </div>
+
+            <!-- Content Intelligence -->
+            <div class="card" style="border-color:rgba(255,200,60,0.15);margin-bottom:1rem;">
+                <div class="card-title" style="margin-bottom:0;">
+                    <span class="icon">🧠</span> Content Intelligence
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+                        <div id="ci-status-dot" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);" title="No data yet"></div>
+                        <div id="ci-badge" style="font-size:0.6rem;font-weight:600;color:rgba(255,255,255,0.3);">—</div>
+                    </div>
+                </div>
+                <div id="ci-stats" class="ci-stats">
+                    <span>This Week: <span class="ci-stat-val" id="ci-week-nuggets">0</span> nuggets from <span class="ci-stat-val" id="ci-week-videos">0</span> videos</span>
+                    <span>Avg Score: <span class="ci-stat-val" id="ci-week-avg">—</span></span>
+                </div>
+                <div id="ci-nuggets" class="ci-nuggets">
+                    <div class="ci-empty">No nuggets yet — pipeline will populate once YouTube channels are monitored</div>
+                </div>
+                <div id="ci-scan-time" class="ci-scan-time"></div>
+            </div>
+
+            <!-- Skool Digest (always visible) -->
+            <div id="skool-panel">
+            <div class="card" style="border-color:rgba(139,92,246,0.2);">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <span class="icon">🎓</span> Skool Digest
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;">
+                        <button onclick="skoolRunDigest()" id="skool-email-btn" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);color:#b480ff;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Email Scan</button>
+                        <button onclick="skoolDirectScrape()" id="skool-direct-btn" style="background:rgba(255,136,68,0.15);border:1px solid rgba(255,136,68,0.25);color:#ff8844;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Direct</button>
+                        <button onclick="skoolDirectScrape(true)" id="skool-unreads-btn" style="background:rgba(0,204,136,0.15);border:1px solid rgba(0,204,136,0.25);color:#00cc88;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Unreads</button>
+                        <button onclick="skoolRunDigest(true)" id="skool-tg-btn" style="background:rgba(0,136,204,0.15);border:1px solid rgba(0,136,204,0.25);color:#00aaee;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">+ TG</button>
+                    </div>
+                </div>
+                <div id="skool-status" style="display:none;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:0.5rem;padding:0.6rem 0.8rem;margin-bottom:0.75rem;font-size:0.8rem;color:rgba(255,255,255,0.7);">Scanning Skool...</div>
+                <div id="skool-themes" style="display:none;background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(200,100,255,0.06));border:1px solid rgba(139,92,246,0.25);border-radius:0.75rem;padding:1rem 1.25rem;margin-bottom:1rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🎓</span>
+                        <h3 style="color:#b480ff;font-size:0.8rem;margin:0;text-transform:uppercase;letter-spacing:0.05em;">Cross-Classroom Intelligence</h3>
+                        <button onclick="skoolTTSThemes()" id="skool-themes-tts-btn" style="margin-left:auto;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.6rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Listen">🔊 Listen</button>
+                    </div>
+                    <div id="skool-themes-content" style="color:rgba(255,255,255,0.85);font-size:0.8rem;line-height:1.6;"></div>
+                </div>
+                <div id="skool-videos" style="display:none;background:linear-gradient(135deg,rgba(255,100,0,0.06),rgba(255,200,0,0.04));border:1px solid rgba(255,150,0,0.2);border-radius:0.75rem;padding:1rem 1.25rem;margin-bottom:1rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🎬</span>
+                        <h3 style="color:#ff9500;font-size:0.8rem;margin:0;text-transform:uppercase;letter-spacing:0.05em;">Video Golden Nuggets</h3>
+                        <span id="skool-video-count" style="background:rgba(255,150,0,0.15);color:#ff9500;border-radius:1rem;padding:0.1rem 0.5rem;font-size:0.65rem;font-weight:600;">0</span>
+                    </div>
+                    <div id="skool-videos-content" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+                </div>
+                <div id="skool-classrooms" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+                <div style="margin-top:1rem;background:rgba(20,20,40,0.5);border:1px solid rgba(139,92,246,0.15);border-radius:0.75rem;padding:1rem 1.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
+                        <span style="font-size:0.9rem;">📚</span>
+                        <h3 style="color:#b480ff;font-size:0.8rem;margin:0;">Skool Communities</h3>
+                        <span id="skool-session-status" style="font-size:0.65rem;padding:0.15rem 0.5rem;border-radius:1rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.4);">Checking...</span>
+                        <div style="margin-left:auto;display:flex;gap:0.3rem;">
+                            <button onclick="skoolReauth()" id="skool-reauth-btn" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Re-auth</button>
+                            <button onclick="skoolSaveConfig()" id="skool-save-btn" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#b480ff;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Save</button>
+                        </div>
+                    </div>
+                    <div id="skool-community-tags" style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.5rem;"></div>
+                    <div style="display:flex;gap:0.4rem;">
+                        <input id="skool-community-input" type="text" placeholder="Add Skool URL or name" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:0.4rem;padding:0.3rem 0.5rem;font-family:Inter,sans-serif;font-size:0.75rem;outline:none;" onkeydown="if(event.key==='Enter')skoolAddCommunity()">
+                        <button onclick="skoolAddCommunity()" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#b480ff;border-radius:0.4rem;padding:0.3rem 0.6rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.75rem;font-weight:600;">+ Add</button>
+                    </div>
+                    <div id="skool-config-footer" style="margin-top:0.3rem;font-size:0.65rem;color:rgba(255,255,255,0.3);text-align:center;"></div>
+                </div>
+                <div id="skool-footer" style="display:none;margin-top:1rem;padding:0.75rem;background:rgba(20,20,40,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:0.5rem;text-align:center;font-size:0.8rem;color:rgba(255,255,255,0.6);"></div>
+            </div>
+        </div>
+        </div><!-- /step-panel-process-newsletter -->
+
+        <!-- STEP 3: Check Email -->
+        <div id="step-panel-check-email" class="step-panel grid-full">
+            <div style="text-align:center;margin-bottom:1rem;">
+                <a href="https://mail.google.com" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#fff;text-decoration:none;font-size:0.8rem;font-weight:600;background:rgba(220,60,60,0.15);border:1px solid rgba(220,60,60,0.3);border-radius:0.5rem;padding:0.5rem 1.2rem;">📧 Open Gmail →</a>
+            </div>
+            <div class="grid-2" style="padding:0;">
+                <div class="card" style="border-color:rgba(255,170,0,0.2);">
+                    <div class="card-title"><span class="icon">⚖️</span> Pending Decisions <span id="decisions-count" style="background:rgba(255,170,0,0.15);color:#ffaa00;font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:1rem;margin-left:auto;">0</span></div>
+                    <div id="decisions-list">
+                        <div class="loading">Loading decisions</div>
+                    </div>
+                </div>
+                <div class="card" style="border-color:rgba(255,60,60,0.2);">
+                    <div class="card-title"><span class="icon">🚨</span> Critical Tickets <span id="escalations-count" style="background:rgba(255,60,60,0.15);color:#ff6b6b;font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:1rem;margin-left:auto;">0</span></div>
+                    <div id="escalations-list">
+                        <div class="loading">Loading critical tickets</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Work My Tasks -->
+        <div id="step-panel-work-tasks" class="step-panel grid-full">
+            <div style="text-align:center;margin-bottom:1rem;">
+                <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#fff;text-decoration:none;font-size:0.8rem;font-weight:600;background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.3);border-radius:0.5rem;padding:0.5rem 1.2rem;">📋 Open Tasks in Notion →</a>
             </div>
             <div class="card">
                 <div class="card-title"><span class="icon">📋</span> CEO Review Queue</div>
@@ -162,16 +593,197 @@
             </div>
         </div>
 
-        <!-- Bottom: Recent Drills -->
+        <!-- Collapsible "More" section for rarely-used features -->
+        <div class="grid-full more-section">
+            <button class="more-toggle" onclick="this.nextElementSibling.classList.toggle('expanded');this.querySelector('.more-arrow').textContent=this.nextElementSibling.classList.contains('expanded')?'▼':'▶';">
+                <span class="more-arrow">▶</span> More (Drills, Intel Feed, Reddit Config)
+            </button>
+            <div class="more-content">
+                <!-- Drill Score + Breakdown + History -->
+                <div class="grid-4" style="padding:0 0 1.5rem;">
+                    <div id="drill-hero-card" class="drill-hero">
+                        <div class="loading">Loading drill data</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><span class="icon">📊</span> Score Breakdown</div>
+                        <div id="score-breakdown">
+                            <div class="loading">Loading scores</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><span class="icon">📈</span> Drill Score History</div>
+                        <div id="score-history">
+                            <div class="loading">Loading history</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><span class="icon">🎯</span> Recent Drills</div>
+                        <div id="drill-list">
+                            <div class="loading">Loading drills</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Intel Feed -->
         <div class="grid-full">
-            <div class="card">
-                <div class="card-title"><span class="icon">🎯</span> Recent Drills</div>
-                <div id="drill-list">
-                    <div class="loading">Loading drills</div>
+            <div class="card" style="border-color:rgba(0,180,255,0.2);">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <span class="icon">📡</span> Intel Feed
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+                        <select id="intel-filter" onchange="intelRender()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;border-radius:0.4rem;padding:0.25rem 0.5rem;font-family:Inter,sans-serif;font-size:0.65rem;cursor:pointer;">
+                            <option value="all">All Categories</option>
+                            <option value="ai-news">AI News</option>
+                            <option value="industry">Industry Trends</option>
+                            <option value="competitor">Competitor Watch</option>
+                            <option value="opportunity">Opportunities</option>
+                        </select>
+                        <select id="intel-importance-filter" onchange="intelRender()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;border-radius:0.4rem;padding:0.25rem 0.5rem;font-family:Inter,sans-serif;font-size:0.65rem;cursor:pointer;">
+                            <option value="all">All Importance</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Command Briefing (auto-loaded) -->
+                <div style="background:linear-gradient(135deg, rgba(0,200,255,0.08), rgba(100,50,255,0.08)); border:1px solid rgba(0,200,255,0.2); border-radius:0.75rem; padding:1rem 1.25rem; margin-bottom:1rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🗞️</span>
+                        <h3 style="color:#00c8ff; font-size:0.8rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Overnight Briefing</h3>
+                        <span id="briefing-generated" style="color:rgba(255,255,255,0.4); font-size:0.7rem; margin-left:auto;"></span>
+                    </div>
+                    <div id="briefing-content" style="color:rgba(255,255,255,0.7); font-size:0.8rem; line-height:1.6;">
+                        <div style="color:rgba(255,255,255,0.4); font-size:0.75rem;">Loading briefing...</div>
+                    </div>
+                    <div id="briefing-details" style="display:none; margin-top:0.75rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.75rem;">
+                    </div>
+                    <button id="briefing-toggle" onclick="toggleBriefingDetails()" style="display:none; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); border-radius:0.3rem; padding:0.2rem 0.6rem; cursor:pointer; font-size:0.65rem; font-family:Inter,sans-serif; margin-top:0.5rem;">Show Details</button>
+                </div>
+
+                <!-- Critical / Blocked Tickets -->
+                <div id="intel-critical-tickets" style="background:rgba(255,60,60,0.06); border:1px solid rgba(255,60,60,0.2); border-radius:0.75rem; padding:1rem 1.25rem; margin-bottom:1rem; display:none;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🚨</span>
+                        <h3 style="color:#ff6b6b; font-size:0.8rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">Critical & Blocked Tickets</h3>
+                        <span id="intel-critical-count" style="background:rgba(255,60,60,0.2); color:#ff6b6b; font-size:0.6rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:0.25rem;">0</span>
+                    </div>
+                    <div id="intel-critical-list" style="display:flex; flex-direction:column; gap:0.4rem;"></div>
+                </div>
+
+                <!-- OpenClaw Update Info -->
+                <div id="intel-oc-update" style="background:linear-gradient(135deg, rgba(255,170,0,0.06), rgba(255,100,0,0.04)); border:1px solid rgba(255,170,0,0.2); border-radius:0.75rem; padding:1rem 1.25rem; margin-bottom:1rem; display:none;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                        <span style="font-size:0.9rem;">🦞</span>
+                        <h3 style="color:#ffaa00; font-size:0.8rem; margin:0; text-transform:uppercase; letter-spacing:0.05em;">OpenClaw Update Available</h3>
+                    </div>
+                    <div id="intel-oc-update-body" style="font-size:0.8rem; color:rgba(255,255,255,0.7); line-height:1.5;"></div>
+                </div>
+
+                <!-- Category Stats -->
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; margin-bottom:1rem;" class="intel-stats-row">
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,200,255,0.15); border-radius:0.75rem; padding:0.75rem; text-align:center;">
+                        <div style="font-size:1.2rem; margin-bottom:0.15rem;">🤖</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.15rem;">AI News</div>
+                        <div id="intel-count-ai" style="color:#00c8ff; font-size:1.2rem; font-weight:700;">0</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,255,136,0.15); border-radius:0.75rem; padding:0.75rem; text-align:center;">
+                        <div style="font-size:1.2rem; margin-bottom:0.15rem;">📊</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.15rem;">Industry</div>
+                        <div id="intel-count-industry" style="color:#00ff88; font-size:1.2rem; font-weight:700;">0</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,170,0,0.15); border-radius:0.75rem; padding:0.75rem; text-align:center;">
+                        <div style="font-size:1.2rem; margin-bottom:0.15rem;">🔍</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.15rem;">Competitors</div>
+                        <div id="intel-count-competitor" style="color:#ffaa00; font-size:1.2rem; font-weight:700;">0</div>
+                    </div>
+                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(200,100,255,0.15); border-radius:0.75rem; padding:0.75rem; text-align:center;">
+                        <div style="font-size:1.2rem; margin-bottom:0.15rem;">💎</div>
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.15rem;">Opportunities</div>
+                        <div id="intel-count-opportunity" style="color:#c864ff; font-size:1.2rem; font-weight:700;">0</div>
+                    </div>
+                </div>
+
+                <!-- Add New Intel Item -->
+                <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; padding:1rem; margin-bottom:1rem;">
+                    <h3 style="color:rgba(255,255,255,0.7); font-size:0.75rem; margin:0 0 0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Add Intel Item</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.5rem;" class="intel-form-grid">
+                        <input id="intel-title" type="text" placeholder="Title / Headline" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem;">
+                        <input id="intel-source" type="text" placeholder="Source (e.g. TechCrunch, Twitter)" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem;">
+                        <select id="intel-category" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem; cursor:pointer;">
+                            <option value="ai-news">AI News</option>
+                            <option value="industry">Industry Trends</option>
+                            <option value="competitor">Competitor Watch</option>
+                            <option value="opportunity">Opportunities</option>
+                        </select>
+                        <select id="intel-importance" style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem; cursor:pointer;">
+                            <option value="medium">Medium</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <textarea id="intel-notes" rows="2" placeholder="Notes / Analysis / Key Takeaway" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem; resize:vertical; margin-bottom:0.5rem;"></textarea>
+                    <input id="intel-url" type="text" placeholder="URL (optional)" style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:0.5rem; color:#fff; font-family:Inter,sans-serif; font-size:0.8rem; padding:0.5rem 0.6rem; margin-bottom:0.5rem;">
+                    <button onclick="intelAdd()" style="background:linear-gradient(135deg, #00c8ff, #0080ff); border:none; color:#fff; border-radius:0.4rem; padding:0.4rem 1.2rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.8rem; font-weight:600;">+ Add Item</button>
+                </div>
+
+                <!-- Intel Feed Items -->
+                <div id="intel-feed" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+
+                <style>
+                    @media (max-width: 768px) {
+                        .intel-stats-row { grid-template-columns: 1fr 1fr !important; }
+                        .intel-form-grid { grid-template-columns: 1fr !important; }
+                    }
+                </style>
+            </div>
+        </div>
+
+        <!-- Reddit Pain Point Config (WF2) -->
+        <div class="grid-full">
+            <div class="card" style="border-color:rgba(0,245,255,0.2);">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <span class="icon">🎯</span> Reddit Pain Point Config (WF2)
+                    <div style="margin-left:auto;display:flex;gap:0.5rem;">
+                        <button onclick="wf2SaveConfig()" id="wf2-save-btn" style="background:linear-gradient(135deg,#00ff88,#00c853);border:none;color:#111;border-radius:0.4rem;padding:0.3rem 0.8rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;">Save to Sheet</button>
+                        <button onclick="wf2FetchConfig()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;border-radius:0.4rem;padding:0.3rem 0.8rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.7rem;">Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Status bar -->
+                <div id="wf2-status" style="display:none; background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:0.5rem; padding:0.6rem 0.8rem; margin-bottom:0.75rem; font-size:0.8rem; color:rgba(255,255,255,0.7);"></div>
+
+                <!-- Subreddits Section -->
+                <div style="background:rgba(20,20,40,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; padding:1rem 1.25rem; margin-bottom:0.75rem;">
+                    <h3 style="color:#00f5ff; font-size:0.8rem; margin:0 0 0.5rem 0; text-transform:uppercase; letter-spacing:0.05em;">Subreddits</h3>
+                    <div id="wf2-subs-tags" style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.5rem;"></div>
+                    <div style="display:flex; gap:0.4rem;">
+                        <input id="wf2-sub-input" type="text" placeholder="Add subreddit (e.g. smallbusiness)" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.5rem; padding:0.4rem 0.6rem; font-family:Inter,sans-serif; font-size:0.8rem; outline:none;" onkeydown="if(event.key==='Enter')wf2AddSub()">
+                        <button onclick="wf2AddSub()" style="background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.3); color:#00f5ff; border-radius:0.5rem; padding:0.4rem 0.8rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.8rem; font-weight:600;">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Keywords Section -->
+                <div style="background:rgba(20,20,40,0.5); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; padding:1rem 1.25rem; margin-bottom:0.75rem;">
+                    <h3 style="color:#b829dd; font-size:0.8rem; margin:0 0 0.5rem 0; text-transform:uppercase; letter-spacing:0.05em;">Pain Signal Keywords <span id="wf2-kw-count" style="color:rgba(255,255,255,0.4); font-size:0.7rem; font-weight:400;"></span></h3>
+                    <div id="wf2-kw-tags" style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.5rem;"></div>
+                    <div style="display:flex; gap:0.4rem;">
+                        <input id="wf2-kw-input" type="text" placeholder="Add keyword or phrase (e.g. need funding)" style="flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:0.5rem; padding:0.4rem 0.6rem; font-family:Inter,sans-serif; font-size:0.8rem; outline:none;" onkeydown="if(event.key==='Enter')wf2AddKw()">
+                        <button onclick="wf2AddKw()" style="background:rgba(184,41,221,0.15); border:1px solid rgba(184,41,221,0.3); color:#d070ff; border-radius:0.5rem; padding:0.4rem 0.8rem; cursor:pointer; font-family:Inter,sans-serif; font-size:0.8rem; font-weight:600;">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Footer info -->
+                <div id="wf2-footer" style="padding:0.5rem 0.75rem; background:rgba(20,20,40,0.4); border:1px solid rgba(255,255,255,0.06); border-radius:0.5rem; text-align:center; font-size:0.7rem; color:rgba(255,255,255,0.4);">
+                    Changes apply on next WF2 run (every 3 hours)
                 </div>
             </div>
         </div>
-    </div>
+            </div><!-- /more-content -->
+        </div><!-- /more-section -->
+    </div><!-- /content -->
 
     <script>
         const SCENARIOS = [
@@ -321,8 +933,1607 @@
             `).join('');
         }
 
+        async function loadDecisions() {
+            try {
+                // Pending Decisions = items in CEO review queue
+                const reviewRes = await fetch('/mc/ceo-corner/review');
+                const reviewData = await reviewRes.json();
+                const el = document.getElementById('decisions-list');
+                const countEl = document.getElementById('decisions-count');
+                const items = reviewData.items || [];
+                countEl.textContent = items.length;
+                if (items.length === 0) {
+                    el.innerHTML = '<div class="empty">No pending decisions — inbox zero</div>';
+                } else {
+                    el.innerHTML = items.map(item => `
+                        <div class="decision-item">
+                            <div class="name">${item.name}</div>
+                            <div class="meta">
+                                <span>${item.date}</span>
+                                <span>${item.size}</span>
+                                ${item.badge ? `<span class="badge">${item.badge}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                document.getElementById('decisions-list').innerHTML = '<div class="empty">Failed to load</div>';
+            }
+        }
+
+        async function loadEscalations() {
+            try {
+                const res = await fetch('/mc/agent-tasks');
+                const data = await res.json();
+                const agents = data.agents || [];
+                // Collect all Critical tasks across all agents
+                const criticalTasks = [];
+                for (const agent of agents) {
+                    const list = agent.actionableList || [];
+                    for (const t of list) {
+                        if (t.priority === 'Critical') {
+                            criticalTasks.push({ ...t, agentName: agent.name, role: agent.role });
+                        }
+                    }
+                }
+                const el = document.getElementById('escalations-list');
+                const countEl = document.getElementById('escalations-count');
+                countEl.textContent = criticalTasks.length;
+                if (criticalTasks.length === 0) {
+                    el.innerHTML = '<div class="empty">No critical tickets — all clear</div>';
+                } else {
+                    el.innerHTML = criticalTasks.map(t => {
+                        const taskId = t.id ? `TAS-${t.id}` : '';
+                        const overdue = t.isOverdue ? '<span class="tag-blocked">OVERDUE</span>' : '';
+                        const due = t.dueDate ? `Due: ${t.dueDate}` : 'No due date';
+                        return `<div class="escalation-item">
+                            ${taskId ? `<div class="task-id">${taskId}</div>` : ''}
+                            <div class="name">${t.name || 'Untitled'}</div>
+                            <div class="meta">
+                                <span class="tag-critical">CRITICAL</span>
+                                ${overdue}
+                                <span>${t.agentName || t.role || 'Unassigned'}</span>
+                                <span>${t.status || 'No Status'}</span>
+                                <span>${due}</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (e) {
+                document.getElementById('escalations-list').innerHTML = '<div class="empty">Failed to load</div>';
+            }
+        }
+
+        // ── CEO Productivity ──
+        function resetCeoProductivity() {
+            localStorage.removeItem('dwe_ceo_pipeline');
+            loadCeoPipeline();
+        }
+        const CEO_PIPELINE_KEY = 'dwe_ceo_pipeline';
+        const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified'];
+        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified' };
+
+        // Checkable items override specific stages (position 0 = first stage)
+        const CEO_CHECKABLE = [
+            { position: 0, id: 'daily-praxus', label: 'Daily Praxus', url: 'https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70' },
+            { position: 1, id: 'process-newsletter', label: 'Process Interests', url: '' },
+            { position: 2, id: 'check-email', label: 'Check Email', url: 'https://mail.google.com' },
+            { position: 3, id: 'work-tasks', label: 'Work My Tasks', url: 'https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c' },
+        ];
+
+        function getPipelineState() {
+            const now = new Date();
+            const today = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+            let state;
+            try { state = JSON.parse(localStorage.getItem(CEO_PIPELINE_KEY)); } catch(e) { state = null; }
+            if (!state || state.date !== today) {
+                state = { date: today, done: {} };
+                savePipelineState(state);
+            }
+            return state;
+        }
+
+        function savePipelineState(state) {
+            localStorage.setItem(CEO_PIPELINE_KEY, JSON.stringify(state));
+        }
+
+        function isPipelineOverdue() {
+            const now = new Date();
+            const day = now.getDay();
+            const hour = now.getHours();
+            return day >= 1 && day <= 5 && hour >= 7;
+        }
+
+        function togglePipelineItem(id) {
+            const state = getPipelineState();
+            const wasUndone = !state.done[id];
+            state.done[id] = !state.done[id];
+            savePipelineState(state);
+            loadCeoPipeline();
+
+            // When checking "Process Newsletter" — archive all newsletter emails
+            if (id === 'process-newsletter' && wasUndone) {
+                archiveAllNewsletters();
+            }
+
+            // Auto-advance to next unchecked step
+            if (wasUndone) {
+                advanceToNextStep();
+            }
+        }
+
+        function archiveAllNewsletters() {
+            const senderCards = document.querySelectorAll('[id^="news-sender-"]');
+            senderCards.forEach(card => {
+                const idx = parseInt(card.id.replace('news-sender-', ''));
+                if (!newsProcessed.has(idx)) {
+                    newsToggleSender(idx);
+                }
+            });
+        }
+
+        // ── Stepper Navigation ──
+        let activeStepId = null;
+
+        function activateStep(stepId) {
+            activeStepId = stepId;
+            // Hide all step panels
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            // Show target panel
+            const panel = document.getElementById('step-panel-' + stepId);
+            if (panel) panel.classList.add('active');
+            // Highlight active funnel stage
+            document.querySelectorAll('.funnel-stage').forEach(s => s.classList.remove('step-active'));
+            const stageEl = document.querySelector(`[data-step-id="${stepId}"]`);
+            if (stageEl) stageEl.classList.add('step-active');
+            // Save to localStorage
+            localStorage.setItem('dwe-ceo-active-step', stepId);
+        }
+
+        function advanceToNextStep() {
+            const state = getPipelineState();
+            const next = CEO_CHECKABLE.find(c => !state.done[c.id]);
+            if (next) {
+                activateStep(next.id);
+            }
+        }
+
+        async function loadCeoPipeline() {
+            const state = getPipelineState();
+            const overdue = isPipelineOverdue();
+            const el = document.getElementById('ceo-pipeline-list');
+
+            // Fetch real funnel data
+            let stages = {}, conversions = {};
+            try {
+                const res = await fetch('/mc/prospects/stats?pipeline=dwe-marketing');
+                const data = await res.json();
+                if (data.ok) {
+                    stages = data.stages || {};
+                    conversions = data.conversions || {};
+                }
+            } catch(e) { /* use empty defaults */ }
+
+            // Build checkable lookup by position
+            const checkableByPos = {};
+            CEO_CHECKABLE.forEach(c => { checkableByPos[c.position] = c; });
+
+            let html = '';
+            funnelStageOrder.forEach((stage, i) => {
+                const count = stages[stage] || 0;
+                const cls = funnelStageClasses[stage] || 'new';
+                const checkable = checkableByPos[i];
+
+                if (checkable) {
+                    const isDone = !!state.done[checkable.id];
+                    const checkCls = isDone ? 'checked' : '';
+                    const isActive = activeStepId === checkable.id;
+                    const linkHtml = checkable.url ? `<a href="${checkable.url}" target="_blank" class="f-link" onclick="event.stopPropagation()">Open →</a>` : '';
+                    // Extra buttons under specific stages
+                    let extraHtml = '';
+                    if (checkable.id === 'process-newsletter') {
+                        extraHtml = `<div style="display:flex;gap:0.3rem;margin-top:0.25rem;">
+                            <button onclick="event.stopPropagation();newsRunDigest()" style="background:rgba(0,200,255,0.15);border:1px solid rgba(0,200,255,0.25);color:#00c8ff;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">Run</button>
+                            <button onclick="event.stopPropagation();newsRunDigest(true)" style="background:rgba(0,136,204,0.15);border:1px solid rgba(0,136,204,0.25);color:#00aaee;border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">+ TG</button>
+                        </div>`;
+                    }
+                    html += `<div class="funnel-stage stage-${cls} ${isActive ? 'step-active' : ''}" data-step-id="${checkable.id}" onclick="activateStep('${checkable.id}')">
+                        <div class="f-check ${checkCls}" onclick="event.stopPropagation();togglePipelineItem('${checkable.id}')">${isDone ? '✓' : ''}</div>
+                        <div class="f-name">${checkable.label}</div>
+                        ${linkHtml}
+                        ${extraHtml}
+                        <div class="f-bar"></div>
+                    </div>`;
+                } else {
+                    html += `<div class="funnel-stage stage-${cls}">
+                        <div class="f-count">${count}</div>
+                        <div class="f-name">${stage}</div>
+                        <div class="f-bar"></div>
+                    </div>`;
+                }
+
+                if (i < funnelStageOrder.length - 1) {
+                    html += `<div class="funnel-arrow">→</div>`;
+                }
+            });
+            el.innerHTML = html;
+
+            // Progress text + status pill
+            const doneCount = CEO_CHECKABLE.filter(c => state.done[c.id]).length;
+            const total = CEO_CHECKABLE.length;
+            document.getElementById('pipeline-progress').textContent = `${doneCount}/${total} done`;
+
+            const pill = document.getElementById('pipeline-status-pill');
+            if (doneCount === total) {
+                pill.textContent = 'Complete';
+                pill.style.background = 'rgba(0,255,136,0.12)'; pill.style.borderColor = 'rgba(0,255,136,0.25)'; pill.style.color = '#00ff88';
+            } else if (doneCount > 0) {
+                pill.textContent = 'In Progress';
+                pill.style.background = 'rgba(255,170,0,0.12)'; pill.style.borderColor = 'rgba(255,170,0,0.25)'; pill.style.color = '#ffaa00';
+            } else if (overdue) {
+                pill.textContent = 'Not Started';
+                pill.style.background = 'rgba(255,60,60,0.12)'; pill.style.borderColor = 'rgba(255,60,60,0.25)'; pill.style.color = '#ff6b6b';
+            } else {
+                pill.textContent = 'Pending';
+                pill.style.background = 'rgba(255,170,0,0.12)'; pill.style.borderColor = 'rgba(255,170,0,0.25)'; pill.style.color = '#ffaa00';
+            }
+
+            // Activate first unchecked step on initial load (or restore saved)
+            if (!activeStepId) {
+                const saved = localStorage.getItem('dwe-ceo-active-step');
+                if (saved && document.getElementById('step-panel-' + saved)) {
+                    activateStep(saved);
+                } else {
+                    advanceToNextStep();
+                }
+            }
+        }
+
+        // ── Communications Center ──
+        let commsMessages = [];
+        let commsDismissed = new Set(JSON.parse(localStorage.getItem('commsDismissed') || '[]'));
+
+        async function loadMessages(forceRefresh = false) {
+            const endpoint = forceRefresh ? '/mc/messages/refresh' : '/mc/messages';
+            try {
+                const res = await fetch(endpoint);
+                const data = await res.json();
+                if (!data.ok) {
+                    document.getElementById('comms-list').innerHTML = '<div class="comms-empty">Failed to load messages</div>';
+                    return;
+                }
+                commsMessages = data.messages || [];
+                // Keep dismissed IDs for 24 hours to prevent race conditions with archive
+                const now = Date.now();
+                const dismissTimes = JSON.parse(localStorage.getItem('commsDismissedTimes') || '{}');
+                for (const did of commsDismissed) {
+                    if (!dismissTimes[did]) dismissTimes[did] = now;
+                    // Only clean up IDs older than 24 hours AND not in current list
+                    const currentIds = new Set(commsMessages.map(m => m.id));
+                    if (!currentIds.has(did) && (now - dismissTimes[did]) > 86400000) {
+                        commsDismissed.delete(did);
+                        delete dismissTimes[did];
+                    }
+                }
+                localStorage.setItem('commsDismissed', JSON.stringify([...commsDismissed]));
+                localStorage.setItem('commsDismissedTimes', JSON.stringify(dismissTimes));
+                const screenedOut = data.screened_out || 0;
+                const total = data.total_raw || 0;
+                const channels = data.channels || {};
+                const cacheInfo = data.cached ? ` (cached ${data.cache_age_min}m ago)` : '';
+
+                // Stats
+                const statsEl = document.getElementById('comms-stats');
+                const msgCount = commsMessages.filter(m => !commsDismissed.has(m.id)).length;
+                statsEl.textContent = `${msgCount} need attention | ${screenedOut} filtered${cacheInfo}`;
+
+                renderCommsMessages();
+            } catch (e) {
+                document.getElementById('comms-list').innerHTML = '<div class="comms-empty">Failed to load messages</div>';
+            }
+        }
+
+        function renderCommsMessages() {
+            const list = document.getElementById('comms-list');
+            const visible = commsMessages.filter(m => !commsDismissed.has(m.id));
+
+            // Always render all 4 columns, even if empty
+
+            const channels = [
+                { key: 'gmail', icon: '📧', label: 'Email' },
+                { key: 'imessage', icon: '📱', label: 'iMessage' },
+                { key: 'telegram', icon: '💬', label: 'Telegram' },
+                { key: 'gvoice', icon: '📞', label: 'Google Voice' }
+            ];
+
+            function renderMsg(m) {
+                const impClass = m.importance ? 'imp-' + m.importance : '';
+                const oppClass = m.is_opportunity ? 'opp-flag' : '';
+                const timeAgo = commsTimeAgo(m.timestamp);
+                let dateTime = '';
+                try {
+                    const d = new Date(m.timestamp);
+                    dateTime = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                } catch(e) { dateTime = timeAgo; }
+                const subject = m.subject ? `<div class="comms-subject">${escH(m.subject)}</div>` : '';
+                const reason = m.ai_reason ? `<div class="comms-reason">${escH(m.ai_reason)}</div>` : '';
+                return `<div class="comms-msg ${oppClass || impClass}">
+                    <div class="comms-body">
+                        <div class="comms-from">${escH(m.from)}</div>
+                        ${subject}
+                        <div class="comms-preview">${escH(m.preview)}</div>
+                        ${reason}
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.2rem;flex-shrink:0;">
+                        <div class="comms-time">${dateTime}</div>
+                        <div class="comms-actions">
+                            <button onclick="commsDismiss('${m.id}')" title="Mark as handled">✓</button>
+                            ${m.url ? `<button onclick="window.open('${escH(m.url)}','_blank')" title="Open/Reply">↩</button>` : ''}
+                            ${m.channel === 'gmail' ? `<button class="btn-interest" onclick="commsInterest('${m.id}')" title="Label as Interest">⭐</button>` : ''}
+                            ${m.channel === 'telegram' ? `<button class="btn-opp" onclick="commsOpportunity('${m.id}')" title="Add to Opportunity Funnel">🚀</button>` : ''}
+                            <button class="btn-task" onclick="commsCreateTask('${m.id}')" title="Create Notion task">📋</button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            list.innerHTML = channels.map(ch => {
+                const msgs = visible.filter(m => m.channel === ch.key)
+                    .sort((a, b) => {
+                        const impOrder = { high: 0, medium: 1, low: 2 };
+                        const ai = impOrder[a.importance] ?? 1;
+                        const bi = impOrder[b.importance] ?? 1;
+                        if (ai !== bi) return ai - bi;
+                        return (b.timestamp || '').localeCompare(a.timestamp || '');
+                    });
+                const msgsHtml = msgs.length > 0
+                    ? msgs.map(renderMsg).join('')
+                    : `<div class="comms-col-empty">${ch.key === 'gvoice' ? 'Coming soon' : 'No messages'}</div>`;
+                return `<div class="comms-tile ch-${ch.key}">
+                    <div class="comms-tile-header">
+                        <span class="tile-icon">${ch.icon}</span>
+                        <span class="tile-label">${ch.label}</span>
+                        <span class="tile-count">${msgs.length}</span>
+                    </div>
+                    <div class="comms-tile-msgs">${msgsHtml}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function commsDismiss(id) {
+            const msg = commsMessages.find(m => m.id === id);
+            commsDismissed.add(id);
+            localStorage.setItem('commsDismissed', JSON.stringify([...commsDismissed]));
+            const dismissTimes = JSON.parse(localStorage.getItem('commsDismissedTimes') || '{}');
+            dismissTimes[id] = Date.now();
+            localStorage.setItem('commsDismissedTimes', JSON.stringify(dismissTimes));
+            renderCommsMessages();
+            // Update stats count
+            const statsEl = document.getElementById('comms-stats');
+            const visible = commsMessages.filter(m => !commsDismissed.has(m.id)).length;
+            statsEl.textContent = statsEl.textContent.replace(/^\d+/, visible);
+            // Archive Gmail messages and invalidate server cache
+            if (msg && msg.channel === 'gmail' && msg.id.startsWith('gmail-')) {
+                const gmailSeqId = msg.id.replace('gmail-', '');
+                fetch('/mc/messages/archive?id=' + encodeURIComponent(gmailSeqId))
+                    .then(() => fetch('/mc/messages/invalidate'))
+                    .catch(() => {});
+            }
+        }
+
+        function commsInterest(id) {
+            const msg = commsMessages.find(m => m.id === id);
+            if (!msg || !msg.id.startsWith('gmail-')) return;
+            const gmailId = msg.id.replace('gmail-', '');
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '…';
+            fetch('/mc/messages/label?id=' + encodeURIComponent(gmailId) + '&label=Interest')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) {
+                        btn.textContent = '✅';
+                        btn.title = 'Labeled as Interest';
+                    } else {
+                        btn.textContent = '⭐';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    btn.textContent = '⭐';
+                    btn.disabled = false;
+                });
+        }
+
+        async function commsOpportunity(id) {
+            const msg = commsMessages.find(m => m.id === id);
+            if (!msg) return;
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '…';
+            // Extract any URLs from the message preview
+            const urlMatch = (msg.preview || '').match(/https?:\/\/[^\s]+/g);
+            const sourceUrl = msg.url || (urlMatch ? urlMatch[0] : '');
+            try {
+                const res = await fetch('/mc/prospects/add?pipeline=dwe-marketing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        business_name: msg.from || 'Telegram Lead',
+                        url: sourceUrl,
+                        source: `Telegram — ${msg.from}`,
+                        notes: msg.preview || '',
+                        industry: '',
+                        location: '',
+                        contact_name: msg.from || ''
+                    })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    btn.textContent = '✅';
+                    btn.title = `Added as ${data.lead_id}`;
+                } else {
+                    btn.textContent = '🚀';
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                btn.textContent = '🚀';
+                btn.disabled = false;
+            }
+        }
+
+        async function commsCreateTask(id) {
+            const msg = commsMessages.find(m => m.id === id);
+            if (!msg) return;
+            const name = msg.subject || msg.preview.substring(0, 80);
+            try {
+                const res = await fetch('/mc/notion-tasks/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: `[${msg.channel}] ${name}`, priority: msg.importance === 'high' ? 'High' : 'Medium', role: 'CEO', url: msg.url || '' })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    commsDismiss(id);
+                }
+            } catch (e) {
+                console.error('Task creation failed:', e);
+            }
+        }
+
+        function commsTimeAgo(ts) {
+            if (!ts) return '';
+            const diff = Date.now() - new Date(ts).getTime();
+            const mins = Math.round(diff / 60000);
+            if (mins < 60) return mins + 'm';
+            const hrs = Math.round(mins / 60);
+            if (hrs < 24) return hrs + 'h';
+            return Math.round(hrs / 24) + 'd';
+        }
+
+        function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function decodeHtml(s) { var txt = document.createElement('textarea'); txt.innerHTML = s || ''; return txt.value; }
+
+        // ── Interest Feed (Gmail messages as RSS) ──
+        let newsData = null;
+
+        async function newsRunDigest(telegram = false) {
+            const status = document.getElementById('news-status');
+            const cacheBadge = document.getElementById('news-cache-badge');
+            status.style.display = 'block';
+            status.textContent = '📡 Loading emails...';
+            status.style.borderColor = 'rgba(0,200,255,0.2)';
+            status.style.background = 'rgba(0,200,255,0.08)';
+            try {
+                // Pull only Interest-labeled Gmail emails
+                const resp = await fetch('/mc/gmail-interest');
+                const data = await resp.json();
+                if (data.error) {
+                    status.textContent = '❌ ' + data.error;
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                    return;
+                }
+                // Use pre-grouped sender data with AI summaries
+                var senderGroups = data.senders || [];
+                newsData = {
+                    senderGroups: senderGroups,
+                    total: data.total || 0
+                };
+                status.style.display = 'none';
+                newsRender();
+                if (cacheBadge) {
+                    cacheBadge.textContent = data.cached ? `Cached ${data.cache_age_min || 0}m ago` : 'Live';
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+        }
+
+        function newsParseAI(raw) {
+            var parts = (raw || '').split('|');
+            if (parts.length >= 3) {
+                return { category: parts[0].trim(), verdict: parts[1].trim(), text: parts.slice(2).join('|').trim() };
+            } else if (parts.length === 2) {
+                return { category: parts[0].trim(), verdict: '', text: parts[1].trim() };
+            }
+            return { category: '', verdict: '', text: raw || '' };
+        }
+
+        function newsCategoryClass(cat) {
+            var c = (cat || '').toLowerCase();
+            if (c.indexOf('knowledge') >= 0 || c.indexOf('education') >= 0) return 'knowledge';
+            if (c.indexOf('sales') >= 0) return 'sales';
+            if (c.indexOf('news') >= 0 || c.indexOf('update') >= 0) return 'news';
+            if (c.indexOf('community') >= 0 || c.indexOf('social') >= 0) return 'community';
+            if (c.indexOf('transactional') >= 0) return 'transactional';
+            return 'news';
+        }
+
+        function newsRender() {
+            if (!newsData) return;
+            var groups = newsData.senderGroups;
+            var total = newsData.total;
+            var container = document.getElementById('news-senders');
+            if (!groups || groups.length === 0 || total === 0) {
+                container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:1.5rem;font-size:0.85rem;">All caught up — nothing new.</div>';
+                return;
+            }
+
+            var html = '';
+            groups.forEach(function(group) {
+                var senderName = group.name || 'Unknown';
+                var aiRaw = group.summary || '';
+                var ai = newsParseAI(aiRaw);
+                var emails = group.emails || [];
+                var catClass = newsCategoryClass(ai.category);
+                var isRead = (ai.verdict || '').toLowerCase().indexOf('worth') >= 0;
+
+                html += '<div class="rss-sender-group">';
+
+                // Sender header
+                html += '<div class="rss-sender-header">';
+                html += '<span class="rss-sender-name">' + escH(senderName) + '</span>';
+                html += '<span class="rss-sender-count">' + emails.length + ' email' + (emails.length > 1 ? 's' : '') + '</span>';
+                html += '</div>';
+
+                // Two-column body
+                html += '<div class="rss-sender-body">';
+
+                // Left column — AI summary
+                html += '<div class="rss-sender-ai">';
+                if (ai.category) {
+                    html += '<div class="rss-sender-ai-category ' + catClass + '">' + escH(ai.category) + '</div>';
+                }
+                if (ai.verdict) {
+                    var verdictClass = isRead ? 'read' : 'skip';
+                    html += '<div class="rss-sender-ai-verdict ' + verdictClass + '">' + escH(ai.verdict) + '</div>';
+                }
+                if (ai.text) {
+                    html += '<div class="rss-sender-ai-text">' + escH(ai.text) + '</div>';
+                }
+                if (!aiRaw) {
+                    html += '<div class="rss-sender-ai-text" style="color:rgba(255,255,255,0.25);">Analyzing...</div>';
+                }
+                html += '</div>';
+
+                // Right column — email rows
+                html += '<div class="rss-sender-emails">';
+                emails.forEach(function(nl) {
+                    var msgId = nl.id || '';
+                    var gmailUrl = msgId ? 'https://mail.google.com/mail/u/0/#inbox/' + msgId : '';
+                    var rawSummary = decodeHtml(nl.preview || '').replace(/\n+/g, ' ').trim();
+                    var brief = rawSummary.length > 200 ? rawSummary.substring(0, 200) + '...' : rawSummary;
+                    var impColor = nl.unread ? '#ff6b6b' : '#ffaa00';
+                    var borderColor = nl.unread ? 'rgba(255,60,60,0.5)' : 'rgba(0,200,255,0.3)';
+
+                    html += '<div class="rss-item" style="border-left-color:' + borderColor + '" data-url="' + escH(gmailUrl) + '" onclick="if(this.dataset.url)window.open(this.dataset.url,\'_blank\')">';
+                    html += '<div class="rss-item-body">';
+                    html += '<div class="rss-item-title"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + impColor + ';margin-right:0.5rem;vertical-align:middle;"></span>' + escH(decodeHtml(nl.subject || '')) + '</div>';
+                    html += '<div class="rss-item-meta">' + escH(nl.date || '') + '</div>';
+                    html += '<div class="rss-item-summary">' + escH(brief) + '</div>';
+                    // Extracted links
+                    var links = nl.links || [];
+                    if (links.length > 0) {
+                        html += '<div class="rss-links">';
+                        var iconMap = {video:'▶', community:'👥', code:'⌨', meeting:'📅', document:'📄', resource:'🔗', link:'↗'};
+                        var labelMap = {video:'Video', community:'Skool', code:'Code', meeting:'Meeting', document:'Doc', resource:'Resource', link:'Link'};
+                        links.forEach(function(lk) {
+                            var icon = iconMap[lk.type] || '↗';
+                            var label = labelMap[lk.type] || 'Link';
+                            // Shorten display URL
+                            var shortUrl = (lk.url || '').replace(/^https?:\/\/(www\.)?/, '').split('?')[0].split('#')[0];
+                            if (shortUrl.length > 40) shortUrl = shortUrl.substring(0, 37) + '...';
+                            html += '<a class="rss-link-badge ' + (lk.type || 'link') + '" href="' + escH(lk.url) + '" target="_blank" onclick="event.stopPropagation()" title="' + escH(lk.url) + '">' + icon + ' ' + escH(shortUrl || label) + '</a>';
+                        });
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                    html += '<div class="rss-item-actions">';
+                    html += '<button data-subj="' + escH(nl.subject || '') + '" data-sender="' + escH(senderName) + '" data-gurl="' + escH(gmailUrl) + '" onclick="event.stopPropagation();newsAddTask(this.dataset.subj,this.dataset.sender,this,this.dataset.gurl)" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.6rem;font-family:Inter,sans-serif;">+ Task</button>';
+                    html += '<button data-mid="' + escH(msgId) + '" onclick="event.stopPropagation();newsDismissItem(this,this.dataset.mid)" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);border-radius:0.3rem;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.6rem;font-family:Inter,sans-serif;">\u2713</button>';
+                    html += '</div></div>';
+                });
+                html += '</div>'; // end rss-sender-emails
+                html += '</div>'; // end rss-sender-body
+                html += '</div>'; // end rss-sender-group
+            });
+
+            container.innerHTML = '<div class="rss-feed">' + html + '</div>';
+            var footer = document.getElementById('news-footer');
+            footer.style.display = 'block';
+            footer.textContent = total + ' emails from ' + groups.length + ' senders (last 24h)';
+        }
+
+        function newsDismissItem(btn, msgId) {
+            const item = btn.closest('.rss-item');
+            if (item) {
+                item.style.opacity = '0.3';
+                item.style.borderLeftColor = 'rgba(0,255,136,0.4)';
+                btn.textContent = '✓';
+                btn.style.color = '#00ff88';
+            }
+            if (msgId) {
+                fetch('/mc/gmail-archive?id=' + encodeURIComponent(msgId)).catch(() => {});
+            }
+        }
+
+        // TTS — read newsletter summary aloud
+        let currentTTSBtn = null;
+        function newsTTS(btn) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                if (currentTTSBtn) currentTTSBtn.textContent = '🔊';
+                if (currentTTSBtn === btn) { currentTTSBtn = null; return; }
+            }
+            const text = btn.dataset.text;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.1;
+            utter.onend = () => { btn.textContent = '🔊'; currentTTSBtn = null; };
+            btn.textContent = '⏹';
+            currentTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        // TTS for Cross-Sender Intelligence
+        function newsTTSSynergy() {
+            const btn = document.getElementById('synergy-tts-btn');
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                btn.textContent = '🔊 Listen';
+                if (currentTTSBtn === btn) { currentTTSBtn = null; return; }
+            }
+            const el = document.getElementById('news-synergy-content');
+            if (!el) return;
+            const text = el.innerText;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            utter.onend = () => { btn.textContent = '🔊 Listen'; currentTTSBtn = null; };
+            btn.textContent = '⏹ Stop';
+            currentTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        // Add newsletter item as Notion task
+        async function newsAddTask(subject, senderName, btn, sourceUrl) {
+            const orig = btn.textContent;
+            btn.textContent = '...';
+            btn.disabled = true;
+            try {
+                const taskName = `Review: ${subject} (${senderName})`;
+                const payload = { name: taskName, priority: 'Medium', role: 'CEO' };
+                if (sourceUrl) payload.url = sourceUrl;
+                const res = await fetch('/mc/notion-tasks/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.ok || data.id) {
+                    btn.textContent = '✓';
+                    btn.style.color = '#00ff88';
+                    btn.style.borderColor = 'rgba(0,255,136,0.3)';
+                } else {
+                    btn.textContent = '✗';
+                    btn.style.color = '#ff6b6b';
+                    setTimeout(() => { btn.textContent = orig; btn.style.color = '#ffaa00'; }, 2000);
+                }
+            } catch(e) {
+                btn.textContent = '✗';
+                setTimeout(() => { btn.textContent = orig; }, 2000);
+            }
+            btn.disabled = false;
+        }
+
+        function escH(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+
+
+
+        // ── Skool Digest ──
+        let skoolData = null;
+        const skoolProcessed = new Set();
+        let skoolConfigData = { communities: [] };
+        let currentSkoolTTSBtn = null;
+
+        function toggleSkoolPanel() {
+            const panel = document.getElementById('skool-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                skoolLoadConfig();
+                if (skoolData) skoolRender();
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function styleHypeCheck(summary) {
+            summary = summary.replace(/HYPE CHECK: 🟢 Solid/g, '<span style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:#00ff88;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟢 SOLID</span>');
+            summary = summary.replace(/HYPE CHECK: 🟡 Mixed/g, '<span style="background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟡 MIXED</span>');
+            summary = summary.replace(/HYPE CHECK: 🔴 Hype/g, '<span style="background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);color:#ff6b6b;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🔴 HYPE</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🟢[^\]]*\]?/g, '<span style="background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);color:#00ff88;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟢 SOLID</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🟡[^\]]*\]?/g, '<span style="background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🟡 MIXED</span>');
+            summary = summary.replace(/HYPE CHECK:\s*\[?🔴[^\]]*\]?/g, '<span style="background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);color:#ff6b6b;padding:0.15rem 0.5rem;border-radius:0.3rem;font-weight:700;font-size:0.75rem;">🔴 HYPE</span>');
+            return summary;
+        }
+
+        async function skoolRunDigest(telegram = false) {
+            const btn = document.getElementById(telegram ? 'skool-tg-btn' : 'skool-email-btn');
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Scanning...';
+            const status = document.getElementById('skool-status');
+            status.style.display = 'block';
+            status.textContent = '🎓 Scanning Skool emails + pulling video transcripts... this may take 2-5 minutes';
+            status.style.borderColor = 'rgba(139,92,246,0.2)';
+            status.style.background = 'rgba(139,92,246,0.08)';
+            try {
+                const url = telegram ? '/mc/skool-digest?telegram=1' : '/mc/skool-digest';
+                const resp = await fetch(url);
+                skoolData = await resp.json();
+                if (skoolData.error) {
+                    status.textContent = '❌ ' + skoolData.error;
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                } else {
+                    status.style.display = 'none';
+                    skoolRender();
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+
+        async function skoolDirectScrape(unreadsOnly = false) {
+            const btnId = unreadsOnly ? 'skool-unreads-btn' : 'skool-direct-btn';
+            const btn = document.getElementById(btnId);
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = unreadsOnly ? 'Fetching...' : 'Scraping...';
+            const status = document.getElementById('skool-status');
+            status.style.display = 'block';
+            const label = unreadsOnly ? 'unread posts (API)' : 'all posts (API)';
+            status.textContent = `🎓 Fetching ${label} + pulling transcripts... this may take 1-5 minutes`;
+            status.style.borderColor = 'rgba(139,92,246,0.2)';
+            status.style.background = 'rgba(139,92,246,0.08)';
+            try {
+                let url = '/mc/skool-scrape?method=api';
+                if (unreadsOnly) url += '&unreads=1';
+                const resp = await fetch(url);
+                skoolData = await resp.json();
+                if (skoolData.error) {
+                    status.textContent = '❌ ' + skoolData.error;
+                    if (skoolData.session_ok === false) {
+                        status.textContent += ' — Set SKOOL_AUTH_TOKEN in .env or click Re-auth below.';
+                    }
+                    status.style.borderColor = 'rgba(255,50,50,0.3)';
+                    status.style.background = 'rgba(255,50,50,0.08)';
+                } else {
+                    status.style.display = 'none';
+                    skoolRender();
+                }
+            } catch (e) {
+                status.textContent = '❌ Failed: ' + e.message;
+                status.style.borderColor = 'rgba(255,50,50,0.3)';
+                status.style.background = 'rgba(255,50,50,0.08)';
+            }
+            btn.disabled = false;
+            btn.textContent = origText;
+        }
+
+        function skoolRender() {
+            if (!skoolData) return;
+            const { themes, classrooms, videos, total, theme_count, video_count } = skoolData;
+            const themesEl = document.getElementById('skool-themes');
+            if (themes) {
+                themesEl.style.display = 'block';
+                let html = themes.replace(/🎓 THEME DETECTED: ([^\n]*)/g, '<div style="color:#b480ff;font-weight:700;font-size:0.9rem;margin-top:0.5rem;">🎓 THEME DETECTED: $1</div>');
+                html = html.replace(/Classrooms: ([^\n]*)/g, '<div style="color:rgba(255,255,255,0.5);font-size:0.75rem;font-style:italic;">Classrooms: $1</div>');
+                html = html.replace(/Signal: ([^\n]*)/g, '<div style="color:rgba(255,255,255,0.8);font-size:0.8rem;margin-bottom:0.4rem;">$1</div>');
+                html = html.replace(/📈 LEARNING PULSE:/g, '<div style="color:#00c8ff;font-weight:700;font-size:0.9rem;margin-top:0.75rem;">📈 LEARNING PULSE:</div>');
+                document.getElementById('skool-themes-content').innerHTML = html;
+            } else { themesEl.style.display = 'none'; }
+            const videosEl = document.getElementById('skool-videos');
+            if (videos && videos.length > 0) {
+                videosEl.style.display = 'block';
+                document.getElementById('skool-video-count').textContent = videos.length;
+                const vcontent = document.getElementById('skool-videos-content');
+                vcontent.innerHTML = videos.map(v => {
+                    let summary = v.summary || '';
+                    summary = styleHypeCheck(summary);
+                    summary = summary.replace(/GOLDEN NUGGETS:/g, '<span style="color:#ff9500;font-weight:600;">GOLDEN NUGGETS:</span>');
+                    summary = summary.replace(/TOOLS\/TECH MENTIONED:/g, '<span style="color:#00c8ff;font-weight:600;">TOOLS/TECH MENTIONED:</span>');
+                    summary = summary.replace(/DWE ACTION ITEMS:/g, '<span style="color:#00ff88;font-weight:600;">DWE ACTION ITEMS:</span>');
+                    summary = summary.replace(/\n/g, '<br>');
+                    summary = summary.replace(/• /g, '&nbsp;&nbsp;• ');
+                    const rawText = (v.summary || '').replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                    return `<div style="border-left:3px solid rgba(255,150,0,0.3);padding:0.6rem 0.8rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.4rem;">
+                            <div>
+                                <a href="${escH(v.url)}" target="_blank" style="color:#fff;font-weight:600;font-size:0.85rem;text-decoration:none;">🎬 ${escH(v.title)}</a>
+                                <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;margin-top:0.15rem;">📍 ${escH(v.classroom)} ${v.has_transcript ? '✅ Transcript' : '⚠️ No transcript'}</div>
+                            </div>
+                            <div style="display:flex;gap:0.35rem;align-items:center;flex-shrink:0;margin-left:0.5rem;">
+                                <button onclick="skoolTTS(this)" data-text="${rawText}" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.15rem 0.35rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Listen">🔊</button>
+                                <button onclick="skoolAddTask('${escH(v.title).replace(/'/g,"\\'")}','Skool Video',this,'${escH(v.url)}')" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.15rem 0.35rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Add to Task">+ Task</button>
+                            </div>
+                        </div>
+                        <div style="color:rgba(255,255,255,0.75);font-size:0.78rem;line-height:1.6;">${summary}</div>
+                    </div>`;
+                }).join('');
+            } else { videosEl.style.display = 'none'; }
+            const container = document.getElementById('skool-classrooms');
+            if (!classrooms || classrooms.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);padding:1.5rem;font-size:0.85rem;">✅ No unread Skool content.</div>';
+                return;
+            }
+            container.innerHTML = classrooms.map((cr, cIdx) => {
+                const items = cr.emails.map(em => {
+                    let summary = em.summary || '';
+                    summary = styleHypeCheck(summary);
+                    summary = summary.replace(/KEY POINTS:/g, '<span style="color:#b480ff;font-weight:600;">KEY POINTS:</span>');
+                    summary = summary.replace(/LINKS:/g, '<span style="color:#00ff88;font-weight:600;">LINKS:</span>');
+                    summary = summary.replace(/RELEVANCE:/g, '<span style="color:#ff9500;font-weight:600;">RELEVANCE:</span>');
+                    summary = summary.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:#b480ff;text-decoration:underline;">$1</a>');
+                    summary = summary.replace(/\n/g, '<br>');
+                    summary = summary.replace(/• /g, '&nbsp;&nbsp;• ');
+                    const rawText = (em.summary || '').replace(/\n/g, ' ').replace(/"/g, '&quot;');
+                    const ytLinks = (em.youtube_urls || []).map(u =>
+                        `<a href="${escH(u)}" target="_blank" style="color:#ff9500;font-size:0.7rem;text-decoration:none;">🎬 Video</a>`
+                    ).join(' ');
+                    return `<div style="border-left:3px solid rgba(139,92,246,0.3);padding:0.6rem 0.8rem;margin:0.4rem 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.4rem;">
+                            <div style="color:#fff;font-weight:600;font-size:0.85rem;">📧 ${escH(em.subject)} ${ytLinks}</div>
+                            <div style="display:flex;gap:0.35rem;align-items:center;flex-shrink:0;margin-left:0.5rem;">
+                                <button onclick="skoolTTS(this)" data-text="${rawText}" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.15rem 0.35rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Listen">🔊</button>
+                                <button onclick="skoolAddTask('${escH(em.subject).replace(/'/g,"\\'")}','Skool: ${escH(cr.name).replace(/'/g,"\\'")}',this,'${escH(em.postUrl || (em.msg_id ? "https://mail.google.com/mail/u/0/#inbox/" + em.msg_id : ""))}')" style="background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:#ffaa00;border-radius:0.3rem;padding:0.15rem 0.35rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;transition:all 0.2s;" title="Add to Task">+ Task</button>
+                                <span style="color:rgba(255,255,255,0.35);font-size:0.65rem;white-space:nowrap;">${escH(em.date)}</span>
+                            </div>
+                        </div>
+                        <div style="color:rgba(255,255,255,0.75);font-size:0.78rem;line-height:1.6;">${summary}</div>
+                    </div>`;
+                }).join('');
+                const msgIds = cr.emails.map(em => em.msg_id || '').filter(Boolean);
+                return `<div id="skool-classroom-${cIdx}" data-msgids="${msgIds.join(',')}" style="background:rgba(20,20,40,0.6);border:1px solid rgba(139,92,246,0.12);border-radius:0.75rem;padding:1rem;transition:all 0.3s;">
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                        <div onclick="skoolToggleClassroom(${cIdx})" style="width:20px;height:20px;border:2px solid rgba(139,92,246,0.4);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.65rem;transition:all 0.2s;flex-shrink:0;" id="skool-check-${cIdx}" title="Archive all from this classroom">
+                        </div>
+                        <span style="font-size:1rem;">📚</span>
+                        <h3 style="color:#fff;font-size:0.9rem;margin:0;">${escH(cr.name)}</h3>
+                        <span style="background:rgba(139,92,246,0.15);color:#b480ff;border-radius:1rem;padding:0.1rem 0.5rem;font-size:0.65rem;font-weight:600;">${cr.emails.length} new</span>
+                    </div>
+                    ${items}
+                </div>`;
+            }).join('');
+            const footer = document.getElementById('skool-footer');
+            footer.style.display = 'block';
+            let footerText = `📊 ${total} Skool posts from ${classrooms.length} classrooms`;
+            if (video_count > 0) footerText += ` | 🎬 ${video_count} video${video_count > 1 ? 's' : ''} processed`;
+            if (theme_count > 0) footerText += ` | 🎓 ${theme_count} theme${theme_count > 1 ? 's' : ''} detected`;
+            footer.textContent = footerText;
+        }
+
+        function skoolToggleClassroom(idx) {
+            const card = document.getElementById('skool-classroom-' + idx);
+            const check = document.getElementById('skool-check-' + idx);
+            if (skoolProcessed.has(idx)) {
+                skoolProcessed.delete(idx);
+                check.innerHTML = '';
+                check.style.background = 'transparent';
+                check.style.borderColor = 'rgba(139,92,246,0.4)';
+                card.style.opacity = '1';
+                card.style.borderColor = 'rgba(139,92,246,0.12)';
+            } else {
+                skoolProcessed.add(idx);
+                check.innerHTML = '✓';
+                check.style.background = 'rgba(0,255,136,0.15)';
+                check.style.borderColor = 'rgba(0,255,136,0.5)';
+                check.style.color = '#00ff88';
+                card.style.opacity = '0.5';
+                card.style.borderColor = 'rgba(0,255,136,0.15)';
+                const msgIds = (card.dataset.msgids || '').split(',').filter(Boolean);
+                msgIds.forEach(id => {
+                    fetch('/mc/gmail-archive?id=' + encodeURIComponent(id)).catch(() => {});
+                });
+            }
+        }
+
+        function skoolTTS(btn) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                if (currentSkoolTTSBtn) currentSkoolTTSBtn.textContent = '🔊';
+                if (currentSkoolTTSBtn === btn) { currentSkoolTTSBtn = null; return; }
+            }
+            const text = btn.dataset.text;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            utter.onend = () => { btn.textContent = '🔊'; currentSkoolTTSBtn = null; };
+            btn.textContent = '⏹';
+            currentSkoolTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        function skoolTTSThemes() {
+            const btn = document.getElementById('skool-themes-tts-btn');
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+                btn.textContent = '🔊 Listen';
+                if (currentSkoolTTSBtn === btn) { currentSkoolTTSBtn = null; return; }
+            }
+            const el = document.getElementById('skool-themes-content');
+            if (!el) return;
+            const text = el.innerText;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            utter.onend = () => { btn.textContent = '🔊 Listen'; currentSkoolTTSBtn = null; };
+            btn.textContent = '⏹ Stop';
+            currentSkoolTTSBtn = btn;
+            speechSynthesis.speak(utter);
+        }
+
+        async function skoolAddTask(subject, source, btn, sourceUrl) {
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const taskName = `Review: ${subject} (${source})`;
+                const payload = { name: taskName, priority: 'Medium', role: 'CEO' };
+                if (sourceUrl) payload.url = sourceUrl;
+                const resp = await fetch('/mc/notion-tasks/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                btn.textContent = (data.ok || data.id) ? '✅' : '❌';
+            } catch (e) {
+                btn.textContent = '❌';
+            }
+        }
+
+        async function skoolLoadConfig() {
+            try {
+                const resp = await fetch('/mc/skool-config');
+                skoolConfigData = await resp.json();
+                skoolRenderConfig();
+                const authResp = await fetch('/mc/skool-auth');
+                const authData = await authResp.json();
+                const statusEl = document.getElementById('skool-session-status');
+                if (authData.session_ok) {
+                    statusEl.textContent = '✅ Logged In';
+                    statusEl.style.background = 'rgba(0,255,136,0.12)';
+                    statusEl.style.color = '#00ff88';
+                } else {
+                    statusEl.textContent = '❌ Not Logged In';
+                    statusEl.style.background = 'rgba(255,60,60,0.12)';
+                    statusEl.style.color = '#ff6b6b';
+                }
+                const footer = document.getElementById('skool-config-footer');
+                if (skoolConfigData.lastRun) {
+                    footer.textContent = 'Last scrape: ' + new Date(skoolConfigData.lastRun).toLocaleString();
+                } else {
+                    footer.textContent = 'No scrapes yet — click Direct above to start';
+                }
+            } catch (e) {
+                console.error('Skool config load error:', e);
+            }
+        }
+
+        function skoolRenderConfig() {
+            const container = document.getElementById('skool-community-tags');
+            const communities = skoolConfigData.communities || [];
+            container.innerHTML = communities.map((c, i) => {
+                const enabledStyle = c.enabled !== false
+                    ? 'background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#b480ff;'
+                    : 'background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);';
+                return `<span style="${enabledStyle}border-radius:2rem;padding:0.25rem 0.6rem;font-size:0.75rem;display:flex;align-items:center;gap:0.3rem;">
+                    📚 ${escH(c.name)}
+                    <span onclick="skoolRemoveCommunity(${i})" style="cursor:pointer;color:rgba(255,255,255,0.3);font-size:0.85rem;margin-left:0.2rem;" title="Remove">×</span>
+                </span>`;
+            }).join('');
+        }
+
+        function skoolAddCommunity() {
+            const input = document.getElementById('skool-community-input');
+            const val = input.value.trim();
+            if (!val) return;
+            let name = val;
+            let url = val;
+            const match = val.match(/skool\.com\/([^?#/]+)/);
+            if (match) {
+                name = match[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                url = 'https://www.skool.com/' + match[1];
+            } else if (!val.includes('skool.com')) {
+                url = 'https://www.skool.com/' + val.replace(/\s+/g, '-').toLowerCase();
+                name = val;
+            }
+            skoolConfigData.communities = skoolConfigData.communities || [];
+            skoolConfigData.communities.push({ name, url, enabled: true });
+            input.value = '';
+            skoolRenderConfig();
+        }
+
+        function skoolRemoveCommunity(idx) {
+            skoolConfigData.communities.splice(idx, 1);
+            skoolRenderConfig();
+        }
+
+        async function skoolSaveConfig() {
+            const btn = document.getElementById('skool-save-btn');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/mc/skool-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ communities: skoolConfigData.communities })
+                });
+                const data = await resp.json();
+                btn.textContent = data.ok ? '✅ Saved' : '❌ Error';
+            } catch (e) {
+                btn.textContent = '❌ Failed';
+            }
+            setTimeout(() => { btn.textContent = 'Save'; btn.disabled = false; }, 2000);
+        }
+
+        async function skoolReauth() {
+            const btn = document.getElementById('skool-reauth-btn');
+            btn.textContent = 'Launching...';
+            btn.disabled = true;
+            try {
+                await fetch('/mc/skool-auth', { method: 'POST' });
+                btn.textContent = 'Browser Open';
+                setTimeout(async () => {
+                    await skoolLoadConfig();
+                    btn.textContent = 'Re-auth';
+                    btn.disabled = false;
+                }, 30000);
+            } catch (e) {
+                btn.textContent = 'Failed';
+                setTimeout(() => { btn.textContent = 'Re-auth'; btn.disabled = false; }, 3000);
+            }
+        }
+
+        // ── Content Intelligence ──
+        async function fetchContentIntel() {
+            try {
+                const d = await fetch('/mc/content-intel').then(r => r.json());
+                const dot = document.getElementById('ci-status-dot');
+                const badge = document.getElementById('ci-badge');
+                if (d.lastScan) {
+                    const ago = Date.now() - new Date(d.lastScan).getTime();
+                    const isRecent = ago < 4 * 60 * 60 * 1000;
+                    if (dot) { dot.style.background = isRecent ? '#00ff88' : 'rgba(255,200,60,0.5)'; dot.style.boxShadow = isRecent ? '0 0 6px rgba(0,255,136,0.4)' : 'none'; dot.title = isRecent ? 'Active' : 'Stale (>4h)'; }
+                }
+                const totalNuggets = (d.recentNuggets || []).length;
+                if (badge) badge.textContent = totalNuggets > 0 ? totalNuggets + ' nuggets' : 'No data';
+                const ws = d.weeklyStats || {};
+                const wn = document.getElementById('ci-week-nuggets');
+                const wv = document.getElementById('ci-week-videos');
+                const wa = document.getElementById('ci-week-avg');
+                if (wn) wn.textContent = ws.nuggets || 0;
+                if (wv) wv.textContent = ws.videos || 0;
+                if (wa) wa.textContent = ws.avgScore || '—';
+                const container = document.getElementById('ci-nuggets');
+                if (!container) return;
+                const nuggets = (d.recentNuggets || []).slice(0, 5);
+                if (nuggets.length === 0) {
+                    container.innerHTML = '<div class="ci-empty">No nuggets yet — pipeline will populate once YouTube channels are monitored</div>';
+                    return;
+                }
+                container.innerHTML = nuggets.map(n => {
+                    const verdict = n.verdict || '';
+                    const verdictCls = verdict === 'WATCH' ? 'watch' : verdict === 'SKIM' ? 'skim' : 'skip';
+                    const verdictIcon = verdict === 'WATCH' ? '&#127919;' : verdict === 'SKIM' ? '&#128064;' : '&#9197;&#65039;';
+                    const topHighlight = (n.key_highlights && n.key_highlights[0]) ? n.key_highlights[0].highlight : ((n.nuggets && n.nuggets[0]) ? n.nuggets[0].insight : (n.summary || 'No details'));
+                    const dweApp = (n.key_highlights && n.key_highlights[0]) ? n.key_highlights[0].dwe_application : '';
+                    const timeAgo = ciTimeAgo(n.timestamp);
+                    const clickUrl = n.url || (n.videoId ? 'https://youtube.com/watch?v=' + n.videoId : '');
+                    const clickAttr = clickUrl ? ` onclick="window.open('${clickUrl}','_blank')" title="Open in new tab"` : '';
+                    return `<div class="ci-nugget"${clickAttr}>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex-shrink:0;">
+                            <span class="ci-verdict ${verdictCls}">${verdictIcon} ${verdict}</span>
+                            <span class="ci-score ${n.score >= 8 ? 'high' : 'med'}">${n.score}/10</span>
+                        </div>
+                        <div class="ci-nugget-body">
+                            <div style="font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:0.15rem;">${escH(n.title || '')}${clickUrl ? ' <span style="font-size:0.55rem;color:rgba(255,255,255,0.3);">&#8599;</span>' : ''}</div>
+                            <div class="ci-nugget-text">${escH(topHighlight)}</div>
+                            ${dweApp ? '<div style="font-size:0.58rem;color:rgba(255,200,60,0.7);margin-top:0.15rem;">&#8594; ' + escH(dweApp) + '</div>' : ''}
+                            <div class="ci-nugget-meta">
+                                <span>${escH(n.channel || '')}</span>
+                                <span>${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+                const scanEl = document.getElementById('ci-scan-time');
+                if (scanEl && d.lastScan) scanEl.textContent = 'Last scan: ' + ciTimeAgo(d.lastScan);
+            } catch(e) { /* silent */ }
+        }
+        function ciTimeAgo(ts) {
+            if (!ts) return '';
+            const ms = Date.now() - new Date(ts).getTime();
+            if (ms < 60000) return 'just now';
+            if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
+            if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';
+            return Math.floor(ms / 86400000) + 'd ago';
+        }
+
+        // ── Intel Feed ────────────────────────────────────────────────
+        const INTEL_STORAGE_KEY = 'dwe_intel_data';
+        const INTEL_BRIEF_KEY = 'dwe_intel_brief';
+
+        const INTEL_CATEGORIES = {
+            'ai-news': { label: 'AI News', icon: '🤖', color: '#00c8ff' },
+            'industry': { label: 'Industry', icon: '📊', color: '#00ff88' },
+            'competitor': { label: 'Competitor', icon: '🔍', color: '#ffaa00' },
+            'opportunity': { label: 'Opportunity', icon: '💎', color: '#c864ff' }
+        };
+
+        const INTEL_IMPORTANCE = {
+            'critical': { label: 'CRITICAL', color: '#ff4444', bg: 'rgba(255,68,68,0.15)' },
+            'high': { label: 'HIGH', color: '#ffaa00', bg: 'rgba(255,170,0,0.12)' },
+            'medium': { label: 'MED', color: '#00c8ff', bg: 'rgba(0,200,255,0.1)' },
+            'low': { label: 'LOW', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.05)' }
+        };
+
+        function intelLoad() {
+            const raw = localStorage.getItem(INTEL_STORAGE_KEY);
+            if (!raw) return [];
+            return JSON.parse(raw);
+        }
+
+        function intelSave(items) {
+            localStorage.setItem(INTEL_STORAGE_KEY, JSON.stringify(items));
+        }
+
+        function intelSaveBrief() { /* removed — replaced by auto-loaded command briefing */ }
+
+        async function intelLoadBrief() {
+            try {
+                const resp = await fetch('/mc/command-briefing');
+                const data = await resp.json();
+                if (!data.ok) {
+                    document.getElementById('briefing-content').innerHTML = '<div style="color:#ff6b6b;">Briefing unavailable</div>';
+                    return;
+                }
+                document.getElementById('briefing-generated').textContent = data.generated ? 'Generated: ' + data.generated : '';
+                const md = data.content;
+                // Parse key sections from markdown
+                let summary = '';
+                let details = '';
+
+                // Operational Snapshot table
+                const snapMatch = md.match(/## Operational Snapshot\s*\n\n([\s\S]*?)(?=\n---)/);
+                if (snapMatch) {
+                    const rows = snapMatch[1].trim().split('\n').filter(r => r.startsWith('|') && !r.includes('-----'));
+                    summary += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem 1rem;margin-bottom:0.5rem;">';
+                    rows.forEach(row => {
+                        const cols = row.split('|').map(c => c.trim()).filter(Boolean);
+                        if (cols.length >= 2 && cols[0] !== 'Metric') {
+                            const val = cols[1];
+                            let color = 'rgba(255,255,255,0.8)';
+                            if (cols[0].includes('Blocked') && val !== '0') color = '#ff6b6b';
+                            else if (cols[0].includes('Healthy') && !val.startsWith(val.split('/')[1])) color = '#ffaa00';
+                            else if (val === '0' && cols[0].includes('Blocked')) color = '#00ff88';
+                            summary += `<span style="color:rgba(255,255,255,0.5);font-size:0.75rem;">${cols[0]}</span><span style="color:${color};font-weight:600;font-size:0.8rem;">${val}</span>`;
+                        }
+                    });
+                    summary += '</div>';
+                }
+
+                // Blocked tasks (highlight if any)
+                const blockedMatch = md.match(/## Blocked Tasks.*?\n\n([\s\S]*?)(?=\n---)/);
+                if (blockedMatch && !blockedMatch[1].includes('No tasks found')) {
+                    summary += '<div style="background:rgba(255,60,60,0.1);border:1px solid rgba(255,60,60,0.3);border-radius:0.5rem;padding:0.5rem 0.75rem;margin-top:0.5rem;"><span style="color:#ff6b6b;font-weight:600;font-size:0.75rem;">BLOCKED:</span> <span style="color:rgba(255,255,255,0.8);font-size:0.75rem;">' + blockedMatch[1].trim().replace(/\n/g, '<br>') + '</span></div>';
+                }
+
+                // In Progress tasks
+                const progressMatch = md.match(/## In Progress.*?\n\n([\s\S]*?)(?=\n---)/);
+                if (progressMatch) {
+                    const tasks = progressMatch[1].match(/^(TAS-\d+:.+?)$/gm) || progressMatch[1].match(/^(.+?)\s{2,}/gm) || [];
+                    if (tasks.length > 0) {
+                        details += '<div style="margin-bottom:0.5rem;"><span style="color:#00c8ff;font-weight:600;font-size:0.75rem;text-transform:uppercase;">In Progress</span>';
+                        tasks.slice(0, 8).forEach(t => {
+                            details += `<div style="color:rgba(255,255,255,0.7);font-size:0.75rem;padding:0.15rem 0;">• ${t.trim()}</div>`;
+                        });
+                        details += '</div>';
+                    }
+                }
+
+                // System Health
+                const healthMatch = md.match(/## System Health\s*\n\n([\s\S]*?)(?=\n---|\n## |$)/);
+                if (healthMatch) {
+                    details += '<div><span style="color:#ffaa00;font-weight:600;font-size:0.75rem;text-transform:uppercase;">System Health</span>';
+                    const lines = healthMatch[1].trim().split('\n').filter(l => l.trim());
+                    lines.forEach(l => {
+                        const isError = l.includes('ERROR') || l.includes('exit');
+                        const isOk = l.includes('RUNNING') || l.includes('OK');
+                        const color = isError ? '#ff6b6b' : isOk ? '#00ff88' : 'rgba(255,255,255,0.6)';
+                        details += `<div style="color:${color};font-size:0.72rem;padding:0.1rem 0;">${l.replace(/^-\s*/, '• ')}</div>`;
+                    });
+                    details += '</div>';
+                }
+
+                document.getElementById('briefing-content').innerHTML = summary || '<div style="color:rgba(255,255,255,0.5);">No snapshot data</div>';
+                if (details) {
+                    document.getElementById('briefing-details').innerHTML = details;
+                    document.getElementById('briefing-toggle').style.display = 'inline-block';
+                }
+            } catch (e) {
+                document.getElementById('briefing-content').innerHTML = '<div style="color:#ff6b6b;">Failed to load briefing</div>';
+            }
+        }
+
+        function toggleBriefingDetails() {
+            const el = document.getElementById('briefing-details');
+            const btn = document.getElementById('briefing-toggle');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                btn.textContent = 'Hide Details';
+            } else {
+                el.style.display = 'none';
+                btn.textContent = 'Show Details';
+            }
+        }
+
+        function intelAdd() {
+            const title = document.getElementById('intel-title').value.trim();
+            if (!title) return;
+            const item = {
+                id: Date.now(),
+                title: title,
+                source: document.getElementById('intel-source').value.trim(),
+                category: document.getElementById('intel-category').value,
+                importance: document.getElementById('intel-importance').value,
+                notes: document.getElementById('intel-notes').value.trim(),
+                url: document.getElementById('intel-url').value.trim(),
+                date: new Date().toISOString(),
+                read: false
+            };
+            const items = intelLoad();
+            items.unshift(item);
+            intelSave(items);
+            document.getElementById('intel-title').value = '';
+            document.getElementById('intel-source').value = '';
+            document.getElementById('intel-notes').value = '';
+            document.getElementById('intel-url').value = '';
+            document.getElementById('intel-importance').value = 'medium';
+            intelRender();
+        }
+
+        function intelDelete(id) {
+            const items = intelLoad().filter(i => i.id !== id);
+            intelSave(items);
+            intelRender();
+        }
+
+        function intelToggleRead(id) {
+            const items = intelLoad();
+            const item = items.find(i => i.id === id);
+            if (item) item.read = !item.read;
+            intelSave(items);
+            intelRender();
+        }
+
+        function intelRender() {
+            const items = intelLoad();
+            const catFilter = document.getElementById('intel-filter').value;
+            const impFilter = document.getElementById('intel-importance-filter').value;
+
+            // Stats
+            const counts = { 'ai-news': 0, 'industry': 0, 'competitor': 0, 'opportunity': 0 };
+            items.forEach(i => { if (counts[i.category] !== undefined) counts[i.category]++; });
+            document.getElementById('intel-count-ai').textContent = counts['ai-news'];
+            document.getElementById('intel-count-industry').textContent = counts['industry'];
+            document.getElementById('intel-count-competitor').textContent = counts['competitor'];
+            document.getElementById('intel-count-opportunity').textContent = counts['opportunity'];
+
+            // Filter
+            let filtered = items;
+            if (catFilter !== 'all') filtered = filtered.filter(i => i.category === catFilter);
+            if (impFilter !== 'all') filtered = filtered.filter(i => i.importance === impFilter);
+
+            // Sort: importance (critical > high > medium > low), then date desc
+            const impOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+            filtered.sort((a, b) => {
+                const d = (impOrder[a.importance] || 3) - (impOrder[b.importance] || 3);
+                if (d !== 0) return d;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            // Render feed
+            const feed = document.getElementById('intel-feed');
+            if (filtered.length === 0) {
+                feed.innerHTML = '<div style="text-align:center; padding:2rem; color:rgba(255,255,255,0.3); font-size:0.85rem;">No intel items yet. Add your first item above.</div>';
+                return;
+            }
+
+            feed.innerHTML = filtered.map(item => {
+                const cat = INTEL_CATEGORIES[item.category] || INTEL_CATEGORIES['ai-news'];
+                const imp = INTEL_IMPORTANCE[item.importance] || INTEL_IMPORTANCE['medium'];
+                const dateStr = new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const readOpacity = item.read ? '0.5' : '1';
+                const urlLink = item.url ? `<a href="${escH(item.url)}" target="_blank" rel="noopener" style="color:${cat.color}; font-size:0.75rem; text-decoration:none; opacity:0.8;">🔗 Source</a>` : '';
+
+                return `<div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-left:3px solid ${cat.color}; border-radius:0.75rem; padding:0.875rem 1rem; opacity:${readOpacity}; transition:opacity 0.3s;">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.75rem;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.3rem; flex-wrap:wrap;">
+                                <span style="font-size:0.8rem;">${cat.icon}</span>
+                                <span style="color:${cat.color}; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.05em;">${cat.label}</span>
+                                <span style="background:${imp.bg}; color:${imp.color}; font-size:0.55rem; font-weight:700; padding:0.12rem 0.4rem; border-radius:0.25rem; letter-spacing:0.05em;">${imp.label}</span>
+                                <span style="color:rgba(255,255,255,0.3); font-size:0.65rem;">${dateStr}</span>
+                                ${item.source ? `<span style="color:rgba(255,255,255,0.25); font-size:0.65rem;">via ${escH(item.source)}</span>` : ''}
+                            </div>
+                            <div style="color:#fff; font-size:0.85rem; font-weight:500; margin-bottom:${item.notes ? '0.3rem' : '0'};">${escH(item.title)}</div>
+                            ${item.notes ? `<div style="color:rgba(255,255,255,0.5); font-size:0.78rem; line-height:1.4;">${escH(item.notes)}</div>` : ''}
+                            ${urlLink ? `<div style="margin-top:0.3rem;">${urlLink}</div>` : ''}
+                        </div>
+                        <div style="display:flex; gap:0.3rem; flex-shrink:0;">
+                            <button onclick="intelToggleRead(${item.id})" title="${item.read ? 'Mark unread' : 'Mark read'}" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); border-radius:0.4rem; width:26px; height:26px; cursor:pointer; font-size:0.65rem; display:flex; align-items:center; justify-content:center;">${item.read ? '📖' : '✓'}</button>
+                            <button onclick="intelDelete(${item.id})" title="Delete" style="background:rgba(255,50,50,0.08); border:1px solid rgba(255,50,50,0.15); color:rgba(255,100,100,0.7); border-radius:0.4rem; width:26px; height:26px; cursor:pointer; font-size:0.65rem; display:flex; align-items:center; justify-content:center;">✕</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function intelLoadCriticalTickets() {
+            const container = document.getElementById('intel-critical-tickets');
+            const list = document.getElementById('intel-critical-list');
+            const countBadge = document.getElementById('intel-critical-count');
+            try {
+                const resp = await fetch('/mc/notion-tasks');
+                const data = await resp.json();
+                const tasks = data.tasks || [];
+                const critical = tasks.filter(t =>
+                    t.priority === 'Critical' ||
+                    t.status === 'Blocked' ||
+                    t.status === 'blocked'
+                );
+                if (critical.length === 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+                countBadge.textContent = critical.length;
+                list.innerHTML = critical.map(t => {
+                    const isBlocked = t.status === 'Blocked' || t.status === 'blocked';
+                    const isCritical = t.priority === 'Critical';
+                    const badges = [];
+                    if (isCritical) badges.push('<span style="background:rgba(255,60,60,0.2); color:#ff6b6b; font-size:0.6rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:0.25rem;">CRITICAL</span>');
+                    if (isBlocked) badges.push('<span style="background:rgba(255,170,0,0.2); color:#ffaa00; font-size:0.6rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:0.25rem;">BLOCKED</span>');
+                    return `<div style="background:rgba(20,20,40,0.5); border:1px solid rgba(255,60,60,0.12); border-radius:0.5rem; padding:0.5rem 0.7rem;">
+                        <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                            ${badges.join(' ')}
+                            <span style="color:#fff; font-size:0.8rem; font-weight:500;">${escH(t.name || 'Untitled')}</span>
+                        </div>
+                        <div style="display:flex; gap:0.6rem; margin-top:0.25rem;">
+                            <span style="color:rgba(255,255,255,0.4); font-size:0.65rem;">${escH(t.role || 'Unassigned')}</span>
+                            <span style="color:rgba(255,255,255,0.3); font-size:0.65rem;">${escH(t.status || 'No Status')}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+                container.style.display = 'block';
+            } catch (e) {
+                console.error('Failed to load critical tickets:', e);
+                container.style.display = 'none';
+            }
+        }
+
+        async function intelLoadOCUpdate() {
+            const container = document.getElementById('intel-oc-update');
+            const body = document.getElementById('intel-oc-update-body');
+            try {
+                const resp = await fetch('/mc/openclaw-update-check');
+                const data = await resp.json();
+                if (!data.ok || !data.updateAvailable) {
+                    container.style.display = 'none';
+                    return;
+                }
+                let html = `<div style="margin-bottom:0.5rem;">
+                    <span style="color:rgba(255,255,255,0.5);">Current:</span> <strong style="color:#fff;">${escH(data.currentVersion)}</strong>
+                    <span style="color:rgba(255,255,255,0.3); margin:0 0.3rem;">&rarr;</span>
+                    <span style="color:rgba(255,255,255,0.5);">Latest:</span> <strong style="color:#ffaa00;">${escH(data.latestVersion)}</strong>
+                    <span style="color:rgba(255,255,255,0.3); margin-left:0.5rem; font-size:0.7rem;">(${escH(data.channel || 'stable')})</span>
+                </div>`;
+                if (data.releaseNotes) {
+                    html += `<div style="background:rgba(255,170,0,0.06); border:1px solid rgba(255,170,0,0.1); border-radius:0.5rem; padding:0.5rem 0.7rem; margin-bottom:0.5rem;">
+                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.2rem;">Release Notes</div>
+                        <div style="color:rgba(255,255,255,0.8); font-size:0.8rem; line-height:1.5;">${data.releaseNotes}</div>
+                    </div>`;
+                }
+                if (data.releaseUrl) {
+                    html += `<a href="${escH(data.releaseUrl)}" target="_blank" rel="noopener" style="color:#ffaa00; font-size:0.75rem; text-decoration:none; opacity:0.8;">View on npm &rarr;</a>`;
+                }
+                body.innerHTML = html;
+                container.style.display = 'block';
+            } catch (e) {
+                console.error('Failed to load OC update:', e);
+                container.style.display = 'none';
+            }
+        }
+
+        function loadIntel() {
+            intelRender();
+            intelLoadBrief();
+            intelLoadCriticalTickets();
+            intelLoadOCUpdate();
+        }
+
+        // ── WF2 Reddit Config ─────────────────────────────────────────
+        let wf2Subs = [];
+        let wf2Kws = [];
+        let wf2Loaded = false;
+
+        async function wf2FetchConfig() {
+            try {
+                const resp = await fetch('/mc/wf2-config');
+                const data = await resp.json();
+                if (data.ok) {
+                    wf2Subs = data.subreddits || [];
+                    wf2Kws = data.keywords || [];
+                    wf2Loaded = true;
+                    wf2RenderTags();
+                    const footer = document.getElementById('wf2-footer');
+                    if (data.last_updated) {
+                        const d = new Date(data.last_updated);
+                        footer.textContent = 'Last saved: ' + d.toLocaleString() + ' — Changes apply on next WF2 run (every 3h)';
+                    }
+                } else {
+                    wf2ShowStatus('Failed to load config: ' + (data.error || 'unknown'), true);
+                }
+            } catch(e) {
+                wf2ShowStatus('Network error: ' + e.message, true);
+            }
+        }
+
+        function wf2RenderTags() {
+            const subsEl = document.getElementById('wf2-subs-tags');
+            const kwsEl = document.getElementById('wf2-kw-tags');
+            const countEl = document.getElementById('wf2-kw-count');
+
+            subsEl.innerHTML = wf2Subs.map((s, i) =>
+                '<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.25);color:#00f5ff;border-radius:2rem;padding:0.2rem 0.5rem 0.2rem 0.6rem;font-size:0.75rem;">' +
+                'r/' + escH(s) +
+                '<span onclick="wf2RemoveSub(' + i + ')" style="cursor:pointer;opacity:0.6;font-size:0.85rem;line-height:1;" title="Remove">&times;</span>' +
+                '</span>'
+            ).join('');
+
+            kwsEl.innerHTML = wf2Kws.map((k, i) =>
+                '<span style="display:inline-flex;align-items:center;gap:0.3rem;background:rgba(184,41,221,0.1);border:1px solid rgba(184,41,221,0.25);color:#d070ff;border-radius:2rem;padding:0.2rem 0.5rem 0.2rem 0.6rem;font-size:0.73rem;">' +
+                escH(k) +
+                '<span onclick="wf2RemoveKw(' + i + ')" style="cursor:pointer;opacity:0.6;font-size:0.85rem;line-height:1;" title="Remove">&times;</span>' +
+                '</span>'
+            ).join('');
+
+            countEl.textContent = '(' + wf2Kws.length + ')';
+        }
+
+        function wf2AddSub() {
+            const input = document.getElementById('wf2-sub-input');
+            let val = input.value.trim().replace(/^r\//, '').replace(/[^a-zA-Z0-9_]/g, '');
+            if (!val) return;
+            if (wf2Subs.includes(val)) { wf2ShowStatus('Subreddit already exists', true); return; }
+            wf2Subs.push(val);
+            input.value = '';
+            wf2RenderTags();
+        }
+
+        function wf2RemoveSub(idx) {
+            wf2Subs.splice(idx, 1);
+            wf2RenderTags();
+        }
+
+        function wf2AddKw() {
+            const input = document.getElementById('wf2-kw-input');
+            let val = input.value.trim().toLowerCase();
+            if (!val) return;
+            if (wf2Kws.includes(val)) { wf2ShowStatus('Keyword already exists', true); return; }
+            wf2Kws.push(val);
+            input.value = '';
+            wf2RenderTags();
+        }
+
+        function wf2RemoveKw(idx) {
+            wf2Kws.splice(idx, 1);
+            wf2RenderTags();
+        }
+
+        async function wf2SaveConfig() {
+            const btn = document.getElementById('wf2-save-btn');
+            const orig = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            try {
+                const resp = await fetch('/mc/wf2-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subreddits: wf2Subs.join(','),
+                        keywords: wf2Kws.join(',')
+                    })
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    wf2ShowStatus('Saved! ' + wf2Subs.length + ' subreddits, ' + wf2Kws.length + ' keywords. Next run picks up changes automatically.', false);
+                    const footer = document.getElementById('wf2-footer');
+                    footer.textContent = 'Last saved: ' + new Date(data.updated).toLocaleString() + ' — Changes apply on next WF2 run (every 3h)';
+                } else {
+                    wf2ShowStatus('Save failed: ' + (data.error || 'unknown'), true);
+                }
+            } catch(e) {
+                wf2ShowStatus('Network error: ' + e.message, true);
+            }
+            btn.disabled = false;
+            btn.textContent = orig;
+        }
+
+        function wf2ShowStatus(msg, isError) {
+            const el = document.getElementById('wf2-status');
+            el.style.display = 'block';
+            el.textContent = msg;
+            el.style.borderColor = isError ? 'rgba(255,80,80,0.3)' : 'rgba(0,255,136,0.3)';
+            el.style.background = isError ? 'rgba(255,80,80,0.08)' : 'rgba(0,255,136,0.08)';
+            el.style.color = isError ? '#ff6b6b' : '#00ff88';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        // ── Theme ──────────────────────────────────────────────────────
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme === 'css1' ? '' : theme);
+            localStorage.setItem('dwe-theme', theme);
+            document.getElementById('theme-dropdown').value = theme;
+        }
+        // Restore saved theme
+        (function() {
+            const saved = localStorage.getItem('dwe-theme') || 'css1';
+            setTheme(saved);
+        })();
+
         loadAll();
+        loadDecisions();
+        loadEscalations();
+        loadCeoPipeline();
+        loadIntel();
+        wf2FetchConfig();
+        // Auto-load all content on page open (cached for instant display)
+        newsRunDigest();
+        fetchContentIntel();
+        loadMessages();
+        skoolLoadConfig();
         setInterval(loadAll, 120000);
+        setInterval(loadDecisions, 120000);
+        setInterval(loadEscalations, 120000);
+        setInterval(loadCeoPipeline, 120000);
     </script>
 </body>
 </html>

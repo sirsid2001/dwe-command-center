@@ -182,4 +182,53 @@ async function getDWEStats() {
     }
 }
 
-module.exports = { getDWEStats, fetchAllNotionTasks };
+async function createNotionTask({ name, priority = 'Medium', role = 'CEO', url = '' }) {
+    return new Promise((resolve, reject) => {
+        const payload = {
+            parent: { database_id: NOTION_DB_ID },
+            properties: {
+                'Task name': { title: [{ text: { content: name } }] },
+                'Priority': { select: { name: priority } },
+                'Role': { select: { name: role } },
+                'Status': { status: { name: 'Not started' } }
+            }
+        };
+        // Add source URL as page content so CEO can trace back
+        if (url) {
+            payload.children = [
+                {
+                    object: 'block',
+                    type: 'bookmark',
+                    bookmark: { url: url }
+                }
+            ];
+        }
+        const body = JSON.stringify(payload);
+        const options = {
+            hostname: 'api.notion.com',
+            path: '/v1/pages',
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${NOTION_API_KEY}`,
+                'Notion-Version': '2022-06-28',
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+        const req = https.request(options, res => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    resolve({ ok: true, id: json.id });
+                } catch(e) { reject(e); }
+            });
+        });
+        req.on('error', reject);
+        req.write(body);
+        req.end();
+    });
+}
+
+module.exports = { getDWEStats, fetchAllNotionTasks, createNotionTask };

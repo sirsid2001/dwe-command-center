@@ -459,6 +459,41 @@
                 <div class="grad-status" id="grad-status"></div>
             </div>
         </div>
+        <!-- Opportunities & Funnels -->
+        <div id="opportunities" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; padding:0 1.5rem 1.5rem; scroll-margin-top:80px;">
+            <!-- Opportunities -->
+            <div class="card" style="border:1px solid rgba(0,200,255,0.15);">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1rem;">🎯</span>
+                    <h3 style="font-size:0.9rem;color:#00d4ff;text-transform:uppercase;letter-spacing:0.06em;">Opportunities</h3>
+                    <span style="margin-left:auto;font-size:0.75rem;color:rgba(255,255,255,0.35);" id="opp-count-badge">—</span>
+                </div>
+                <div id="opp-list" style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-align:center;padding:1rem;">Loading...</div>
+                </div>
+            </div>
+            <!-- Funnels -->
+            <div class="card" style="border:1px solid rgba(255,149,0,0.15);">
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                    <span style="font-size:1rem;">🔄</span>
+                    <h3 style="font-size:0.9rem;color:#ff9500;text-transform:uppercase;letter-spacing:0.06em;">Funnels</h3>
+                    <a href="/funnel" style="margin-left:auto;font-size:0.7rem;color:rgba(255,149,0,0.7);text-decoration:none;padding:0.2rem 0.6rem;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.2);border-radius:4px;">Funnel Details &rarr;</a>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+                    <div style="text-align:center;padding:0.75rem;background:rgba(255,149,0,0.04);border-radius:0.75rem;">
+                        <div style="color:rgba(255,255,255,0.5);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem;">Pipeline Value</div>
+                        <div style="font-size:1.3rem;font-weight:700;color:#ff9500;" id="funnel-value">—</div>
+                    </div>
+                    <div style="text-align:center;padding:0.75rem;background:rgba(255,149,0,0.04);border-radius:0.75rem;">
+                        <div style="color:rgba(255,255,255,0.5);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.3rem;">Total Prospects</div>
+                        <div style="font-size:1.3rem;font-weight:700;color:#ff9500;" id="funnel-total">—</div>
+                    </div>
+                </div>
+                <div id="funnel-stages" style="display:flex;flex-direction:column;gap:0.35rem;">
+                    <div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-align:center;padding:1rem;">Loading...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -927,8 +962,67 @@
             btn.disabled = false;
         }
 
+        // ── Opportunities ──
+        async function fetchOpportunities() {
+            try {
+                const d = await fetch('/mc/cso').then(r => r.json());
+                const badge = document.getElementById('opp-count-badge');
+                badge.textContent = (d.count || 0) + ' active';
+                const list = document.getElementById('opp-list');
+                if (d.opportunities && d.opportunities.length > 0) {
+                    list.innerHTML = d.opportunities.map(o =>
+                        `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.75rem;background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.1);border-radius:8px;">
+                            <div style="flex:1;min-width:0;">
+                                <div style="font-size:0.8rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(o.name)}</div>
+                                <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-top:0.15rem;">Score: ${o.score || '—'}</div>
+                            </div>
+                            <span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:1rem;font-weight:500;flex-shrink:0;margin-left:0.75rem;background:rgba(0,200,255,0.1);color:#00d4ff;">${esc(o.status)}</span>
+                        </div>`
+                    ).join('');
+                } else {
+                    list.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:0.85rem;text-align:center;padding:1.5rem;">No active opportunities</div>';
+                }
+            } catch(e) {
+                document.getElementById('opp-list').innerHTML = '<div style="color:#ff4466;font-size:0.85rem;text-align:center;padding:1rem;">Failed to load</div>';
+            }
+        }
+
+        // ── Funnels ──
+        async function fetchFunnels() {
+            try {
+                const d = await fetch('/mc/prospects/stats?pipeline=dwe-marketing').then(r => r.json());
+                if (d.ok) {
+                    document.getElementById('funnel-value').textContent = d.pipeline_value || '$0';
+                    document.getElementById('funnel-total').textContent = d.total || 0;
+                    const stages = d.stages || {};
+                    const stagesEl = document.getElementById('funnel-stages');
+                    const entries = Object.entries(stages);
+                    if (entries.length > 0) {
+                        const max = Math.max(...entries.map(([,v]) => v), 1);
+                        stagesEl.innerHTML = entries.map(([name, count]) => {
+                            const pct = Math.round((count / max) * 100);
+                            const color = count > 0 ? '#ff9500' : 'rgba(255,255,255,0.15)';
+                            return `<div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;">
+                                <span style="color:rgba(255,255,255,0.5);min-width:120px;font-size:0.7rem;">${esc(name)}</span>
+                                <div style="flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;">
+                                    <div style="width:${pct}%;height:100%;background:${color};border-radius:3px;transition:width 0.4s;"></div>
+                                </div>
+                                <span style="color:${count > 0 ? '#ff9500' : 'rgba(255,255,255,0.25)'};font-family:monospace;min-width:24px;text-align:right;">${count}</span>
+                            </div>`;
+                        }).join('');
+                    } else {
+                        stagesEl.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:0.85rem;text-align:center;padding:1rem;">No funnel data</div>';
+                    }
+                }
+            } catch(e) {
+                document.getElementById('funnel-stages').innerHTML = '<div style="color:#ff4466;font-size:0.85rem;text-align:center;padding:1rem;">Failed to load</div>';
+            }
+        }
+
         // Auto-fetch on load
         fetchData();
+        fetchOpportunities();
+        fetchFunnels();
     </script>
 </body>
 </html>

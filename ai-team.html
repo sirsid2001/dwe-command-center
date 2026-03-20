@@ -131,16 +131,18 @@
 
             <!-- ── Connection Lines ── -->
             <!-- CEO → Steve (CTO) -->
-            <line class="org-line" id="line-ceo-cto" x1="550" y1="80" x2="280" y2="210" />
+            <line class="org-line" id="line-ceo-cto" x1="550" y1="80" x2="180" y2="210" />
             <!-- CEO → Anita (COO) -->
-            <line class="org-line" id="line-ceo-anita" x1="550" y1="80" x2="550" y2="210" />
-            <!-- CEO → Nicole (CoS) -->
-            <line class="org-line" id="line-ceo-nicole" x1="550" y1="80" x2="820" y2="210" />
+            <line class="org-line" id="line-ceo-anita" x1="550" y1="80" x2="420" y2="210" />
+            <!-- CEO → Nicole (CIO) -->
+            <line class="org-line" id="line-ceo-nicole" x1="550" y1="80" x2="660" y2="210" />
+            <!-- CEO → Fran (CFO) -->
+            <line class="org-line" id="line-ceo-cfo" x1="550" y1="80" x2="900" y2="210" />
 
             <!-- CTO → Chief Engineer -->
-            <line class="org-line" id="line-cto-ce" x1="280" y1="270" x2="280" y2="380" />
+            <line class="org-line" id="line-cto-ce" x1="180" y1="270" x2="180" y2="390" />
             <!-- CTO → Main -->
-            <line class="org-line" id="line-cto-main" x1="280" y1="270" x2="550" y2="380" />
+            <line class="org-line" id="line-cto-main" x1="180" y1="270" x2="420" y2="390" />
 
             <!-- ── CEO / Sidney Garcia ── -->
             <g class="org-card" data-agent="ceo" transform="translate(550,50)">
@@ -152,8 +154,8 @@
             </g>
 
             <!-- ── Steve / CTO ── -->
-            <g class="org-card" data-agent="cto" transform="translate(280,240)">
-                <rect class="org-card-rect" id="rect-cto" x="-60" y="-30" width="120" height="60" rx="8"/>
+            <g class="org-card" data-agent="cto" transform="translate(180,240)">
+                <rect class="org-card-rect" id="rect-cto" x="-65" y="-30" width="130" height="60" rx="8"/>
                 <text text-anchor="middle" font-size="15" y="-8">💻</text>
                 <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Steve</text>
                 <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Technology Officer</text>
@@ -161,25 +163,34 @@
             </g>
 
             <!-- ── Anita / COO ── -->
-            <g class="org-card" data-agent="anita" transform="translate(550,240)">
-                <rect class="org-card-rect" id="rect-anita" x="-60" y="-30" width="120" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">⚙️</text>
+            <g class="org-card" data-agent="anita" transform="translate(420,240)">
+                <rect class="org-card-rect" id="rect-anita" x="-65" y="-30" width="130" height="60" rx="8"/>
+                <text text-anchor="middle" font-size="15" y="-8">📋</text>
                 <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Anita</text>
                 <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Operating Officer</text>
                 <text text-anchor="middle" font-size="6.5" id="status-anita" font-weight="600" y="26">● Loading...</text>
             </g>
 
-            <!-- ── Nicole / Chief of Staff ── -->
-            <g class="org-card" data-agent="nicole" transform="translate(820,240)">
-                <rect class="org-card-rect" id="rect-nicole" x="-60" y="-30" width="120" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">📋</text>
+            <!-- ── Nicole / CIO ── -->
+            <g class="org-card" data-agent="nicole" transform="translate(660,240)">
+                <rect class="org-card-rect" id="rect-nicole" x="-65" y="-30" width="130" height="60" rx="8"/>
+                <text text-anchor="middle" font-size="15" y="-8">📈</text>
                 <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Nicole</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief of Staff</text>
+                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Intelligence Officer</text>
                 <text text-anchor="middle" font-size="6.5" id="status-nicole" font-weight="600" y="26">● Loading...</text>
             </g>
 
+            <!-- ── Fran / CFO ── -->
+            <g class="org-card" data-agent="cfo" transform="translate(900,240)">
+                <rect class="org-card-rect" id="rect-cfo" x="-65" y="-30" width="130" height="60" rx="8"/>
+                <text text-anchor="middle" font-size="15" y="-8">💰</text>
+                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Fran</text>
+                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Financial Officer</text>
+                <text text-anchor="middle" font-size="6.5" id="status-cfo" font-weight="600" y="26">● Loading...</text>
+            </g>
+
             <!-- ── Chief Engineer ── -->
-            <g class="org-card" data-agent="chief-engineer" transform="translate(280,420)">
+            <g class="org-card" data-agent="chief-engineer" transform="translate(180,420)">
                 <rect class="org-card-rect" id="rect-ce" x="-65" y="-30" width="130" height="60" rx="8"/>
                 <text text-anchor="middle" font-size="15" y="-8">🔧</text>
                 <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Chief Engineer</text>
@@ -188,7 +199,7 @@
             </g>
 
             <!-- ── Main ── -->
-            <g class="org-card" data-agent="main" transform="translate(550,420)">
+            <g class="org-card" data-agent="main" transform="translate(420,420)">
                 <rect class="org-card-rect" id="rect-main" x="-60" y="-30" width="120" height="60" rx="8"/>
                 <text text-anchor="middle" font-size="15" y="-8">🚀</text>
                 <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Main</text>
@@ -196,8 +207,8 @@
                 <text text-anchor="middle" font-size="6.5" id="status-main" font-weight="600" y="26">● Loading...</text>
             </g>
 
-            <!-- ── Brain Trainer node (system, not agent) ── -->
-            <g transform="translate(820,420)">
+            <!-- ── Brain node (system, not agent) ── -->
+            <g transform="translate(660,420)">
                 <rect fill="rgba(20,25,70,0.85)" stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,3"
                       x="-60" y="-30" width="120" height="60" rx="8" opacity="0.8"/>
                 <text text-anchor="middle" font-size="15" y="-8">🧠</text>
@@ -208,12 +219,12 @@
 
             <!-- Brain connector (dashed, purple) -->
             <line stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"
-                  x1="280" y1="390" x2="760" y2="390"/>
+                  x1="180" y1="390" x2="600" y2="390"/>
             <line stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"
-                  x1="820" y1="390" x2="820" y2="390"/>
+                  x1="660" y1="390" x2="660" y2="390"/>
 
             <!-- Labels for line annotations -->
-            <text x="415" y="374" text-anchor="middle" font-size="7" fill="rgba(184,41,221,0.6)">All agents query Brain</text>
+            <text x="390" y="374" text-anchor="middle" font-size="7" fill="rgba(184,41,221,0.6)">All agents query Brain</text>
         </svg>
     </div>
 
@@ -269,18 +280,24 @@
             },
             anita: {
                 name: 'Anita', role: 'Chief Operating Officer', channel: 'Telegram (anita-coo)',
-                responsibilities: 'Operations management, task coordination, overdue monitoring, cross-agent delegation, PM authority',
+                responsibilities: 'Operations management, task coordination, overdue monitoring, cross-agent delegation, PM authority, triage',
                 reports: 'Sidney Garcia (CEO)',
-                caps: ['Overdue alerts', 'Task delegation', 'Notion sync', 'COO decisions']
+                caps: ['Overdue alerts', 'Task delegation', 'Notion triage', 'COO decisions']
             },
             nicole: {
-                name: 'Nicole', role: 'Chief of Staff', channel: 'Telegram (nicole-cos)',
-                responsibilities: 'Executive coordination, daily briefings, strategic planning, cross-functional alignment',
+                name: 'Nicole', role: 'Chief Intelligence Officer', channel: 'Telegram (nicole-cos)',
+                responsibilities: 'Revenue incubation, strategic intelligence, opportunity scoring, POC-to-Agent pipeline, market analysis',
                 reports: 'Sidney Garcia (CEO)',
-                caps: ['Daily briefings', 'Context awareness', 'Strategic alignment', 'Coordination']
+                caps: ['Revenue incubation', 'Opportunity scoring', 'POC pipeline', 'Strategic intel']
+            },
+            cfo: {
+                name: 'Fran', role: 'Chief Financial Officer', channel: 'Telegram @DWE_CFO_Bot',
+                responsibilities: 'Financial oversight, budget tracking, revenue reporting, cost analysis, IncomeOps monitoring',
+                reports: 'Sidney Garcia (CEO)',
+                caps: ['Financial reporting', 'Budget tracking', 'IncomeOps', 'Cost analysis']
             },
             'chief-engineer': {
-                name: 'Chief Engineer', role: 'Engineering Lead', channel: 'OpenClaw session',
+                name: 'Chief Engineer', role: 'Engineering Lead', channel: 'Telegram @DWE_Chief_Engr_Bot',
                 responsibilities: 'Daemon health checks, infrastructure oversight, code quality, system reliability, Brain maintenance',
                 reports: 'Steve (CTO)',
                 caps: ['Daemon monitoring', 'Health alerts', 'Infrastructure', 'System fixes']
@@ -309,7 +326,7 @@
                 const statusText  = gatewayUp ? '● Online' : '● Offline';
                 const lineClass   = gatewayUp ? 'online' : 'idle';
 
-                const agents = ['cto', 'anita', 'nicole', 'ce', 'main'];
+                const agents = ['cto', 'anita', 'nicole', 'cfo', 'ce', 'main'];
                 agents.forEach(id => {
                     const rect = document.getElementById('rect-' + id);
                     const text = document.getElementById('status-' + id);
@@ -318,7 +335,7 @@
                 });
 
                 // Update connection lines
-                ['line-ceo-cto','line-ceo-anita','line-ceo-nicole','line-cto-ce','line-cto-main'].forEach(id => {
+                ['line-ceo-cto','line-ceo-anita','line-ceo-nicole','line-ceo-cfo','line-cto-ce','line-cto-main'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.setAttribute('class', 'org-line ' + lineClass);
                 });

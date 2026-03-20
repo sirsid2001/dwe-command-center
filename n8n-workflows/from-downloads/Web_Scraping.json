@@ -1,0 +1,115 @@
+{
+  "name": "Web Scraping",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://juliangoldie.com/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        -300
+      ],
+      "id": "8884a051-05da-468b-ac4a-6efc37775687",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Rewrite the copy on this page + make it more interesting + fun + add some emojis and write it in html as a landing page\n {{ $json.data }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        40,
+        -280
+      ],
+      "id": "71d1f7a7-861e-46c7-8460-9fa87ddc3da2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-3.5-sonnet",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        120,
+        -20
+      ],
+      "id": "4598c075-ea6d-4a4a-80e0-9c567288bcbd",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "DDSUqUXO8n872K8N",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        -300
+      ],
+      "id": "8b7994b0-7a9a-4c31-aa9b-dce746a1921f",
+      "name": "When chat message received",
+      "webhookId": "83f5e440-3a4e-44d5-938b-789f2dfb0f0b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4be74828-3e5c-4f35-aff6-2e3895d67774",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c833001d83e394f417e9994028268b115ece912f85d62f09d751232fea87b89e"
+  },
+  "id": "cZNU95JZsIs7rWvU",
+  "tags": []
+}
