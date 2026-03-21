@@ -100,6 +100,16 @@
         .stage-action { display: block; margin-top: 0.25rem; font-size: 0.55rem; color: rgba(255,255,255,0.3); text-decoration: none; }
         .stage-action:hover { color: #ffaa00; }
 
+        /* Tech attribution badges */
+        .tech-badge { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.15rem 0.45rem; border-radius: 0.75rem; font-size: 0.5rem; font-weight: 600; margin-top: 0.35rem; letter-spacing: 0.02em; }
+        .tech-badge.working { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+        .tech-badge.gap { background: rgba(255,68,68,0.15); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); animation: gapPulse 2s ease-in-out infinite; }
+        .tech-badge.partial { background: rgba(255,170,0,0.1); color: #ffaa00; border: 1px solid rgba(255,170,0,0.2); }
+        .tech-badge.manual { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.08); }
+        .tech-io { font-size: 0.42rem; color: rgba(255,255,255,0.2); margin-top: 0.15rem; line-height: 1.3; max-width: 100px; }
+        .tech-schedule { font-size: 0.4rem; color: rgba(255,255,255,0.15); margin-top: 0.1rem; }
+        @keyframes gapPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .empty-msg { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
 
@@ -291,6 +301,81 @@
         const stageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified' };
         const stageColors = { 'Lead Generation': '#22d3ee', 'New': '#888', 'Audited': '#00c8ff', 'Outreach Sent': '#00f5ff', 'Responded': '#ffaa00', 'Proposal': '#ff6600', 'Client': '#00ff88', 'Upsell': '#b829dd', 'Disqualified': '#555' };
 
+        // Technology attribution per stage
+        const stageTech = {
+            'Lead Generation': {
+                automation: 'sam_gov_importer.sh',
+                tech: 'SAM.gov API',
+                input: 'SAM.gov / SBA',
+                output: 'Google Sheets row',
+                plist: 'ai.dwe.sam-gov-importer',
+                interval: '12h',
+                status: 'gap'
+            },
+            'New': {
+                automation: 'audit_runner.sh',
+                tech: 'Ollama qwen2.5:7b',
+                input: 'Prospect URL',
+                output: 'Audit PDF + Score',
+                plist: 'ai.dwe.audit-runner',
+                interval: '4h',
+                status: 'working'
+            },
+            'Audited': {
+                automation: 'contact_enricher.sh',
+                tech: 'curl + regex scraper',
+                input: 'Website pages',
+                output: 'Contact email',
+                plist: 'ai.dwe.contact-enricher',
+                interval: '6h',
+                status: 'working'
+            },
+            'Outreach Sent': {
+                automation: 'outreach_sender.sh',
+                tech: 'Ollama + SES',
+                input: 'Audit + Contact',
+                output: 'Personalized email',
+                plist: 'ai.dwe.outreach-sender',
+                interval: '6h',
+                status: 'partial'
+            },
+            'Responded': {
+                automation: null,
+                tech: null,
+                input: 'Gmail inbox',
+                output: 'Stage update',
+                status: 'gap'
+            },
+            'Proposal': {
+                automation: null,
+                tech: 'CEO (Sidney)',
+                input: 'Responded lead',
+                output: 'Proposal doc',
+                status: 'manual'
+            },
+            'Client': {
+                automation: null,
+                tech: 'CEO (Sidney)',
+                input: 'Signed proposal',
+                output: 'Onboarding',
+                status: 'manual'
+            },
+            'Upsell': {
+                automation: null,
+                tech: 'Nicole (CSO)',
+                input: 'Active client',
+                output: 'Expansion offer',
+                status: 'manual'
+            },
+            'Disqualified': {
+                automation: null,
+                tech: 'Auto / Manual',
+                input: 'Any stage',
+                output: 'Archived',
+                status: 'manual'
+            }
+        };
+
         function render() {
             if (!statsData) return;
 
@@ -332,10 +417,24 @@
                 const linkHtml = link ? `<a class="stage-action" href="${link.href}" target="_blank">${link.label}</a>` : '';
                 const configUrl = stageConfig[stage];
                 const cogsHtml = configUrl ? `<a href="${configUrl}" target="_blank" class="stage-cogs" title="Settings">⚙</a>` : '';
+
+                // Tech attribution badge
+                const tech = stageTech[stage] || {};
+                const statusIcons = { working: '&#x2705;', gap: '&#x26D4;', partial: '&#x26A0;&#xFE0F;', manual: '&#x1F464;' };
+                const statusLabels = { working: tech.automation || 'Automated', gap: 'GAP', partial: tech.automation || 'Partial', manual: tech.tech || 'Manual' };
+                const badgeIcon = statusIcons[tech.status] || '&#x1F464;';
+                const badgeLabel = statusLabels[tech.status] || 'Unknown';
+                const techBadgeHtml = `<div class="tech-badge ${tech.status || 'manual'}">${badgeIcon} ${esc(badgeLabel)}</div>`;
+                const ioHtml = tech.input ? `<div class="tech-io">${esc(tech.input)} &rarr; ${esc(tech.output)}</div>` : '';
+                const scheduleHtml = tech.interval ? `<div class="tech-schedule">${esc(tech.plist || '')} &middot; ${esc(tech.interval)}</div>` : '';
+
                 funnelHtml += `<div class="funnel-stage stage-${cls}">
                     ${cogsHtml}
                     <div class="count">${count}</div>
                     <div class="name">${esc(stage)}</div>
+                    ${techBadgeHtml}
+                    ${ioHtml}
+                    ${scheduleHtml}
                     ${linkHtml}
                     <div class="bar"></div>
                 </div>`;

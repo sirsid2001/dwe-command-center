@@ -965,7 +965,8 @@
                             <option value="css4">CSS4</option>
                             <option value="css6">CSS6</option>
                         </select>
-                        <a id="ceo-corner-pill" href="/ceo-corner" style="text-decoration:none;background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.35);color:#ffaa00;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;">CEO's Corner &rarr;</a>
+                        <a id="vision-pill" href="/vision" style="text-decoration:none;background:rgba(184,41,221,0.15);border:1px solid rgba(184,41,221,0.35);color:#d580ff;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.35rem;" onmouseover="this.style.background='rgba(184,41,221,0.28)'" onmouseout="this.style.background='rgba(184,41,221,0.15)'"><span id="vision-score-badge" style="font-weight:700;"></span>Vision &rarr;</a>
+                        <a id="ceo-corner-pill" href="/ceo-corner" style="text-decoration:none;background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.35);color:#ffaa00;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;">CEO Productivity &rarr;</a>
                     </div>
                     <div style="text-align:right;margin-top:1.25rem;">
                         <div class="date" id="date">Loading...</div>
@@ -1033,19 +1034,18 @@
                 </div>
 
                 <!-- Ask the DWE Brain — question tile -->
-                <div class="stat-card" style="border-left-color:#00f5ff; padding:1.15rem 1.2rem;">
-                    <div class="stat-content" style="width:100%;">
-                        <div class="stat-label" style="margin-bottom:0.65rem;">Ask the DWE Brain</div>
-                        <div style="display:flex; flex-direction:column; gap:0.6rem;">
+                <div class="stat-card" style="border-left-color:#00f5ff; padding:1.15rem 1.2rem; display:flex; flex-direction:column;">
+                    <div class="stat-content" style="width:100%; display:flex; flex-direction:column; flex:1;">
+                        <div class="stat-label" style="margin-bottom:0.5rem;">Ask the DWE Brain</div>
+                        <div style="display:flex; flex-direction:column; flex:1;">
                             <textarea id="brain-query-input" placeholder="Ask anything about DWE..."
                                 onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); brainQuery(); }"
-                                rows="4"
-                                style="width:100%; padding:9px 11px; font-size:0.72rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:6px; color:#fff; outline:none; resize:none; line-height:1.55; box-sizing:border-box; font-family:inherit;"></textarea>
+                                style="width:100%; flex:1; min-height:120px; padding:9px 11px; font-size:0.72rem; background:rgba(0,245,255,0.05); border:1px solid rgba(0,245,255,0.2); border-radius:6px; color:#fff; outline:none; resize:none; line-height:1.55; box-sizing:border-box; font-family:inherit;"></textarea>
                             <button onclick="brainQuery()" id="brain-query-btn"
-                                style="width:100%; padding:8px 0; font-size:0.74rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.35); border-radius:5px; color:#00f5ff; cursor:pointer; letter-spacing:0.03em;">Ask the Brain ↵</button>
+                                style="width:100%; padding:7px 0; margin-top:0.5rem; font-size:0.7rem; background:rgba(0,245,255,0.15); border:1px solid rgba(0,245,255,0.35); border-radius:5px; color:#00f5ff; cursor:pointer; letter-spacing:0.03em; flex-shrink:0;">Ask the Brain ↵</button>
                         </div>
                     </div>
-                    <div class="stat-icon" style="background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(184,41,221,0.1)); align-self:flex-start;">💬</div>
+                    <div class="stat-icon" style="background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(184,41,221,0.1)); align-self:flex-start; position:absolute; top:1.15rem; right:1.2rem;">💬</div>
                 </div>
 
                 <!-- Brain Answer tile -->
@@ -1150,6 +1150,7 @@
                                     <span id="oc-openrouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenRouter</span>
                                     <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <a href="https://openrouter.ai/settings/credits" target="_blank" style="font-size:0.5rem; padding:1px 5px; background:rgba(255,200,80,0.15); border:1px solid rgba(255,200,80,0.35); border-radius:3px; color:rgba(255,200,80,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">+ Credits</a>
                                 </div>
                                 <!-- Daemon statuses -->
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
@@ -1328,6 +1329,24 @@
                                 </div>
                                 <div style="display:flex; gap:0.3rem;">
                                     <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
+                                </div>
+                            </div>
+                            <!-- Tailscale -->
+                            <div style="background:rgba(72,128,255,0.06); border:1px solid rgba(72,128,255,0.18); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
+                                    <span style="font-size:0.75rem;">🔗</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Tailscale</span>
+                                    <span id="ts-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
+                                </div>
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
+                                    <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="ts-status-text">Checking...</div>
+                                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">Mesh VPN</div>
+                                </div>
+                                <div id="ts-devices-panel" style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; margin-bottom:0.5rem; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Loading...</div>
+                                </div>
+                                <div style="display:flex; gap:0.3rem;">
+                                    <a href="https://login.tailscale.com/admin/machines" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(72,128,255,0.12); border:1px solid rgba(72,128,255,0.3); border-radius:4px; color:#6da3ff; cursor:pointer; text-decoration:none; text-align:center;">Admin ↗</a>
                                 </div>
                             </div>
                         </div>
@@ -2073,6 +2092,19 @@
                     </div>
                     <div class="panel-footer" style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:0.5rem 0.75rem;" id="financial-last-pulse">—</div>
                 </div>
+            </div>
+
+            <!-- Daemon Health -->
+            <div class="service-panel" id="daemon-health-card" style="margin-bottom:1.5rem;">
+                <div class="panel-header">
+                    <div class="panel-icon">🔧</div>
+                    <div class="panel-title">Daemon Health</div>
+                    <div id="daemon-health-summary" style="margin-left:auto;font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>
+                </div>
+                <div id="daemon-health-body" style="display:flex;flex-direction:column;gap:0.35rem;">
+                    <div class="service-item"><span class="pulse-dot offline"></span><span>Loading...</span></div>
+                </div>
+                <div style="font-size:0.55rem;color:rgba(255,255,255,0.25);padding-top:0.5rem;text-align:right;" id="daemon-health-ts">—</div>
             </div>
 
             <!-- Document Pipeline — File Manager -->
@@ -3492,6 +3524,94 @@
             }
         }
 
+        // ── Daemon Health card ────────────────────────────────────────────────
+        async function fetchDaemonHealth() {
+            try {
+                const daemons = await fetch('/mc/daemon-health').then(r => r.json());
+                const body = document.getElementById('daemon-health-body');
+                const summary = document.getElementById('daemon-health-summary');
+                const ts = document.getElementById('daemon-health-ts');
+
+                // Categorize
+                const categories = {
+                    'Core':        { daemons: [], prefix: ['ai.openclaw.'] },
+                    'PM':          { daemons: [], prefix: ['ai.dwe.anita-'] },
+                    'Heartbeats':  { daemons: [], prefix: ['ai.dwe.agent-heartbeat'] },
+                    'Follow-Up':   { daemons: [], prefix: ['ai.dwe.ce-task', 'ai.dwe.cto-task', 'ai.dwe.nicole-task', 'ai.dwe.cfo-task'] },
+                    'Brain':       { daemons: [], prefix: ['ai.dwe.seed-', 'ai.dwe.notion-sync', 'ai.dwe.brain-', 'ai.dwe.nightly-', 'ai.dwe.memory-decay'] },
+                    'Monitoring':  { daemons: [], prefix: ['ai.dwe.health-', 'ai.dwe.anomaly-', 'ai.dwe.ralphy-', 'com.dwe.ops-'] },
+                    'Routine':     { daemons: [], prefix: ['ai.dwe.clawhub-', 'ai.dwe.soul-', 'ai.dwe.night-mode', 'ai.dwe.openclaw-backup', 'ai.dwe.morning-'] },
+                    'Other':       { daemons: [], prefix: [] }
+                };
+
+                daemons.forEach(d => {
+                    let placed = false;
+                    for (const [cat, info] of Object.entries(categories)) {
+                        if (cat === 'Other') continue;
+                        if (info.prefix.some(p => d.label.startsWith(p))) {
+                            info.daemons.push(d);
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed) categories['Other'].daemons.push(d);
+                });
+
+                // Summary counts
+                const running = daemons.filter(d => d.status === 'running').length;
+                const ok = daemons.filter(d => d.status === 'ok').length;
+                const errors = daemons.filter(d => d.status === 'error').length;
+                const summaryParts = [];
+                if (running) summaryParts.push(`<span style="color:#00ff88;">${running} running</span>`);
+                if (ok) summaryParts.push(`<span style="color:#4ea8de;">${ok} scheduled</span>`);
+                if (errors) summaryParts.push(`<span style="color:#ff4444;">${errors} error${errors > 1 ? 's' : ''}</span>`);
+                summary.innerHTML = summaryParts.join(' <span style="color:rgba(255,255,255,0.2);">|</span> ');
+
+                // Render categories
+                let html = '';
+                const catOrder = ['Core', 'PM', 'Heartbeats', 'Follow-Up', 'Brain', 'Monitoring', 'Routine', 'Other'];
+                catOrder.forEach(cat => {
+                    const info = categories[cat];
+                    if (!info.daemons.length) return;
+                    const catRunning = info.daemons.filter(d => d.status === 'running').length;
+                    const catOk = info.daemons.filter(d => d.status === 'ok').length;
+                    const catErr = info.daemons.filter(d => d.status === 'error').length;
+                    const worstDot = catErr ? 'error' : catRunning ? '' : 'offline';
+                    const catId = 'dh-cat-' + cat.toLowerCase().replace(/[^a-z]/g, '');
+                    html += `<div style="background:rgba(0,0,0,0.15);border-radius:8px;overflow:hidden;">`;
+                    html += `<div onclick="document.getElementById('${catId}').style.display=document.getElementById('${catId}').style.display==='none'?'block':'none'" style="display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.6rem;cursor:pointer;user-select:none;">`;
+                    html += `<span class="pulse-dot ${worstDot}" style="width:7px;height:7px;"></span>`;
+                    html += `<span style="font-size:0.75rem;font-weight:600;flex:1;">${cat}</span>`;
+                    html += `<span style="font-size:0.6rem;color:rgba(255,255,255,0.35);">`;
+                    if (catRunning) html += `<span style="color:#00ff88;">${catRunning}</span>`;
+                    if (catOk) html += `${catRunning ? '/' : ''}<span style="color:#4ea8de;">${catOk}</span>`;
+                    if (catErr) html += `${(catRunning||catOk) ? '/' : ''}<span style="color:#ff4444;">${catErr}</span>`;
+                    html += `</span>`;
+                    html += `<span style="font-size:0.55rem;color:rgba(255,255,255,0.25);">&#9660;</span>`;
+                    html += `</div>`;
+                    html += `<div id="${catId}" style="display:none;padding:0 0.4rem 0.4rem;">`;
+                    info.daemons.forEach(d => {
+                        const dotClass = d.status === 'running' ? '' : d.status === 'ok' ? 'offline' : 'error';
+                        const dotStyle = d.status === 'ok' ? 'background:#4ea8de;box-shadow:0 0 6px #4ea8de;animation:pulse 2s infinite;' : '';
+                        const shortLabel = d.label.replace(/^ai\.(openclaw|dwe)\./, '').replace(/^com\.(dwe|missioncontrol)\./, '');
+                        const statusText = d.status === 'running' ? `PID ${d.pid}` : d.status === 'ok' ? 'scheduled' : `exit ${d.exitCode}`;
+                        const statusColor = d.status === 'running' ? '#00ff88' : d.status === 'ok' ? '#4ea8de' : '#ff4444';
+                        html += `<div style="display:flex;align-items:center;gap:0.4rem;padding:0.25rem 0.4rem;font-size:0.72rem;">`;
+                        html += `<span class="pulse-dot ${dotClass}" style="width:6px;height:6px;${dotStyle}"></span>`;
+                        html += `<span style="flex:1;color:rgba(255,255,255,0.7);">${shortLabel}</span>`;
+                        html += `<span style="font-size:0.6rem;color:${statusColor};font-family:monospace;">${statusText}</span>`;
+                        html += `</div>`;
+                    });
+                    html += `</div></div>`;
+                });
+
+                body.innerHTML = html;
+                ts.textContent = 'Updated ' + new Date().toLocaleTimeString();
+            } catch(e) {
+                document.getElementById('daemon-health-body').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load daemon health</span></div>';
+            }
+        }
+
         // ── Revenue & Pipeline tile ──────────────────────────────────────────
         async function fetchRevenuePipeline() {
             let failures = 0;
@@ -3618,9 +3738,11 @@
                         cSt.textContent = c.nextRun || 'Active';
                         cSt.style.color = 'rgba(0,255,136,0.6)';
                     }
+                    const dotColor = c.host === 'VPS' ? '#ff9800' : '#00d4ff';
+                    const hostTag = c.host === 'VPS' ? '<span style="font-size:0.55rem;color:#ff9800;margin-left:3px;">VPS</span>' : '';
                     list.innerHTML += `<div class="hud-row">
-                        <span class="hud-dot" style="background:#00d4ff;box-shadow:0 0 4px #00d4ff;"></span>
-                        <span class="hud-name">${c.id}</span>
+                        <span class="hud-dot" style="background:${dotColor};box-shadow:0 0 4px ${dotColor};"></span>
+                        <span class="hud-name">${c.command}${hostTag}</span>
                         <span class="hud-st">${c.nextRun}</span>
                     </div>`;
                 });
@@ -5045,6 +5167,42 @@
             }
         }
 
+        // ── Tailscale Mesh Status ───────────────────────────────────────
+        async function fetchTailscale() {
+            const dot = document.getElementById('ts-status-dot');
+            const text = document.getElementById('ts-status-text');
+            const panel = document.getElementById('ts-devices-panel');
+            if (!dot || !text || !panel) return;
+            try {
+                const d = await fetch('/mc/tailscale').then(r => r.json());
+                if (!d.running) {
+                    dot.style.background = '#ff4444';
+                    text.textContent = 'Stopped';
+                    text.style.color = '#ff4444';
+                    panel.innerHTML = '<div style="font-size:0.55rem;color:#ff6b6b;">Tailscale not running</div>';
+                    return;
+                }
+                const allOn = d.allOnline;
+                dot.style.background = allOn ? '#00ff88' : '#f5a623';
+                text.textContent = allOn ? 'All Online' : 'Degraded';
+                text.style.color = allOn ? '#00ff88' : '#f5a623';
+                panel.innerHTML = d.devices.map(dev => {
+                    const color = dev.online ? '#00ff88' : '#ff4444';
+                    const label = dev.online ? 'online' : 'offline';
+                    return `<div style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">${dev.name}</span>
+                        <span style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.3);font-family:monospace;">${dev.ip || ''}</span>
+                        <span style="font-size:0.5rem;color:${color};font-family:monospace;">${label}</span>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                dot.style.background = '#555';
+                text.textContent = 'Error';
+                panel.innerHTML = '<div style="font-size:0.55rem;color:rgba(255,255,255,0.3);">Unable to fetch</div>';
+            }
+        }
+
         // ── Sprint Mode ──────────────────────────────────────────────────
         async function fetchSprintStatus() {
             try {
@@ -5138,6 +5296,7 @@
                 fetchSprintStatus(),
                 fetchServices(),
                 fetchLaunchd(),
+                fetchDaemonHealth(),
                 fetchCrons(),
                 fetchAgents(),
                 fetchBrain(),
@@ -5156,7 +5315,8 @@
                 fetchOpenclawVersion(),
                 fetchDOMetrics(),
                 fetchRevenuePipeline(),
-                fetchN8nWorkflows()
+                fetchN8nWorkflows(),
+                fetchTailscale()
             ]);
             // refresh complete
         }
@@ -6242,6 +6402,24 @@
                 pill.style.color = '#ff6b6b';
             }
         }
+
+        // Vision Pulse score badge
+        async function fetchVisionScore() {
+            try {
+                const r = await fetch('/api/vision-pulse');
+                if (!r.ok) return;
+                const d = await r.json();
+                const badge = document.getElementById('vision-score-badge');
+                if (badge && d.score != null) {
+                    const s = d.score;
+                    const color = s > 70 ? '#00ff88' : s > 40 ? '#ffaa00' : '#ff4444';
+                    badge.textContent = s + '/100';
+                    badge.style.color = color;
+                }
+            } catch(e) {}
+        }
+        fetchVisionScore();
+        setInterval(fetchVisionScore, 300000);
 
         // Initial load + 60s auto-refresh
         refreshAll();

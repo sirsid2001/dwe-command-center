@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DWE | CEO's Corner</title>
+    <title>DWE | CEO Productivity</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -172,6 +172,7 @@
         .stage-proposal .f-count { color: #ff6600; } .stage-proposal .f-bar { background: rgba(255,102,0,0.3); }
         .stage-client .f-count { color: #00ff88; } .stage-client .f-bar { background: rgba(0,255,136,0.3); }
         .stage-upsell .f-count { color: #b829dd; } .stage-upsell .f-bar { background: rgba(184,41,221,0.3); }
+        .stage-ywyc .f-count { color: #ffaa00; } .stage-ywyc .f-bar { background: rgba(255,170,0,0.3); }
 
         /* Checkbox overlay for checkable stages */
         .funnel-stage .f-check {
@@ -404,7 +405,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>CEO's Corner</h1>
+        <h1>CEO Productivity</h1>
         <div class="header-right">
             <span class="updated-text" id="updated-at"></span>
             <select class="theme-select" id="theme-dropdown" onchange="setTheme(this.value)">
@@ -589,6 +590,43 @@
                 <div class="card-title"><span class="icon">📋</span> CEO Review Queue</div>
                 <div id="ceo-review">
                     <div class="loading">Loading review items</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: Pipeline & Outreach -->
+        <div id="step-panel-pipeline-outreach" class="step-panel grid-full">
+            <div style="display:flex;gap:0.75rem;margin-bottom:1rem;justify-content:center;">
+                <a href="/funnel" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#fff;text-decoration:none;font-size:0.8rem;font-weight:600;background:rgba(255,149,0,0.15);border:1px solid rgba(255,149,0,0.3);border-radius:0.5rem;padding:0.5rem 1.2rem;">🔄 Open Full Funnel →</a>
+                <a href="/revenue" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#fff;text-decoration:none;font-size:0.8rem;font-weight:600;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.3);border-radius:0.5rem;padding:0.5rem 1.2rem;">💰 Revenue Dashboard →</a>
+            </div>
+
+            <!-- Funnel Overview -->
+            <div class="card" style="border-color:rgba(255,149,0,0.2);margin-bottom:1rem;">
+                <div class="card-title"><span class="icon">🔄</span> Pipeline Funnel
+                    <button onclick="loadPipelineFunnel()" style="margin-left:auto;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-radius:0.3rem;padding:0.15rem 0.4rem;cursor:pointer;font-size:0.55rem;font-family:Inter,sans-serif;">Refresh</button>
+                </div>
+                <div id="ceo-funnel-stages" style="display:flex;align-items:stretch;gap:0;"></div>
+            </div>
+
+            <!-- Outreach Queue -->
+            <div class="card" style="border-color:rgba(0,245,255,0.2);">
+                <div class="card-title"><span class="icon">📤</span> Outreach Queue
+                    <span id="outreach-count" style="background:rgba(0,245,255,0.15);color:#00f5ff;font-size:0.6rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:1rem;margin-left:auto;">0</span>
+                </div>
+                <div id="outreach-queue-list" style="display:flex;flex-direction:column;gap:0.4rem;">
+                    <div style="color:rgba(255,255,255,0.4);font-size:0.75rem;">Loading outreach queue...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 6: Daily YWYC (end of day) -->
+        <div id="step-panel-daily-ywyc" class="step-panel grid-full">
+            <div class="card" style="border-color:rgba(255,170,0,0.2);">
+                <div class="card-title"><span class="icon">📝</span> Daily YWYC — End of Day</div>
+                <p style="color:rgba(255,255,255,0.6);font-size:0.8rem;line-height:1.6;margin:0.5rem 0;">Complete your end-of-day YWYC journal entry. Reflect on what you accomplished and plan for tomorrow.</p>
+                <div style="margin-top:0.75rem;text-align:center;">
+                    <a href="https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#ffaa00;text-decoration:none;font-size:0.85rem;font-weight:600;background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);border-radius:0.5rem;padding:0.6rem 1.5rem;">Open Daily YWYC in Notion →</a>
                 </div>
             </div>
         </div>
@@ -834,9 +872,85 @@
                 renderDrillList(drillData);
                 renderReviewQueue(reviewData);
                 document.getElementById('updated-at').textContent = 'Updated ' + new Date().toLocaleTimeString();
+                loadPipelineFunnel();
             } catch (e) {
                 console.error('Load error:', e);
             }
+        }
+
+        // ── Pipeline Funnel + Outreach Queue ──────────────────────────
+        const FUNNEL_STAGES = ['Lead Generation','New','Audited','Outreach Sent','Responded','Proposal','Client','Upsell','Disqualified'];
+        const FUNNEL_COLORS = { 'Lead Generation':'#b829dd','New':'#00f5ff','Audited':'#ffaa00','Outreach Sent':'#00c8ff','Responded':'#00ff88','Proposal':'#ff6600','Client':'#10b981','Upsell':'#a855f7','Disqualified':'#555' };
+
+        async function loadPipelineFunnel() {
+            try {
+                const pipelinesRes = await fetch('/mc/pipelines');
+                const pipelines = await pipelinesRes.json();
+                const pid = pipelines[0]?.id || 'dwe-marketing';
+
+                const [statsRes, prospectsRes] = await Promise.all([
+                    fetch('/mc/prospects/stats?pipeline=' + pid),
+                    fetch('/mc/prospects?pipeline=' + pid)
+                ]);
+                const stats = await statsRes.json();
+                const prospects = await prospectsRes.json();
+
+                // Render funnel stages
+                const stagesEl = document.getElementById('ceo-funnel-stages');
+                if (stagesEl) {
+                    let html = '';
+                    const stageCounts = stats.stages || {};
+                    FUNNEL_STAGES.forEach((s, i) => {
+                        const count = stageCounts[s] || 0;
+                        const col = FUNNEL_COLORS[s] || '#888';
+                        html += `<div style="flex:1;text-align:center;padding:0.75rem 0.25rem;position:relative;cursor:pointer;" onclick="filterOutreach('${s}')">
+                            <div style="font-size:1.4rem;font-weight:800;color:${col};">${count}</div>
+                            <div style="font-size:0.5rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.03em;margin-top:0.2rem;">${s}</div>
+                            <div style="position:absolute;bottom:0;left:15%;right:15%;height:3px;border-radius:2px;background:${col};opacity:0.3;"></div>
+                        </div>`;
+                        if (i < FUNNEL_STAGES.length - 1) html += '<div style="display:flex;align-items:center;color:rgba(255,255,255,0.12);font-size:0.7rem;">›</div>';
+                    });
+                    stagesEl.innerHTML = html;
+                }
+
+                // Render outreach queue (prospects needing outreach or awaiting response)
+                const outreachItems = (prospects.rows || prospects || []).filter(p => {
+                    const stage = (p.Funnel_Stage || p.funnel_stage || '').toLowerCase();
+                    return stage.includes('new') || stage.includes('audited') || stage.includes('outreach');
+                });
+                const queueEl = document.getElementById('outreach-queue-list');
+                const countEl = document.getElementById('outreach-count');
+                if (countEl) countEl.textContent = outreachItems.length;
+                if (queueEl) {
+                    if (outreachItems.length === 0) {
+                        queueEl.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-align:center;padding:1rem;">No prospects in outreach queue</div>';
+                    } else {
+                        queueEl.innerHTML = outreachItems.slice(0, 20).map(p => {
+                            const name = p.Company || p.company || p.Name || p.name || 'Unknown';
+                            const stage = p.Funnel_Stage || p.funnel_stage || '—';
+                            const score = p.Audit_Score || p.audit_score || '—';
+                            const email = p.Contact_Email || p.contact_email || '';
+                            const stageCol = FUNNEL_COLORS[stage] || '#888';
+                            return `<div style="display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.6rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:0.5rem;">
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-size:0.8rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+                                    <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">${email}</div>
+                                </div>
+                                <span style="font-size:0.6rem;padding:0.15rem 0.5rem;border-radius:1rem;border:1px solid ${stageCol};color:${stageCol};white-space:nowrap;">${stage}</span>
+                                <span style="font-size:0.7rem;font-weight:700;color:#ffaa00;min-width:2rem;text-align:center;" title="Audit Score">${score}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+            } catch (e) {
+                console.error('Pipeline funnel error:', e);
+                const el = document.getElementById('ceo-funnel-stages');
+                if (el) el.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:0.75rem;text-align:center;width:100%;">Could not load pipeline data</div>';
+            }
+        }
+
+        function filterOutreach(stage) {
+            window.open('/funnel?stage=' + encodeURIComponent(stage), '_blank');
         }
 
         function renderDrillHero(data) {
@@ -1010,8 +1124,8 @@
             loadCeoPipeline();
         }
         const CEO_PIPELINE_KEY = 'dwe_ceo_pipeline';
-        const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified'];
-        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified' };
+        const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified', 'Daily YWYC'];
+        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified', 'Daily YWYC': 'ywyc' };
 
         // Checkable items override specific stages (position 0 = first stage)
         const CEO_CHECKABLE = [
@@ -1019,6 +1133,8 @@
             { position: 1, id: 'process-newsletter', label: 'Process Interests', url: '' },
             { position: 2, id: 'check-email', label: 'Check Email', url: 'https://mail.google.com' },
             { position: 3, id: 'work-tasks', label: 'Work My Tasks', url: 'https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c' },
+            { position: 4, id: 'pipeline-outreach', label: 'Pipeline & Outreach', url: '/funnel' },
+            { position: 9, id: 'daily-ywyc', label: 'Daily YWYC', url: 'https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70' },
         ];
 
         function getPipelineState() {

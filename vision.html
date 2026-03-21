@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DWE | Vision Operating System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0e27;
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(0,0,0,0.5) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(0,0,0,0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0e27 0%, #1a1e3c 50%, #0a0e27 100%);
+            background-attachment: fixed;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: rgba(20, 25, 70, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.1rem 0.9rem 1rem;
+            position: fixed;
+            height: calc(100vh - 3.3rem);
+            top: 2.9rem;
+            left: 14px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+            padding: 0.35rem 0.5rem;
+            border: 1px solid rgba(255, 200, 0, 0.35);
+            border-radius: 10px;
+            padding-bottom: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, #fff, #e0e0e0);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-value { font-size: 1rem; font-weight: 700; letter-spacing: 1px; }
+
+        .nav-section {
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+            flex-shrink: 0;
+        }
+        .nav-section:last-of-type { border-bottom: none; }
+
+        .nav-section-title {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.65rem;
+            margin-bottom: 0.2rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(184, 41, 221, 0.1) 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 245, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-item.active .nav-icon { background: linear-gradient(135deg, #00f5ff, #b829dd); }
+
+        .help-box {
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 0.7rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+        .help-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .help-text { font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); }
+
+        /* Main content */
+        .main {
+            flex: 1;
+            margin-left: 248px;
+            padding: 2rem;
+            max-width: calc(100% - 248px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; z-index: 0; pointer-events: none; }
+        .bg-blob-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #00f5ff, #00ff88); top: 10%; right: -100px; }
+        .bg-blob-2 { width: 300px; height: 300px; background: linear-gradient(135deg, #b829dd, #ff00aa); bottom: 20%; left: 10%; }
+        .main > *:not(.bg-blob) { position: relative; z-index: 1; }
+
+        /* Page header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00f5ff, #b829dd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.15rem;
+        }
+        .refresh-info {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.35);
+            text-align: right;
+        }
+
+        /* Score display */
+        .score-panel {
+            background: rgba(15, 20, 60, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .score-ring {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+        }
+        .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .score-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+        .score-ring-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s ease, stroke 0.5s ease; }
+        .score-number {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .score-label {
+            position: absolute;
+            bottom: 16px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+        .score-details { flex: 1; }
+        .score-details h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .score-stats { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+        .score-stat {
+            text-align: center;
+            padding: 0.6rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            min-width: 90px;
+        }
+        .score-stat-num { font-size: 1.5rem; font-weight: 800; }
+        .score-stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+        .score-stat-num.warn { color: #ff9500; }
+        .score-stat-num.good { color: #00ff88; }
+        .score-stat-num.bad { color: #ff4444; }
+        .score-stat-num.info { color: #00f5ff; }
+
+        /* Thermometer grid */
+        .thermo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .thermo-card {
+            background: rgba(15, 20, 60, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        .focus-so {
+            border: 2px solid #ffc800;
+            box-shadow: 0 0 12px rgba(255, 200, 0, 0.3);
+        }
+        .focus-so::before {
+            content: "THIS WEEK'S FOCUS";
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: #ffc800;
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+            letter-spacing: 0.05em;
+        }
+        .early-completion-banner {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 0.7rem 1.2rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #00ff88;
+            text-align: center;
+            letter-spacing: 0.04em;
+        }
+        .thermo-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .thermo-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.3;
+            min-height: 2.6em;
+            display: flex;
+            align-items: center;
+        }
+        .thermo-tag {
+            font-size: 0.55rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: block;
+            color: rgba(255,255,255,0.35);
+        }
+
+        /* Thermometer bar */
+        .thermo-wrapper {
+            width: 44px;
+            height: 180px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .thermo-tube {
+            width: 28px;
+            height: 150px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .thermo-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-radius: 0 0 13px 13px;
+            transition: height 1s ease;
+        }
+        .thermo-bulb {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            margin-top: -10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .thermo-pct {
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: -2px;
+        }
+
+        /* Stats row under thermometer */
+        .thermo-stats {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            width: 100%;
+        }
+        .thermo-stat-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.45);
+        }
+        .thermo-stat-val { font-weight: 700; color: rgba(255,255,255,0.7); }
+
+        /* Status badge */
+        .status-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .status-on-track { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .status-active { background: rgba(0,200,255,0.15); color: #00c8ff; }
+        .status-slow { background: rgba(255,200,0,0.15); color: #ffc800; }
+        .status-stale { background: rgba(255,100,0,0.15); color: #ff6400; }
+        .status-blocked { background: rgba(255,60,60,0.15); color: #ff3c3c; }
+
+        /* Vision Context Blocks */
+        .vision-block {
+            background: rgba(15, 20, 60, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.75rem;
+        }
+        .vision-block-label {
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 0.4rem;
+        }
+        .vision-block-text {
+            font-size: 0.8rem;
+            line-height: 1.55;
+            color: rgba(255,255,255,0.85);
+        }
+        .chief-aim-block {
+            border-left: 3px solid #ffc800;
+            background: rgba(255,200,0,0.04);
+        }
+        .chief-aim-block .vision-block-label { color: #ffc800; }
+        .chief-aim-block .vision-block-text { font-size: 0.85rem; font-weight: 500; }
+        .mission-block {
+            border-left: 3px solid #00a8ff;
+            background: rgba(0,168,255,0.04);
+            flex: 1;
+        }
+        .mission-block .vision-block-label { color: #00a8ff; }
+        .vision-phase-block {
+            border-left: 3px solid #b366ff;
+            background: rgba(179,102,255,0.04);
+            flex: 1;
+        }
+        .vision-phase-block .vision-block-label { color: #b366ff; }
+        .vision-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .vision-row .vision-block { margin-bottom: 0; }
+        .values-block {
+            border-left: 3px solid #00ff88;
+            background: rgba(0,255,136,0.04);
+        }
+        .values-block .vision-block-label { color: #00ff88; }
+        .values-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .value-chip {
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 6px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.75);
+        }
+        .section-header {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.3);
+            margin: 1rem 0 0.6rem;
+        }
+        .milestones-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            margin-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 1rem;
+        }
+        .milestones-stack-title {
+            font-size: 0.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: rgba(255,255,255,0.3);
+            text-align: center;
+            margin-bottom: 0.2rem;
+        }
+        .milestone-card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 0.7rem 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .milestone-name {
+            font-size: 0.5rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            max-width: 55%;
+            line-height: 1.4;
+        }
+        .milestone-value {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1.3;
+            gap: 0.15rem;
+        }
+        .milestone-income {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: inherit;
+        }
+        .milestone-detail {
+            font-size: 0.45rem;
+            font-weight: 400;
+            opacity: 0.5;
+        }
+        .milestone-meaning {
+            display: none;
+        }
+        .milestone-card.current {
+            border-color: rgba(255,200,0,0.3);
+            background: rgba(255,200,0,0.06);
+        }
+        .milestone-card.milestone-done {
+            border-color: rgba(0,255,136,0.25);
+            background: rgba(0,255,136,0.06);
+        }
+        .milestone-card.milestone-done .milestone-name {
+            color: rgba(0,255,136,0.6);
+        }
+        .milestone-card.milestone-active {
+            border-color: rgba(255,204,0,0.3);
+            background: rgba(255,204,0,0.07);
+        }
+        .milestone-card.milestone-active .milestone-name {
+            color: rgba(255,204,0,0.6);
+        }
+        .milestone-check {
+            margin-right: 0.3rem;
+            font-size: 0.55rem;
+            color: #00ff88;
+        }
+        .milestone-progress {
+            margin-right: 0.3rem;
+            font-size: 0.4rem;
+            color: #ffcc00;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Bottom panels */
+        .panels-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .panel {
+            background: rgba(15, 20, 60, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 1.2rem;
+        }
+        .panel-title {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        .panel.alert { border-color: rgba(255,60,60,0.25); }
+        .panel.alert .panel-title { color: #ff4444; }
+        .panel.warning { border-color: rgba(255,200,0,0.2); }
+        .panel.warning .panel-title { color: #ffc800; }
+
+        /* SLA violation item */
+        .violation-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.6rem;
+            background: rgba(255,60,60,0.06);
+            border: 1px solid rgba(255,60,60,0.12);
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .violation-icon { font-size: 0.9rem; flex-shrink: 0; }
+        .no-violations {
+            font-size: 0.75rem;
+            color: rgba(0,255,136,0.6);
+            padding: 0.8rem;
+            text-align: center;
+        }
+
+        /* Drift items */
+        .drift-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 0.6rem;
+            background: rgba(255,200,0,0.05);
+            border: 1px solid rgba(255,200,0,0.1);
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.4;
+        }
+        .drift-icon { font-size: 0.9rem; flex-shrink: 0; }
+        .drift-pct-display {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .drift-low { color: #00ff88; }
+        .drift-medium { color: #ffc800; }
+        .drift-high { color: #ff4444; }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.85rem;
+        }
+        .loading-spinner {
+            width: 32px; height: 32px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00f5ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .thermo-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; max-width: 100%; }
+            .thermo-grid { grid-template-columns: repeat(2, 1fr); }
+            .panels-row { grid-template-columns: 1fr; }
+            .vision-row { flex-direction: column; }
+        }
+        @media (max-width: 600px) {
+            .thermo-grid { grid-template-columns: 1fr 1fr; }
+            .score-panel { flex-direction: column; text-align: center; }
+
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1a1e3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <span class="logo-value">DWE</span>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Command</div>
+            <a href="/" class="nav-item">
+                <span class="nav-icon">&#x2302;</span> Dashboard
+            </a>
+            <a href="/ai-team" class="nav-item">
+                <span class="nav-icon">&#x2699;</span> AI Team
+            </a>
+            <a href="/delegations" class="nav-item">
+                <span class="nav-icon">&#x2637;</span> Delegations
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Strategy</div>
+            <a href="/vision" class="nav-item active">
+                <span class="nav-icon">&#x25CE;</span> Vision
+            </a>
+            <a href="/revenue" class="nav-item">
+                <span class="nav-icon">&#x24;</span> Revenue
+            </a>
+            <a href="/funnel" class="nav-item">
+                <span class="nav-icon">&#x25BD;</span> Funnel
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Infrastructure</div>
+            <a href="/ecosystem" class="nav-item">
+                <span class="nav-icon">&#x29BF;</span> Ecosystem
+            </a>
+            <a href="/n8n-workflows" class="nav-item">
+                <span class="nav-icon">&#x21C4;</span> Workflows
+            </a>
+        </div>
+
+        <div class="help-box">
+            <div class="help-title">Vision OS</div>
+            <div class="help-text">Strategic alignment tracker</div>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+        <div class="bg-blob bg-blob-1"></div>
+        <div class="bg-blob bg-blob-2"></div>
+
+        <div id="content-loading" class="loading">
+            <div class="loading-spinner"></div>
+            Loading Vision Pulse data...
+        </div>
+
+        <div id="content-ready" style="display:none;">
+            <!-- Page header -->
+            <div class="page-header">
+                <div>
+                    <h1>Vision Operating System</h1>
+                    <div class="page-subtitle">Strategic alignment &mdash; auto-refreshes every 5 min</div>
+                </div>
+                <div class="refresh-info">
+                    <div>Last update: <span id="last-update">--</span></div>
+                    <div>Next refresh: <span id="next-refresh">--</span></div>
+                </div>
+            </div>
+
+            <!-- CHIEF AIM -->
+            <div class="vision-block chief-aim-block">
+                <div class="vision-block-label">Chief Aim</div>
+                <div class="vision-block-text" id="chief-aim-text"></div>
+            </div>
+
+            <!-- MISSION + VISION side by side -->
+            <div class="vision-row">
+                <div class="vision-block mission-block">
+                    <div class="vision-block-label">Mission</div>
+                    <div class="vision-block-text" id="mission-text"></div>
+                </div>
+                <div class="vision-block vision-phase-block">
+                    <div class="vision-block-label">2026 Vision</div>
+                    <div class="vision-block-text" id="vision-text"></div>
+                </div>
+            </div>
+
+            <!-- VALUES -->
+            <div class="vision-block values-block">
+                <div class="vision-block-label">Core Values</div>
+                <div class="values-grid" id="values-grid"></div>
+            </div>
+
+            <!-- Score + Stats row -->
+            <div class="score-panel">
+                <div class="score-ring">
+                    <svg viewBox="0 0 120 120">
+                        <circle class="score-ring-bg" cx="60" cy="60" r="50"/>
+                        <circle id="score-arc" class="score-ring-fill" cx="60" cy="60" r="50"
+                                stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+                    </svg>
+                    <div class="score-number" id="score-value">--</div>
+                    <div class="score-label">Strategy</div>
+                </div>
+                <div class="score-details">
+                    <h2>Strategy Score</h2>
+                    <div class="score-stats">
+                        <div class="score-stat">
+                            <div class="score-stat-num info" id="stat-operational">--</div>
+                            <div class="score-stat-label">Operational</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-num warn" id="stat-unaligned">--</div>
+                            <div class="score-stat-label">Unaligned</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-num bad" id="stat-untagged">--</div>
+                            <div class="score-stat-label">Untagged</div>
+                        </div>
+                        <div class="score-stat">
+                            <div class="score-stat-num good" id="stat-so1-share">--</div>
+                            <div class="score-stat-label">SO1 Share %</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STRATEGIC OBJECTIVES with thermometers -->
+            <div class="section-header">Strategic Objectives</div>
+            <div class="thermo-grid" id="thermo-grid">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Bottom panels -->
+            <div class="panels-row">
+                <!-- SLA Violations -->
+                <div class="panel" id="sla-panel">
+                    <div class="panel-title">SLA Violations</div>
+                    <div id="sla-content">
+                        <div class="no-violations">No violations detected</div>
+                    </div>
+                </div>
+
+                <!-- Vision Drift -->
+                <div class="panel" id="drift-panel">
+                    <div class="panel-title">Vision Drift</div>
+                    <div id="drift-pct-display" class="drift-pct-display drift-low">0%</div>
+                    <div id="drift-content"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+(function() {
+    const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+    let nextRefreshTime = null;
+    let _cachedMilestones = null;
+
+    const SO_CONFIG = {
+        'SO1: Financial Independence': { color: '#ffc800', bg: 'rgba(255,200,0,0.15)', tag: 'SO1' },
+        'SO2: DWE Ecosystem':          { color: '#00a8ff', bg: 'rgba(0,168,255,0.15)', tag: 'SO2' },
+        'SO3: Eliminate Debt':          { color: '#ff4444', bg: 'rgba(255,68,68,0.15)',  tag: 'SO3' },
+        'SO4: Reserves':               { color: '#00ff88', bg: 'rgba(0,255,136,0.15)',  tag: 'SO4' },
+        'SO5: Family Trust':            { color: '#b366ff', bg: 'rgba(179,102,255,0.15)', tag: 'SO5' }
+    };
+
+    function scoreColor(score) {
+        if (score > 70) return '#00ff88';
+        if (score >= 40) return '#ffc800';
+        return '#ff4444';
+    }
+
+    function statusClass(status) {
+        const s = (status || '').toUpperCase().replace(/\s+/g, '_');
+        if (s === 'ON_TRACK') return 'status-on-track';
+        if (s === 'ACTIVE') return 'status-active';
+        if (s === 'SLOW') return 'status-slow';
+        if (s === 'STALE') return 'status-stale';
+        if (s === 'BLOCKED') return 'status-blocked';
+        return 'status-active';
+    }
+
+    function driftClass(pct) {
+        if (pct <= 15) return 'drift-low';
+        if (pct <= 40) return 'drift-medium';
+        return 'drift-high';
+    }
+
+    function buildThermometer(name, obj, isFocus, milestones) {
+        const cfg = SO_CONFIG[name] || { color: '#aaa', bg: 'rgba(170,170,170,0.15)', tag: '??' };
+        const total = obj.total || 1;
+        let fillPct, fillHeight;
+
+        // For SO2: derive thermometer from milestone completion weights
+        if (milestones && milestones.some(m => m.status)) {
+            const completedWeight = milestones
+                .filter(m => m.status === 'done')
+                .reduce((sum, m) => sum + parseInt(m.income) || 0, 0);
+            fillPct = completedWeight;
+            fillHeight = Math.max(4, Math.round((fillPct / 100) * 150));
+        } else {
+            const activeRatio = obj.active / total;
+            fillPct = Math.round(activeRatio * 100);
+            fillHeight = Math.max(4, Math.round(activeRatio * 150));
+        }
+        const label = name.replace(/^SO\d+:\s*/, '');
+        const focusClass = isFocus ? ' focus-so' : '';
+
+        let milestonesHtml = '';
+        if (milestones && milestones.length) {
+            const stackTitle = cfg.tag === 'SO1' ? 'Income Milestones' : 'Milestones';
+            milestonesHtml = `<div class="milestones-stack">
+                <div class="milestones-stack-title">${stackTitle}</div>
+                ${milestones.map((m, i) => {
+                    let cardClass = 'milestone-card';
+                    let valueColor = cfg.color;
+                    let statusIcon = '';
+                    if (m.status === 'done') {
+                        cardClass += ' milestone-done';
+                        valueColor = '#00ff88';
+                        statusIcon = '<span class="milestone-check">&#x2713;</span>';
+                    } else if (m.status === 'active') {
+                        cardClass += ' milestone-active';
+                        valueColor = '#ffcc00';
+                        statusIcon = '<span class="milestone-progress">&#x25CF;</span>';
+                    } else if (i === 0) {
+                        cardClass += ' current';
+                    }
+                    return `<div class="${cardClass}">
+                        <span class="milestone-name">${statusIcon}${escHtml(m.name)}</span>
+                        <span class="milestone-value" style="color:${valueColor};">
+                            <span class="milestone-income">${escHtml(m.income)}</span>
+                            ${m.detail ? `<span class="milestone-detail">${escHtml(m.detail)}</span>` : ''}
+                        </span>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }
+
+        return `
+        <div class="thermo-card${focusClass}">
+            <div class="thermo-label">
+                <div>
+                    <span class="thermo-tag" style="color:${cfg.color};">${cfg.tag}</span>
+                    ${label}
+                </div>
+            </div>
+            <div class="thermo-wrapper">
+                <div class="thermo-tube">
+                    <div class="thermo-fill" style="height:${fillHeight}px; background: linear-gradient(to top, ${fillPct >= 100 ? '#00ff88' : cfg.color}, ${fillPct >= 100 ? 'rgba(0,255,136,0.15)' : cfg.bg});"></div>
+                </div>
+                <div class="thermo-bulb" style="background:${fillPct >= 100 ? 'rgba(0,255,136,0.15)' : cfg.bg}; border-color:${fillPct >= 100 ? '#00ff88' : cfg.color};">
+                    <span class="thermo-pct" style="color:${fillPct >= 100 ? '#00ff88' : cfg.color};">${fillPct}%</span>
+                </div>
+            </div>
+            <div class="thermo-stats">
+                <div class="thermo-stat-row">
+                    <span>Active</span>
+                    <span class="thermo-stat-val" style="color:${cfg.color};">${obj.active}</span>
+                </div>
+                <div class="thermo-stat-row">
+                    <span>Not Started</span>
+                    <span class="thermo-stat-val">${obj.not_started}</span>
+                </div>
+                <div class="thermo-stat-row">
+                    <span>Blocked</span>
+                    <span class="thermo-stat-val" style="color:${obj.blocked > 0 ? '#ff4444' : 'inherit'};">${obj.blocked}</span>
+                </div>
+                <div class="thermo-stat-row">
+                    <span>Done (wk)</span>
+                    <span class="thermo-stat-val" style="color:#00ff88;">${obj.done_week}</span>
+                </div>
+                <div class="thermo-stat-row">
+                    <span>Total</span>
+                    <span class="thermo-stat-val">${obj.total}</span>
+                </div>
+            </div>
+            <span class="status-badge ${statusClass(obj.status)}">${obj.status || 'UNKNOWN'}</span>
+            ${milestonesHtml}
+        </div>`;
+    }
+
+    function render(data) {
+        if (!data || typeof data !== 'object') return;
+        // Score
+        const score = data.score || 0;
+        const color = scoreColor(score);
+        document.getElementById('score-value').textContent = score;
+        document.getElementById('score-value').style.color = color;
+
+        const arc = document.getElementById('score-arc');
+        const circumference = 314.16;
+        arc.style.stroke = color;
+        arc.style.strokeDashoffset = circumference - (circumference * score / 100);
+
+        // Operational stats
+        document.getElementById('stat-operational').textContent = data.operational_count ?? '--';
+        document.getElementById('stat-unaligned').textContent = data.unaligned_count ?? '--';
+        document.getElementById('stat-untagged').textContent = data.untagged_count ?? '--';
+        document.getElementById('stat-so1-share').textContent = (data.so1_share != null ? data.so1_share.toFixed(0) + '%' : '--');
+
+        // Thermometers
+        const grid = document.getElementById('thermo-grid');
+        const focusObjectives = data.focus_objectives || [];
+        let html = '';
+
+        // Early completion banner
+        if (data.early_completion) {
+            html += '<div class="early-completion-banner" style="grid-column: 1 / -1;">ALL STRATEGIC TASKS COMPLETE &mdash; Early Completion Protocol Active</div>';
+        }
+
+        if (data.objectives) {
+            // Display order: SO2 (completed) first, then SO1, SO3, SO4, SO5
+            const displayOrder = ['SO2', 'SO1', 'SO3', 'SO4', 'SO5'];
+            const sortedEntries = Object.entries(data.objectives).sort((a, b) => {
+                const tagA = (SO_CONFIG[a[0]] || {}).tag || '';
+                const tagB = (SO_CONFIG[b[0]] || {}).tag || '';
+                return displayOrder.indexOf(tagA) - displayOrder.indexOf(tagB);
+            });
+            for (const [name, obj] of sortedEntries) {
+                const cfg = SO_CONFIG[name] || { tag: '??' };
+                const isFocus = focusObjectives.includes(cfg.tag);
+                // SO1 gets income milestones, SO2 gets ecosystem milestones
+                let soMilestones = null;
+                if (cfg.tag === 'SO1') {
+                    soMilestones = [
+                        { name: '$10,000/mo', income: '10%', detail: 'Target: June 2026', status: 'active' },
+                        { name: '$20,000/mo', income: '10%', detail: 'Scale Phase' },
+                        { name: '$50,000/mo', income: '30%', detail: 'Growth Phase' },
+                        { name: '$100,000/mo', income: '50%', detail: 'Full Independence' }
+                    ];
+                } else if (cfg.tag === 'SO2') {
+                    soMilestones = [
+                        { name: 'Design Systems', income: '40%', detail: 'Architecture & Blueprints', status: 'done' },
+                        { name: 'Foundational Systems', income: '20%', detail: 'Internet & Infrastructure', status: 'done' },
+                        { name: 'Strategic Systems', income: '20%', detail: 'VOS & Vision Pulse', status: 'done' },
+                        { name: 'Operational Systems', income: '20%', detail: '68+ Daemons', status: 'done' }
+                    ];
+                }
+                html += buildThermometer(name, obj, isFocus, soMilestones);
+            }
+        }
+        grid.innerHTML = html;
+
+        // SLA Violations
+        const slaPanel = document.getElementById('sla-panel');
+        const slaContent = document.getElementById('sla-content');
+        if (data.sla_violations && data.sla_violations.length > 0) {
+            slaPanel.classList.add('alert');
+            slaContent.innerHTML = data.sla_violations.map(v => {
+                const obj = (v && v.objective) ? v.objective.split(': ')[1] || v.objective : String(v);
+                const days = v && v.days ? v.days : '?';
+                const threshold = v && v.threshold ? v.threshold : '?';
+                const owner = v && v.owner ? v.owner : '';
+                const text = `${obj} — ${days}d stale (threshold: ${threshold}d) — ${owner}`;
+                return `<div class="violation-item"><span class="violation-icon">&#x26A0;</span> ${escHtml(text)}</div>`;
+            }).join('');
+        } else {
+            slaPanel.classList.remove('alert');
+            slaContent.innerHTML = '<div class="no-violations">No SLA violations &mdash; all clear</div>';
+        }
+
+        // Vision Drift
+        const driftPanel = document.getElementById('drift-panel');
+        const driftPct = data.drift_pct || 0;
+        const driftDisplay = document.getElementById('drift-pct-display');
+        driftDisplay.textContent = driftPct.toFixed(1) + '%';
+        driftDisplay.className = 'drift-pct-display ' + driftClass(driftPct);
+
+        if (driftPct > 15) {
+            driftPanel.classList.add('warning');
+        } else {
+            driftPanel.classList.remove('warning');
+        }
+
+        const driftContent = document.getElementById('drift-content');
+        if (data.drift_warnings && data.drift_warnings.length > 0) {
+            driftContent.innerHTML = data.drift_warnings.map(w =>
+                `<div class="drift-item"><span class="drift-icon">&#x21AF;</span> ${escHtml(w)}</div>`
+            ).join('');
+        } else {
+            driftContent.innerHTML = '<div class="no-violations">No drift warnings</div>';
+        }
+
+        // Timestamp
+        if (data.timestamp) {
+            const ts = new Date(data.timestamp);
+            document.getElementById('last-update').textContent = ts.toLocaleString();
+        }
+
+        // Show content
+        document.getElementById('content-loading').style.display = 'none';
+        document.getElementById('content-ready').style.display = 'block';
+    }
+
+    function escHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function updateNextRefresh() {
+        if (!nextRefreshTime) return;
+        const remaining = Math.max(0, nextRefreshTime - Date.now());
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        const el = document.getElementById('next-refresh');
+        if (el) el.textContent = mins + 'm ' + secs + 's';
+    }
+
+    function renderContext(ctx) {
+        if (ctx.chiefAim) document.getElementById('chief-aim-text').textContent = ctx.chiefAim;
+        if (ctx.mission) document.getElementById('mission-text').textContent = ctx.mission;
+        if (ctx.vision) document.getElementById('vision-text').textContent = ctx.vision;
+        if (ctx.values && ctx.values.length) {
+            document.getElementById('values-grid').innerHTML = ctx.values.map(v =>
+                `<span class="value-chip">${escHtml(v)}</span>`
+            ).join('');
+        }
+        if (ctx.milestones && ctx.milestones.length) {
+            _cachedMilestones = ctx.milestones;
+        }
+    }
+
+    async function fetchData() {
+        try {
+            const [pulseResp, ctxResp] = await Promise.all([
+                fetch('/api/vision-pulse'),
+                fetch('/api/vision-context')
+            ]);
+            if (pulseResp.ok) {
+                const data = await pulseResp.json();
+                try { render(data); } catch(e) { console.error('Render error:', e); }
+            }
+            if (ctxResp.ok) {
+                const ctx = await ctxResp.json();
+                renderContext(ctx);
+            }
+        } catch (err) {
+            console.error('Vision fetch error:', err);
+            const loading = document.getElementById('content-loading');
+            if (loading.style.display !== 'none') {
+                loading.innerHTML = '<div style="color:#ff4444;">Failed to load Vision data.<br><span style="font-size:0.7rem;color:rgba(255,255,255,0.35);">Check /api/vision-pulse and /api/vision-context</span></div>';
+            }
+        }
+        nextRefreshTime = Date.now() + REFRESH_INTERVAL;
+    }
+
+    // Initial load
+    fetchData();
+
+    // Auto-refresh
+    setInterval(fetchData, REFRESH_INTERVAL);
+    setInterval(updateNextRefresh, 1000);
+})();
+</script>
+
+</body>
+</html>

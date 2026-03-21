@@ -13,6 +13,7 @@ const url = require('url');
 
 // DWE Widget API
 const { getDWEStats, fetchAllNotionTasks, createNotionTask } = require('./dwe-widget-api.js');
+const nodemailer = require('nodemailer');
 
 // Sprint Orchestrator
 const sprint = require('./sprint-orchestrator.js');
@@ -134,6 +135,109 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Vision Operating System page
+    if (pathname === '/vision' || pathname === '/vision.html') {
+        serveFile(res, path.join(__dirname, 'vision.html'), 'text/html');
+        return;
+    }
+
+    // Vision Pulse API — serves vision-pulse-data.json
+    if (pathname === '/api/vision-pulse') {
+        const vpFile = path.join(__dirname, 'vision-pulse-data.json');
+        fs.readFile(vpFile, 'utf8', (err, content) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to read vision-pulse-data.json' }));
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(content);
+        });
+        return;
+    }
+
+    // Vision Context API — parses VISION_OBJECTIVES.md into structured JSON
+    if (pathname === '/api/vision-context') {
+        const voFile = path.join(process.env.HOME, 'openclaw/shared/VISION_OBJECTIVES.md');
+        fs.readFile(voFile, 'utf8', (err, md) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to read VISION_OBJECTIVES.md' }));
+                return;
+            }
+            try {
+                const ctx = {};
+                // Extract sections by heading
+                const chiefMatch = md.match(/## Chief Aim\n([\s\S]*?)(?=\n## )/);
+                ctx.chiefAim = chiefMatch ? chiefMatch[1].trim() : '';
+                const visionMatch = md.match(/## 2026 Vision\n([\s\S]*?)(?=\n## )/);
+                ctx.vision = visionMatch ? visionMatch[1].trim() : '';
+                const missionMatch = md.match(/## Mission\n([\s\S]*?)(?=\n## )/);
+                ctx.mission = missionMatch ? missionMatch[1].trim() : '';
+                const valuesMatch = md.match(/## Core Values\n([\s\S]*?)(?=\n---)/);
+                ctx.values = valuesMatch ? valuesMatch[1].trim().split('\n').filter(l => l.startsWith('- ')).map(l => l.replace(/^- /, '')) : [];
+                // Parse objectives
+                ctx.objectives = [];
+                const soBlocks = md.match(/### SO\d+:[\s\S]*?(?=\n### |\n---)/g) || [];
+                for (const block of soBlocks) {
+                    const nameMatch = block.match(/### (SO\d+: .+)/);
+                    const descMatch = block.match(/\*\*Description\*\*: (.+)/);
+                    const kpiMatch = block.match(/\*\*KPI\*\*: (.+)/);
+                    const targetMatch = block.match(/\*\*Near-term target\*\*: (.+)/);
+                    const ownerMatch = block.match(/\*\*Owner\*\*: (.+)/);
+                    const freeMatch = block.match(/\*\*Freedom Bar\*\*: (.+)/);
+                    const methodMatch = block.match(/\*\*Method\*\*: (.+)/);
+                    ctx.objectives.push({
+                        name: nameMatch ? nameMatch[1] : '',
+                        description: descMatch ? descMatch[1] : '',
+                        kpi: kpiMatch ? kpiMatch[1] : '',
+                        target: targetMatch ? targetMatch[1] : '',
+                        freedomBar: freeMatch ? freeMatch[1] : '',
+                        method: methodMatch ? methodMatch[1] : '',
+                        owner: ownerMatch ? ownerMatch[1] : ''
+                    });
+                }
+                // Parse milestones
+                ctx.milestones = [];
+                const msMatch = md.match(/## Income Milestones[\s\S]*?(?=\n## )/);
+                if (msMatch) {
+                    const lines = msMatch[0].split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('|') && !line.includes('---') && !line.includes('Milestone')) {
+                            const cols = line.split('|').map(c => c.trim()).filter(Boolean);
+                            if (cols.length >= 3) {
+                                ctx.milestones.push({ name: cols[0], income: cols[1], meaning: cols[2] });
+                            }
+                        }
+                    }
+                }
+                // Parse wealth pyramid
+                const pyrMatch = md.match(/## Wealth Pyramid[\s\S]*?(?=\n## )/);
+                ctx.wealthPyramid = [];
+                if (pyrMatch) {
+                    const levels = pyrMatch[0].match(/\d+\. \*\*.+?\*\*.+/g) || [];
+                    for (const l of levels) {
+                        const m = l.match(/\d+\. \*\*(.+?)\*\*.*?: (.+)/);
+                        if (m) ctx.wealthPyramid.push({ level: m[1], description: m[2] });
+                    }
+                }
+                // Five levers
+                const levMatch = md.match(/## Five Levers[\s\S]*/);
+                ctx.fiveLevers = [];
+                if (levMatch) {
+                    const items = levMatch[0].match(/\d+\. .+/g) || [];
+                    ctx.fiveLevers = items.map(i => i.replace(/^\d+\. /, ''));
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(ctx, null, 2));
+            } catch (parseErr) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Failed to parse VISION_OBJECTIVES.md', detail: parseErr.message }));
+            }
+        });
+        return;
+    }
+
     // Serve static assets
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
         const filePath = path.join(__dirname, pathname);
@@ -205,6 +309,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/launchd':
             getLaunchd(req, res);
+            break;
+        case '/mc/daemon-health':
+            getDaemonHealth(req, res);
             break;
         case '/mc/backup':
             if (req.method === 'POST') {
@@ -372,6 +479,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/digitalocean-status':
             getDigitalOceanStatus(req, res);
+            break;
+        case '/mc/tailscale':
+            getTailscaleStatus(req, res);
             break;
         case '/mc/n8n-workflows':
             getN8nWorkflows(req, res);
@@ -1236,7 +1346,7 @@ function getOutreachQueue(req, res, query) {
 function approveOutreachEmail(req, res) {
     let body = '';
     req.on('data', chunk => body += chunk);
-    req.on('end', () => {
+    req.on('end', async () => {
         try {
             const data = JSON.parse(body);
             const leadId = data.lead_id;
@@ -1268,6 +1378,57 @@ function approveOutreachEmail(req, res) {
                 fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: true, message: 'Approved (draft mode — SES not configured yet)', status: 'approved' }));
+                return;
+            }
+
+            if (sesConfig.mode === 'gmail') {
+                // Gmail SMTP mode — send via nodemailer
+                try {
+                    const transporter = nodemailer.createTransport({
+                        service: 'gmail',
+                        auth: {
+                            user: sesConfig.gmail_user,
+                            pass: sesConfig.gmail_app_password
+                        }
+                    });
+                    const mailOptions = {
+                        from: sesConfig.sender || `DWE Marketing <${sesConfig.gmail_user}>`,
+                        to: item.to,
+                        replyTo: sesConfig.reply_to || sesConfig.gmail_user,
+                        subject: item.subject,
+                        text: item.body_text
+                    };
+                    const info = await transporter.sendMail(mailOptions);
+                    const messageId = info.messageId || 'unknown';
+
+                    item.status = 'sent';
+                    item.sent_at = new Date().toISOString();
+                    item.gmail_message_id = messageId;
+                    fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+
+                    // Update prospect stage
+                    try {
+                        const updateUrl = `http://localhost:${PORT}/mc/prospects/update?pipeline=${item.pipeline}`;
+                        const updateData = JSON.stringify({
+                            lead_id: leadId,
+                            Funnel_Stage: 'Outreach Sent',
+                            Outreach_Status: 'Sent',
+                            Last_Activity: new Date().toISOString().split('T')[0]
+                        });
+                        const updateReq = http.request(updateUrl, { method: 'PUT', headers: { 'Content-Type': 'application/json' } });
+                        updateReq.write(updateData);
+                        updateReq.end();
+                    } catch(e) {}
+
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: true, message: `Sent via Gmail SMTP (ID: ${messageId})`, status: 'sent' }));
+                } catch(e) {
+                    item.status = 'send_failed';
+                    item.error = e.message;
+                    fs.writeFileSync(filePath, JSON.stringify(item, null, 2));
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Gmail send failed: ' + e.message }));
+                }
                 return;
             }
 
@@ -2172,49 +2333,65 @@ function calculateNextRun(schedule) {
     return `${dayLabel}${displayHours}:${displayMins}${ampm.toLowerCase()}`;
 }
 
-function getCrons(req, res) {
-    exec('crontab -l 2>/dev/null | grep -v "^#" | grep -v "^$" | head -20', (error, stdout) => {
-        const crons = [];
-        if (!error && stdout) {
-            const lines = stdout.trim().split('\n');
-            lines.forEach((line, idx) => {
-                // Parse cron line: schedule + command
-                const parts = line.trim().split(/\s+/);
-                if (parts.length >= 6) {
-                    // First 5 parts are the schedule
-                    const schedule = parts.slice(0, 5).join(' ');
-                    // Rest is the command - find the actual script name
-                    const commandParts = parts.slice(5);
-                    let scriptName = 'System';
-                    
-                    // Look for actual script file in the command
-                    for (const part of commandParts) {
-                        if (part.includes('.sh') || part.includes('/')) {
-                            scriptName = part.split('/').pop().replace('.sh', '');
-                            break;
-                        }
-                    }
-                    
-                    // If no script found, use first meaningful part
-                    if (scriptName === 'System' && commandParts.length > 0) {
-                        const meaningful = commandParts.find(p => !p.startsWith('>') && !p.startsWith('-') && p.length > 2);
-                        if (meaningful) {
-                            scriptName = meaningful.split('/').pop();
-                        }
-                    }
-                    
-                    crons.push({
-                        id: `CRON-${String(idx + 1).padStart(3, '0')}`,
-                        schedule: schedule,
-                        command: scriptName,
-                        status: 'active',
-                        nextRun: calculateNextRun(schedule)
-                    });
+function parseCronLines(stdout, prefix, hostLabel) {
+    const crons = [];
+    if (!stdout) return crons;
+    const lines = stdout.trim().split('\n');
+    lines.forEach((line, idx) => {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length >= 6) {
+            const schedule = parts.slice(0, 5).join(' ');
+            const commandParts = parts.slice(5);
+            let scriptName = 'System';
+            for (const part of commandParts) {
+                if (part.includes('.sh') || part.includes('/')) {
+                    scriptName = part.split('/').pop().replace('.sh', '');
+                    break;
                 }
+            }
+            if (scriptName === 'System' && commandParts.length > 0) {
+                const meaningful = commandParts.find(p => !p.startsWith('>') && !p.startsWith('-') && p.length > 2);
+                if (meaningful) {
+                    scriptName = meaningful.split('/').pop();
+                }
+            }
+            crons.push({
+                id: `${prefix}-${String(idx + 1).padStart(3, '0')}`,
+                schedule: schedule,
+                command: scriptName,
+                host: hostLabel,
+                status: 'active',
+                nextRun: calculateNextRun(schedule)
             });
         }
+    });
+    return crons;
+}
+
+function getCrons(req, res) {
+    let allCrons = [];
+    let pending = 2;
+
+    function done() {
+        if (--pending > 0) return;
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ crons: crons, count: crons.length, timestamp: new Date().toISOString() }));
+        res.end(JSON.stringify({ crons: allCrons, count: allCrons.length, timestamp: new Date().toISOString() }));
+    }
+
+    // Local Mac crons
+    exec('crontab -l 2>/dev/null | grep -v "^#" | grep -v "^$" | head -20', (error, stdout) => {
+        if (!error && stdout) {
+            allCrons.push(...parseCronLines(stdout, 'MAC', 'Mac Mini'));
+        }
+        done();
+    });
+
+    // VPS crons (ssh with 5s timeout)
+    exec('ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no n8n-vps "crontab -l 2>/dev/null | grep -v \'^#\' | grep -v \'^$\' | head -20"', { timeout: 10000 }, (error, stdout) => {
+        if (!error && stdout) {
+            allCrons.push(...parseCronLines(stdout, 'VPS', 'VPS'));
+        }
+        done();
     });
 }
 
@@ -2310,6 +2487,37 @@ function getLaunchd(req, res) {
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ services, count: services.length, timestamp: new Date().toISOString() }));
+    });
+}
+
+function getDaemonHealth(req, res) {
+    exec('launchctl list 2>/dev/null | grep "ai\\."', (error, stdout) => {
+        const daemons = [];
+        if (!error && stdout) {
+            stdout.trim().split('\n').forEach(line => {
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 3) {
+                    const pidRaw = parts[0];
+                    const exitCodeRaw = parts[1];
+                    const label = parts[2];
+                    // Skip OpenClaw app internals
+                    if (label.includes('sparkle') || label.startsWith('application.')) return;
+                    const pid = pidRaw !== '-' ? pidRaw : null;
+                    const exitCode = exitCodeRaw !== '-' ? parseInt(exitCodeRaw, 10) : null;
+                    let status;
+                    if (pid) {
+                        status = 'running';
+                    } else if (exitCode === 0 || exitCode === null) {
+                        status = 'ok';
+                    } else {
+                        status = 'error';
+                    }
+                    daemons.push({ label, pid, exitCode, status });
+                }
+            });
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(daemons));
     });
 }
 
@@ -3010,6 +3218,51 @@ async function fetchDigitalOceanMetrics() {
 if (DO_API_TOKEN) {
     fetchDigitalOceanMetrics();
     setInterval(fetchDigitalOceanMetrics, DO_METRICS_TTL);
+}
+
+// Tailscale mesh status — poll every 60s
+let tailscaleCache = { devices: [], allOnline: false, ts: null };
+function pollTailscale() {
+    exec('tailscale status --json 2>/dev/null', (err, stdout) => {
+        if (err || !stdout) {
+            tailscaleCache = { devices: [], allOnline: false, running: false, ts: Date.now() };
+            return;
+        }
+        try {
+            const data = JSON.parse(stdout);
+            const devices = [];
+            // Self
+            if (data.Self) {
+                devices.push({
+                    name: data.Self.HostName || 'self',
+                    ip: data.Self.TailscaleIPs ? data.Self.TailscaleIPs[0] : '',
+                    os: data.Self.OS || '',
+                    online: true
+                });
+            }
+            // Peers
+            for (const [key, peer] of Object.entries(data.Peer || {})) {
+                devices.push({
+                    name: peer.HostName || key,
+                    ip: peer.TailscaleIPs ? peer.TailscaleIPs[0] : '',
+                    os: peer.OS || '',
+                    online: peer.Online || false,
+                    lastSeen: peer.LastSeen || null
+                });
+            }
+            const allOnline = devices.every(d => d.online);
+            tailscaleCache = { devices, allOnline, running: true, ts: Date.now() };
+        } catch (e) {
+            tailscaleCache = { devices: [], allOnline: false, running: false, error: e.message, ts: Date.now() };
+        }
+    });
+}
+pollTailscale();
+setInterval(pollTailscale, 60000);
+
+function getTailscaleStatus(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(tailscaleCache));
 }
 
 async function getDigitalOceanStatus(req, res) {
