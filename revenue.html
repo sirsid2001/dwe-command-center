@@ -413,28 +413,48 @@
                 <div class="mqt-cycle" style="margin-bottom:0;">
                     <div class="mqt-cycle-box" style="grid-column: 1 / -1;">
                         <div class="title">Price Scenarios — What If MQT Reaches...</div>
-                        <div style="display:grid; grid-template-columns:auto 1fr 1fr 1fr; gap:0.15rem 1rem; font-size:0.78rem; align-items:center;">
+                        <div style="display:grid; grid-template-columns:auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr; gap:0.15rem 0.5rem; font-size:0.72rem; align-items:center;">
                             <div style="color:rgba(255,255,255,0.35); font-size:0.65rem;"></div>
-                            <div style="text-align:center; color:#00ff88; font-weight:600; font-size:0.7rem; padding-bottom:0.3rem;">MQT @ $25</div>
-                            <div style="text-align:center; color:#ffaa00; font-weight:600; font-size:0.7rem; padding-bottom:0.3rem;">MQT @ $100</div>
-                            <div style="text-align:center; color:#b829dd; font-weight:600; font-size:0.7rem; padding-bottom:0.3rem;">MQT @ $250</div>
+                            <div style="text-align:center; color:#00c8ff; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;" id="sc-h-now">MQT @ $--</div>
+                            <div style="text-align:center; color:#44ff88; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $10</div>
+                            <div style="text-align:center; color:#bb88ff; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $15</div>
+                            <div style="text-align:center; color:#ff9966; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $20</div>
+                            <div style="text-align:center; color:#00ff88; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $25</div>
+                            <div style="text-align:center; color:#ffaa00; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $100</div>
+                            <div style="text-align:center; color:#b829dd; font-weight:600; font-size:0.68rem; padding-bottom:0.3rem;">MQT @ $250</div>
 
                             <div style="color:rgba(255,255,255,0.5);">Principal Value</div>
+                            <div style="text-align:center; color:#00c8ff;" id="sc-p-now">--</div>
+                            <div style="text-align:center; color:#44ff88;" id="sc-p-10">--</div>
+                            <div style="text-align:center; color:#bb88ff;" id="sc-p-15">--</div>
+                            <div style="text-align:center; color:#ff9966;" id="sc-p-20">--</div>
                             <div style="text-align:center; color:#00ff88;" id="sc-p-25">--</div>
                             <div style="text-align:center; color:#ffaa00;" id="sc-p-100">--</div>
                             <div style="text-align:center; color:#b829dd;" id="sc-p-250">--</div>
 
                             <div style="color:rgba(255,255,255,0.5);">Cycle Earnings (210d)</div>
+                            <div style="text-align:center; color:#00c8ff;" id="sc-c1-now">--</div>
+                            <div style="text-align:center; color:#44ff88;" id="sc-c1-10">--</div>
+                            <div style="text-align:center; color:#bb88ff;" id="sc-c1-15">--</div>
+                            <div style="text-align:center; color:#ff9966;" id="sc-c1-20">--</div>
                             <div style="text-align:center; color:#00ff88;" id="sc-c1-25">--</div>
                             <div style="text-align:center; color:#ffaa00;" id="sc-c1-100">--</div>
                             <div style="text-align:center; color:#b829dd;" id="sc-c1-250">--</div>
 
                             <div style="color:rgba(255,255,255,0.5);">Year Earnings (365d)</div>
+                            <div style="text-align:center; color:#00c8ff;" id="sc-yr-now">--</div>
+                            <div style="text-align:center; color:#44ff88;" id="sc-yr-10">--</div>
+                            <div style="text-align:center; color:#bb88ff;" id="sc-yr-15">--</div>
+                            <div style="text-align:center; color:#ff9966;" id="sc-yr-20">--</div>
                             <div style="text-align:center; color:#00ff88;" id="sc-yr-25">--</div>
                             <div style="text-align:center; color:#ffaa00;" id="sc-yr-100">--</div>
                             <div style="text-align:center; color:#b829dd;" id="sc-yr-250">--</div>
 
                             <div style="color:rgba(255,255,255,0.5);">Portfolio (Principal + Year)</div>
+                            <div style="text-align:center; color:#00c8ff; font-weight:700;" id="sc-tot-now">--</div>
+                            <div style="text-align:center; color:#44ff88; font-weight:700;" id="sc-tot-10">--</div>
+                            <div style="text-align:center; color:#bb88ff; font-weight:700;" id="sc-tot-15">--</div>
+                            <div style="text-align:center; color:#ff9966; font-weight:700;" id="sc-tot-20">--</div>
                             <div style="text-align:center; color:#00ff88; font-weight:700;" id="sc-tot-25">--</div>
                             <div style="text-align:center; color:#ffaa00; font-weight:700;" id="sc-tot-100">--</div>
                             <div style="text-align:center; color:#b829dd; font-weight:700;" id="sc-tot-250">--</div>
@@ -668,8 +688,13 @@
             document.getElementById('mqt-b90').textContent = fmtMqt(bal(90));
             document.getElementById('mqt-b210').textContent = fmtMqt(bal(cycleDays));
 
-            // Price scenarios: $25, $100, $250
+            // Price scenarios: current, $10, $15, $20, $25, $100, $250
+            document.getElementById('sc-h-now').textContent = 'MQT @ $' + mqtPrice.toFixed(2);
             const scenarios = [
+                { price: mqtPrice, suffix: 'now' },
+                { price: 10, suffix: '10' },
+                { price: 15, suffix: '15' },
+                { price: 20, suffix: '20' },
                 { price: 25, suffix: '25' },
                 { price: 100, suffix: '100' },
                 { price: 250, suffix: '250' }

@@ -45,25 +45,29 @@
 
         /* Funnel visualization — single row across the page */
         .funnel-stages { display: flex; align-items: stretch; gap: 0; }
-        .funnel-stage { flex: 1; text-align: center; padding: 1rem 0.25rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; background: none; }
+        .funnel-stage { flex: 1; text-align: center; padding: 0.75rem 0.25rem 0.75rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 200px; background: none; }
+        .funnel-stage .funnel-top { min-height: 105px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; }
+        .funnel-stage .count-divider { width: 55%; height: 1px; background: rgba(255,255,255,0.1); margin: 0.4rem 0 0.3rem; }
+        .funnel-stage .tech-footer { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding-top: 0.4rem; }
         .funnel-stage .count { font-size: 1.8rem; font-weight: 800; }
-        .funnel-stage .name { font-size: 0.6rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.3rem; }
-        .funnel-stage .bar { position: absolute; bottom: 0; left: 15%; right: 15%; height: 3px !important; border-radius: 2px; }
+        .funnel-stage .name { font-size: 0.6rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; }
+        .funnel-stage .bar { width: 100%; height: 14px; margin: 0.15rem 0 0; flex-shrink: 0; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); border-radius: 0; }
+        .funnel-stage .step-num { font-size: 0.48rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.25rem; font-family: monospace; }
         .funnel-stage .stage-cogs { position: absolute; top: 4px; right: 6px; color: rgba(255,255,255,0.2); font-size: 0.7rem; text-decoration: none; transition: color 0.2s; }
         .funnel-stage .stage-cogs:hover { color: #ffaa00; }
         .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 30px; flex-shrink: 0; }
         .funnel-arrow .rate { font-size: 0.55rem; color: rgba(255,255,255,0.3); font-weight: 500; writing-mode: vertical-rl; }
 
-        /* Stage colors */
-        .stage-leadgen .count { color: #22d3ee; } .stage-leadgen .bar { background: rgba(34,211,238,0.2); }
-        .stage-new .count { color: #888; } .stage-new .bar { background: rgba(136,136,136,0.2); }
-        .stage-audited .count { color: #00c8ff; } .stage-audited .bar { background: rgba(0,200,255,0.2); }
-        .stage-outreach .count { color: #00f5ff; } .stage-outreach .bar { background: rgba(0,245,255,0.2); }
-        .stage-responded .count { color: #ffaa00; } .stage-responded .bar { background: rgba(255,170,0,0.2); }
-        .stage-proposal .count { color: #ff6600; } .stage-proposal .bar { background: rgba(255,102,0,0.2); }
-        .stage-client .count { color: #00ff88; } .stage-client .bar { background: rgba(0,255,136,0.2); }
-        .stage-upsell .count { color: #b829dd; } .stage-upsell .bar { background: rgba(184,41,221,0.2); }
-        .stage-disqualified .count { color: #555; } .stage-disqualified .bar { background: rgba(85,85,85,0.2); }
+        /* Stage colors — rainbow progression through the pipeline */
+        .stage-leadgen    .count { color: #ff6b6b; } .stage-leadgen    .bar { background: rgba(255,107,107,0.65); }
+        .stage-new        .count { color: #ff9f43; } .stage-new        .bar { background: rgba(255,159, 67,0.65); }
+        .stage-audited    .count { color: #ffd32a; } .stage-audited    .bar { background: rgba(255,211, 42,0.65); }
+        .stage-outreach   .count { color: #00d2a0; } .stage-outreach   .bar { background: rgba(  0,210,160,0.65); }
+        .stage-responded  .count { color: #00b4d8; } .stage-responded  .bar { background: rgba(  0,180,216,0.65); }
+        .stage-proposal   .count { color: #4e8cff; } .stage-proposal   .bar { background: rgba( 78,140,255,0.65); }
+        .stage-client     .count { color: #a29bfe; } .stage-client     .bar { background: rgba(162,155,254,0.65); }
+        .stage-upsell     .count { color: #fd79a8; } .stage-upsell     .bar { background: rgba(253,121,168,0.65); }
+        .stage-disqualified .count { color: #555;  } .stage-disqualified .bar { background: rgba( 85, 85, 85,0.45); }
 
         /* Products */
         .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
@@ -430,13 +434,19 @@
 
                 funnelHtml += `<div class="funnel-stage stage-${cls}">
                     ${cogsHtml}
-                    <div class="count">${count}</div>
-                    <div class="name">${esc(stage)}</div>
-                    ${techBadgeHtml}
-                    ${ioHtml}
-                    ${scheduleHtml}
-                    ${linkHtml}
+                    <div class="funnel-top">
+                        <div class="count">${count}</div>
+                        <div class="count-divider"></div>
+                        <div class="name">${esc(stage)}</div>
+                        ${linkHtml}
+                    </div>
                     <div class="bar"></div>
+                    <div class="step-num">Step ${i + 1}</div>
+                    <div class="tech-footer">
+                        ${techBadgeHtml}
+                        ${ioHtml}
+                        ${scheduleHtml}
+                    </div>
                 </div>`;
                 if (i < stageOrder.length - 1) {
                     const convKey = stage + ' → ' + stageOrder[i + 1];

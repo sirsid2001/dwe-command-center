@@ -147,11 +147,11 @@
         .tag-blocked { font-size: 0.6rem; padding: 0.12rem 0.45rem; border-radius: 0.25rem; background: rgba(255,170,0,0.2); color: #ffaa00; font-weight: 700; }
 
         /* CEO Productivity — Stepper UI */
-        .funnel-stages { display: flex; align-items: center; gap: 0; padding: 0.5rem 0; }
+        .funnel-stages { display: flex; align-items: stretch; gap: 0; padding: 0.5rem 0; }
         .funnel-stage {
-            flex: 1; text-align: center; padding: 0.6rem 0.15rem; position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 70px; cursor: pointer; border-radius: 0.5rem;
+            flex: 1; text-align: center; padding: 0.6rem 0.15rem 0.6rem; position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            min-height: 160px; cursor: pointer; border-radius: 0.5rem;
             transition: background 0.2s, box-shadow 0.2s;
         }
         .funnel-stage:hover { background: rgba(255,255,255,0.03); }
@@ -159,20 +159,23 @@
             background: rgba(255,170,0,0.08);
             box-shadow: 0 0 0 1px rgba(255,170,0,0.25), 0 2px 8px rgba(255,170,0,0.1);
         }
-        .funnel-stage .f-count { font-size: 1.2rem; font-weight: 800; }
+        .funnel-stage .funnel-top { min-height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; }
+        .funnel-stage .f-count { font-size: 1.4rem; font-weight: 800; }
         .funnel-stage .f-name { font-size: 0.55rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.2rem; }
-        .funnel-stage .f-bar { position: absolute; bottom: 0; left: 15%; right: 15%; height: 3px; border-radius: 2px; }
-        .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 20px; flex-shrink: 0; color: rgba(255,255,255,0.15); font-size: 0.7rem; }
+        .funnel-stage .f-bar { width: 100%; height: 14px; flex-shrink: 0; margin: 0.15rem 0 0; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); border-radius: 0; }
+        .funnel-stage .f-step { font-size: 0.5rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; font-family: monospace; }
+        .funnel-arrow { display: none; }
 
-        .stage-leadgen .f-count { color: #22d3ee; } .stage-leadgen .f-bar { background: rgba(34,211,238,0.3); }
-        .stage-new .f-count { color: #888; } .stage-new .f-bar { background: rgba(136,136,136,0.3); }
-        .stage-audited .f-count { color: #00c8ff; } .stage-audited .f-bar { background: rgba(0,200,255,0.3); }
-        .stage-outreach .f-count { color: #00f5ff; } .stage-outreach .f-bar { background: rgba(0,245,255,0.3); }
-        .stage-responded .f-count { color: #ffaa00; } .stage-responded .f-bar { background: rgba(255,170,0,0.3); }
-        .stage-proposal .f-count { color: #ff6600; } .stage-proposal .f-bar { background: rgba(255,102,0,0.3); }
-        .stage-client .f-count { color: #00ff88; } .stage-client .f-bar { background: rgba(0,255,136,0.3); }
-        .stage-upsell .f-count { color: #b829dd; } .stage-upsell .f-bar { background: rgba(184,41,221,0.3); }
-        .stage-ywyc .f-count { color: #ffaa00; } .stage-ywyc .f-bar { background: rgba(255,170,0,0.3); }
+        .stage-leadgen .f-count { color: #ff6b6b; } .stage-leadgen .f-bar { background: rgba(255,107,107,0.65); }
+        .stage-new .f-count { color: #ff9f43; } .stage-new .f-bar { background: rgba(255,159,67,0.65); }
+        .stage-audited .f-count { color: #ffd32a; } .stage-audited .f-bar { background: rgba(255,211,42,0.65); }
+        .stage-outreach .f-count { color: #00d2a0; } .stage-outreach .f-bar { background: rgba(0,210,160,0.65); }
+        .stage-responded .f-count { color: #00b4d8; } .stage-responded .f-bar { background: rgba(0,180,216,0.65); }
+        .stage-proposal .f-count { color: #4e8cff; } .stage-proposal .f-bar { background: rgba(78,140,255,0.65); }
+        .stage-client .f-count { color: #a29bfe; } .stage-client .f-bar { background: rgba(162,155,254,0.65); }
+        .stage-upsell .f-count { color: #fd79a8; } .stage-upsell .f-bar { background: rgba(253,121,168,0.65); }
+        .stage-cashflow .f-count { color: #c8a84e; } .stage-cashflow .f-bar { background: rgba(200,168,78,0.65); }
+        .stage-ywyc .f-count { color: #00ff88; } .stage-ywyc .f-bar { background: rgba(0,255,136,0.65); }
 
         /* Checkbox overlay for checkable stages */
         .funnel-stage .f-check {
@@ -627,6 +630,132 @@
                 <p style="color:rgba(255,255,255,0.6);font-size:0.8rem;line-height:1.6;margin:0.5rem 0;">Complete your end-of-day YWYC journal entry. Reflect on what you accomplished and plan for tomorrow.</p>
                 <div style="margin-top:0.75rem;text-align:center;">
                     <a href="https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;color:#ffaa00;text-decoration:none;font-size:0.85rem;font-weight:600;background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);border-radius:0.5rem;padding:0.6rem 1.5rem;">Open Daily YWYC in Notion →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 7: Cashflow Overview — live from Google Sheets -->
+        <div id="step-panel-cashflow" class="step-panel grid-full">
+            <!-- CASHFLOW Board Game Financial Statement -->
+            <div style="background:#dcc9a3;border-radius:12px;color:#333;font-family:'Inter',sans-serif;max-width:900px;margin:0 auto;position:relative;box-shadow:0 4px 24px rgba(0,0,0,0.4);">
+                <!-- Top bar with source link + refresh -->
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 1rem;background:rgba(0,0,0,0.05);border-radius:12px 12px 0 0;">
+                    <span style="font-size:0.65rem;color:#888;">Sidney Garcia</span>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <a href="https://docs.google.com/spreadsheets/d/1vTShVS1jhDi_laZYc6tZFLP9tLH1s0FFNcqEtG4WtxU/edit" target="_blank" style="font-size:0.6rem;color:#7b6baa;text-decoration:none;">2025 Cashflow Overview ↗</a>
+                        <button onclick="event.stopPropagation();fetchCashflow()" style="background:#7b6baa;border:none;color:#fff;font-size:0.55rem;padding:2px 8px;border-radius:3px;cursor:pointer;">↻</button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+                    <!-- LEFT COLUMN -->
+                    <div style="border-right:2px solid #d4c9a8;">
+
+                        <!-- INCOME -->
+                        <div style="background:linear-gradient(90deg,#7b6baa,#9b8bc0);color:#fff;font-weight:700;font-size:0.85rem;padding:0.35rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;">Income</div>
+                        <div style="padding:0.5rem 0.75rem;">
+                            <div style="display:flex;justify-content:flex-end;font-size:0.65rem;color:#888;font-weight:600;margin-bottom:0.25rem;">Cash Flow</div>
+                            <div id="cf-income-items" style="display:flex;flex-direction:column;gap:0.15rem;min-height:60px;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#555;">Loading...</span><span></span></div>
+                            </div>
+                        </div>
+
+                        <!-- EXPENSES -->
+                        <div style="background:linear-gradient(90deg,#7b6baa,#9b8bc0);color:#fff;font-weight:700;font-size:0.85rem;padding:0.35rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;">Expenses</div>
+                        <div style="padding:0.5rem 0.75rem;">
+                            <div id="cf-expense-items" style="display:flex;flex-direction:column;gap:0.15rem;min-height:60px;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#555;">Loading...</span><span></span></div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div>
+                        <!-- Increase Passive Income banner -->
+                        <div style="text-align:center;padding:0.75rem 0.5rem 0.5rem;font-size:0.75rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.04em;line-height:1.3;">
+                            Increase Passive Income to<br>Escape the Rat Race.
+                        </div>
+
+                        <!-- Total Expenses bar -->
+                        <div style="text-align:center;padding:0.25rem 0.75rem;">
+                            <div style="font-size:0.7rem;font-weight:700;color:#555;text-transform:uppercase;">Total Expenses: <span id="cf-total-expenses" style="color:#c0392b;">—</span></div>
+                            <!-- Progress bar -->
+                            <div style="background:#d4c9a8;border-radius:4px;height:12px;margin:0.4rem 1rem;overflow:hidden;border:1px solid #bbb;">
+                                <div id="cf-freedom-bar" style="height:100%;background:linear-gradient(90deg,#7b6baa,#9b8bc0);border-radius:3px;width:0%;transition:width 1s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Passive Income -->
+                        <div style="text-align:center;padding:0.25rem;">
+                            <div style="font-size:0.7rem;font-weight:700;color:#555;text-transform:uppercase;">Passive Income:</div>
+                            <div id="cf-passive-income" style="font-size:1.2rem;font-weight:700;color:#333;">—</div>
+                        </div>
+
+                        <!-- CASH lockbox -->
+                        <div style="padding:0.5rem 0.75rem;">
+                            <div style="padding:0.75rem;border:3px solid #c8a84e;border-radius:10px;background:rgba(200,168,78,0.08);">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                    <span style="font-size:1.1rem;font-weight:800;color:#333;text-transform:uppercase;font-variant:small-caps;letter-spacing:0.05em;">Cash:</span>
+                                    <span id="cf-cash" style="font-size:1.4rem;font-weight:800;color:#333;">—</span>
+                                </div>
+                                <div style="border-top:1px solid #d4c9a8;padding-top:0.4rem;display:flex;flex-direction:column;gap:0.2rem;">
+                                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:600;">
+                                        <span style="color:#555;text-transform:uppercase;">Total Income:</span>
+                                        <span id="cf-total-income" style="color:#333;">—</span>
+                                    </div>
+                                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:600;">
+                                        <span style="color:#555;text-transform:uppercase;">Total Expenses:</span>
+                                        <span id="cf-total-expenses-2" style="color:#c0392b;">—</span>
+                                    </div>
+                                    <!-- Purple divider -->
+                                    <div style="border-top:2px solid #7b6baa;margin:0.3rem 0;"></div>
+                                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:600;">
+                                        <span style="color:#555;text-transform:uppercase;">Payday</span>
+                                        <span id="cf-payday" style="color:#333;">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- BOTTOM: Assets + Liabilities side-by-side (headers aligned) -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:2px solid #d4c9a8;">
+                    <!-- ASSETS (left) -->
+                    <div style="border-right:2px solid #d4c9a8;">
+                        <div style="background:linear-gradient(90deg,#7b6baa,#9b8bc0);color:#fff;font-weight:700;font-size:0.85rem;padding:0.35rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;">Assets</div>
+                        <div style="padding:0.5rem 0.75rem;">
+                            <div id="cf-asset-items" style="display:flex;flex-direction:column;gap:0.15rem;min-height:60px;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#555;">Loading...</span><span></span></div>
+                            </div>
+                            <div style="border-top:1px solid #d4c9a8;margin-top:0.4rem;padding-top:0.3rem;display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;">
+                                <span style="color:#333;">Assets Total</span>
+                                <span id="cf-assets-total" style="color:#333;">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- LIABILITIES (right) -->
+                    <div>
+                        <div style="background:linear-gradient(90deg,#7b6baa,#9b8bc0);color:#fff;font-weight:700;font-size:0.85rem;padding:0.35rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;">Liabilities</div>
+                        <div style="padding:0.5rem 0.75rem;">
+                            <div id="cf-liability-items" style="display:flex;flex-direction:column;gap:0.15rem;min-height:60px;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.75rem;"><span style="color:#555;">Loading...</span><span></span></div>
+                            </div>
+                            <div style="border-top:1px solid #d4c9a8;margin-top:0.4rem;padding-top:0.3rem;display:flex;justify-content:space-between;font-size:0.75rem;font-weight:700;">
+                                <span style="color:#c0392b;">Total Debt</span>
+                                <span id="cf-total-debt" style="color:#c0392b;">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.75rem;background:rgba(0,0,0,0.04);border-radius:0 0 12px 12px;">
+                    <span id="cf-last-updated" style="font-size:0.55rem;color:#aaa;">—</span>
+                    <span style="font-size:0.5rem;color:#ccc;">Live from Google Sheets</span>
                 </div>
             </div>
         </div>
@@ -1124,16 +1253,17 @@
             loadCeoPipeline();
         }
         const CEO_PIPELINE_KEY = 'dwe_ceo_pipeline';
-        const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Proposal', 'Client', 'Upsell', 'Disqualified', 'Daily YWYC'];
-        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Disqualified': 'disqualified', 'Daily YWYC': 'ywyc' };
+        const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Cash Flow', 'Proposal', 'Client', 'Upsell', 'Daily YWYC'];
+        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Cash Flow': 'cashflow', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Daily YWYC': 'ywyc' };
 
         // Checkable items override specific stages (position 0 = first stage)
         const CEO_CHECKABLE = [
             { position: 0, id: 'daily-praxus', label: 'Daily Praxus', url: 'https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70' },
-            { position: 1, id: 'process-newsletter', label: 'Process Interests', url: '' },
-            { position: 2, id: 'check-email', label: 'Check Email', url: 'https://mail.google.com' },
-            { position: 3, id: 'work-tasks', label: 'Work My Tasks', url: 'https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c' },
+            { position: 1, id: 'check-email', label: 'Check Email', url: 'https://mail.google.com' },
+            { position: 2, id: 'work-tasks', label: 'Work My Tasks', url: 'https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c' },
+            { position: 3, id: 'process-newsletter', label: 'Process Interests', url: '' },
             { position: 4, id: 'pipeline-outreach', label: 'Pipeline & Outreach', url: '/funnel' },
+            { position: 5, id: 'cashflow', label: 'Cash Flow', url: '' },
             { position: 9, id: 'daily-ywyc', label: 'Daily YWYC', url: 'https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70' },
         ];
 
@@ -1204,6 +1334,8 @@
             if (stageEl) stageEl.classList.add('step-active');
             // Save to localStorage
             localStorage.setItem('dwe-ceo-active-step', stepId);
+            // Load cashflow data when that tab activates
+            if (stepId === 'cashflow' && typeof fetchCashflow === 'function') fetchCashflow();
         }
 
         function advanceToNextStep() {
@@ -1254,17 +1386,23 @@
                         </div>`;
                     }
                     html += `<div class="funnel-stage stage-${cls} ${isActive ? 'step-active' : ''}" data-step-id="${checkable.id}" onclick="activateStep('${checkable.id}')">
-                        <div class="f-check ${checkCls}" onclick="event.stopPropagation();togglePipelineItem('${checkable.id}')">${isDone ? '✓' : ''}</div>
-                        <div class="f-name">${checkable.label}</div>
-                        ${linkHtml}
-                        ${extraHtml}
+                        <div class="funnel-top">
+                            <div class="f-check ${checkCls}" onclick="event.stopPropagation();togglePipelineItem('${checkable.id}')">${isDone ? '✓' : ''}</div>
+                            <div class="f-name">${checkable.label}</div>
+                            ${linkHtml}
+                            ${extraHtml}
+                        </div>
                         <div class="f-bar"></div>
+                        <div class="f-step">Step ${i + 1}</div>
                     </div>`;
                 } else {
                     html += `<div class="funnel-stage stage-${cls}">
-                        <div class="f-count">${count}</div>
-                        <div class="f-name">${stage}</div>
+                        <div class="funnel-top">
+                            <div class="f-count">${count}</div>
+                            <div class="f-name">${stage}</div>
+                        </div>
                         <div class="f-bar"></div>
+                        <div class="f-step">Step ${i + 1}</div>
                     </div>`;
                 }
 
@@ -2650,6 +2788,77 @@
         setInterval(loadDecisions, 120000);
         setInterval(loadEscalations, 120000);
         setInterval(loadCeoPipeline, 120000);
+
+        // ── Cash Flow — Rich Dad CASHFLOW board game format ──────────────
+        function cfFmt(v) {
+            if (v === null || v === undefined) return '—';
+            const n = Number(v);
+            const prefix = n < 0 ? '$-' : '$';
+            return prefix + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function cfRow(name, amount, idx, bold) {
+            const w = bold ? 'font-weight:700;' : '';
+            const bg = idx % 2 === 0 ? 'background:rgba(120,90,40,0.08);' : '';
+            return `<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:0.25rem 0.4rem;border-bottom:1px solid rgba(123,107,170,0.22);${bg}${w}"><span style="color:#555;">${name}</span><span style="color:#333;font-weight:600;">${cfFmt(amount)}</span></div>`;
+        }
+        async function fetchCashflow() {
+            try {
+                const d = await fetch('/mc/cashflow').then(r => r.json());
+                if (!d.ok) { document.getElementById('cf-last-updated').textContent = 'Error: ' + (d.error || 'unknown'); return; }
+
+                // INCOME items
+                const incEl = document.getElementById('cf-income-items');
+                if (d.income.items && d.income.items.length) {
+                    incEl.innerHTML = d.income.items.map((i,idx) => cfRow(i.name, i.amount, idx)).join('');
+                } else {
+                    incEl.innerHTML = cfRow('Earned', d.income.earned, 0) + cfRow('Passive', d.income.passive, 1) + cfRow('Portfolio', d.income.portfolio, 2);
+                }
+
+                // EXPENSE items
+                const expEl = document.getElementById('cf-expense-items');
+                if (d.expenses.items && d.expenses.items.length) {
+                    expEl.innerHTML = d.expenses.items.map((i,idx) => cfRow(i.name, i.amount, idx)).join('');
+                } else {
+                    expEl.innerHTML = '<div style="font-size:0.7rem;color:#999;">No expense details</div>';
+                }
+
+                // Right column
+                document.getElementById('cf-total-expenses').textContent = d.expenses.total !== null ? cfFmt(d.expenses.total) : '#N/A';
+                document.getElementById('cf-total-expenses-2').textContent = d.expenses.total !== null ? cfFmt(-Math.abs(d.expenses.total)) : '#N/A';
+                document.getElementById('cf-passive-income').textContent = cfFmt((d.income.passive || 0) + (d.income.portfolio || 0));
+                document.getElementById('cf-total-income').textContent = cfFmt(d.income.total);
+                document.getElementById('cf-payday').textContent = cfFmt(d.payday);
+                document.getElementById('cf-cash').textContent = d.cash !== null ? cfFmt(d.cash) : '—';
+
+                // Freedom bar (passive+portfolio / expenses)
+                if (d.income.passive !== null && d.income.portfolio !== null && d.expenses.total !== null && d.expenses.total > 0) {
+                    const pct = ((d.income.passive + d.income.portfolio) / d.expenses.total * 100);
+                    document.getElementById('cf-freedom-bar').style.width = Math.min(pct, 100) + '%';
+                }
+
+                // ASSET items
+                const astEl = document.getElementById('cf-asset-items');
+                if (d.assets.items && d.assets.items.length) {
+                    astEl.innerHTML = d.assets.items.filter(a => a.amount > 0).map((a,idx) => cfRow(a.name, a.amount, idx)).join('');
+                } else {
+                    astEl.innerHTML = cfRow('Total Assets', d.assets.subtotal, 0);
+                }
+                document.getElementById('cf-assets-total').textContent = cfFmt(d.assets.subtotal);
+
+                // LIABILITY items
+                const libEl = document.getElementById('cf-liability-items');
+                if (d.debt.items && d.debt.items.length) {
+                    libEl.innerHTML = d.debt.items.filter(l => l.balance > 0).sort((a,b) => b.balance - a.balance).map((l,idx) => cfRow(l.name, l.balance, idx)).join('');
+                } else {
+                    libEl.innerHTML = cfRow('Credit Cards', d.debt.ccTotal, 0) + cfRow('Loans', d.debt.loansTotal, 1);
+                }
+                document.getElementById('cf-total-debt').textContent = cfFmt(d.debt.grandTotal);
+
+                document.getElementById('cf-last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+            } catch(e) { document.getElementById('cf-last-updated').textContent = 'Failed: ' + e.message; }
+        }
+        fetchCashflow();
+        setInterval(fetchCashflow, 120000);
     </script>
 </body>
 </html>

@@ -10,6 +10,40 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const zlib = require('zlib');
+
+// ── Performance: gzip helper ────────────────────────────────────────────
+const COMPRESSIBLE = new Set(['text/html', 'application/javascript', 'text/css', 'application/json', 'image/svg+xml']);
+function sendCompressed(req, res, statusCode, headers, body) {
+    const ct = headers['Content-Type'] || '';
+    const baseType = ct.split(';')[0].trim();
+    const acceptEncoding = (req.headers['accept-encoding'] || '');
+    if (COMPRESSIBLE.has(baseType) && acceptEncoding.includes('gzip') && body.length > 1024) {
+        zlib.gzip(body, (err, compressed) => {
+            if (err) { res.writeHead(statusCode, headers); res.end(body); return; }
+            headers['Content-Encoding'] = 'gzip';
+            headers['Vary'] = 'Accept-Encoding';
+            res.writeHead(statusCode, headers);
+            res.end(compressed);
+        });
+    } else {
+        res.writeHead(statusCode, headers);
+        res.end(body);
+    }
+}
+
+// ── Performance: body size limit ────────────────────────────────────────
+const MAX_BODY_SIZE = 1024 * 1024; // 1 MB
+function collectBody(req, callback) {
+    let body = '';
+    let exceeded = false;
+    req.on('data', chunk => {
+        body += chunk;
+        if (body.length > MAX_BODY_SIZE) { exceeded = true; req.destroy(); }
+    });
+    req.on('end', () => { if (!exceeded) callback(body); });
+    req.on('error', () => {});
+}
 
 // DWE Widget API
 const { getDWEStats, fetchAllNotionTasks, createNotionTask } = require('./dwe-widget-api.js');
@@ -85,59 +119,72 @@ const server = http.createServer((req, res) => {
         res.end();
         return;
     }
-    
+
+    // ── Performance: reject oversized POST bodies early ─────────────
+    if (req.method === 'POST' || req.method === 'PUT') {
+        let bodySize = 0;
+        req.on('data', (chunk) => {
+            bodySize += chunk.length;
+            if (bodySize > MAX_BODY_SIZE) {
+                res.writeHead(413, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Request body too large (max 1 MB)' }));
+                req.destroy();
+            }
+        });
+    }
+
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
     
     // Static file serving
     if (pathname === '/' || pathname === '/index.html') {
-        serveFile(res, HTML_FILE, 'text/html');
+        serveFile(res, HTML_FILE, 'text/html', req);
         return;
     }
     
     // Ecosystem Map page
     if (pathname === '/ecosystem' || pathname === '/ecosystem.html') {
-        serveFile(res, path.join(__dirname, 'ecosystem.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'ecosystem.html'), 'text/html', req);
         return;
     }
     
     // AI Team page
     if (pathname === '/ai-team' || pathname === '/ai-team.html') {
-        serveFile(res, path.join(__dirname, 'ai-team.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'ai-team.html'), 'text/html', req);
         return;
     }
 
     // Delegations page
     if (pathname === '/delegations' || pathname === '/delegations.html') {
-        serveFile(res, path.join(__dirname, 'delegations.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'delegations.html'), 'text/html', req);
         return;
     }
 
     // Revenue page
     if (pathname === '/revenue' || pathname === '/revenue.html') {
-        serveFile(res, path.join(__dirname, 'revenue.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'revenue.html'), 'text/html', req);
         return;
     }
     if (pathname === '/funnel' || pathname === '/funnel.html') {
-        serveFile(res, path.join(__dirname, 'funnel.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'funnel.html'), 'text/html', req);
         return;
     }
 
     // CEO's Corner page
     if (pathname === '/ceo-corner' || pathname === '/ceo-corner.html') {
-        serveFile(res, path.join(__dirname, 'ceo-corner.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'ceo-corner.html'), 'text/html', req);
         return;
     }
 
     // n8n Workflows page
     if (pathname === '/n8n-workflows' || pathname === '/n8n-workflows.html') {
-        serveFile(res, path.join(__dirname, 'n8n-workflows.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'n8n-workflows.html'), 'text/html', req);
         return;
     }
 
     // Vision Operating System page
     if (pathname === '/vision' || pathname === '/vision.html') {
-        serveFile(res, path.join(__dirname, 'vision.html'), 'text/html');
+        serveFile(res, path.join(__dirname, 'vision.html'), 'text/html', req);
         return;
     }
 
@@ -242,7 +289,7 @@ const server = http.createServer((req, res) => {
     if (pathname.startsWith('/assets/') || pathname.endsWith('.js') || pathname.endsWith('.css')) {
         const filePath = path.join(__dirname, pathname);
         const ext = path.extname(filePath);
-        serveFile(res, filePath, mimeTypes[ext] || 'application/octet-stream');
+        serveFile(res, filePath, mimeTypes[ext] || 'application/octet-stream', req);
         return;
     }
 
@@ -345,31 +392,31 @@ const server = http.createServer((req, res) => {
             getMigrationStatus(req, res);
             break;
         case '/mc/brain-run':
-            exec('launchctl start ai.dwe.brain-trainer', (err) => {
+            exec('launchctl start ai.dwe.brain-trainer', { timeout: 10000 }, (err) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
             });
             break;
         case '/mc/brain-restart':
-            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.dwe.brain-trainer`, (err) => {
+            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.dwe.brain-trainer`, { timeout: 10000 }, (err) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
             });
             break;
         case '/mc/gateway-restart':
-            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.openclaw.gateway`, (err) => {
+            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.openclaw.gateway`, { timeout: 10000 }, (err) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
             });
             break;
         case '/mc/open-terminal':
-            exec('open -a Terminal', (err) => {
+            exec('open -a Terminal', { timeout: 5000 }, (err) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err }));
             });
             break;
         case '/mc/open-settings':
-            exec('open "x-apple.systempreferences:"', (err) => {
+            exec('open "x-apple.systempreferences:"', { timeout: 5000 }, (err) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err }));
             });
@@ -483,6 +530,31 @@ const server = http.createServer((req, res) => {
         case '/mc/tailscale':
             getTailscaleStatus(req, res);
             break;
+        case '/mc/n8n-uptime':
+            getN8nUptime(req, res);
+            break;
+        case '/mc/ssh-tunnels':
+            getSshTunnels(req, res);
+            break;
+        case '/mc/system-optimize':
+            if (req.method === 'POST') {
+                const { exec: execOpt } = require('child_process');
+                execOpt('/Users/elf-6/openclaw/bin/system_optimize.sh', { timeout: 60000 }, (err, stdout, stderr) => {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    try {
+                        const lines = stdout.split('\n');
+                        const marker = lines.findIndex(l => l.includes('###OPTIMIZE_RESULT###'));
+                        const jsonLine = marker >= 0 ? lines[marker + 1] : lines[lines.length - 1];
+                        const result = JSON.parse(jsonLine.trim());
+                        res.end(JSON.stringify(result));
+                    } catch(e) {
+                        res.end(JSON.stringify({ ok: false, error: err ? err.message : 'parse error', raw: stdout }));
+                    }
+                });
+            } else {
+                res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
+            }
+            break;
         case '/mc/n8n-workflows':
             getN8nWorkflows(req, res);
             break;
@@ -561,7 +633,7 @@ const server = http.createServer((req, res) => {
         case '/dwe':
         case '/dwe/':
         case '/dwe/widget':
-            serveFile(res, path.join(__dirname, 'dwe-widget.html'), 'text/html');
+            serveFile(res, path.join(__dirname, 'dwe-widget.html'), 'text/html', req);
             break;
         case '/mc/drive-files':
             getDriveFiles(req, res, parsedUrl.query);
@@ -665,6 +737,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/ceo-corner/drills-real':
             getCeoCornerDrillsReal(req, res);
+            break;
+        case '/mc/cashflow':
+            handleCashflow(req, res);
             break;
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
@@ -954,20 +1029,24 @@ async function handleDWEStatus(req, res) {
     }
 }
 
-function serveFile(res, filePath, contentType) {
+function serveFile(res, filePath, contentType, req) {
     fs.readFile(filePath, (err, data) => {
         if (err) {
             res.writeHead(404);
             res.end('Not found');
             return;
         }
-        res.writeHead(200, {
+        // Static assets: short cache (5s) — browser can revalidate cheaply
+        const headers = {
             'Content-Type': contentType,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-        });
-        res.end(data);
+            'Cache-Control': 'public, max-age=5'
+        };
+        if (req) {
+            sendCompressed(req, res, 200, headers, data);
+        } else {
+            res.writeHead(200, headers);
+            res.end(data);
+        }
     });
 }
 
@@ -2182,7 +2261,7 @@ function handleUpload(req, res) {
 
 function getAgents(req, res) {
     // Check if gateway is up — determines if agents can receive messages
-    exec('nc -z 127.0.0.1 3000 && echo "open" || echo "closed"', (err, out) => {
+    exec('nc -z 127.0.0.1 3000 && echo "open" || echo "closed"', { timeout: 5000 }, (err, out) => {
         const gatewayUp = (out || '').trim() === 'open';
         const agents = [
             { id: 'cto',            name: 'Steve',          role: 'Chief Technology Officer', telegram: '@DWE_CTO_Bot',    status: gatewayUp ? 'online' : 'offline' },
@@ -2227,7 +2306,7 @@ function getServices(req, res) {
     services.forEach(service => {
         if (service.type === 'external') {
             // For external services, check if we can resolve them
-            exec(`curl -s -o /dev/null -w "%{http_code}" "${service.url}" --max-time 3`, (error, stdout) => {
+            exec(`curl -s -o /dev/null -w "%{http_code}" "${service.url}" --max-time 3`, { timeout: 5000 }, (error, stdout) => {
                 const statusCode = stdout.trim();
                 const online = ['200','400','401','403','404'].includes(statusCode);
                 results.push({
@@ -2240,7 +2319,7 @@ function getServices(req, res) {
             });
         } else if (service.port) {
             // Check local port
-            exec(`nc -z 127.0.0.1 ${service.port} && echo "open" || echo "closed"`, (error, stdout) => {
+            exec(`nc -z 127.0.0.1 ${service.port} && echo "open" || echo "closed"`, { timeout: 5000 }, (error, stdout) => {
                 const isOpen = stdout.trim() === 'open';
                 results.push({
                     name: service.name,
@@ -2379,7 +2458,7 @@ function getCrons(req, res) {
     }
 
     // Local Mac crons
-    exec('crontab -l 2>/dev/null | grep -v "^#" | grep -v "^$" | head -20', (error, stdout) => {
+    exec('crontab -l 2>/dev/null | grep -v "^#" | grep -v "^$" | head -20', { timeout: 5000 }, (error, stdout) => {
         if (!error && stdout) {
             allCrons.push(...parseCronLines(stdout, 'MAC', 'Mac Mini'));
         }
@@ -2446,7 +2525,7 @@ function getLaunchd(req, res) {
         'ai.dwe.openclaw-backup':               { name: 'OpenClaw Backup',      group: 'routine',    scheduled: true  },
     };
 
-    exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', (error, stdout) => {
+    exec('launchctl list | grep -E "ai\\.openclaw|ai\\.dwe|com\\.dwe|com\\.missioncontrol"', { timeout: 5000 }, (error, stdout) => {
         const services = [];
         if (!error && stdout) {
             stdout.trim().split('\n').forEach(line => {
@@ -2491,7 +2570,7 @@ function getLaunchd(req, res) {
 }
 
 function getDaemonHealth(req, res) {
-    exec('launchctl list 2>/dev/null | grep "ai\\."', (error, stdout) => {
+    exec('launchctl list 2>/dev/null | grep "ai\\."', { timeout: 5000 }, (error, stdout) => {
         const daemons = [];
         if (!error && stdout) {
             stdout.trim().split('\n').forEach(line => {
@@ -2666,7 +2745,7 @@ function runBackup(req, res) {
     console.log('Starting backup...');
     
     // Step 1: git add
-    exec('cd ~/mission-control-server && git add -A', (addError, addStdout, addStderr) => {
+    exec('cd ~/mission-control-server && git add -A', { timeout: 15000 }, (addError, addStdout, addStderr) => {
         if (addError) {
             console.error('Git add error:', addError);
             res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -2676,7 +2755,7 @@ function runBackup(req, res) {
         console.log('Git add completed');
         
         // Step 2: git commit
-        exec('cd ~/mission-control-server && git commit -m "Backup: ' + new Date().toISOString() + '"', (commitError, commitStdout, commitStderr) => {
+        exec('cd ~/mission-control-server && git commit -m "Backup: ' + new Date().toISOString() + '"', { timeout: 15000 }, (commitError, commitStdout, commitStderr) => {
             if (commitError) {
                 // git exits 1 when nothing to commit — message appears in stdout
                 const combined = (commitStdout || '') + (commitStderr || '') + (commitError.message || '');
@@ -2693,7 +2772,7 @@ function runBackup(req, res) {
             }
             
             // Step 3: git push
-            exec('cd ~/mission-control-server && git push', (pushError, pushStdout, pushStderr) => {
+            exec('cd ~/mission-control-server && git push', { timeout: 30000 }, (pushError, pushStdout, pushStderr) => {
                 if (pushError) {
                     console.error('Git push error:', pushError, pushStderr);
                     res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -3223,7 +3302,7 @@ if (DO_API_TOKEN) {
 // Tailscale mesh status — poll every 60s
 let tailscaleCache = { devices: [], allOnline: false, ts: null };
 function pollTailscale() {
-    exec('tailscale status --json 2>/dev/null', (err, stdout) => {
+    exec('/usr/local/bin/tailscale status --json 2>/dev/null', { timeout: 10000 }, (err, stdout) => {
         if (err || !stdout) {
             tailscaleCache = { devices: [], allOnline: false, running: false, ts: Date.now() };
             return;
@@ -3265,6 +3344,41 @@ function getTailscaleStatus(req, res) {
     res.end(JSON.stringify(tailscaleCache));
 }
 
+function getN8nUptime(req, res) {
+    const { exec: execSsh } = require('child_process');
+    const cmd = 'ssh -o ConnectTimeout=5 n8n-vps "uptime -s && docker inspect -f \'{{.State.Running}}\' n8n-docker-caddy-n8n-1 2>/dev/null || echo false"';
+    execSsh(cmd, { timeout: 10000 }, (err, stdout) => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        if (err || !stdout.trim()) {
+            res.end(JSON.stringify({ ok: false, bootTime: null, dockerRunning: null }));
+            return;
+        }
+        const lines = stdout.trim().split('\n');
+        const bootISO = new Date(lines[0].trim().replace(' ', 'T')).toISOString();
+        const dockerRunning = lines[1] ? lines[1].trim() === 'true' : null;
+        res.end(JSON.stringify({ ok: true, bootTime: bootISO, dockerRunning }));
+    });
+}
+
+function getSshTunnels(req, res) {
+    const { exec: execLocal } = require('child_process');
+    // Check reverse SSH tunnel via launchctl PID
+    execLocal('launchctl list ai.dwe.ollama-tunnel 2>/dev/null', (err, launchOut) => {
+        const pidMatch = (launchOut || '').match(/"PID"\s*=\s*(\d+)/);
+        const reverseUp = !!(pidMatch && pidMatch[1]);
+        const reversePid = pidMatch ? pidMatch[1] : null;
+        // Check forward SSH reachability (BatchMode=yes = no password prompt, fast fail)
+        execLocal('ssh -o ConnectTimeout=5 -o BatchMode=yes n8n-vps exit 0 2>/dev/null', { timeout: 8000 }, (err2) => {
+            const forwardUp = !err2;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                reverse: { up: reverseUp, pid: reversePid, note: 'Ollama · SSH · Dashboard → VPS' },
+                forward: { up: forwardUp, note: '64.23.238.56' }
+            }));
+        });
+    });
+}
+
 async function getDigitalOceanStatus(req, res) {
     if (!DO_API_TOKEN) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -3283,7 +3397,7 @@ async function getDigitalOceanStatus(req, res) {
 // Internet connectivity — ping 1.1.1.1 every 60s, track last success
 let lastPingSuccess = null;
 function runInternetPing() {
-    exec('ping -c 1 -W 3 1.1.1.1 > /dev/null 2>&1 && echo ok || echo fail', (err, stdout) => {
+    exec('ping -c 1 -W 3 1.1.1.1 > /dev/null 2>&1 && echo ok || echo fail', { timeout: 8000 }, (err, stdout) => {
         if ((stdout || '').trim() === 'ok') lastPingSuccess = Date.now();
     });
 }
@@ -3340,7 +3454,7 @@ let prevServiceTs = null;
 function sampleTraffic() {
     // Run both nettop (per-connection) and netstat (total) in parallel
     exec("nettop -L 1 -n -x -J bytes_in,bytes_out 2>/dev/null", { timeout: 8000 }, (err, nettopOut) => {
-        exec("netstat -ib | grep -E '^en[01].*<Link'", (err2, netstatOut) => {
+        exec("netstat -ib | grep -E '^en[01].*<Link'", { timeout: 5000 }, (err2, netstatOut) => {
             const now = Date.now();
 
             // Parse total from netstat
@@ -3419,7 +3533,7 @@ function sampleTraffic() {
     });
 }
 sampleTraffic();
-setInterval(sampleTraffic, 5000);
+setInterval(sampleTraffic, 15000);  // was 5s — 15s is plenty for traffic counters
 
 function getTraffic(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -3434,51 +3548,44 @@ function sampleLocalTraffic() {
     // Ollama: connections + CPU — high CPU = actively generating tokens
     // n8n connects to Ollama via reverse SSH tunnel (ai.dwe.ollama-tunnel)
     // which shows as ssh process on 127.0.0.1:11434 — detect by ssh PID in lsof
-    exec("lsof -i :11434 -n -P 2>/dev/null | grep ESTABLISHED", (e1, ollamaRaw) => {
-        const ollamaLines = (ollamaRaw || '').trim().split('\n').filter(l => l.length > 0);
-        const ollamaConns = ollamaLines.length;
-        // SSH tunnel = n8n VPS calling Ollama through reverse port forward
-        const n8nToOllama = ollamaLines.some(l => /^ssh\s/.test(l)) ? 1 : 0;
-        exec("ps -p 924 -o %cpu= 2>/dev/null", (ec, cpuOut) => {
-            const ollamaCpu = parseFloat((cpuOut || '0').trim()) || 0;
-            // Scale: idle=0, connection but low cpu=1, generating=2-6 based on cpu%
-            const ollamaActivity = ollamaConns > 0
-                ? Math.min(6, Math.max(1, ollamaConns + Math.round(ollamaCpu / 20)))
-                : 0;
-
-            // OpenClaw gateway: running=1 dot, CPU activity=more dots
-            exec("ps -p 896 -o %cpu= 2>/dev/null", (e2, gwCpu) => {
-                const gwCpuVal = parseFloat((gwCpu || '0').trim()) || 0;
-                const gatewayConns = gwCpuVal > 1 ? Math.min(5, 1 + Math.round(gwCpuVal / 5)) : 1;
-
-                // MCporter (relay-daemon): ESTABLISHED connections → dots
-                exec("lsof -p 856 -n -P 2>/dev/null | grep -c ESTABLISHED", (e3, rdOut) => {
-                    const mcpConns = parseInt((rdOut || '').trim()) || 0;
-                    // Mac Mini CPU% — 100 minus idle% from top (accurate, all cores)
-                    exec("top -l 1 -n 0 2>/dev/null | awk '/CPU usage/ {gsub(/%/,\"\"); for(i=1;i<=NF;i++) if($i==\"idle\") idle=$(i-1); printf \"%.1f\", 100-idle}'", (e4, cpuRaw) => {
-                        const cpuPct = parseFloat((cpuRaw || '0').trim()) || 0;
-                        // Mac Mini RAM pressure% via vm_stat — free+inactive+purgeable = reclaimable
-                        exec("python3 -c \"import subprocess,re; out=subprocess.check_output(['vm_stat'],text=True); p=lambda n:(lambda m:int(m.group(1)) if m else 0)(re.search(n+r'[^\\d]*(\\d+)',out)); fr=p('Pages free'); ia=p('Pages inactive'); pu=p('Pages purgeable'); tot=fr+p('Pages active')+ia+p('Pages wired down')+p('Pages occupied by compressor'); avail=fr+ia+pu; print(f'{(1-avail/tot)*100:.1f}' if tot else 0)\"", (e5, memRaw) => {
-                            const memPct = parseFloat((memRaw || '0').trim()) || 0;
-                            localTrafficCache = {
-                                ...localTrafficCache,
-                                ollama: ollamaActivity,
-                                n8nOllama: n8nToOllama ? Math.max(2, ollamaActivity) : 0,
-                                mcp: mcpConns,
-                                gateway: gatewayConns,
-                                memPct,
-                                cpuPct,
-                                ts: Date.now()
-                            };
-                        });
-                    });
-                });
-            });
-        });
+    // Run all 6 checks in parallel with Promise.all (was 5-deep nested callbacks)
+    const run = (cmd) => new Promise(resolve => {
+        exec(cmd, { timeout: 5000 }, (err, stdout) => resolve((stdout || '').trim()));
     });
+    Promise.all([
+        run("lsof -i :11434 -n -P 2>/dev/null | grep ESTABLISHED"),
+        run("ps -p 924 -o %cpu= 2>/dev/null"),
+        run("ps -p 896 -o %cpu= 2>/dev/null"),
+        run("lsof -p 856 -n -P 2>/dev/null | grep -c ESTABLISHED"),
+        run("top -l 1 -n 0 2>/dev/null | awk '/CPU usage/ {gsub(/%/,\"\"); for(i=1;i<=NF;i++) if($i==\"idle\") idle=$(i-1); printf \"%.1f\", 100-idle}'"),
+        run("vm_stat | awk '/Pages (free|active|inactive|wired down|purgeable|occupied by compressor)/ {gsub(/\\./,\"\"); v[NR]=$NF} END {tot=0; avail=0; for(i in v) tot+=v[i]; avail=v[1]+v[3]+v[5]; printf \"%.1f\", (1-avail/tot)*100}'")
+    ]).then(([ollamaRaw, cpuOut, gwCpu, rdOut, cpuRaw, memRaw]) => {
+        const ollamaLines = ollamaRaw.split('\n').filter(l => l.length > 0);
+        const ollamaConns = ollamaLines.length;
+        const n8nToOllama = ollamaLines.some(l => /^ssh\s/.test(l)) ? 1 : 0;
+        const ollamaCpu = parseFloat(cpuOut || '0') || 0;
+        const ollamaActivity = ollamaConns > 0
+            ? Math.min(6, Math.max(1, ollamaConns + Math.round(ollamaCpu / 20)))
+            : 0;
+        const gwCpuVal = parseFloat(gwCpu || '0') || 0;
+        const gatewayConns = gwCpuVal > 1 ? Math.min(5, 1 + Math.round(gwCpuVal / 5)) : 1;
+        const mcpConns = parseInt(rdOut || '0') || 0;
+        const cpuPct = parseFloat(cpuRaw || '0') || 0;
+        const memPct = parseFloat(memRaw || '0') || 0;
+        localTrafficCache = {
+            ...localTrafficCache,
+            ollama: ollamaActivity,
+            n8nOllama: n8nToOllama ? Math.max(2, ollamaActivity) : 0,
+            mcp: mcpConns,
+            gateway: gatewayConns,
+            memPct,
+            cpuPct,
+            ts: Date.now()
+        };
+    }).catch(() => {});
 }
 sampleLocalTraffic();
-setInterval(sampleLocalTraffic, 5000);
+setInterval(sampleLocalTraffic, 15000);  // was 5s — 15s reduces exec() churn
 
 // Router health — poll Nokia BGW320-505 AT&T gateway (no auth required from LAN)
 let lastRouterCounters = null;
@@ -3532,7 +3639,7 @@ function sampleRouterHealth() {
     }).on('error', () => {}); // silent if router unreachable
 }
 sampleRouterHealth();
-setInterval(sampleRouterHealth, 5000);
+setInterval(sampleRouterHealth, 30000);  // was 5s — router stats don't change that fast
 
 function getLocalTraffic(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -3541,11 +3648,11 @@ function getLocalTraffic(req, res) {
 
 async function getSystemHealth(req, res) {
     const run = (cmd) => new Promise((resolve) => {
-        exec(cmd, (err, stdout) => resolve(stdout ? stdout.trim() : ''));
+        exec(cmd, { timeout: 5000 }, (err, stdout) => resolve(stdout ? stdout.trim() : ''));
     });
 
     try {
-        const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut, ipOut, gwOut] = await Promise.all([
+        const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut, ipOut, gwOut, loadOut] = await Promise.all([
             run("ps -A -o %cpu | awk '{s+=$1} END {printf \"%.1f\", s}'"),
             run("vm_stat"),
             run("sysctl -n hw.memsize"),
@@ -3554,7 +3661,8 @@ async function getSystemHealth(req, res) {
             run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
             run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'"),
             run("ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo ''"),
-            run("route -n get default 2>/dev/null | awk '/gateway:/{print $2}'")
+            run("route -n get default 2>/dev/null | awk '/gateway:/{print $2}'"),
+            run("sysctl -n vm.loadavg | awk '{print $2}'")
         ]);
 
         // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
@@ -3599,12 +3707,16 @@ async function getSystemHealth(req, res) {
             if (lstart) gatewayStartISO = new Date(lstart).toISOString();
         }
 
+        // Load average (1-min)
+        const load1Val = parseFloat(loadOut) || null;
+
         const sysPayload = {
             chip: chipOut || 'Apple M4',
             cores: logicalCPU,
             cpu:    { percent: cpuPct, raw: cpuRaw },
             memory: { totalGB: parseFloat(totalGB.toFixed(1)), usedGB: parseFloat(usedGB.toFixed(1)), percent: memPct },
             disk:   { totalGB: diskTotalGB, usedGB: diskUsedGB, freeGB: diskFreeGB, percent: diskPct },
+            load1: load1Val !== null ? Math.round(load1Val * 100) / 100 : null,
             bootTime: bootISO,
             gatewayStartTime: gatewayStartISO,
             localIP: ipOut || null,
@@ -3998,6 +4110,195 @@ function getFinancialPulse(req, res) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
     }
+}
+
+// ── Cashflow Overview — reads SGG-Cashflow + L2 Liabilities from Google Sheets ──
+function handleCashflow(req, res) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1vTShVS1jhDi_laZYc6tZFLP9tLH1s0FFNcqEtG4WtxU';
+
+    function fetchRange(range) {
+        return new Promise((resolve, reject) => {
+            const opts = {
+                hostname: 'gateway.maton.ai',
+                path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}`,
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+            };
+            const apiReq = https.request(opts, (apiRes) => {
+                let body = '';
+                apiRes.on('data', chunk => body += chunk);
+                apiRes.on('end', () => {
+                    try { resolve(JSON.parse(body)); }
+                    catch(e) { reject(new Error('Parse error: ' + e.message)); }
+                });
+            });
+            apiReq.on('error', reject);
+            apiReq.end();
+        });
+    }
+
+    function parseDollar(v) {
+        if (!v || v === '#N/A' || v === '#VALUE!' || v === '#REF!') return null;
+        return parseFloat(String(v).replace(/[$,\s]/g, '')) || 0;
+    }
+
+    function findRow(rows, label) {
+        return rows.find(r => r[0] && r[0].trim().startsWith(label));
+    }
+
+    Promise.all([
+        fetchRange('SGG-Cashflow!A1:H100'),
+        fetchRange('L2 Liabilities!A1:J30')
+    ]).then(([sggData, l2Data]) => {
+        const sgg = sggData.values || [];
+        const l2 = l2Data.values || [];
+
+        // Income
+        const earnedRow = findRow(sgg, 'Earned Total');
+        const passiveRow = findRow(sgg, 'Passive Total');
+        const portfolioRow = findRow(sgg, 'Portfolio Total');
+        const totalIncomeRow = findRow(sgg, 'D. TOTAL INCOME');
+
+        // Expenses & Cash Flow
+        const totalExpenseRow = findRow(sgg, 'E. TOTAL EXPENSES');
+        const netCashFlowRow = findRow(sgg, 'NET MONTHLY CASH FLOW');
+        const paydayRow = sgg.find(r => r[6] && String(r[6]).trim() === 'PAYDAY');
+
+        // Assets
+        const assetsSubRow = findRow(sgg, 'F. ASSETS SUBTOTAL');
+        const doodadsRow = findRow(sgg, 'G. DOODADS TOTAL');
+        const bankerAssetsRow = findRow(sgg, 'H. TOTAL ASSETS per Banker');
+        const richDadAssetsRow = findRow(sgg, 'I. TOTAL ASSETS per Rich Dad');
+
+        // Net Worth
+        const bankerNWRow = sgg.find(r => r[5] && String(r[5]).trim().startsWith('K. NET WORTH'));
+        const richDadNWRow = sgg.find(r => r[5] && String(r[5]).trim().startsWith('I. NET WORTH'));
+
+        // Analysis ratios (column G/H in early rows)
+        const cfRatioRow = sgg.find(r => r[6] && String(r[6]).includes('Cash Flow/Total Income'));
+        const passiveRatioRow = sgg.find(r => r[6] && String(r[6]).includes('Passive+Portfolio/Total Inc'));
+        const taxRatioRow = sgg.find(r => r[6] && String(r[6]).includes('Taxes/Total Income'));
+        const housingRatioRow = sgg.find(r => r[6] && String(r[6]).includes('Housing Expenses/Income'));
+        const roaRow = sgg.find(r => r[6] && String(r[6]).includes('Pass+Port/Rich Dad Assets'));
+
+        // L2 Liabilities summary
+        const ccRow = l2.find(r => r[4] && String(r[4]).trim() === 'CC:');
+        const loansRow = l2.find(r => r[4] && String(r[4]).trim() === 'Loans:');
+        const totalDebtRow = l2.find(r => r[4] && String(r[4]).trim() === 'Total:');
+
+        // Individual liabilities for top-debt list
+        const liabilities = [];
+        for (const r of l2) {
+            if (r[1] && String(r[1]).startsWith('LID') && r[2] && r[6]) {
+                const owed = parseDollar(r[6]);
+                if (owed !== null && owed > 0) {
+                    liabilities.push({ id: r[1], name: r[2], owed, minPayment: parseDollar(r[8]), utilization: r[9] || '' });
+                }
+            }
+        }
+        liabilities.sort((a, b) => b.owed - a.owed);
+
+        // Individual income items (Earned #1, #2, Real Estate, Passive Portfolio, VA Benefits, etc.)
+        const incomeItems = [];
+        const expenseItems = [];
+        const assetItems = [];
+        let section = null;
+        for (const r of sgg) {
+            const a = (r[0] || '').trim();
+            const b = (r[1] || '').trim();
+            const c = parseDollar(r[2]);
+            // Track sections
+            if (a === 'A. Earned Income' || a === 'B. Passive Income' || a === 'C. Portfolio Income') { section = 'income'; continue; }
+            if (a === 'E. Expenses') { section = 'expenses'; continue; }
+            if (a.startsWith('F. ASSETS') || a === 'F.' || (a === 'F. ' || (b === 'ASSETS' && a.startsWith('F')))) { section = 'assets'; continue; }
+            if (a.startsWith('Asset ID')) { section = 'assets'; continue; }
+            if (a.startsWith('G. DOODADS') || a.startsWith('E. TOTAL') || a.startsWith('NET MONTHLY') || a.startsWith('D. TOTAL') || a.startsWith('F. ASSETS SUBTOTAL')) { section = null; continue; }
+            // Collect items
+            if (section === 'income' && b && c !== null && !a.startsWith('Earned Total') && !a.startsWith('Passive Total') && !a.startsWith('Portfolio Total')) {
+                incomeItems.push({ name: b, amount: c });
+            }
+            if (section === 'expenses' && b && c !== null && a !== 'ExID') {
+                expenseItems.push({ id: a, name: b, amount: c });
+            }
+            if (section === 'assets' && b && c !== null && (a.startsWith('Asset') || a.startsWith('asset'))) {
+                assetItems.push({ id: a, name: b, amount: c });
+            }
+        }
+
+        // Liability items with balances (from L2)
+        const liabilityItems = [];
+        for (const r of l2) {
+            if (r[1] && String(r[1]).startsWith('LID') && r[2]) {
+                const owed = parseDollar(r[6]);
+                liabilityItems.push({ id: r[1].trim(), name: r[2], balance: owed !== null ? owed : 0 });
+            }
+        }
+
+        // Cash value from sheet
+        const cashRow = sgg.find(r => r[6] && String(r[6]).trim() === 'CASH:');
+        const cashValue = cashRow ? parseDollar(cashRow[7]) : null;
+
+        const result = {
+            ok: true,
+            timestamp: new Date().toISOString(),
+            income: {
+                earned: parseDollar(earnedRow && earnedRow[2]),
+                passive: parseDollar(passiveRow && passiveRow[2]),
+                portfolio: parseDollar(portfolioRow && portfolioRow[2]),
+                total: parseDollar(totalIncomeRow && totalIncomeRow[2]),
+                items: incomeItems
+            },
+            expenses: {
+                total: parseDollar(totalExpenseRow && totalExpenseRow[2]),
+                items: expenseItems
+            },
+            netCashFlow: parseDollar(netCashFlowRow && netCashFlowRow[2]),
+            payday: parseDollar(paydayRow && paydayRow[7]),
+            cash: cashValue,
+            assets: {
+                subtotal: parseDollar(assetsSubRow && assetsSubRow[2]),
+                doodads: parseDollar(doodadsRow && doodadsRow[2]),
+                bankerTotal: parseDollar(bankerAssetsRow && bankerAssetsRow[2]),
+                richDadTotal: parseDollar(richDadAssetsRow && richDadAssetsRow[2]),
+                items: assetItems
+            },
+            netWorth: {
+                banker: parseDollar(bankerNWRow && bankerNWRow[7]),
+                richDad: parseDollar(richDadNWRow && richDadNWRow[7])
+            },
+            debt: {
+                ccTotal: parseDollar(ccRow && ccRow[6]),
+                ccCredit: parseDollar(ccRow && ccRow[5]),
+                ccUtilization: ccRow && ccRow[9] ? ccRow[9] : null,
+                loansTotal: parseDollar(loansRow && loansRow[6]),
+                grandTotal: parseDollar(totalDebtRow && totalDebtRow[6]),
+                minPayments: parseDollar(totalDebtRow && totalDebtRow[8]),
+                topDebts: liabilities.slice(0, 5),
+                items: liabilityItems
+            },
+            analysis: {
+                cashFlowRatio: cfRatioRow && cfRatioRow[7] && !String(cfRatioRow[7]).startsWith('#') ? cfRatioRow[7] : null,
+                passivePortfolioRatio: passiveRatioRow && passiveRatioRow[7] && !String(passiveRatioRow[7]).startsWith('#') ? passiveRatioRow[7] : null,
+                taxRatio: taxRatioRow && taxRatioRow[7] && !String(taxRatioRow[7]).startsWith('#') ? taxRatioRow[7] : null,
+                housingRatio: housingRatioRow && housingRatioRow[7] && !String(housingRatioRow[7]).startsWith('#') ? housingRatioRow[7] : null,
+                returnOnAssets: roaRow && roaRow[7] && !String(roaRow[7]).startsWith('#') ? roaRow[7] : null
+            },
+            freedomProgress: null // passive+portfolio vs expenses
+        };
+
+        // Calculate freedom progress (passive+portfolio income / total expenses)
+        if (result.income.passive !== null && result.income.portfolio !== null && result.expenses.total !== null && result.expenses.total > 0) {
+            result.freedomProgress = ((result.income.passive + result.income.portfolio) / result.expenses.total * 100).toFixed(1) + '%';
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+        res.end(JSON.stringify(result));
+
+    }).catch(err => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Maton API error: ' + err.message }));
+    });
 }
 
 function getAgentSessions(req, res) {
