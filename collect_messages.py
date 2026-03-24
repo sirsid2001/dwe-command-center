@@ -30,7 +30,7 @@ GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 IMAP_SERVER = os.environ.get("IMAP_SERVER", "imap.gmail.com")
 HOURS_BACK = 12
-MAX_GMAIL = 30
+MAX_GMAIL = 100
 MAX_TELEGRAM = 50
 MAX_TELEGRAM_PERSONAL = 50
 MAX_IMESSAGE = 20
@@ -77,7 +77,7 @@ def collect_gmail():
 
         # Fetch recent emails (last 24 hours, all labels — not just inbox)
         results = svc.users().messages().list(
-            userId='me', q='newer_than:1d -category:spam -category:trash', maxResults=MAX_GMAIL
+            userId='me', q='is:unread -category:spam -category:trash', maxResults=MAX_GMAIL
         ).execute()
         msg_list = results.get('messages', [])
 

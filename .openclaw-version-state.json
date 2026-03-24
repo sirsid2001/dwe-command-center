@@ -1,9 +1,9 @@
 {
   "currentVersion": "2026.3.13",
-  "latestVersion": "2026.3.13",
-  "updateAvailable": false,
-  "lastChecked": "2026-03-22T17:36:22.302Z",
-  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.3.13",
+  "latestVersion": "2026.3.22",
+  "updateAvailable": true,
+  "lastChecked": "2026-03-23T12:28:59.853Z",
+  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.3.22",
   "releaseNotes": null,
   "dweImpact": null,
   "actions": [

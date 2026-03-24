@@ -1400,31 +1400,51 @@
                         <div class="stat-label" style="margin-bottom:0;">Revenue & Pipeline</div>
                         <a id="revenue-btn" href="/revenue" style="text-decoration:none;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.35);color:#00ff88;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.28)'" onmouseout="this.style.background='rgba(0,255,136,0.15)'">Revenue &rarr;</a>
                     </div>
-                    <!-- Row 1: Revenue · Opportunities · Funnels -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem 1.2rem;">
-                        <!-- Revenue sub-card (clickable) -->
-                        <a href="/revenue" style="text-decoration:none;color:inherit;background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.15)';this.style.borderColor='rgba(0,255,136,0.35)'" onmouseout="this.style.background='rgba(0,255,136,0.08)';this.style.borderColor='rgba(0,255,136,0.2)'">
-                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
-                                <span style="font-size:0.75rem;">💰</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Revenue</span>
+                    <!-- Row 1: Cash Flow · Long-Term · Opportunities · Funnels -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0.8rem 1rem;">
+                        <!-- Cash Flow sub-card -->
+                        <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column; position:relative;">
+                            <div id="rev-mqt-tag" style="position:absolute;top:8px;right:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);padding:2px 6px;border-radius:4px;">
+                                <span style="font-size:0.5rem;color:rgba(255,255,255,0.35);">MQT </span><span style="font-size:0.6rem;color:#00d4ff;font-family:monospace;font-weight:600;" id="rev-mqt">—</span>
                             </div>
-                            <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-total">—</div>
-                            <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-label">monthly total</div>
-                            <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.5rem;">
-                                <div style="display:flex; justify-content:space-between; font-size:0.6rem;">
-                                    <span style="color:rgba(255,255,255,0.4);">Cash Flow</span>
-                                    <span style="color:rgba(0,255,136,0.6); font-family:monospace;" id="rev-cashflow">—</span>
+                            <a href="/revenue" style="text-decoration:none;color:inherit;cursor:pointer;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
+                                    <span style="font-size:0.75rem;">💰</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Cash Flow</span>
                                 </div>
-                                <div style="display:flex; justify-content:space-between; font-size:0.6rem;">
-                                    <span style="color:rgba(255,255,255,0.4);">Long-term</span>
-                                    <span style="color:rgba(0,255,136,0.6); font-family:monospace;" id="rev-longterm">—</span>
+                                <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-cashflow">—</div>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-cf-label">monthly</div>
+                            </a>
+                            <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-cf-daily" style="color:#00ff88;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-cf-weekly" style="color:#00c8ff;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-cf-yearly" style="color:#b829dd;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Staked</div><div id="rev-cf-staked" style="color:#ffaa00;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;" id="rev-cf-detail">
+                                <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
+                            </div>
+                        </div>
+                        <!-- Long-Term sub-card -->
+                        <div style="background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
+                            <a href="/revenue" style="text-decoration:none;color:inherit;cursor:pointer;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
+                                    <span style="font-size:0.75rem;">📈</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Long-Term</span>
                                 </div>
+                                <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00c8ff; letter-spacing:0.02em;" id="rev-longterm">—</div>
+                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-lt-label">monthly</div>
+                            </a>
+                            <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-lt-daily" style="color:#00ff88;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-lt-weekly" style="color:#00c8ff;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-lt-yearly" style="color:#b829dd;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Profit</div><div id="rev-lt-profit" style="color:#00ff88;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-top:auto; padding-top:0.4rem;">
-                                <span style="font-size:0.6rem; color:rgba(255,255,255,0.4);">MQT</span>
-                                <span style="margin-left:auto; font-size:0.65rem; color:#00d4ff; font-family:monospace; font-weight:600;" id="rev-mqt">—</span>
+                            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;" id="rev-lt-detail">
+                                <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
-                        </a>
+                        </div>
                         <!-- Opportunities sub-card (clickable) -->
                         <a href="/revenue#opportunities" style="text-decoration:none;color:inherit;background:rgba(0,200,255,0.08); border:1px solid rgba(0,200,255,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,200,255,0.15)';this.style.borderColor='rgba(0,200,255,0.35)'" onmouseout="this.style.background='rgba(0,200,255,0.08)';this.style.borderColor='rgba(0,200,255,0.2)'">
                             <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
@@ -1449,55 +1469,6 @@
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
                         </a>
-                    </div>
-                    <!-- Row 2: Cash Flow Detail · Breakdown · Streams -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem 1.2rem; margin-top:0.8rem;">
-                        <!-- Daily / Weekly / Yearly breakdown -->
-                        <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
-                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
-                                <span style="font-size:0.75rem;">📊</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Cash Flow Breakdown</span>
-                            </div>
-                            <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.25rem;">
-                                <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
-                                    <span style="color:rgba(255,255,255,0.4);">Daily</span>
-                                    <span style="color:#00ff88; font-family:monospace; font-weight:600;" id="rev-daily">—</span>
-                                </div>
-                                <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
-                                    <span style="color:rgba(255,255,255,0.4);">Weekly</span>
-                                    <span style="color:#00ff88; font-family:monospace; font-weight:600;" id="rev-weekly">—</span>
-                                </div>
-                                <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
-                                    <span style="color:rgba(255,255,255,0.4);">Yearly</span>
-                                    <span style="color:#00ff88; font-family:monospace; font-weight:600;" id="rev-yearly">—</span>
-                                </div>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-top:auto; padding-top:0.4rem;">
-                                <span style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Staked</span>
-                                <span style="margin-left:auto; font-size:0.65rem; color:#ffaa00; font-family:monospace; font-weight:600;" id="rev-staked">—</span>
-                            </div>
-                        </div>
-                        <!-- Streams overview -->
-                        <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
-                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
-                                <span style="font-size:0.75rem;">🔄</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Streams</span>
-                            </div>
-                            <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-stream-count">—</div>
-                            <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">active streams</div>
-                            <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.5rem;" id="rev-streams-list">
-                                <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
-                            </div>
-                        </div>
-                        <!-- Projected Profit -->
-                        <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
-                            <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
-                                <span style="font-size:0.75rem;">📈</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Projected Profit</span>
-                            </div>
-                            <div style="font-size:1.4rem; font-family:monospace; font-weight:700; letter-spacing:0.02em;" id="rev-profit">—</div>
-                            <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">annual projection</div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -2101,6 +2072,7 @@
                                 <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
                                 <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
                                 <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
+                                <div class="hud-row"><span id="hud-meeting-mute-dot" class="hud-dot"></span><span class="hud-name">Meeting Mute</span><span id="hud-meeting-mute-st" class="hud-st">—</span><button id="meeting-unmute-btn" onclick="manualUnmute()" style="font-size:0.55rem;padding:2px 8px;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.4);border-radius:4px;color:#ff6464;cursor:pointer;font-weight:600;display:none;margin-left:6px;">Unmute</button></div>
                                 <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
                             </div>
                         </div>
@@ -2263,18 +2235,30 @@
                     </div>
                 </div>
 
-                <!-- Cash Flow vs Long-Term Split -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
-                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,255,136,0.2); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
-                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Cash Flow (Monthly)</div>
-                        <div id="rev-cashflow-monthly" style="color:#00ff88; font-size:1.6rem; font-weight:700; font-family:Inter,sans-serif;">$0</div>
-                        <div style="color:rgba(255,255,255,0.3); font-size:0.65rem; margin-top:0.25rem;"><span id="rev-cashflow-count">0</span> streams</div>
+                <!-- Stream Layout: Summary bar + two-column (Cash Flow | Long-Term) -->
+                <div id="rev-stream-summary" style="background:rgba(20,20,40,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:0.75rem;padding:0.75rem 1.25rem;margin-bottom:0.75rem;backdrop-filter:blur(12px);display:flex;justify-content:space-around;align-items:center;text-align:center;">
+                    <!-- Populated by JS -->
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem;align-items:start;">
+                    <div>
+                        <div style="color:rgba(0,255,136,0.6);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;padding-left:0.25rem;">Cash Flow</div>
+                        <div id="rev-panel-cashflow" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
-                    <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(0,200,255,0.2); border-radius:0.75rem; padding:1rem; text-align:center; backdrop-filter:blur(12px);">
-                        <div style="color:rgba(255,255,255,0.5); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Long-Term (Monthly)</div>
-                        <div id="rev-longterm-monthly" style="color:#00c8ff; font-size:1.6rem; font-weight:700; font-family:Inter,sans-serif;">$0</div>
-                        <div style="color:rgba(255,255,255,0.3); font-size:0.65rem; margin-top:0.25rem;"><span id="rev-longterm-count">0</span> streams</div>
+                    <div>
+                        <div style="color:rgba(0,200,255,0.6);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:0.5rem;padding-left:0.25rem;">Long-Term</div>
+                        <div id="rev-panel-longterm" style="display:flex;flex-direction:column;gap:0.75rem;">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
+                </div>
+                <!-- Hidden elements for backward compat -->
+                <div style="display:none;">
+                    <span id="rev-cashflow-monthly">$0</span>
+                    <span id="rev-cashflow-count">0</span>
+                    <span id="rev-longterm-monthly">$0</span>
+                    <span id="rev-longterm-count">0</span>
                 </div>
                 <!-- Cash Flow Progress Bar -->
                 <div style="background:rgba(20,20,40,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:0.75rem; padding:1rem; margin-bottom:1.5rem; backdrop-filter:blur(12px);">
@@ -2868,6 +2852,9 @@
             // Bar chart — daily income per stream
             revRenderChart(streams);
 
+            // Stream sub-panels (vertical cards with trend)
+            revRenderStreamPanels(streams);
+
             // Streams table
             revRenderStreams(streams);
 
@@ -2940,6 +2927,122 @@
                     </td>
                 </tr>`;
             }).join('');
+        }
+
+        // ── Stream Sub-Panels with mini trend SVG ──
+        function revRenderStreamPanels(streams) {
+            const cfPanel = document.getElementById('rev-panel-cashflow');
+            const ltPanel = document.getElementById('rev-panel-longterm');
+            const summaryBar = document.getElementById('rev-stream-summary');
+            if (!cfPanel || !ltPanel) return;
+            const active = streams.filter(s => s.Stream_Name && (s.Status || '').includes('Active'));
+            const cfStreams = active.filter(s => s.Income_Type === 'Cash Flow');
+            const ltStreams = active.filter(s => s.Income_Type !== 'Cash Flow');
+
+            // Summary bar
+            const cfDaily = cfStreams.reduce((sum, s) => sum + revParseDollar(s['1_Day']), 0);
+            const ltDaily = ltStreams.reduce((sum, s) => sum + revParseDollar(s['1_Day']), 0);
+            const cfMonthly = cfStreams.reduce((sum, s) => sum + revParseDollar(s['30_Days']), 0);
+            const ltMonthly = ltStreams.reduce((sum, s) => sum + revParseDollar(s['30_Days']), 0);
+            if (summaryBar) {
+                summaryBar.innerHTML = `
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Cash Flow /day</div><div style="color:#00ff88;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfDaily)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Long-Term /day</div><div style="color:#00c8ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(ltDaily)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Total /month</div><div style="color:#00f5ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfMonthly + ltMonthly)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Streams</div><div style="color:#e0e0e0;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${cfStreams.length} + ${ltStreams.length}</div></div>
+                `;
+            }
+
+            const empty = '<div style="color:rgba(255,255,255,0.2);font-size:0.8rem;text-align:center;padding:1.5rem;">No streams</div>';
+            cfPanel.innerHTML = cfStreams.length > 0 ? cfStreams.map(s => revBuildStreamCard(s)).join('') : empty;
+            ltPanel.innerHTML = ltStreams.length > 0 ? ltStreams.map(s => revBuildStreamCard(s)).join('') : empty;
+        }
+
+        function revBuildStreamCard(s) {
+                const name = (s.Stream_Name || '').replace(/^(Crypto: |BYTNEX |Bytnex )/i, '');
+                const platform = s.Source_Platform || '';
+                const isCF = s.Income_Type === 'Cash Flow';
+                const borderColor = isCF ? 'rgba(0,255,136,0.2)' : 'rgba(0,200,255,0.2)';
+                const typeTag = isCF
+                    ? '<span style="background:rgba(0,255,136,0.1);color:#00ff88;padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:600;">CASH FLOW</span>'
+                    : '<span style="background:rgba(0,200,255,0.1);color:#00c8ff;padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:600;">LONG-TERM</span>';
+
+                const daily = revParseDollar(s['1_Day']);
+                const weekly = revParseDollar(s['7_Days']);
+                const monthly = revParseDollar(s['30_Days']);
+                const yearly = revParseDollar(s['365_Days']);
+                const staked = s.Staked_Balance || '$0';
+                const loan = s.Loan_Balance || '';
+                const roi = s.Cumulative_ROI || '—';
+                const growth = s.Daily_Growth || '—';
+                const projProfit = s.Projected_Profit || '—';
+
+                // Trend direction: compare daily*7 vs weekly, weekly*4 vs monthly
+                const dailyX7 = daily * 7;
+                const weeklyX4 = weekly * 4.3;
+                const weekTrend = dailyX7 >= weekly * 0.98 ? 'up' : 'down';
+                const monthTrend = weeklyX4 >= monthly * 0.98 ? 'up' : 'down';
+
+                // Mini SVG sparkline showing daily → weekly → monthly → yearly as rising/falling line
+                const points = [daily, weekly / 7, monthly / 30, yearly / 365];
+                const maxP = Math.max(...points, 0.01);
+                const svgH = 32;
+                const svgW = 80;
+                const coords = points.map((v, i) => `${(i / (points.length - 1)) * svgW},${svgH - (v / maxP) * (svgH - 4) - 2}`).join(' ');
+                const lineColor = points[points.length - 1] >= points[0] ? '#00ff88' : '#ff6b6b';
+                const sparkSvg = `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="display:block;">
+                    <polyline points="${coords}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="${coords.split(' ').pop().split(',')[0]}" cy="${coords.split(' ').pop().split(',')[1]}" r="3" fill="${lineColor}"/>
+                </svg>`;
+
+                // ROI color
+                const roiVal = parseFloat(String(roi).replace('%', ''));
+                const roiColor = isNaN(roiVal) ? '#888' : roiVal >= 0 ? '#00ff88' : '#ff6b6b';
+                const roiArrow = isNaN(roiVal) ? '' : roiVal >= 0 ? '▲' : '▼';
+
+                return `<div style="background:rgba(20,20,40,0.6);border:1px solid ${borderColor};border-radius:0.75rem;padding:1rem 1.25rem;backdrop-filter:blur(12px);">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                                <span style="color:#e0e0e0;font-size:0.9rem;font-weight:700;font-family:Inter,sans-serif;">${name}</span>
+                                ${typeTag}
+                            </div>
+                            <div style="color:rgba(255,255,255,0.3);font-size:0.65rem;font-family:Inter,sans-serif;">${platform}${loan ? ' · Loan: ' + loan : ''}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            ${sparkSvg}
+                            <div style="color:rgba(255,255,255,0.3);font-size:0.55rem;margin-top:2px;">daily avg trend</div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">
+                        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Daily</div>
+                            <div style="color:#00ff88;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(daily)}</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Weekly</div>
+                            <div style="color:#00c8ff;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(weekly)}</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Monthly</div>
+                            <div style="color:#00f5ff;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(monthly)}</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Yearly</div>
+                            <div style="color:#b829dd;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(yearly)}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;padding-top:0.6rem;border-top:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex;gap:1.25rem;">
+                            <div><span style="color:rgba(255,255,255,0.35);font-size:0.6rem;">STAKED </span><span style="color:#ffaa00;font-size:0.8rem;font-weight:600;font-family:Inter,sans-serif;">${staked}</span></div>
+                            <div><span style="color:rgba(255,255,255,0.35);font-size:0.6rem;">PROFIT </span><span style="color:${roiColor};font-size:0.8rem;font-weight:600;font-family:Inter,sans-serif;">${projProfit}</span></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="color:rgba(255,255,255,0.35);font-size:0.6rem;">ROI</span>
+                            <span style="color:${roiColor};font-size:0.95rem;font-weight:700;font-family:Inter,sans-serif;">${roiArrow} ${roi}</span>
+                        </div>
+                    </div>
+                </div>`;
         }
 
         function revEditGoal() {
@@ -3468,6 +3571,7 @@
                         'ai.dwe.clawhub-check':       { dot: 'hud-clawhub-check-dot',  st: 'hud-clawhub-check-st' },
                         'ai.dwe.soul-calibration':    { dot: 'hud-soul-calibration-dot',st: 'hud-soul-calibration-st' },
                         'ai.dwe.night-mode-heartbeat':{ dot: 'hud-night-mode-dot',     st: 'hud-night-mode-st' },
+                        'ai.dwe.teams-mute-watcher':  { dot: 'hud-meeting-mute-dot',  st: 'hud-meeting-mute-st' },
                         'ai.dwe.openclaw-backup':     { dot: 'hud-oc-backup-dot',      st: 'hud-oc-backup-st' },
                     };
                     if (hudMap[s.id]) {
@@ -3579,7 +3683,7 @@
                     'Follow-Up':   { daemons: [], prefix: ['ai.dwe.ce-task', 'ai.dwe.cto-task', 'ai.dwe.nicole-task', 'ai.dwe.cfo-task'] },
                     'Brain':       { daemons: [], prefix: ['ai.dwe.seed-', 'ai.dwe.notion-sync', 'ai.dwe.brain-', 'ai.dwe.nightly-', 'ai.dwe.memory-decay'] },
                     'Monitoring':  { daemons: [], prefix: ['ai.dwe.health-', 'ai.dwe.anomaly-', 'ai.dwe.ralphy-', 'com.dwe.ops-'] },
-                    'Routine':     { daemons: [], prefix: ['ai.dwe.clawhub-', 'ai.dwe.soul-', 'ai.dwe.night-mode', 'ai.dwe.openclaw-backup', 'ai.dwe.morning-'] },
+                    'Routine':     { daemons: [], prefix: ['ai.dwe.clawhub-', 'ai.dwe.soul-', 'ai.dwe.night-mode', 'ai.dwe.teams-mute', 'ai.dwe.openclaw-backup', 'ai.dwe.morning-'] },
                     'Other':       { daemons: [], prefix: [] }
                 };
 
@@ -3662,40 +3766,65 @@
                 ]);
                 if (incRes && incRes.ok) {
                     const s = incRes.summary || {};
-                    document.getElementById('rev-total').textContent = s.monthly_total || '$0';
-                    document.getElementById('rev-label').textContent = (incRes.streams?.length || 0) + ' streams · monthly';
-                    document.getElementById('rev-cashflow').textContent = (incRes.cashflow_monthly || '$0') + '/mo';
-                    document.getElementById('rev-longterm').textContent = (incRes.longterm_monthly || '$0') + '/mo';
-                    // Row 2: Breakdown
-                    document.getElementById('rev-daily').textContent = s.daily_total || '$0';
-                    document.getElementById('rev-weekly').textContent = s.weekly_total || '$0';
-                    document.getElementById('rev-yearly').textContent = s.yearly_total || '$0';
-                    document.getElementById('rev-staked').textContent = s.staked_total || '$0';
-                    // Row 2: Streams
-                    const streams = incRes.streams || [];
-                    document.getElementById('rev-stream-count').textContent = streams.length;
-                    const cfCount = (incRes.cashflow_streams || []).length;
-                    const ltCount = (incRes.longterm_streams || []).length;
-                    document.getElementById('rev-streams-list').innerHTML =
-                        `<div style="display:flex;justify-content:space-between;font-size:0.6rem;">
-                            <span style="color:rgba(255,255,255,0.4);">Cash Flow</span>
-                            <span style="color:rgba(0,255,136,0.6);font-family:monospace;">${cfCount}</span>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;font-size:0.6rem;">
-                            <span style="color:rgba(255,255,255,0.4);">Long-term</span>
-                            <span style="color:rgba(0,255,136,0.6);font-family:monospace;">${ltCount}</span>
+                    // Row 1: Cash Flow card
+                    const parseDollar = (v) => parseFloat((v || '$0').replace(/[$,]/g, '')) || 0;
+                    const fmtCur = (n) => n >= 1000 ? '$' + (n/1000).toFixed(1) + 'k' : '$' + Math.round(n);
+                    document.getElementById('rev-cashflow').textContent = incRes.cashflow_monthly || '$0';
+                    const cfStreams = (incRes.cashflow_streams || []).filter(st => st.Stream_Name && (st.Status || '').includes('Active'));
+                    document.getElementById('rev-cf-label').textContent = cfStreams.length + ' stream' + (cfStreams.length !== 1 ? 's' : '') + ' · monthly';
+                    // Row 1: Long-Term card
+                    document.getElementById('rev-longterm').textContent = incRes.longterm_monthly || '$0';
+                    const ltStreams = (incRes.longterm_streams || []).filter(st => st.Stream_Name && (st.Status || '').includes('Active'));
+                    document.getElementById('rev-lt-label').textContent = ltStreams.length + ' stream' + (ltStreams.length !== 1 ? 's' : '') + ' · monthly';
+                    // Stream mini-cards inside each panel
+                    const buildMiniCard = (st, borderColor) => {
+                        const name = (st.Stream_Name || '').replace(/^(Crypto: |BYTNEX |Bytnex )/i, '');
+                        const daily = parseDollar(st['1_Day']);
+                        const monthly = parseDollar(st['30_Days']);
+                        const roi = st.ROI || '—';
+                        const roiNum = parseFloat(roi);
+                        const roiColor = isNaN(roiNum) ? '#888' : roiNum >= 0 ? '#00ff88' : '#ff4444';
+                        const arrow = isNaN(roiNum) ? '' : roiNum >= 0 ? '▲' : '▼';
+                        return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${borderColor};border-radius:6px;padding:0.5rem 0.6rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+                                <span style="font-size:0.65rem;font-weight:600;color:#e0e0e0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;">${name}</span>
+                                <span style="font-size:0.6rem;color:${roiColor};font-family:monospace;font-weight:600;">${arrow} ${roi}</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.55rem;">
+                                <span style="color:rgba(255,255,255,0.35);">Daily <span style="color:#00ff88;font-family:monospace;font-weight:600;">${fmtCur(daily)}</span></span>
+                                <span style="color:rgba(255,255,255,0.35);">Monthly <span style="color:#00c8ff;font-family:monospace;font-weight:600;">${fmtCur(monthly)}</span></span>
+                            </div>
                         </div>`;
-                    // Row 2: Projected Profit
-                    const profitEl = document.getElementById('rev-profit');
-                    const profit = s.projected_profit || '$0';
-                    profitEl.textContent = profit;
-                    profitEl.style.color = profit.startsWith('-') ? '#ff4444' : '#00ff88';
+                    };
+                    const emptyHtml = '<div style="font-size:0.6rem;color:rgba(255,255,255,0.2);text-align:center;padding:0.5rem;">No streams</div>';
+                    document.getElementById('rev-cf-detail').innerHTML = cfStreams.length > 0 ? cfStreams.map(st => buildMiniCard(st, 'rgba(0,255,136,0.15)')).join('') : emptyHtml;
+                    document.getElementById('rev-lt-detail').innerHTML = ltStreams.length > 0 ? ltStreams.map(st => buildMiniCard(st, 'rgba(0,200,255,0.15)')).join('') : emptyHtml;
+                    // Per-panel summary bars
+                    const cfDaily = cfStreams.reduce((sum, st) => sum + parseDollar(st['1_Day']), 0);
+                    const cfWeekly = cfStreams.reduce((sum, st) => sum + parseDollar(st['7_Days']), 0);
+                    const cfYearly = cfStreams.reduce((sum, st) => sum + parseDollar(st['365_Days']), 0);
+                    const cfStaked = cfStreams.reduce((sum, st) => sum + parseDollar(st['Staked_Amount']), 0);
+                    document.getElementById('rev-cf-daily').textContent = fmtCur(cfDaily);
+                    document.getElementById('rev-cf-weekly').textContent = fmtCur(cfWeekly);
+                    document.getElementById('rev-cf-yearly').textContent = fmtCur(cfYearly);
+                    document.getElementById('rev-cf-staked').textContent = fmtCur(cfStaked);
+                    const ltDaily = ltStreams.reduce((sum, st) => sum + parseDollar(st['1_Day']), 0);
+                    const ltWeekly = ltStreams.reduce((sum, st) => sum + parseDollar(st['7_Days']), 0);
+                    const ltYearly = ltStreams.reduce((sum, st) => sum + parseDollar(st['365_Days']), 0);
+                    const ltProfitVal = s.projected_profit || '$0';
+                    document.getElementById('rev-lt-daily').textContent = fmtCur(ltDaily);
+                    document.getElementById('rev-lt-weekly').textContent = fmtCur(ltWeekly);
+                    document.getElementById('rev-lt-yearly').textContent = fmtCur(ltYearly);
+                    const ltProfitEl = document.getElementById('rev-lt-profit');
+                    ltProfitEl.textContent = ltProfitVal;
+                    ltProfitEl.style.color = ltProfitVal.startsWith('-') ? '#ff4444' : '#00ff88';
                 } else { failures++; }
                 if (mqtRes && mqtRes.ok) {
                     document.getElementById('rev-mqt').textContent = '$' + Number(mqtRes.price).toFixed(2);
                 }
             } catch(e) { failures++;
-                document.getElementById('rev-total').textContent = '—';
+                document.getElementById('rev-cashflow').textContent = '—';
+                document.getElementById('rev-longterm').textContent = '—';
             }
             // Row 1: Opportunities
             try {
@@ -4401,7 +4530,7 @@
                         { id: 'ai.dwe.nicole-task-followup',           short: 'Follow-Up' },
                         { id: 'ai.dwe.agent-heartbeat-nicole-weekly',  short: 'Weekly' },
                     ]},
-                    { id: 'ce',    label: 'Chief Engineer', title: 'Engineering', icon: '🔧', taskId: 'ce',    hbId: 'ce',    sessId: 'chief-engineer', isHuman: false, daemons: [
+                    { id: 'ce',    label: 'Chief',           title: 'Chief Engineer', icon: '🔧', taskId: 'ce',    hbId: 'ce',    sessId: 'chief-engineer', isHuman: false, daemons: [
                         { id: 'ai.dwe.agent-heartbeat-ce', short: 'Heartbeat' },
                         { id: 'ai.dwe.ce-task-followup',   short: 'Follow-Up' },
                     ]},
@@ -4459,7 +4588,7 @@
                             : presStatus === 'idle' ? `idle · ${idleMin}m`
                             : `away · ${Math.round(idleMin/60)}h`;
                         sessStatusHtml = `
-                            <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.12);border-radius:5px;">
+                            <div style="display:flex;align-items:center;gap:5px;padding:3px 6px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.12);border-radius:5px;">
                                 <div style="width:7px;height:7px;border-radius:50%;background:${dot};box-shadow:0 0 5px ${dot};flex-shrink:0;"></div>
                                 <span style="font-size:0.62rem;color:rgba(255,255,255,0.65);">${label}</span>
                             </div>`;
@@ -4468,7 +4597,7 @@
                         const ctxPct = s.contextPct || 0;
                         const ctxC  = ctxPct > 80 ? '#ef4444' : ctxPct > 50 ? '#f59e0b' : '#22c55e';
                         sessStatusHtml = `
-                            <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:5px;">
+                            <div style="display:flex;align-items:center;gap:5px;padding:3px 6px;background:rgba(255,255,255,0.04);border-radius:5px;">
                                 <div style="width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;"></div>
                                 <span style="font-size:0.62rem;color:rgba(255,255,255,0.6);flex:1;">${s.status} · ${miniAge(s.minutesSince)} ago</span>
                                 <div style="width:28px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;">
@@ -4477,7 +4606,7 @@
                                 <span style="font-size:0.55rem;color:rgba(255,255,255,0.3);">${ctxPct}%</span>
                             </div>`;
                     } else if (!agent.isHuman) {
-                        sessStatusHtml = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;padding:3px 6px;background:rgba(255,255,255,0.02);border-radius:5px;">
+                        sessStatusHtml = `<div style="display:flex;align-items:center;gap:5px;padding:3px 6px;background:rgba(255,255,255,0.02);border-radius:5px;">
                             <div style="width:6px;height:6px;border-radius:50%;background:#374151;flex-shrink:0;"></div>
                             <span style="font-size:0.62rem;color:rgba(255,255,255,0.2);">no session</span>
                         </div>`;
@@ -4549,7 +4678,8 @@
                     function modelColorFor(m) {
                         if (!m) return '#22c55e';
                         if (m.startsWith('anthropic/') || m.startsWith('openclaw/') || m.toLowerCase().includes('sonic')) return '#ef4444';
-                        if (m.includes('auto')) return '#22c55e';
+                        if (m.includes('auto') || m.includes('minimax')) return '#22c55e';
+                        if (m.includes('ollama')) return '#22c55e';
                         if (m.startsWith('openrouter/') || m.startsWith('openai/')) return '#f59e0b';
                         return '#f59e0b';
                     }
@@ -4632,32 +4762,89 @@
                         const delegName = delegNameMap[agent.id] || agent.id;
                         const sentCount = delegationData.bySource?.[delegName] || 0;
                         const recvCount = delegationData.byTarget?.[agent.id] || 0;
-                        delegHtml = `<div style="margin-top:auto;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:6px;">
-                            <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Delegations</span>
-                            <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                                <span style="font-size:0.58rem;color:#00f5ff;" title="Sent to other agents">↑${sentCount}</span>
-                                <span style="font-size:0.58rem;color:#b829dd;" title="Received from other agents">↓${recvCount}</span>
+                        const gami = delegationData.gamification?.[delegName];
+                        const titleHtml = gami?.title ? `<span style="font-size:0.48rem;color:#00b4d8;font-weight:600;letter-spacing:0.03em;" title="${gami.badge} ${gami.title}">${gami.badge} ${gami.title}</span>` : '';
+                        delegHtml = `<div style="margin-top:auto;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:3px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Delegations</span>
+                                <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+                                    <span style="font-size:0.58rem;color:#00f5ff;" title="Sent to other agents">↑${sentCount}</span>
+                                    <span style="font-size:0.58rem;color:#b829dd;" title="Received from other agents">↓${recvCount}</span>
+                                </div>
                             </div>
+                            ${titleHtml ? `<div style="display:flex;align-items:center;">${titleHtml}</div>` : ''}
                         </div>`;
                     }
 
                     const bg     = agent.isHuman ? 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,165,0,0.05))' : 'rgba(255,255,255,0.025)';
                     const border = agent.isHuman ? 'rgba(255,215,0,0.22)' : 'rgba(255,255,255,0.07)';
 
-                    return `<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:0.6rem 0.65rem;min-width:0;display:flex;flex-direction:column;">
-                        <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
-                            <span style="font-size:1rem;">${agent.icon}</span>
-                            <div style="min-width:0;flex:1;">
-                                <div style="font-weight:700;font-size:0.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${agent.label}</div>
-                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.32);">${agent.title}</div>
+                    // ── New card layout (mockup v2) ──
+                    // Header: icon + name + role | model code tag
+                    const modelFull2 = agent.isHuman ? (agentModelConfig['main'] || '') : (s?.model || agentModelConfig[agent.id] || 'openrouter/minimax/minimax-m2.7');
+                    const modelDisp2 = modelDisplayFor(modelFull2);
+                    const modelClr2  = modelColorFor(modelFull2);
+
+                    // Actionable Pulse bar
+                    const actionByPrio2 = t?.actionableByPriority || {};
+                    const crit2 = actionByPrio2['Critical'] || 0;
+                    const high2 = actionByPrio2['High'] || 0;
+                    const med2  = actionByPrio2['Medium'] || 0;
+                    const low2  = actionByPrio2['Low'] || 0;
+                    const overdue2 = t?.actionableOverdue || 0;
+                    const actionList2 = t?.actionableList || [];
+                    const actionCount2 = t?.actionable || 0;
+
+                    const pulseHtml = t ? `
+                        <div>
+                            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;">Actionable Pulse</div>
+                            <div style="display:flex;gap:4px;align-items:center;">
+                                <div style="flex:1;height:24px;background:${crit2>0?'#d9534f':'rgba(217,83,79,0.2)'};color:${crit2>0?'#fff':'rgba(255,255,255,0.25)'};display:flex;justify-content:center;align-items:center;font-weight:700;border-radius:4px;font-size:0.8rem;">${String(crit2).padStart(2,'0')}</div>
+                                <div style="flex:1;height:24px;background:${high2>0?'#f0ad4e':'rgba(240,173,78,0.2)'};color:${high2>0?'#fff':'rgba(255,255,255,0.25)'};display:flex;justify-content:center;align-items:center;font-weight:700;border-radius:4px;font-size:0.8rem;">${String(high2).padStart(2,'0')}</div>
+                                <div style="flex:1;height:24px;background:${med2>0?'#5bc0de':'rgba(91,192,222,0.2)'};color:${med2>0?'#fff':'rgba(255,255,255,0.25)'};display:flex;justify-content:center;align-items:center;font-weight:700;border-radius:4px;font-size:0.8rem;">${String(med2).padStart(2,'0')}</div>
+                                <div style="flex:1;height:24px;background:${low2>0?'#5cb85c':'rgba(51,51,51,0.6)'};color:${low2>0?'#fff':'rgba(255,255,255,0.25)'};display:flex;justify-content:center;align-items:center;font-weight:700;border-radius:4px;font-size:0.8rem;">${String(low2).padStart(2,'0')}</div>
                             </div>
-                            ${hbHeaderHtml}
+                            ${overdue2 > 0
+                                ? `<div style="margin-top:6px;font-size:0.78rem;color:#ff6b6b;font-weight:700;">⚠️ ${overdue2} Overdue Task${overdue2>1?'s':''}</div>`
+                                : actionCount2 > 0
+                                    ? `<div style="margin-top:6px;font-size:0.68rem;color:rgba(0,255,136,0.5);">✓ on track</div>`
+                                    : `<div style="margin-top:6px;font-size:0.68rem;color:rgba(255,255,255,0.18);">— no tasks</div>`}
+                        </div>` : '';
+
+                    // Task list (top 3 with cleaner format)
+                    const taskListHtml2 = actionList2.length > 0 ? `
+                        <div>
+                            <ul style="list-style:none;padding:0;margin:0;font-size:0.8rem;">
+                                ${actionList2.slice(0, 3).map(tk => {
+                                    const pIcon = tk.isOverdue ? '<span style="color:#ff6b6b;">❗</span>' : tk.priority === 'Critical' ? '<span style="color:#f87171;">!!</span>' : '<span style="color:#fb923c;">!</span>';
+                                    const nameShort = tk.name.length > 22 ? tk.name.slice(0,20) + '…' : tk.name;
+                                    const notionUrl = tk.pageId ? `https://www.notion.so/${tk.pageId.replace(/-/g, '')}` : '';
+                                    const taskIdTag = tk.id ? (notionUrl ? `<a href="${notionUrl}" target="_blank" style="color:#555;font-size:0.7rem;font-family:monospace;text-decoration:none;" onmouseover="this.style.color='#00b4d8'" onmouseout="this.style.color='#555'">TASK-${tk.id}</a>` : `<code style="color:#555;font-size:0.7rem;">TASK-${tk.id}</code>`) : '';
+                                    const dueTag = tk.dueDate ? `<code style="color:#555;font-size:0.7rem;">${tk.dueDate}</code>` : '';
+                                    return `<li style="margin-bottom:8px;" title="${tk.name}">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px;">
+                                            ${taskIdTag}
+                                            ${dueTag}
+                                        </div>
+                                        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pIcon} <strong style="color:#e0e0e0;">${nameShort}</strong></div>
+                                    </li>`;
+                                }).join('')}
+                            </ul>
+                        </div>` : '';
+
+                    return `<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:1rem 1rem 0.75rem;min-width:0;display:flex;flex-direction:column;color:#e0e0e0;position:relative;">
+                        <code style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.65rem;color:#22c55e;">${modelDisp2}</code>
+                        <div style="margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;">
+                            <div style="font-weight:700;font-size:0.95rem;">${agent.icon} ${agent.label}</div>
+                            <div style="font-weight:400;color:rgba(255,255,255,0.35);font-size:0.7rem;margin-top:3px;">${agent.title}</div>
                         </div>
-                        ${sessStatusHtml}
-                        ${tasksHtml}
-                        ${daemonHtml}
-                        ${delegHtml}
-                        ${modelHtml}
+                        <div style="margin-bottom:14px;">${sessStatusHtml}</div>
+                        <div style="margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;">${pulseHtml}</div>
+                        <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;">${taskListHtml2}</div>
+                        <div style="margin-top:auto;">
+                            ${daemonHtml}
+                            ${delegHtml}
+                        </div>
                     </div>`;
                 }).join('');
 
@@ -6565,6 +6752,38 @@
         }
         fetchVisionScore();
         setInterval(fetchVisionScore, 300000);
+
+        // ── Meeting Mute status ────────────────────────────────────────
+        async function refreshMeetingStatus() {
+            try {
+                const res = await fetch('/mc/meeting-status');
+                const data = await res.json();
+                const dot = document.getElementById('hud-meeting-mute-dot');
+                const st = document.getElementById('hud-meeting-mute-st');
+                const btn = document.getElementById('meeting-unmute-btn');
+                if (!dot || !st) return;
+                if (data.muted) {
+                    dot.style.background = '#ff6464';
+                    const name = data.meeting_name || 'Meeting';
+                    st.textContent = 'MUTED — ' + name;
+                    st.style.color = '#ff6464';
+                    if (btn) btn.style.display = 'inline-block';
+                } else {
+                    dot.style.background = '#2ecc71';
+                    st.textContent = 'Normal';
+                    st.style.color = '';
+                    if (btn) btn.style.display = 'none';
+                }
+            } catch(e) {}
+        }
+        async function manualUnmute() {
+            try {
+                await fetch('/mc/meeting-unmute', { method: 'POST' });
+                refreshMeetingStatus();
+            } catch(e) {}
+        }
+        refreshMeetingStatus();
+        setInterval(refreshMeetingStatus, 30000);
 
         // Initial load + 60s auto-refresh
         refreshAll();

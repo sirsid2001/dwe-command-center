@@ -741,6 +741,39 @@ const server = http.createServer((req, res) => {
         case '/mc/cashflow':
             handleCashflow(req, res);
             break;
+        case '/mc/meeting-status': {
+            // GET: return current meeting mute state
+            const msStatePath = path.join(process.env.HOME, 'openclaw/shared/meeting_mute_state.json');
+            try {
+                const msData = JSON.parse(fs.readFileSync(msStatePath, 'utf8'));
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(msData));
+            } catch(e) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ muted: false, error: 'no state file' }));
+            }
+            break;
+        }
+        case '/mc/meeting-unmute': {
+            // POST: manually unmute system audio
+            const { execSync: msUnmute } = require('child_process');
+            const msUStatePath = path.join(process.env.HOME, 'openclaw/shared/meeting_mute_state.json');
+            try {
+                msUnmute('osascript -e "set volume without output muted"');
+                const msState = JSON.parse(fs.readFileSync(msUStatePath, 'utf8'));
+                msState.muted = false;
+                msState.unmuted_at = new Date().toISOString().replace('T', ' ').slice(0, 19);
+                msState.unmute_reason = 'manual';
+                fs.writeFileSync(msUStatePath, JSON.stringify(msState, null, 2));
+                console.log('[Meeting] MANUAL UNMUTE');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, action: 'unmuted', reason: 'manual' }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: e.message }));
+            }
+            break;
+        }
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
             if (pathname.startsWith('/mc/audit-report/')) {
@@ -2697,6 +2730,7 @@ async function getAgentTasks(req, res) {
             const actionableList = actionable
                 .map(t => ({
                     id: t.idNumber,
+                    pageId: t.id,
                     name: t.name,
                     status: t.status,
                     priority: t.priority,
@@ -3884,6 +3918,22 @@ function getDelegationStats(req, res) {
         // Last 10 delegations (most recent first)
         const recent = delegations.slice(-10).reverse();
 
+        // Gamification — titles and badges based on delegation count
+        const getTitleAndBadge = (count) => {
+            if (count >= 100) return { title: 'Delegation Machine', badge: '★★★★★' };
+            if (count >= 50)  return { title: 'Master Delegator',   badge: '★★★★' };
+            if (count >= 25)  return { title: 'Senior Delegator',   badge: '★★★' };
+            if (count >= 10)  return { title: 'Active Delegator',   badge: '★★' };
+            if (count >= 5)   return { title: 'Rising Delegator',   badge: '★' };
+            if (count >= 1)   return { title: 'First Delegation',   badge: '◆' };
+            return { title: '', badge: '' };
+        };
+
+        const gamification = {};
+        for (const [agent, count] of Object.entries(bySource)) {
+            gamification[agent] = { sent: count, ...getTitleAndBadge(count) };
+        }
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             total: delegations.length,
@@ -3891,6 +3941,7 @@ function getDelegationStats(req, res) {
             byTarget,
             pairs,
             recent,
+            gamification,
             timestamp: new Date().toISOString()
         }));
     } catch (e) {
@@ -4864,6 +4915,29 @@ function getScreenedMessages(req, res) {
             let is_opportunity = false;
             const preview = (m.preview || '').toLowerCase();
             const from = (m.from || '').toLowerCase();
+            const subject = (m.subject || '').toLowerCase();
+
+            // Gmail importance classification
+            if (m.channel === 'gmail') {
+                if (m.starred) {
+                    importance = 'high'; ai_reason = 'Starred';
+                } else if (subject.includes('invitation') || subject.includes('meeting') || subject.includes('calendar') || subject.includes('rsvp') || subject.includes('invite')) {
+                    importance = 'high'; ai_reason = 'Meeting/Calendar invite';
+                } else if (subject.includes('payment') || subject.includes('invoice') || subject.includes('bill') || subject.includes('past due') || subject.includes('overdue')) {
+                    importance = 'high'; ai_reason = 'Payment/Billing';
+                } else if (subject.includes('action required') || subject.includes('urgent') || subject.includes('important') || subject.includes('confirm') || subject.includes('verify') || subject.includes('approve')) {
+                    importance = 'high'; ai_reason = 'Action required';
+                }
+            }
+            // iMessage — personal messages, default high
+            if (m.channel === 'imessage') {
+                importance = 'high'; ai_reason = 'Personal message';
+            }
+            // Google Voice — personal messages, default high
+            if (m.channel === 'gvoice') {
+                importance = 'high'; ai_reason = 'Voice/Text message';
+            }
+
             // Rocket Community = lawsuit-related, always high priority
             if (from.includes('rocket') && m.channel === 'telegram') {
                 importance = 'high';

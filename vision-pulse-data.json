@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-03-21T08:00:37.848310",
-  "score": 25,
+  "timestamp": "2026-03-24T08:00:49.155660",
+  "score": 50,
   "objectives": {
     "SO1: Financial Independence": {
-      "active": 1,
-      "not_started": 3,
+      "active": 2,
+      "not_started": 33,
       "blocked": 0,
-      "done_week": 0,
-      "total": 4,
-      "status": "ACTIVE",
-      "last_activity": "2026-03-20T23:26:00"
+      "done_week": 1,
+      "total": 35,
+      "status": "ON TRACK",
+      "last_activity": "2026-03-24T12:26:00"
     },
     "SO2: DWE Ecosystem": {
-      "active": 1,
-      "not_started": 4,
+      "active": 2,
+      "not_started": 66,
       "blocked": 0,
-      "done_week": 0,
-      "total": 5,
-      "status": "ACTIVE",
-      "last_activity": "2026-03-20T23:26:00"
+      "done_week": 2,
+      "total": 68,
+      "status": "ON TRACK",
+      "last_activity": "2026-03-24T12:26:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
@@ -27,46 +27,50 @@
       "done_week": 0,
       "total": 1,
       "status": "STALE",
-      "last_activity": "2026-03-20T23:26:00"
+      "last_activity": "2026-03-22T06:25:00"
     },
     "SO4: Reserves": {
       "active": 1,
-      "not_started": 0,
+      "not_started": 17,
       "blocked": 0,
-      "done_week": 0,
-      "total": 1,
-      "status": "ACTIVE",
-      "last_activity": "2026-03-20T23:37:00"
+      "done_week": 1,
+      "total": 18,
+      "status": "ON TRACK",
+      "last_activity": "2026-03-24T12:26:00"
     },
     "SO5: Family Trust": {
       "active": 0,
-      "not_started": 1,
+      "not_started": 6,
       "blocked": 0,
       "done_week": 0,
-      "total": 1,
+      "total": 6,
       "status": "STALE",
-      "last_activity": "2026-03-20T23:25:00"
+      "last_activity": "2026-03-24T12:26:00"
     }
   },
   "sla_violations": [],
   "drift_warnings": [
-    "47 unaligned/untagged tasks (56% drift)",
-    "SO1 (revenue) is only 17% of active work \u2014 should be >30%",
+    "100 unaligned/untagged tasks (30% drift)",
     "No weekly strategic input detected \u2014 score capped at 50"
   ],
-  "drift_pct": 56.0,
-  "so1_share": 16.7,
-  "focus_objectives": [],
+  "drift_pct": 30.1,
+  "so1_share": 33.3,
+  "focus_objectives": [
+    "SO1",
+    "SO2",
+    "SO3",
+    "SO4"
+  ],
   "early_completion": false,
-  "operational_count": 25,
-  "unaligned_count": 40,
-  "untagged_count": 7,
+  "operational_count": 104,
+  "unaligned_count": 99,
+  "untagged_count": 1,
   "cadence": {
     "strategic_input": false,
     "project_proposals": false,
     "ceo_approved": false,
     "execution_active": true,
-    "execution_completed": false,
+    "execution_completed": true,
     "cadence_score": 0
   }
 }
