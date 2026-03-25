@@ -308,13 +308,13 @@
         // Technology attribution per stage
         const stageTech = {
             'Lead Generation': {
-                automation: 'sam_gov_importer.sh',
-                tech: 'SAM.gov API',
-                input: 'SAM.gov / SBA',
+                automation: 'hvac_lead_scraper.py',
+                tech: 'DuckDuckGo + scraper',
+                input: 'DDG search → HVAC sites',
                 output: 'Google Sheets row',
-                plist: 'ai.dwe.sam-gov-importer',
-                interval: '12h',
-                status: 'gap'
+                plist: 'ai.dwe.hvac-lead-scraper',
+                interval: '2x daily (6am+2pm)',
+                status: 'working'
             },
             'New': {
                 automation: 'audit_runner.sh',
@@ -341,42 +341,52 @@
                 output: 'Personalized email',
                 plist: 'ai.dwe.outreach-sender',
                 interval: '6h',
-                status: 'partial'
+                status: 'working'
             },
             'Responded': {
-                automation: null,
-                tech: null,
+                automation: 'response_tracker.sh',
+                tech: 'Gmail API search',
                 input: 'Gmail inbox',
                 output: 'Stage update',
-                status: 'gap'
+                plist: 'ai.dwe.response-tracker',
+                interval: '2h',
+                status: 'working'
             },
             'Proposal': {
-                automation: null,
-                tech: 'CEO (Sidney)',
-                input: 'Responded lead',
-                output: 'Proposal doc',
-                status: 'manual'
+                automation: 'proposal_generator.sh',
+                tech: 'Ollama + Jake (auto)',
+                input: 'Responded lead + audit',
+                output: 'HTML proposal (auto-approved)',
+                plist: 'ai.dwe.proposal-generator',
+                interval: '4h',
+                status: 'working'
             },
             'Client': {
-                automation: null,
-                tech: 'CEO (Sidney)',
-                input: 'Signed proposal',
-                output: 'Onboarding',
-                status: 'manual'
+                automation: 'deal_tracker.sh',
+                tech: 'AWS SES + Jake',
+                input: 'Approved proposal',
+                output: 'Email + follow-ups (3/5/7d)',
+                plist: 'ai.dwe.deal-tracker',
+                interval: '4h',
+                status: 'working'
             },
             'Upsell': {
-                automation: null,
-                tech: 'Nicole (CSO)',
-                input: 'Active client',
-                output: 'Expansion offer',
-                status: 'manual'
+                automation: 'pipeline_responder.py',
+                tech: 'Ollama + Gmail API',
+                input: 'Purchase intent reply',
+                output: 'Contract + onboarding',
+                plist: 'ai.dwe.pipeline-responder',
+                interval: 'event-driven',
+                status: 'working'
             },
             'Disqualified': {
-                automation: null,
-                tech: 'Auto / Manual',
-                input: 'Any stage',
-                output: 'Archived',
-                status: 'manual'
+                automation: 'deal_tracker.sh',
+                tech: 'Auto-close (10d stale)',
+                input: 'No response after 3 follow-ups',
+                output: 'Closed Lost + archived',
+                plist: 'ai.dwe.deal-tracker',
+                interval: '4h',
+                status: 'working'
             }
         };
 
@@ -402,9 +412,9 @@
                 'Audited': { label: 'View Reports', href: `/mc/audit-reports?pipeline=${pipeline}` },
                 'Outreach Sent': { label: 'View Queue', href: '#outreach-queue-card' },
                 'Responded': { label: 'View Sheet', href: sheetUrl },
-                'Proposal': { label: 'View Sheet', href: sheetUrl },
-                'Client': { label: 'View Sheet', href: sheetUrl },
-                'Upsell': { label: 'View Sheet', href: sheetUrl }
+                'Proposal': { label: 'Proposal Queue', href: '/mc/proposal-queue?pipeline=' + pipeline },
+                'Client': { label: 'Active Deals', href: '/mc/deals?pipeline=' + pipeline },
+                'Upsell': { label: 'CRM', href: '/mc/crm?pipeline=' + pipeline }
             };
             // Cogs icon for stages with config (top-right of stage)
             const stageConfig = {

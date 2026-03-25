@@ -187,6 +187,18 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'vision.html'), 'text/html', req);
         return;
     }
+    if (pathname === '/architecture' || pathname === '/architecture.html') {
+        serveFile(res, path.join(__dirname, 'architecture.html'), 'text/html', req);
+        return;
+    }
+    if (pathname === '/dataflow' || pathname === '/dataflow.html') {
+        serveFile(res, path.join(__dirname, 'dataflow.html'), 'text/html', req);
+        return;
+    }
+    if (pathname === '/n8n-map' || pathname === '/n8n-map.html') {
+        serveFile(res, path.join(__dirname, 'n8n-map.html'), 'text/html', req);
+        return;
+    }
 
     // Vision Pulse API — serves vision-pulse-data.json
     if (pathname === '/api/vision-pulse') {
@@ -774,6 +786,28 @@ const server = http.createServer((req, res) => {
             }
             break;
         }
+        // ── Proposal & Deal Management endpoints ────────────────────────
+        case '/mc/proposal-queue':
+            getProposalQueue(req, res);
+            break;
+        case '/mc/proposal-approve':
+            approveProposal(req, res);
+            break;
+        case '/mc/proposal-reject':
+            rejectProposal(req, res);
+            break;
+        case '/mc/deals':
+            getDeals(req, res);
+            break;
+        case '/mc/deals/update':
+            updateDeal(req, res);
+            break;
+        case '/mc/crm':
+            getCrmRecord(req, res, parsedUrl.query);
+            break;
+        case '/mc/pipeline-summary':
+            getPipelineSummary(req, res);
+            break;
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
             if (pathname.startsWith('/mc/audit-report/')) {
@@ -1818,7 +1852,7 @@ function updateProspect(req, res, query) {
                         header.forEach((h, i) => { fieldMap[h] = i; });
 
                         // Apply updates
-                        const updatable = ['Audit_Score', 'Funnel_Stage', 'Funding_Signal', 'Last_Activity', 'Audit_Report_Path', 'Outreach_Status', 'Product_Offered', 'Monthly_Value', 'Notes', 'Contact_Email', 'Contact_Name'];
+                        const updatable = ['Business_Name', 'URL', 'Industry', 'Location', 'Lead_Score', 'Audit_Score', 'Funnel_Stage', 'Funding_Signal', 'Source', 'Last_Activity', 'Audit_Report_Path', 'Outreach_Status', 'Product_Offered', 'Monthly_Value', 'Notes', 'Contact_Email', 'Contact_Name'];
                         updatable.forEach(f => {
                             if (data[f] !== undefined && fieldMap[f] !== undefined) {
                                 while (existing.length <= fieldMap[f]) existing.push('');
@@ -2521,8 +2555,8 @@ function getLaunchd(req, res) {
         'ai.dwe.agent-heartbeat-cto':           { name: 'CTO Heartbeat',        group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-anita':         { name: 'COO Heartbeat',        group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-ce':            { name: 'CE Heartbeat',         group: 'heartbeat',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-nicole':        { name: 'CSO Heartbeat',        group: 'heartbeat',  scheduled: true  },
-        'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'CSO Weekly Review',    group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole':        { name: 'CIO Heartbeat',        group: 'heartbeat',  scheduled: true  },
+        'ai.dwe.agent-heartbeat-nicole-weekly': { name: 'CIO Weekly Review',    group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-anita-finance': { name: 'COO Finance Review',   group: 'heartbeat',  scheduled: true  },
         'ai.dwe.agent-heartbeat-anita-email-digest': { name: 'COO Email Digest', group: 'heartbeat', scheduled: true },
         'ai.dwe.agent-heartbeat-cfo':          { name: 'CFO Heartbeat',        group: 'heartbeat',  scheduled: true  },
@@ -2530,7 +2564,7 @@ function getLaunchd(req, res) {
         // ── Task Follow-Up (2h cycles) ──
         'ai.dwe.ce-task-followup':              { name: 'CE Follow-Up',         group: 'followup',   scheduled: true  },
         'ai.dwe.cto-task-followup':             { name: 'CTO Follow-Up',        group: 'followup',   scheduled: true  },
-        'ai.dwe.nicole-task-followup':          { name: 'CSO Follow-Up',        group: 'followup',   scheduled: true  },
+        'ai.dwe.nicole-task-followup':          { name: 'CIO Follow-Up',        group: 'followup',   scheduled: true  },
         'ai.dwe.cfo-task-followup':             { name: 'CFO Follow-Up',        group: 'followup',   scheduled: true  },
 
         // ── COO PM (operations & triage) ──
@@ -2685,7 +2719,7 @@ async function getAgentTasks(req, res) {
             { role: 'CEO',            name: 'Sidney',         icon: '👑',  id: 'ceo' },
             { role: 'CTO',            name: 'Steve',          icon: '⚙️',  id: 'cto' },
             { role: 'COO',            name: 'Anita',          icon: '📋',  id: 'anita' },
-            { role: 'CSO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
+            { role: 'CIO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
             { role: 'Chief Engineer', name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
             { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
@@ -4086,7 +4120,7 @@ function getHeartbeats(req, res) {
         { id: 'anita',          name: 'Anita (COO)',         pattern: /Starting Anita overdue task check/,      nextFn: () => { const d = new Date(now); d.setHours(8,5,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
         { id: 'anita-finance',  name: 'Anita Finance',      pattern: /Starting Anita.*finance/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilMon = (1 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilMon); d.setHours(7,30,0,0); return d; } },
         { id: 'ce',             name: 'Chief Engineer',     pattern: /Starting CE health check/,               nextFn: () => { const d = new Date(now); const mins = d.getHours()*60 + d.getMinutes(); const nextSlot = [36, 276, 516, 756, 996, 1236].find(s => s > mins) || 36+1440; d.setHours(Math.floor(nextSlot/60), nextSlot%60, 0, 0); if (nextSlot > 1440) d.setDate(d.getDate()+1); return d; } },
-        { id: 'nicole',         name: 'Nicole (CSO)',       pattern: /Starting Nicole CSO daily/,              nextFn: () => { const d = new Date(now); d.setHours(17,0,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
+        { id: 'nicole',         name: 'Nicole (CIO)',       pattern: /Starting Nicole CSO daily/,              nextFn: () => { const d = new Date(now); d.setHours(17,0,0,0); if (d <= now) d.setDate(d.getDate()+1); return d; } },
         { id: 'nicole-weekly',  name: 'Nicole Weekly',      pattern: /Starting Nicole.*weekly/i,               nextFn: () => { const d = new Date(now); const day = d.getDay(); const daysUntilSun = (0 - day + 7) % 7 || 7; d.setDate(d.getDate() + daysUntilSun); d.setHours(18,0,0,0); return d; } },
         { id: 'cfo',            name: 'Fran (CFO)',         pattern: /Starting CFO health check/,              nextFn: () => { const d = new Date(now); const mins = d.getHours()*60 + d.getMinutes(); const nextSlot = [36, 276, 516, 756, 996, 1236].find(s => s > mins) || 36+1440; d.setHours(Math.floor(nextSlot/60), nextSlot%60, 0, 0); if (nextSlot > 1440) d.setDate(d.getDate()+1); return d; } }
     ];
@@ -4138,7 +4172,7 @@ function getCSoPipeline(req, res) {
             res.end(JSON.stringify(data));
         } else {
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ opportunities: [], count: 0, lastReport: null, note: 'No pipeline data yet — Nicole CSO will populate this file during sessions.' }));
+            res.end(JSON.stringify({ opportunities: [], count: 0, lastReport: null, note: 'No pipeline data yet — Nicole CIO will populate this file during sessions.' }));
         }
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -4357,7 +4391,7 @@ function getAgentSessions(req, res) {
     const AGENT_NAMES = {
         'cto':            'Steve (CTO)',
         'anita':          'Anita (COO)',
-        'nicole':         'Nicole (CSO)',
+        'nicole':         'Nicole (CIO)',
         'chief-engineer': 'Chief Engineer',
         'main':           'Main',
     };
@@ -4685,6 +4719,195 @@ function runOpenclawUpdateCheck(req, res) {
             res.end(JSON.stringify({ ok: false, error: 'Failed to parse update check output' }));
         }
     });
+}
+
+// ── Proposal & Deal Management Handlers ─────────────────────────────────
+
+const PROPOSAL_QUEUE_DIR = path.join(require('os').homedir(), 'openclaw/shared/proposal_queue');
+const DEALS_DIR_PATH = path.join(require('os').homedir(), 'openclaw/shared/deals');
+const CRM_DIR_PATH = path.join(require('os').homedir(), 'openclaw/shared/crm');
+
+function getProposalQueue(req, res) {
+    try {
+        if (!fs.existsSync(PROPOSAL_QUEUE_DIR)) { res.writeHead(200, {'Content-Type':'application/json'}); res.end(JSON.stringify({proposals:[]})); return; }
+        const files = fs.readdirSync(PROPOSAL_QUEUE_DIR).filter(f => f.endsWith('.json'));
+        const proposals = files.map(f => {
+            try { return JSON.parse(fs.readFileSync(path.join(PROPOSAL_QUEUE_DIR, f), 'utf8')); } catch(e) { return null; }
+        }).filter(Boolean);
+        res.writeHead(200, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({proposals, count: proposals.length}));
+    } catch(e) {
+        res.writeHead(500, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({error: e.message}));
+    }
+}
+
+function approveProposal(req, res) {
+    collectBody(req, (body) => {
+        try {
+            const data = JSON.parse(body);
+            const leadId = data.lead_id;
+            if (!leadId) throw new Error('lead_id required');
+            const qf = path.join(PROPOSAL_QUEUE_DIR, leadId + '.json');
+            if (!fs.existsSync(qf)) throw new Error('Proposal not found in queue');
+            const item = JSON.parse(fs.readFileSync(qf, 'utf8'));
+            item.status = 'approved';
+            item.approved_at = new Date().toISOString();
+            item.approved_by = data.approved_by || 'CEO';
+            // Allow editing tier/notes before approval
+            if (data.tier) item.tier = data.tier;
+            if (data.notes) item.notes = data.notes;
+            fs.writeFileSync(qf, JSON.stringify(item, null, 2));
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: true, lead_id: leadId, status: 'approved'}));
+        } catch(e) {
+            res.writeHead(400, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: false, error: e.message}));
+        }
+    });
+}
+
+function rejectProposal(req, res) {
+    collectBody(req, (body) => {
+        try {
+            const data = JSON.parse(body);
+            const leadId = data.lead_id;
+            if (!leadId) throw new Error('lead_id required');
+            const qf = path.join(PROPOSAL_QUEUE_DIR, leadId + '.json');
+            if (!fs.existsSync(qf)) throw new Error('Proposal not found');
+            const item = JSON.parse(fs.readFileSync(qf, 'utf8'));
+            item.status = 'rejected';
+            item.rejected_at = new Date().toISOString();
+            item.reject_reason = data.reason || '';
+            fs.writeFileSync(qf, JSON.stringify(item, null, 2));
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: true, lead_id: leadId, status: 'rejected'}));
+        } catch(e) {
+            res.writeHead(400, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: false, error: e.message}));
+        }
+    });
+}
+
+function getDeals(req, res) {
+    try {
+        if (!fs.existsSync(DEALS_DIR_PATH)) { res.writeHead(200, {'Content-Type':'application/json'}); res.end(JSON.stringify({deals:[]})); return; }
+        const files = fs.readdirSync(DEALS_DIR_PATH).filter(f => f.endsWith('.json') && !f.startsWith('_'));
+        const deals = files.map(f => {
+            try { return JSON.parse(fs.readFileSync(path.join(DEALS_DIR_PATH, f), 'utf8')); } catch(e) { return null; }
+        }).filter(Boolean);
+
+        // Pipeline snapshot
+        let snapshot = {};
+        const snapFile = path.join(DEALS_DIR_PATH, '_pipeline_snapshot.json');
+        if (fs.existsSync(snapFile)) { try { snapshot = JSON.parse(fs.readFileSync(snapFile, 'utf8')); } catch(e) {} }
+
+        res.writeHead(200, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({deals, count: deals.length, snapshot}));
+    } catch(e) {
+        res.writeHead(500, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({error: e.message}));
+    }
+}
+
+function updateDeal(req, res) {
+    collectBody(req, (body) => {
+        try {
+            const data = JSON.parse(body);
+            const leadId = data.lead_id;
+            if (!leadId) throw new Error('lead_id required');
+            const df = path.join(DEALS_DIR_PATH, leadId + '.json');
+            if (!fs.existsSync(df)) throw new Error('Deal not found');
+            const deal = JSON.parse(fs.readFileSync(df, 'utf8'));
+            // Updatable fields
+            const updatable = ['stage', 'tier', 'notes', 'monthly_value', 'close_date', 'loss_reason'];
+            for (const key of updatable) {
+                if (data[key] !== undefined) deal[key] = data[key];
+            }
+            deal.updated_at = new Date().toISOString();
+
+            // If closing, update prospect stage
+            if (data.stage === 'Closed Won') {
+                deal.closed_at = new Date().toISOString();
+            }
+
+            fs.writeFileSync(df, JSON.stringify(deal, null, 2));
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: true, deal}));
+        } catch(e) {
+            res.writeHead(400, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({ok: false, error: e.message}));
+        }
+    });
+}
+
+function getCrmRecord(req, res, query) {
+    try {
+        const leadId = query && query.lead_id;
+        if (leadId) {
+            const cf = path.join(CRM_DIR_PATH, leadId + '.json');
+            if (!fs.existsSync(cf)) throw new Error('CRM record not found');
+            const crm = JSON.parse(fs.readFileSync(cf, 'utf8'));
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify(crm));
+        } else {
+            // List all CRM records
+            if (!fs.existsSync(CRM_DIR_PATH)) { res.writeHead(200, {'Content-Type':'application/json'}); res.end(JSON.stringify({records:[]})); return; }
+            const files = fs.readdirSync(CRM_DIR_PATH).filter(f => f.endsWith('.json'));
+            const records = files.map(f => {
+                try {
+                    const r = JSON.parse(fs.readFileSync(path.join(CRM_DIR_PATH, f), 'utf8'));
+                    return { lead_id: r.lead_id, lead_name: r.lead_name, pipeline: r.pipeline, last_activity: r.last_activity, interaction_count: (r.interactions||[]).length, deal_stage: r.deal_stage };
+                } catch(e) { return null; }
+            }).filter(Boolean);
+            res.writeHead(200, {'Content-Type':'application/json'});
+            res.end(JSON.stringify({records, count: records.length}));
+        }
+    } catch(e) {
+        res.writeHead(400, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({error: e.message}));
+    }
+}
+
+function getPipelineSummary(req, res) {
+    try {
+        // Aggregate across all pipeline stages
+        const summary = { stages: {}, total_prospects: 0, pipeline_mrr: 0, closed_mrr: 0, deals: 0, crm_records: 0 };
+
+        // Count deals
+        if (fs.existsSync(DEALS_DIR_PATH)) {
+            const snapFile = path.join(DEALS_DIR_PATH, '_pipeline_snapshot.json');
+            if (fs.existsSync(snapFile)) {
+                try {
+                    const snap = JSON.parse(fs.readFileSync(snapFile, 'utf8'));
+                    summary.pipeline_mrr = snap.pipeline_mrr || 0;
+                    summary.closed_mrr = snap.closed_mrr || 0;
+                    summary.deals = snap.total_deals || 0;
+                    summary.deal_stages = snap.stages || {};
+                } catch(e) {}
+            }
+        }
+
+        // Count CRM records
+        if (fs.existsSync(CRM_DIR_PATH)) {
+            summary.crm_records = fs.readdirSync(CRM_DIR_PATH).filter(f => f.endsWith('.json')).length;
+        }
+
+        // Count proposals
+        if (fs.existsSync(PROPOSAL_QUEUE_DIR)) {
+            const pFiles = fs.readdirSync(PROPOSAL_QUEUE_DIR).filter(f => f.endsWith('.json'));
+            summary.proposals_pending = pFiles.filter(f => {
+                try { return JSON.parse(fs.readFileSync(path.join(PROPOSAL_QUEUE_DIR, f), 'utf8')).status === 'pending_review'; } catch(e) { return false; }
+            }).length;
+            summary.proposals_total = pFiles.length;
+        }
+
+        res.writeHead(200, {'Content-Type':'application/json'});
+        res.end(JSON.stringify(summary));
+    } catch(e) {
+        res.writeHead(500, {'Content-Type':'application/json'});
+        res.end(JSON.stringify({error: e.message}));
+    }
 }
 
 server.listen(PORT, HOST, () => {

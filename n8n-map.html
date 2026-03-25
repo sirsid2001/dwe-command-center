@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWE — n8n Workflow Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0e1a;
+    color: #e0e6f0;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 28px; font-weight: 300; letter-spacing: 1px; margin-bottom: 4px; color: #fff; }
+  h1 span { color: #00d4aa; font-weight: 600; }
+  .subtitle { font-size: 13px; color: #6b7a99; margin-bottom: 28px; letter-spacing: 0.5px; }
+  .container { max-width: 1300px; margin: 0 auto; }
+
+  /* --- Summary Bar --- */
+  .summary-bar {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 28px;
+    padding: 14px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .summary-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .summary-stat .num {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .stat-active .num { color: #00ff88; }
+  .stat-inactive .num { color: #6b7a99; }
+  .stat-total .num { color: #e0e6f0; }
+  .summary-stat .label { color: #6b7a99; font-size: 12px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
+  .summary-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.08); }
+  .nav-links { margin-left: auto; display: flex; gap: 10px; }
+  .nav-links a {
+    font-size: 12px; padding: 5px 14px; border-radius: 6px; text-decoration: none;
+    font-weight: 600; letter-spacing: 0.03em; transition: all 0.2s;
+  }
+  .nav-dash { background: rgba(0,255,136,0.12); border: 1px solid rgba(0,255,136,0.3); color: #00ff88; }
+  .nav-dash:hover { background: rgba(0,255,136,0.25); }
+  .nav-arch { background: rgba(0,180,255,0.12); border: 1px solid rgba(0,180,255,0.3); color: #00b4ff; }
+  .nav-arch:hover { background: rgba(0,180,255,0.25); }
+
+  /* --- Category Section --- */
+  .category {
+    margin-bottom: 28px;
+    border-radius: 10px;
+    padding: 20px 24px;
+    position: relative;
+  }
+  .cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .cat-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px; height: 26px; padding: 0 8px;
+    border-radius: 13px; font-size: 11px; font-weight: 700;
+  }
+  .cat-title {
+    font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .cat-count {
+    font-size: 11px; color: #6b7a99; font-weight: 400; margin-left: 4px;
+  }
+
+  /* Category colors */
+  .cat-prod { background: rgba(0,212,170,0.06); border: 1px solid rgba(0,212,170,0.15); }
+  .cat-prod .cat-badge { background: #00d4aa; color: #0a0e1a; }
+  .cat-prod .cat-title { color: #00d4aa; }
+
+  .cat-pipeline { background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); }
+  .cat-pipeline .cat-badge { background: #6366f1; color: #fff; }
+  .cat-pipeline .cat-title { color: #818cf8; }
+
+  .cat-email { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); }
+  .cat-email .cat-badge { background: #f59e0b; color: #0a0e1a; }
+  .cat-email .cat-title { color: #fbbf24; }
+
+  .cat-content { background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.15); }
+  .cat-content .cat-badge { background: #06b6d4; color: #0a0e1a; }
+  .cat-content .cat-title { color: #22d3ee; }
+
+  .cat-revenue { background: rgba(236,72,153,0.06); border: 1px solid rgba(236,72,153,0.15); }
+  .cat-revenue .cat-badge { background: #ec4899; color: #fff; }
+  .cat-revenue .cat-title { color: #f472b6; }
+
+  /* --- Workflow Cards --- */
+  .wf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 10px;
+  }
+  .wf-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .wf-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .wf-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e0e6f0;
+    line-height: 1.3;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; min-width: 8px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 6px rgba(0,255,136,0.5);
+    margin-top: 4px;
+  }
+  .wf-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: #6b7a99;
+    flex-wrap: wrap;
+  }
+  .wf-id a {
+    color: #6b7a99;
+    text-decoration: none;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 10px;
+    background: rgba(255,255,255,0.04);
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .wf-id a:hover {
+    color: #00d4aa;
+    background: rgba(0,212,170,0.12);
+  }
+  .wf-date { font-size: 10px; }
+  .wf-trigger {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(99,102,241,0.12);
+    color: #818cf8;
+    font-weight: 500;
+  }
+
+  /* --- Footer --- */
+  .version {
+    text-align: center;
+    font-size: 11px;
+    color: #3a4560;
+    margin-top: 40px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>DWE — <span>n8n Workflow Map</span></h1>
+<p class="subtitle">Active workflows on n8n.tvcpulse.com</p>
+
+<!-- Summary Bar -->
+<div class="summary-bar">
+  <div class="summary-stat stat-active">
+    <span class="num">30</span>
+    <span class="label">Active</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat stat-inactive">
+    <span class="num">70</span>
+    <span class="label">Inactive</span>
+  </div>
+  <div class="summary-divider"></div>
+  <div class="summary-stat stat-total">
+    <span class="num">100</span>
+    <span class="label">Total</span>
+  </div>
+  <div class="nav-links">
+    <a href="/dashboard" class="nav-dash">Dashboard</a>
+    <a href="/architecture" class="nav-arch">Architecture</a>
+  </div>
+</div>
+
+<!-- PRODUCTION Infrastructure -->
+<div class="category cat-prod">
+  <div class="cat-header">
+    <div class="cat-badge">PROD</div>
+    <div class="cat-title">Production Infrastructure <span class="cat-count">8 workflows</span></div>
+  </div>
+  <div class="wf-grid">
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>PROD | DWE Intelligence Gateway — OpenClaw to N8N to Pinecone Bridge</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/_04IxmEAjR1Jvt69DDGVc" target="_blank">_04IxmEAjR1Jvt69DDGVc</a></span>
+        <span class="wf-trigger">webhook</span>
+        <span class="wf-date">Created 2026-02-18</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>PROD | DWE Seed Watcher to Pinecone Ingest</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/bwfxjapHqVAEYKeK" target="_blank">bwfxjapHqVAEYKeK</a></span>
+        <span class="wf-trigger">webhook</span>
+        <span class="wf-date">Created 2026-03-06</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>PROD | DWE Brain — Query v1</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/6W9J8WYS0Zqf1ewM" target="_blank">6W9J8WYS0Zqf1ewM</a></span>
+        <span class="wf-trigger">webhook</span>
+        <span class="wf-date">Created 2026-03-06</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Agent Alert Layer</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/kWjEEId44tZ2JxGX" target="_blank">kWjEEId44tZ2JxGX</a></span>
+        <span class="wf-trigger">trigger</span>
+        <span class="wf-date">Created 2026-03-10 | Updated 2026-03-24</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Ops ChangeLog Writer — Centralized Event Logger</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/5U41Mq77GcayxNuR" target="_blank">5U41Mq77GcayxNuR</a></span>
+        <span class="wf-trigger">trigger</span>
+        <span class="wf-date">Created 2026-03-15</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Agent Task Follow-Up</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/wiwbKb9RAooZ3lmV" target="_blank">wiwbKb9RAooZ3lmV</a></span>
+        <span class="wf-trigger">schedule</span>
+        <span class="wf-date">Created 2026-03-24 | Every 2h — replaces bash daemons</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Agent Relay Hub</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/kgC5LralnhQtJXZP" target="_blank">kgC5LralnhQtJXZP</a></span>
+        <span class="wf-trigger">webhook</span>
+        <span class="wf-date">Created 2026-03-24 | /agent-relay — replaces relay-daemon.py</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | VAB Pipeline</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/wUQPvALo33hho1BD" target="_blank">wUQPvALo33hho1BD</a></span>
+        <span class="wf-trigger">webhook</span>
+        <span class="wf-date">Created 2026-03-24 | /vab-pipeline — replaces bash VAB scripts</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Strategic Pipeline -->
+<div class="category cat-pipeline">
+  <div class="cat-header">
+    <div class="cat-badge">TAS-1025</div>
+    <div class="cat-title">Strategic Pipeline — Opportunity Ingestion <span class="cat-count">15 workflows</span></div>
+  </div>
+  <div class="wf-grid">
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF0 — Setup Google Sheet Tabs (One-Shot)</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/58xk6gI1oFc6hEyZ" target="_blank">58xk6gI1oFc6hEyZ</a></span>
+        <span class="wf-trigger">manual</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF1 — RSS Opportunity Aggregator</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/XBdV2YSSZ7b6j673" target="_blank">XBdV2YSSZ7b6j673</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF2 — Reddit Pain Point Scraper v3</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/CNkbCCRhRNrlbIHv" target="_blank">CNkbCCRhRNrlbIHv</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF3 — Email Newsletter Monitor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/UGZQma8zZ6P1M5sC" target="_blank">UGZQma8zZ6P1M5sC</a></span>
+        <span class="wf-trigger">IMAP</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF4 — Twitter/X Keyword Watcher</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/NcZlVFS7BZqo5QLf" target="_blank">NcZlVFS7BZqo5QLf</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF4 — Google Search Opportunity Watcher</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/h1anbxG0o1EEBa9G" target="_blank">h1anbxG0o1EEBa9G</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF5 — Anita Morning Digest</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/vDqNFq2u6pR8gzqb" target="_blank">vDqNFq2u6pR8gzqb</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF6 — Telegram Channel Monitor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/BRFZHzN5FvGO3fiT" target="_blank">BRFZHzN5FvGO3fiT</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF7 — Product Hunt Deep Monitor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/hU3HJaxIsX17Iaja" target="_blank">hU3HJaxIsX17Iaja</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF8 — Tri-Factor Detector</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/3b4NTJeI3E8rEwZq" target="_blank">3b4NTJeI3E8rEwZq</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF9 — Reddit Engagement Scout</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/8NG07lhpkKFUOKth" target="_blank">8NG07lhpkKFUOKth</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF10 — Substack Auto-Drafter</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/69q4gfPo9041PYJ4" target="_blank">69q4gfPo9041PYJ4</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF11 — Manual Opportunity Intake</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/fYixzZ6vy17v06zS" target="_blank">fYixzZ6vy17v06zS</a></span>
+        <span class="wf-trigger">manual</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF12 — Daily Top 3 Briefing</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/Em0T5U5VdzrE615T" target="_blank">Em0T5U5VdzrE615T</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>WF13 — Google Trends Monitor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/5evF0hO4CwJ8PN5V" target="_blank">5evF0hO4CwJ8PN5V</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Email & Communications -->
+<div class="category cat-email">
+  <div class="cat-header">
+    <div class="cat-badge">1</div>
+    <div class="cat-title">Email & Communications <span class="cat-count">1 workflow</span></div>
+  </div>
+  <div class="wf-grid">
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Gmail Agent — Triage & Management</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/lDbvlrDfY8P8QRDq" target="_blank">lDbvlrDfY8P8QRDq</a></span>
+        <span class="wf-trigger">every 2min</span>
+        <span class="wf-date">gpt-4o-mini</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Content Intelligence -->
+<div class="category cat-content">
+  <div class="cat-header">
+    <div class="cat-badge">3</div>
+    <div class="cat-title">Content Intelligence <span class="cat-count">3 workflows</span></div>
+  </div>
+  <div class="wf-grid">
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Content Intel — WF1 YouTube Monitor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/zr8lO08Ohwa6FHan" target="_blank">zr8lO08Ohwa6FHan</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Content Intel — WF2 AI Analysis</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/stkzV3ov2MGqKx02" target="_blank">stkzV3ov2MGqKx02</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | Content Intel — WF3 Output Distributor</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/Q2pzCw6SXKYLDL1V" target="_blank">Q2pzCw6SXKYLDL1V</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Revenue / TVC -->
+<div class="category cat-revenue">
+  <div class="cat-header">
+    <div class="cat-badge">3</div>
+    <div class="cat-title">Revenue / TVC <span class="cat-count">3 workflows</span></div>
+  </div>
+  <div class="wf-grid">
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>DWE | BTCC Price v2</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/RSYEHi37k3TUckft" target="_blank">RSYEHi37k3TUckft</a></span>
+        <span class="wf-trigger">schedule</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>TVC | cPanel Login — Session Token</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/cpanel-login-session" target="_blank">cpanel-login-session</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+    <div class="wf-card">
+      <div class="wf-name"><div class="status-dot"></div>TVC | AI Content Publishing Pipeline</div>
+      <div class="wf-meta">
+        <span class="wf-id"><a href="https://n8n.tvcpulse.com/workflow/content-publish-pipeline" target="_blank">content-publish-pipeline</a></span>
+        <span class="wf-trigger">trigger</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<p class="version">DWE n8n Workflow Map &bull; 27 Active / 98 Total &bull; n8n.tvcpulse.com &bull; Updated 2026-03-24</p>
+
+</body>
+</html>

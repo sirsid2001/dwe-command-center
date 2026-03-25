@@ -32,7 +32,7 @@ const CYCLE_INTERVAL = 5 * 60 * 1000; // 5 minutes
 // Goal: drive ALL open tasks to zero. Agents mark tasks as "Review" (not "Done").
 // PM (Anita) reviews each "Review" task, verifies completion & dyslexia-friendly docs,
 // then marks Done or kicks back to In Progress.
-const AGENT_ROLES = ['CTO', 'COO', 'CSO', 'Chief Engineer', 'CFO'];
+const AGENT_ROLES = ['CTO', 'COO', 'CIO', 'Chief Engineer', 'CFO'];
 const DONE_STATUSES = new Set(['Done', 'Completed', 'Complete', 'Archived']);
 const REVIEW_STATUS = 'Review';
 const BLOCKED_STATUSES = new Set(['Blocked']);
@@ -44,7 +44,7 @@ let jarvisAttempts = {};
 
 // Role → openclaw account mapping for Telegram check-ins
 const ROLE_ACCOUNT_MAP = {
-    'CTO': 'cto', 'COO': 'anita', 'CSO': 'nicole',
+    'CTO': 'cto', 'COO': 'anita', 'CIO': 'nicole',
     'Chief Engineer': 'chief-engineer', 'CFO': 'cfo'
 };
 
@@ -737,8 +737,8 @@ function findReassignRole(task, currentRole) {
     const reassignMap = {
         'CTO': 'Chief Engineer',
         'Chief Engineer': 'CTO',
-        'COO': 'CSO',
-        'CSO': 'COO',
+        'COO': 'CIO',
+        'CIO': 'COO',
         'CFO': null  // CFO tasks are specialized, go to hold
     };
     return reassignMap[currentRole] || null;

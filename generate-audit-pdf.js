@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * DWE Audit Report — PDF Generator
- * Converts markdown audit reports into professional branded PDFs
+ * DWE Audit Report — PDF Generator (D6 Design)
+ * Converts markdown audit reports into branded 2-page PDFs
+ * Style: D6 glassmorphism (dark theme, DM Serif Display + Inter, gold/cyan accents)
  * Usage: node generate-audit-pdf.js <pipeline> <lead-id>
  *   or:  node generate-audit-pdf.js --all <pipeline>
  */
@@ -12,364 +13,694 @@ const puppeteer = require('puppeteer');
 
 const AUDITS_DIR = path.join(process.env.HOME, 'openclaw/shared/audits');
 
+// 5-section mapping: consolidate 7 audit categories → 5 presentation sections
+const SECTION_MAP = [
+    {
+        name: 'Content & Messaging',
+        icon: '&#9998;',  // pencil
+        color: '#E8734A', // coral
+        factors: ['Headline Clarity', 'Value Proposition', 'Content Depth'],
+        sourceCategories: ['Content & Messaging']
+    },
+    {
+        name: 'Search Visibility',
+        icon: '&#128269;', // magnifying glass
+        color: '#00dcff',  // cyan
+        factors: ['Title Tag', 'Meta Description', 'Header Structure', 'Image Alt Text', 'NAP (Name/Address/Phone)', 'Service Area Targeting', 'Local Trust Signals'],
+        sourceCategories: ['SEO Foundations', 'Local SEO']
+    },
+    {
+        name: 'Technical Performance',
+        icon: '&#9881;',  // gear
+        color: '#cc00ff',  // purple
+        factors: ['Mobile Ready', 'SSL/HTTPS', 'Schema Markup'],
+        sourceCategories: ['Technical Health']
+    },
+    {
+        name: 'Conversion Power',
+        icon: '&#9889;',  // lightning
+        color: '#D4A853',  // gold
+        factors: ['CTA Quality', 'Contact Methods', 'Trust Near Conversion'],
+        sourceCategories: ['Conversion Optimization']
+    },
+    {
+        name: 'Brand & Growth',
+        icon: '&#9650;',  // triangle up
+        color: '#22c55e',  // green
+        factors: ['Social Proof', 'Credibility Signals', 'Content Strategy', 'Competitive Differentiation'],
+        sourceCategories: ['Brand & Authority', 'Growth Readiness']
+    }
+];
+
 function parseAuditMarkdown(md) {
     const data = {};
+
     // Title
     const titleMatch = md.match(/^# Marketing Audit — (.+)$/m);
     data.businessName = titleMatch ? titleMatch[1].trim() : 'Unknown Business';
+
     // URL
     const urlMatch = md.match(/\*\*URL:\*\*\s*(.+)$/m);
     data.url = urlMatch ? urlMatch[1].trim() : '';
-    // Score & Grade
-    const scoreMatch = md.match(/\*\*Score:\*\*\s*(\d+)\/100\s*\(Grade:\s*([A-F][+-]?)\)/);
-    data.score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+
+    // Score & Grade (supports decimals like 41.3/100)
+    const scoreMatch = md.match(/\*\*Score:\*\*\s*([\d.]+)\/100\s*\(Grade:\s*([A-F][+-]?)\)/);
+    data.score = scoreMatch ? Math.round(parseFloat(scoreMatch[1])) : 0;
     data.grade = scoreMatch ? scoreMatch[2] : 'N/A';
+
     // Date
     const dateMatch = md.match(/\*\*Date:\*\*\s*(.+)$/m);
     data.date = dateMatch ? dateMatch[1].trim() : new Date().toISOString().split('T')[0];
-    // Category scores
+
+    // Category scores (handles "30.0/100" format)
     data.categories = [];
-    const catRegex = /\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|/g;
-    let m;
-    while ((m = catRegex.exec(md)) !== null) {
-        if (m[1].includes('Category') || m[1].includes('---')) continue;
-        data.categories.push({ name: m[1].trim(), score: parseInt(m[2]) });
+    const catSection = md.match(/## Category Summary[\s\S]*?\|[\s\S]*?\n\n/);
+    if (catSection) {
+        const catRegex = /\|\s*([^|]+?)\s*\|\s*([\d.]+)\/100\s*\|/g;
+        let m;
+        while ((m = catRegex.exec(catSection[0])) !== null) {
+            const name = m[1].trim();
+            if (name.includes('Category') || name.includes('---')) continue;
+            data.categories.push({ name, score: Math.round(parseFloat(m[2])) });
+        }
     }
-    // Top 3 Issues
-    const issuesSection = md.match(/## Top 3 Issues\n([\s\S]*?)(?=\n## )/);
-    data.issues = issuesSection ? issuesSection[1].trim().split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '')) : [];
-    // Top 3 Quick Wins
-    const winsSection = md.match(/## Top 3 Quick Wins\n([\s\S]*?)(?=\n## )/);
-    data.quickWins = winsSection ? winsSection[1].trim().split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '')) : [];
+
+    // Individual factor scores from "All 20 Factors" table
+    data.factors = [];
+    const factorSection = md.match(/## All 20 Factors[\s\S]*?\n\n/);
+    if (factorSection) {
+        const factorRegex = /\|\s*\d+\s*\|\s*([^|]+?)\s*\|\s*([\d.]+)\/100\s*\|\s*(\d+)%\s*\|/g;
+        let m;
+        while ((m = factorRegex.exec(factorSection[0])) !== null) {
+            data.factors.push({
+                name: m[1].trim(),
+                score: Math.round(parseFloat(m[2])),
+                weight: parseInt(m[3])
+            });
+        }
+    }
+
+    // Top Issues
+    const issuesSection = md.match(/## Top (?:\d+ )?Issues\n([\s\S]*?)(?=\n## )/);
+    data.issues = issuesSection ? issuesSection[1].trim().split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '')).slice(0, 5) : [];
+
+    // Top Quick Wins
+    const winsSection = md.match(/## Top (?:\d+ )?Quick Wins\n([\s\S]*?)(?=\n## )/);
+    data.quickWins = winsSection ? winsSection[1].trim().split('\n').filter(l => l.startsWith('-')).map(l => l.replace(/^-\s*/, '')).slice(0, 5) : [];
+
     // Summary
     const summarySection = md.match(/## Summary\n([\s\S]*?)(?=\n## |$)/);
     data.summary = summarySection ? summarySection[1].trim() : '';
+
+    // Build 5-section structure with factors
+    data.sections = SECTION_MAP.map(sec => {
+        const matchedFactors = sec.factors.map(fname => {
+            const found = data.factors.find(f => f.name === fname);
+            return found || { name: fname, score: 0, weight: 5 };
+        });
+        const avgScore = matchedFactors.length > 0
+            ? Math.round(matchedFactors.reduce((sum, f) => sum + f.score, 0) / matchedFactors.length)
+            : 0;
+        return {
+            name: sec.name,
+            icon: sec.icon,
+            color: sec.color,
+            score: avgScore,
+            factors: matchedFactors
+        };
+    });
 
     return data;
 }
 
 function getScoreColor(score) {
-    if (score >= 80) return '#00c853';
-    if (score >= 60) return '#ffab00';
-    if (score >= 40) return '#ff6d00';
-    return '#d50000';
+    if (score >= 80) return '#22c55e';
+    if (score >= 60) return '#D4A853';
+    if (score >= 40) return '#E8734A';
+    return '#ef4444';
 }
 
-function getGradeColor(grade) {
-    if (grade.startsWith('A')) return '#00c853';
-    if (grade.startsWith('B')) return '#64dd17';
-    if (grade.startsWith('C')) return '#ffab00';
-    if (grade.startsWith('D')) return '#ff6d00';
-    return '#d50000';
-}
-
-function buildHTML(data) {
+function buildPage1(data) {
     const scoreColor = getScoreColor(data.score);
-    const gradeColor = getGradeColor(data.grade);
 
-    // SVG donut ring parameters
+    // SVG donut ring
     const radius = 42;
     const circumference = 2 * Math.PI * radius;
     const dashOffset = circumference - (data.score / 100) * circumference;
 
-    const catBars = data.categories.map(c => {
-        const color = getScoreColor(c.score);
+    // Section bars for page 1
+    const sectionBars = data.sections.map(s => {
+        const barColor = getScoreColor(s.score);
         return `
             <div class="cat-row">
-                <span class="cat-name">${c.name}</span>
+                <span class="cat-icon" style="color:${s.color};">${s.icon}</span>
+                <span class="cat-name">${s.name}</span>
                 <div class="cat-bar-bg">
-                    <div class="cat-bar-fill" style="width:${c.score}%; background: linear-gradient(90deg, ${color}cc, ${color});"></div>
+                    <div class="cat-bar-fill" style="width:${s.score}%; background: linear-gradient(90deg, ${barColor}99, ${barColor});"></div>
                 </div>
-                <span class="cat-score" style="color:${color};">${c.score}</span>
+                <span class="cat-score" style="color:${barColor};">${s.score}</span>
             </div>`;
     }).join('');
 
-    const issuesList = data.issues.map((issue, i) => `
+    // Issues (max 3 on page 1)
+    const issuesList = data.issues.slice(0, 3).map((issue, i) => `
         <div class="item-card issue">
             <div class="item-num">${i + 1}</div>
             <div class="item-text">${issue}</div>
         </div>`).join('');
 
-    const winsList = data.quickWins.map((win, i) => `
+    // Quick wins (max 3 on page 1)
+    const winsList = data.quickWins.slice(0, 3).map((win, i) => `
         <div class="item-card win">
             <div class="item-num">${i + 1}</div>
             <div class="item-text">${win}</div>
         </div>`).join('');
 
+    return `
+    <div class="page">
+        <!-- Simulated shader background -->
+        <div class="shader-bg"></div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-glow glow-gold"></div>
+            <div class="header-glow glow-cyan"></div>
+            <div class="header-top">
+                <div class="brand-block">
+                    <div class="brand">The Veterans<span class="accent">.</span> Consultant<span class="llc">, LLC</span></div>
+                    <div class="brand-sub">Powered by DWE Intelligence</div>
+                </div>
+                <div class="report-meta">
+                    <div class="report-type">Marketing Audit Report</div>
+                    <div class="report-date">${data.date}</div>
+                </div>
+            </div>
+            <div class="biz-name">${data.businessName}</div>
+            <div class="biz-url">${data.url}</div>
+            <div class="header-accent"></div>
+        </div>
+
+        <!-- Score Section -->
+        <div class="score-section">
+            <div class="score-ring">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                    <circle cx="55" cy="55" r="${radius}" fill="none" stroke="#1a1f35" stroke-width="7"/>
+                    <circle cx="55" cy="55" r="${radius}" fill="none" stroke="${scoreColor}" stroke-width="7"
+                        stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"
+                        stroke-linecap="round" filter="url(#glow)"/>
+                    <defs>
+                        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                    </defs>
+                </svg>
+                <div class="score-ring-text">
+                    <span class="score-ring-num" style="color:${scoreColor};">${data.score}</span>
+                    <span class="score-ring-label">of 100</span>
+                </div>
+            </div>
+            <div class="grade-badge" style="border-color:${scoreColor}40; background:${scoreColor}12;">
+                <div class="grade-label">Grade</div>
+                <div class="grade-val" style="color:${scoreColor};">${data.grade}</div>
+            </div>
+            <div class="score-summary">${data.summary}</div>
+        </div>
+
+        <!-- Content area -->
+        <div class="content">
+            <!-- Section Performance -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon-wrap" style="background:#081822; border:1px solid #0f2838; color:#00dcff;">&#9776;</div>
+                    <div class="section-title">Performance Overview</div>
+                </div>
+                ${sectionBars}
+            </div>
+
+            <!-- Issues & Quick Wins -->
+            <div class="two-col">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon-wrap" style="background:#220e0e; border:1px solid #3d1515; color:#ef4444;">&#9888;</div>
+                        <div class="section-title">Critical Issues</div>
+                    </div>
+                    ${issuesList}
+                </div>
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon-wrap" style="background:#0c1a10; border:1px solid #153d1e; color:#22c55e;">&#10003;</div>
+                        <div class="section-title">Quick Wins</div>
+                    </div>
+                    ${winsList}
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-box">
+                <div>
+                    <div class="cta-text">Ready to improve your digital presence?</div>
+                    <div class="cta-sub-text">Our team can implement these fixes and more — starting this week.</div>
+                </div>
+                <div class="cta-btn">Get Started</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-left">Confidential — Prepared for ${data.businessName} | The Veterans Consultant by DWE</div>
+            <div class="footer-right">Page 1 of 2</div>
+        </div>
+    </div>`;
+}
+
+function buildPage2(data) {
+    // Build factor detail sections
+    const sectionBlocks = data.sections.map(sec => {
+        const factorRows = sec.factors.map(f => {
+            const color = getScoreColor(f.score);
+            return `
+                <div class="factor-row">
+                    <span class="factor-name">${f.name}</span>
+                    <div class="factor-bar-bg">
+                        <div class="factor-bar-fill" style="width:${f.score}%; background: linear-gradient(90deg, ${color}88, ${color});"></div>
+                    </div>
+                    <span class="factor-score" style="color:${color};">${f.score}</span>
+                    <span class="factor-weight">${f.weight}%</span>
+                </div>`;
+        }).join('');
+
+        const secColor = getScoreColor(sec.score);
+        return `
+            <div class="detail-section">
+                <div class="detail-header">
+                    <div class="detail-icon" style="color:${sec.color};">${sec.icon}</div>
+                    <div class="detail-title">${sec.name}</div>
+                    <div class="detail-score" style="color:${secColor};">${sec.score}<span class="detail-max">/100</span></div>
+                </div>
+                <div class="factor-list">
+                    ${factorRows}
+                </div>
+            </div>`;
+    }).join('');
+
+    return `
+    <div class="page page2">
+        <div class="shader-bg"></div>
+
+        <!-- Page 2 Header (compact) -->
+        <div class="p2-header">
+            <div class="header-glow glow-gold"></div>
+            <div class="brand-block">
+                <div class="brand">The Veterans<span class="accent">.</span> Consultant<span class="llc">, LLC</span></div>
+            </div>
+            <div class="p2-title">Detailed Factor Analysis</div>
+            <div class="p2-biz">${data.businessName} — ${data.url}</div>
+            <div class="header-accent"></div>
+        </div>
+
+        <!-- Factor Sections -->
+        <div class="p2-content">
+            ${sectionBlocks}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-left">Confidential — Prepared for ${data.businessName} | The Veterans Consultant by DWE</div>
+            <div class="footer-right">Page 2 of 2</div>
+        </div>
+    </div>`;
+}
+
+function buildHTML(data) {
     return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif; color: #1e293b; background: #fff; -webkit-font-smoothing: antialiased; }
+    body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: #050814;
+        color: #e2e8f0;
+        -webkit-font-smoothing: antialiased;
+    }
 
-    .page { width: 794px; min-height: 1123px; padding: 0; position: relative; display: flex; flex-direction: column; }
+    .page {
+        width: 794px;
+        height: 1123px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        page-break-after: always;
+    }
 
-    /* ── Header ── */
+    /* ── Simulated shader background ── */
+    .shader-bg {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background:
+            radial-gradient(ellipse at 20% 50%, rgba(204,0,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 30%, rgba(0,220,255,0.05) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 80%, rgba(212,168,83,0.04) 0%, transparent 50%),
+            linear-gradient(180deg, #050814 0%, #0a0e1a 50%, #050814 100%);
+        z-index: 0;
+    }
+
+    /* ── Header (D6 style) ── */
     .header {
-        background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-        padding: 44px 52px 36px;
+        background: linear-gradient(145deg, #050814 0%, #0c1024 100%);
+        padding: 38px 48px 30px;
         color: #fff;
         position: relative;
-        overflow: hidden;
+        z-index: 1;
+        border-bottom: 1px solid #1a1f35;
     }
-    .header::before {
-        content: '';
+    .header-glow {
         position: absolute;
-        top: -80px;
-        right: -40px;
-        width: 280px;
-        height: 280px;
-        background: radial-gradient(circle, rgba(234,179,8,0.12) 0%, transparent 65%);
         border-radius: 50%;
+        pointer-events: none;
     }
-    .header::after {
-        content: '';
-        position: absolute;
-        bottom: -60px;
-        left: 30%;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 65%);
-        border-radius: 50%;
+    .glow-gold {
+        top: -60px; right: -20px;
+        width: 220px; height: 220px;
+        background: radial-gradient(circle, #1f1a0e 0%, transparent 65%);
     }
-    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; position: relative; z-index: 1; }
-    .brand-block {}
-    .brand { font-size: 14px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #eab308; }
-    .brand-sub { font-size: 9.5px; color: rgba(255,255,255,0.4); margin-top: 3px; letter-spacing: 0.06em; font-weight: 400; }
+    .glow-cyan {
+        bottom: -40px; left: 30%;
+        width: 180px; height: 180px;
+        background: radial-gradient(circle, #081218 0%, transparent 65%);
+    }
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 22px;
+        position: relative;
+        z-index: 1;
+    }
+    .brand {
+        font-family: 'DM Serif Display', serif;
+        font-size: 15px;
+        color: #fff;
+        letter-spacing: 0.02em;
+    }
+    .brand .accent { color: #D4A853; }
+    .brand .llc { font-size: 0.4em; opacity: 0.7; letter-spacing: 0.08em; }
+    .brand-sub {
+        font-size: 9px;
+        color: #5a6080;
+        margin-top: 3px;
+        letter-spacing: 0.08em;
+        font-weight: 400;
+    }
     .report-meta { text-align: right; }
-    .report-type { font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
-    .report-date { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 3px; font-weight: 500; }
-    .biz-name { font-size: 30px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; position: relative; z-index: 1; }
-    .biz-url { font-size: 11.5px; color: rgba(255,255,255,0.35); margin-top: 8px; font-weight: 400; position: relative; z-index: 1; }
-    .header-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #eab308 0%, #f59e0b 40%, transparent 100%); }
+    .report-type {
+        font-size: 9px;
+        color: #4a5070;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 600;
+    }
+    .report-date {
+        font-size: 11px;
+        color: #7a80a0;
+        margin-top: 3px;
+        font-weight: 500;
+    }
+    .biz-name {
+        font-family: 'DM Serif Display', serif;
+        font-size: 28px;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+        position: relative;
+        z-index: 1;
+        color: #fff;
+    }
+    .biz-url {
+        font-size: 11px;
+        color: #5a6080;
+        margin-top: 6px;
+        font-weight: 400;
+        position: relative;
+        z-index: 1;
+    }
+    .header-accent {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #D4A853 0%, #00dcff 50%, transparent 100%);
+    }
 
     /* ── Score Section ── */
     .score-section {
         display: flex;
         align-items: center;
-        gap: 28px;
-        padding: 32px 52px;
-        background: #fafbfc;
-        border-bottom: 1px solid #e2e8f0;
+        gap: 24px;
+        padding: 28px 48px;
+        background: #0c1024;
+        border-bottom: 1px solid #1a1f35;
+        position: relative;
+        z-index: 1;
     }
-    .score-ring { flex-shrink: 0; position: relative; width: 100px; height: 100px; }
+    .score-ring { flex-shrink: 0; position: relative; width: 110px; height: 110px; }
     .score-ring svg { transform: rotate(-90deg); }
     .score-ring-text {
         position: absolute;
-        top: 50%;
-        left: 50%;
+        top: 50%; left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
     }
-    .score-ring-num { font-size: 30px; font-weight: 800; color: ${scoreColor}; line-height: 1; display: block; }
-    .score-ring-label { font-size: 9px; color: #94a3b8; font-weight: 500; display: block; margin-top: 1px; }
+    .score-ring-num {
+        font-family: 'DM Serif Display', serif;
+        font-size: 32px;
+        line-height: 1;
+        display: block;
+    }
+    .score-ring-label { font-size: 9px; color: #8B90A8; font-weight: 500; display: block; margin-top: 2px; }
     .grade-badge {
-        padding: 10px 22px;
-        border-radius: 12px;
-        background: ${gradeColor}0d;
-        border: 2px solid ${gradeColor}30;
+        padding: 10px 20px;
+        border-radius: 14px;
+        border: 2px solid;
         text-align: center;
         flex-shrink: 0;
     }
-    .grade-label { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
-    .grade-val { font-size: 32px; font-weight: 800; color: ${gradeColor}; line-height: 1.1; margin-top: 2px; }
-    .score-summary { flex: 1; font-size: 12.5px; color: #64748b; line-height: 1.7; font-weight: 400; }
+    .grade-label { font-size: 8px; color: #8B90A8; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700; }
+    .grade-val {
+        font-family: 'DM Serif Display', serif;
+        font-size: 34px;
+        line-height: 1.1;
+        margin-top: 2px;
+    }
+    .score-summary {
+        flex: 1;
+        font-size: 12px;
+        color: #8B90A8;
+        line-height: 1.75;
+        font-weight: 400;
+    }
 
     /* ── Content ── */
-    .content { padding: 32px 52px 0; flex: 1; }
+    .content { padding: 24px 48px 0; flex: 1; position: relative; z-index: 1; background: #080c18; }
 
-    .section { margin-bottom: 28px; }
+    .section { margin-bottom: 22px; }
     .section-header {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-bottom: 16px;
-        padding-bottom: 10px;
-        border-bottom: 1.5px solid #e2e8f0;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #1a1f35;
     }
     .section-icon-wrap {
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
+        width: 24px; height: 24px;
+        border-radius: 7px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 13px;
+        font-size: 12px;
         flex-shrink: 0;
     }
     .section-title {
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.13em;
-        color: #1e293b;
+        letter-spacing: 0.14em;
+        color: #e2e8f0;
     }
 
-    /* ── Category Bars ── */
-    .cat-row { display: flex; align-items: center; gap: 14px; margin-bottom: 11px; }
-    .cat-name { font-size: 11.5px; font-weight: 500; color: #475569; width: 150px; flex-shrink: 0; }
-    .cat-bar-bg { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+    /* ── Category bars (page 1 — 5 sections) ── */
+    .cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .cat-icon { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
+    .cat-name { font-size: 11px; font-weight: 500; color: #8B90A8; width: 140px; flex-shrink: 0; }
+    .cat-bar-bg { flex: 1; height: 7px; background: #141830; border-radius: 4px; overflow: hidden; }
     .cat-bar-fill { height: 100%; border-radius: 4px; }
-    .cat-score { font-size: 12.5px; font-weight: 700; width: 32px; text-align: right; flex-shrink: 0; }
+    .cat-score { font-size: 12px; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
 
-    /* ── Two Column Layout ── */
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    /* ── Two Column ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-    /* ── Issue/Win Cards ── */
+    /* ── Issue/Win Cards (glass) ── */
     .item-card {
         display: flex;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 8px;
-        margin-bottom: 8px;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 7px;
         align-items: flex-start;
     }
-    .item-card.issue { background: #fef2f2; border: 1px solid #fecaca; }
-    .item-card.win { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .item-card.issue {
+        background: #1a0f0f;
+        border: 1px solid #3d1515;
+    }
+    .item-card.win {
+        background: #0c1a10;
+        border: 1px solid #153d1e;
+    }
     .item-num {
-        width: 22px;
-        height: 22px;
+        width: 20px; height: 20px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 700;
         flex-shrink: 0;
     }
-    .item-card.issue .item-num { background: #fca5a5; color: #7f1d1d; }
-    .item-card.win .item-num { background: #86efac; color: #14532d; }
-    .item-text { font-size: 11.5px; line-height: 1.55; color: #475569; font-weight: 400; }
+    .item-card.issue .item-num { background: #4a1c1c; color: #fca5a5; }
+    .item-card.win .item-num { background: #14462a; color: #86efac; }
+    .item-text { font-size: 10.5px; line-height: 1.5; color: #a0a8c0; font-weight: 400; }
 
-    /* ── CTA ── */
+    /* ── CTA Box (D6 style) ── */
     .cta-box {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(135deg, #0e1328 0%, #151c38 100%);
+        border: 1px solid #3a2e15;
         color: #fff;
-        padding: 22px 28px;
-        border-radius: 12px;
-        margin-top: 12px;
+        padding: 20px 24px;
+        border-radius: 16px;
+        margin-top: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .cta-text { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-    .cta-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 400; }
+    .cta-text {
+        font-family: 'DM Serif Display', serif;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+    }
+    .cta-sub-text { font-size: 10.5px; color: #6b7394; margin-top: 4px; font-weight: 400; }
     .cta-btn {
-        background: linear-gradient(135deg, #eab308, #f59e0b);
-        color: #0f172a;
-        padding: 11px 28px;
-        border-radius: 8px;
-        font-size: 11.5px;
+        background: linear-gradient(135deg, #D4A853, #E0B65E);
+        color: #050814;
+        padding: 10px 26px;
+        border-radius: 9999px;
+        font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(234,179,8,0.3);
+        box-shadow: 0 4px 20px rgba(212,168,83,0.25);
     }
 
     /* ── Footer ── */
     .footer {
-        padding: 18px 52px;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
+        padding: 14px 48px;
+        background: #050814;
+        border-top: 1px solid #1a1f35;
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: auto;
+        position: relative;
+        z-index: 1;
     }
-    .footer-left { font-size: 8.5px; color: #94a3b8; font-weight: 500; }
-    .footer-right { font-size: 8.5px; color: #cbd5e1; font-weight: 500; }
+    .footer-left { font-size: 8px; color: #8B90A8; font-weight: 500; }
+    .footer-right { font-size: 8px; color: #3a4060; font-weight: 500; }
+
+    /* ════════════════════════════════════════════════
+       PAGE 2 — Detailed Factor Breakdown
+       ════════════════════════════════════════════════ */
+    .page2 { }
+
+    .p2-header {
+        background: linear-gradient(145deg, #050814 0%, #0c1024 100%);
+        padding: 24px 48px 20px;
+        position: relative;
+        z-index: 1;
+        border-bottom: 1px solid #1a1f35;
+    }
+    .p2-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 20px;
+        color: #fff;
+        margin-top: 12px;
+        letter-spacing: -0.01em;
+    }
+    .p2-biz {
+        font-size: 10.5px;
+        color: #5a6080;
+        margin-top: 4px;
+        font-weight: 400;
+    }
+
+    .p2-content {
+        padding: 20px 48px;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+        background: #080c18;
+    }
+
+    /* ── Detail sections (dark cards) ── */
+    .detail-section {
+        background: #0c1024;
+        border: 1px solid #1a1f35;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+    }
+    .detail-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #141830;
+    }
+    .detail-icon { font-size: 16px; flex-shrink: 0; }
+    .detail-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 14px;
+        color: #fff;
+        flex: 1;
+    }
+    .detail-score {
+        font-family: 'DM Serif Display', serif;
+        font-size: 22px;
+        font-weight: 400;
+    }
+    .detail-max { font-size: 11px; color: #8B90A8; }
+
+    .factor-list { }
+    .factor-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 7px;
+    }
+    .factor-name { font-size: 10.5px; font-weight: 500; color: #8B90A8; width: 165px; flex-shrink: 0; }
+    .factor-bar-bg { flex: 1; height: 5px; background: #141830; border-radius: 3px; overflow: hidden; }
+    .factor-bar-fill { height: 100%; border-radius: 3px; }
+    .factor-score { font-size: 11px; font-weight: 700; width: 28px; text-align: right; flex-shrink: 0; }
+    .factor-weight { font-size: 9px; color: #8B90A8; width: 24px; text-align: right; flex-shrink: 0; }
+
 </style>
 </head>
 <body>
-<div class="page">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-top">
-            <div class="brand-block">
-                <div class="brand">The Veterans Consultant</div>
-                <div class="brand-sub">Powered by DWE Intelligence</div>
-            </div>
-            <div class="report-meta">
-                <div class="report-type">Marketing Audit Report</div>
-                <div class="report-date">${data.date}</div>
-            </div>
-        </div>
-        <div class="biz-name">${data.businessName}</div>
-        <div class="biz-url">${data.url}</div>
-        <div class="header-accent"></div>
-    </div>
-
-    <!-- Score Section -->
-    <div class="score-section">
-        <div class="score-ring">
-            <svg width="100" height="100" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="${radius}" fill="none" stroke="#e2e8f0" stroke-width="6"/>
-                <circle cx="50" cy="50" r="${radius}" fill="none" stroke="${scoreColor}" stroke-width="6"
-                    stroke-dasharray="${circumference}" stroke-dashoffset="${dashOffset}"
-                    stroke-linecap="round"/>
-            </svg>
-            <div class="score-ring-text">
-                <span class="score-ring-num">${data.score}</span>
-                <span class="score-ring-label">of 100</span>
-            </div>
-        </div>
-        <div class="grade-badge">
-            <div class="grade-label">Grade</div>
-            <div class="grade-val">${data.grade}</div>
-        </div>
-        <div class="score-summary">${data.summary}</div>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-        <!-- Category Breakdown -->
-        <div class="section">
-            <div class="section-header">
-                <div class="section-icon-wrap" style="background: #eff6ff; color: #3b82f6;">&#9776;</div>
-                <div class="section-title">Performance Breakdown</div>
-            </div>
-            ${catBars}
-        </div>
-
-        <!-- Issues & Quick Wins -->
-        <div class="two-col">
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-icon-wrap" style="background: #fef2f2; color: #ef4444;">&#9888;</div>
-                    <div class="section-title">Critical Issues</div>
-                </div>
-                ${issuesList}
-            </div>
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-icon-wrap" style="background: #f0fdf4; color: #22c55e;">&#10003;</div>
-                    <div class="section-title">Quick Wins</div>
-                </div>
-                ${winsList}
-            </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="cta-box">
-            <div>
-                <div class="cta-text">Ready to improve your digital presence?</div>
-                <div class="cta-sub">Our team can implement these fixes and more — starting this week.</div>
-            </div>
-            <div class="cta-btn">Get Started</div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <div class="footer-left">Confidential — Prepared for ${data.businessName} | The Veterans Consultant by DWE</div>
-        <div class="footer-right">Page 1 of 1</div>
-    </div>
-</div>
+${buildPage1(data)}
+${buildPage2(data)}
 </body>
 </html>`;
 }
@@ -422,4 +753,4 @@ async function main() {
     }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch(e => { console.error(e); process.exit(1);  });

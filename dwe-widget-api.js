@@ -184,17 +184,21 @@ async function getDWEStats() {
 
 async function createNotionTask({ name, priority = 'Medium', role = 'CEO', url = '' }) {
     return new Promise((resolve, reject) => {
+        const tags = role === 'CEO' ? [] : [{ name: '12-Agent Task' }];
         const payload = {
             parent: { database_id: NOTION_DB_ID },
             properties: {
                 'Task name': { title: [{ text: { content: name } }] },
                 'Priority': { select: { name: priority } },
                 'Role': { select: { name: role } },
-                'Status': { status: { name: 'Not started' } }
+                'Status': { status: { name: 'Not started' } },
+                'Global Tags': { multi_select: tags }
             }
         };
-        // Add source URL as page content so CEO can trace back
+        // Add source URL to URL property, Details field, AND as bookmark block
         if (url) {
+            payload.properties['URL'] = { url: url };
+            payload.properties['Details'] = { rich_text: [{ text: { content: `Source: ${url}` } }] };
             payload.children = [
                 {
                     object: 'block',

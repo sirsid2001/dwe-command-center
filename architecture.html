@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWE — Core Platform Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0e1a;
+    color: #e0e6f0;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  h1 span { color: #00d4aa; font-weight: 600; }
+  .subtitle {
+    font-size: 13px;
+    color: #6b7a99;
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+  .diagram {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* --- Layer Styles --- */
+  .layer {
+    border-radius: 10px;
+    padding: 16px 20px;
+    position: relative;
+  }
+  .layer-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #6b7a99;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .layer-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  /* --- Actors Row --- */
+  .actors {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    padding: 12px 0 20px;
+  }
+  .actor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .actor-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .actor-icon.ceo { background: #00d4aa22; border: 1.5px solid #00d4aa; }
+  .actor-icon.agent { background: #3b82f622; border: 1.5px solid #3b82f6; }
+  .actor-icon.service { background: #f59e0b22; border: 1.5px solid #f59e0b; }
+  .actor-icon.ext { background: #a855f722; border: 1.5px solid #a855f7; }
+  .actor span { font-size: 10px; color: #8899bb; font-weight: 500; }
+
+  /* --- Interface Layer --- */
+  .l-interface { background: #0f1629; border: 1px solid #1e2a4a; }
+  .l-interface .box { background: #162040; border: 1px solid #2a3a66; }
+
+  /* --- Gateway Layer --- */
+  .l-gateway {
+    background: linear-gradient(90deg, #00d4aa15, #00d4aa08);
+    border: 1px solid #00d4aa44;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #00d4aa;
+    letter-spacing: 1px;
+    border-radius: 8px;
+  }
+  .l-gateway small { font-weight: 400; color: #6b9a8a; font-size: 11px; margin-left: 8px; }
+
+  /* --- Agent Layer --- */
+  .l-agents { background: #101a30; border: 1px solid #1a2d55; }
+  .l-agents .box { background: #142040; border: 1px solid #2244aa55; color: #7eb8ff; }
+
+  /* --- Services Layer --- */
+  .l-services { background: #111827; border: 1px solid #1f2937; }
+  .l-services .box { background: #1a2332; border: 1px solid #2a3a55; }
+
+  /* --- Daemon Layer --- */
+  .l-daemons { background: #0d1520; border: 1px solid #1a2540; }
+  .l-daemons .box { background: #121e30; border: 1px solid #1e3050; font-size: 11px; }
+
+  /* --- Data Layer --- */
+  .l-data { background: #0c1018; border: 1px solid #182030; }
+  .l-data .box {
+    background: #101828;
+    border: 1px solid #1a2a44;
+    border-bottom: 3px solid #3b82f6;
+  }
+
+  /* --- External Layer --- */
+  .l-external { background: #10081c; border: 1px solid #2a1a44; }
+  .l-external .box { background: #1a1030; border: 1px solid #3a2a55; }
+
+  /* --- Box Base --- */
+  .box {
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: default;
+  }
+  .box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .box .detail {
+    font-size: 9px;
+    color: #6b7a99;
+    margin-top: 3px;
+    font-weight: 400;
+  }
+
+  /* --- Connector Arrows --- */
+  .connector {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    color: #2a3a55;
+    font-size: 10px;
+    letter-spacing: 4px;
+  }
+
+  /* --- Side Labels --- */
+  .side-layout {
+    display: flex;
+    gap: 12px;
+  }
+  .side-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  .side-panel {
+    flex: 0 0 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .side-box {
+    border-radius: 8px;
+    padding: 14px;
+    flex: 1;
+  }
+  .side-box h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .side-box ul {
+    list-style: none;
+    font-size: 11px;
+    color: #8899bb;
+    line-height: 1.8;
+  }
+  .side-box ul li::before { content: "→ "; color: #3b82f6; }
+
+  .mesh-box {
+    background: #0d0d1a;
+    border: 1px solid #2a1a55;
+  }
+  .mesh-box h4 { color: #a855f7; }
+
+  .monitor-box {
+    background: #0d1a18;
+    border: 1px solid #1a4040;
+  }
+  .monitor-box h4 { color: #00d4aa; }
+
+  /* --- Legend --- */
+  .legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #6b7a99;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+  .dot-interface { background: #162040; border: 1px solid #2a3a66; }
+  .dot-agent { background: #142040; border: 1px solid #2244aa55; }
+  .dot-service { background: #1a2332; border: 1px solid #2a3a55; }
+  .dot-daemon { background: #121e30; border: 1px solid #1e3050; }
+  .dot-data { background: #101828; border: 1px solid #3b82f6; }
+  .dot-external { background: #1a1030; border: 1px solid #3a2a55; }
+
+  /* --- Version Tag --- */
+  .version {
+    text-align: center;
+    font-size: 10px;
+    color: #3a4a66;
+    margin-top: 20px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<h1><span>DWE</span> — Core Platform Architecture</h1>
+<p class="subtitle">Digital Workforce Ecosystem &bull; v3.11 &bull; 71 Daemons &bull; 6 AI Agents + Jarvis</p>
+
+<div class="diagram">
+
+  <!-- Actors -->
+  <div class="actors">
+    <div class="actor">
+      <div class="actor-icon ceo">👤</div>
+      <span>CEO</span>
+    </div>
+    <div class="actor">
+      <div class="actor-icon agent">🤖</div>
+      <span>AI Agents</span>
+    </div>
+    <div class="actor">
+      <div class="actor-icon service">⚙️</div>
+      <span>Daemons</span>
+    </div>
+    <div class="actor">
+      <div class="actor-icon ext">🔌</div>
+      <span>External</span>
+    </div>
+  </div>
+
+  <!-- Interface Layer -->
+  <div class="layer l-interface">
+    <div class="layer-label">User Interfaces</div>
+    <div class="layer-row">
+      <div class="box">Telegram Group<div class="detail">6 Topics / 6 Bots</div></div>
+      <div class="box">Mission Control Dashboard<div class="detail">Port 8899 / Node.js</div></div>
+      <div class="box">CEO Corner<div class="detail">Comms Center / Email</div></div>
+      <div class="box">Claude Code CLI<div class="detail">Jarvis / Terminal</div></div>
+      <div class="box">iMessage<div class="detail">imsg CLI / Alerts</div></div>
+      <div class="box">Pushover<div class="detail">Mobile Push / Critical</div></div>
+    </div>
+  </div>
+
+  <!-- Gateway -->
+  <div class="l-gateway">
+    OpenClaw Gateway <small>Port 18789 &bull; REST/HTTPS &bull; Token Auth &bull; v2026.3.13</small>
+  </div>
+
+  <!-- Main Content: Side Layout -->
+  <div class="side-layout">
+
+    <!-- Left Column: Core Layers -->
+    <div class="side-col">
+
+      <!-- Agent Layer -->
+      <div class="layer l-agents">
+        <div class="layer-label">AI Agent Layer — Command Staff</div>
+        <div class="layer-row">
+          <div class="box">Steve<div class="detail">CTO / Tech & Infra</div></div>
+          <div class="box">CE<div class="detail">Chief Engineer / Builds</div></div>
+          <div class="box">Anita<div class="detail">COO / PM Owner</div></div>
+          <div class="box">Nicole<div class="detail">CIO / Revenue</div></div>
+          <div class="box">Fran<div class="detail">CFO / Finance</div></div>
+          <div class="box">Main<div class="detail">Coordinator</div></div>
+          <div class="box" style="border-color: #f59e0b55; color: #f5c842;">Jarvis<div class="detail">Execution / Claude Code</div></div>
+        </div>
+      </div>
+
+      <!-- Microservices Layer -->
+      <div class="layer l-services">
+        <div class="layer-label">Microservices &amp; Automation</div>
+        <div class="layer-row">
+          <div class="box">Relay Daemon<div class="detail">Bot-to-Bot Messaging</div></div>
+          <div class="box">Notion Sync<div class="detail">10min Polling</div></div>
+          <div class="box">Seed Watcher<div class="detail">Pinecone Ingest</div></div>
+          <div class="box">Brain Trainer<div class="detail">RAG Expansion</div></div>
+          <div class="box">Approval Watcher<div class="detail">Vision Brief Intake</div></div>
+        </div>
+        <div class="layer-row" style="margin-top: 8px;">
+          <div class="box">Alert Hub<div class="detail">n8n / 4 Channels + OpenClaw CTO</div></div>
+          <div class="box">Gmail Agent<div class="detail">n8n / 8 Tools + Agent Routing</div></div>
+          <div class="box">Task Follow-Up<div class="detail">n8n / 2h / All Agents</div></div>
+          <div class="box">Agent Relay Hub<div class="detail">n8n / Webhook / Bot-to-Bot</div></div>
+          <div class="box">VAB Pipeline<div class="detail">n8n / 4-Phase / 37 nodes</div></div>
+        </div>
+        <div class="layer-row" style="margin-top: 8px;">
+          <div class="box">Audit Runner<div class="detail">Pipeline #1 / Auto</div></div>
+          <div class="box">Outreach Sender<div class="detail">Pipeline #1 / 6hr</div></div>
+          <div class="box">Campaign Sender<div class="detail">Instantly / Cold Email</div></div>
+        </div>
+      </div>
+
+      <!-- Daemon Layer -->
+      <div class="layer l-daemons">
+        <div class="layer-label">Daemon Fleet — 72 launchd Services</div>
+        <div class="layer-row">
+          <div class="box">Agent Heartbeats<div class="detail">8 daemons / Scheduled</div></div>
+          <div class="box">Anita PM Suite<div class="detail">8 daemons / Triage+Chase</div></div>
+          <div class="box">Task Follow-Up<div class="detail">3 daemons / 2hr cycle</div></div>
+          <div class="box">Swarm Intelligence<div class="detail">5 daemons / Self-Heal</div></div>
+        </div>
+        <div class="layer-row" style="margin-top: 6px;">
+          <div class="box">Content & Intel<div class="detail">11 daemons / Scrapers+Analysis</div></div>
+          <div class="box">Ops & Insight<div class="detail">10 daemons / Calibration</div></div>
+          <div class="box">Health & Monitor<div class="detail">5 daemons / Anomaly</div></div>
+          <div class="box">Recurring Tasks<div class="detail">Auto-seed / Weekly</div></div>
+        </div>
+      </div>
+
+      <!-- Data Store Layer -->
+      <div class="layer l-data">
+        <div class="layer-label">Data Stores</div>
+        <div class="layer-row">
+          <div class="box">Pinecone dwe-v3<div class="detail">12,729 vectors / 768-dim</div></div>
+          <div class="box">Notion Database<div class="detail">Task Lifecycle / TAS-####</div></div>
+          <div class="box">Google Sheets<div class="detail">IncomeOps / Revenue SOT</div></div>
+          <div class="box">Local FS<div class="detail">Shared Pipeline / 6 Stages</div></div>
+          <div class="box">LanceDB<div class="detail">Agent Memory / Embeddings</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Panel: Mesh & Monitoring -->
+    <div class="side-panel">
+      <div class="side-box mesh-box">
+        <h4>Tailscale Mesh</h4>
+        <ul>
+          <li>Mac Mini .240.29</li>
+          <li>iPhone .99.61</li>
+          <li>VPS .135.122</li>
+        </ul>
+      </div>
+      <div class="side-box monitor-box">
+        <h4>Telemetry</h4>
+        <ul>
+          <li>Health Monitor (30m)</li>
+          <li>Anomaly Check (2x/day)</li>
+          <li>Smoke Test</li>
+          <li>Log Rotation</li>
+          <li>Soul Calibration</li>
+        </ul>
+      </div>
+      <div class="side-box" style="background: #1a1510; border: 1px solid #4a3a10;">
+        <h4 style="color: #f59e0b;">LLM Stack</h4>
+        <ul>
+          <li>OpenRouter /auto</li>
+          <li>Ollama qwen2.5:7b</li>
+          <li>Ollama qwen2.5:3b</li>
+          <li>nomic-embed-text</li>
+          <li>gemini-2.5-flash</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- External Services -->
+  <div class="layer l-external">
+    <div class="layer-label">External Services &amp; Integrations</div>
+    <div class="layer-row">
+      <div class="box">n8n (VPS)<div class="detail">Workflow Engine / Docker</div></div>
+      <div class="box">Telegram API<div class="detail">6 Bot Tokens</div></div>
+      <div class="box">Notion API<div class="detail">Task DB / v2022-06-28</div></div>
+      <div class="box">Pinecone API<div class="detail">Serverless / us-east-1</div></div>
+      <div class="box">Gmail API<div class="detail">OAuth2 / 13 Labels</div></div>
+      <div class="box">OpenRouter<div class="detail">LLM Gateway</div></div>
+    </div>
+    <div class="layer-row" style="margin-top: 8px;">
+      <div class="box">Ollama (Local)<div class="detail">LLM + Embeddings / Free</div></div>
+      <div class="box">Stripe<div class="detail">Payment Processing</div></div>
+      <div class="box">SAM.gov<div class="detail">Federal Contracts</div></div>
+      <div class="box">Skool.com<div class="detail">Community Scraping</div></div>
+      <div class="box">Google Sheets<div class="detail">Revenue Tracking</div></div>
+      <div class="box">Pushover API<div class="detail">Push Notifications</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot dot-interface"></div>User Interface</div>
+  <div class="legend-item"><div class="legend-dot dot-agent"></div>AI Agent</div>
+  <div class="legend-item"><div class="legend-dot dot-service"></div>Microservice</div>
+  <div class="legend-item"><div class="legend-dot dot-daemon"></div>Daemon</div>
+  <div class="legend-item"><div class="legend-dot dot-data"></div>Data Store</div>
+  <div class="legend-item"><div class="legend-dot dot-external"></div>External Service</div>
+</div>
+
+<p class="version">DWE Platform v3.11 &bull; OpenClaw 2026.3.13 &bull; Mac Mini M2 &bull; 71 launchd Daemons &bull; Updated 2026-03-24</p>
+
+</body>
+</html>

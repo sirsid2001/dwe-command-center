@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWE — Data Flow Diagram</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0a0e1a;
+    color: #e0e6f0;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 28px; font-weight: 300; letter-spacing: 1px; margin-bottom: 4px; color: #fff; }
+  h1 span { color: #00d4aa; font-weight: 600; }
+  .subtitle { font-size: 13px; color: #6b7a99; margin-bottom: 28px; letter-spacing: 0.5px; }
+
+  .diagram { max-width: 1300px; margin: 0 auto; }
+
+  /* --- Flow Section --- */
+  .flow-section {
+    margin-bottom: 32px;
+    border-radius: 10px;
+    padding: 20px 24px;
+    position: relative;
+  }
+  .flow-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .flow-title .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* --- Flow Row (horizontal pipeline) --- */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  .flow-node {
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 130px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .flow-node .sub {
+    font-size: 9px;
+    font-weight: 400;
+    color: #6b7a99;
+    margin-top: 3px;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .flow-arrow svg { width: 36px; height: 20px; }
+  .flow-arrow.down svg { width: 20px; height: 28px; }
+
+  /* --- Node Colors --- */
+  .n-input { background: #1a2040; border: 1.5px solid #3b82f6; color: #7eb8ff; }
+  .n-process { background: #162030; border: 1.5px solid #00d4aa; color: #00d4aa; }
+  .n-store { background: #101828; border: 1.5px solid #f59e0b; border-bottom: 3px solid #f59e0b; color: #f5c842; }
+  .n-output { background: #1a1030; border: 1.5px solid #a855f7; color: #c084fc; }
+  .n-agent { background: #142040; border: 1.5px solid #2244aa; color: #7eb8ff; }
+  .n-alert { background: #2a1018; border: 1.5px solid #ef4444; color: #fca5a5; }
+  .n-llm { background: #1a1510; border: 1.5px solid #f59e0b; color: #fbbf24; }
+  .n-ext { background: #10081c; border: 1.5px solid #8b5cf6; color: #a78bfa; }
+
+  /* --- Section Colors --- */
+  .s-ingest { background: #0d1525; border: 1px solid #1a2d55; }
+  .s-ingest .flow-title { color: #3b82f6; }
+  .s-ingest .num { background: #3b82f622; border: 1px solid #3b82f6; color: #3b82f6; }
+
+  .s-brain { background: #0d1a18; border: 1px solid #1a4040; }
+  .s-brain .flow-title { color: #00d4aa; }
+  .s-brain .num { background: #00d4aa22; border: 1px solid #00d4aa; color: #00d4aa; }
+
+  .s-task { background: #10081c; border: 1px solid #2a1a44; }
+  .s-task .flow-title { color: #a855f7; }
+  .s-task .num { background: #a855f722; border: 1px solid #a855f7; color: #a855f7; }
+
+  .s-alert { background: #1a0d10; border: 1px solid #4a1a1a; }
+  .s-alert .flow-title { color: #ef4444; }
+  .s-alert .num { background: #ef444422; border: 1px solid #ef4444; color: #ef4444; }
+
+  .s-revenue { background: #1a1510; border: 1px solid #4a3a10; }
+  .s-revenue .flow-title { color: #f59e0b; }
+  .s-revenue .num { background: #f59e0b22; border: 1px solid #f59e0b; color: #f59e0b; }
+
+  .s-email { background: #0f1420; border: 1px solid #1e2a4a; }
+  .s-email .flow-title { color: #60a5fa; }
+  .s-email .num { background: #60a5fa22; border: 1px solid #60a5fa; color: #60a5fa; }
+
+  .s-vab { background: #0d1520; border: 1px solid #1a3040; }
+  .s-vab .flow-title { color: #06b6d4; }
+  .s-vab .num { background: #06b6d422; border: 1px solid #06b6d4; color: #06b6d4; }
+
+  /* --- Branch --- */
+  .branch {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    padding-left: 40px;
+  }
+  .branch-label {
+    font-size: 10px;
+    color: #4a5a7a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 8px 0 4px 40px;
+  }
+
+  /* --- Legend --- */
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #6b7a99; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+  .version {
+    text-align: center;
+    font-size: 10px;
+    color: #3a4a66;
+    margin-top: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .flow-row { flex-wrap: wrap; gap: 8px; }
+    .flow-arrow { display: none; }
+    .branch { flex-direction: column; padding-left: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<h1><span>DWE</span> — Data Flow Diagram</h1>
+<p class="subtitle">How data moves through the Digital Workforce Ecosystem &bull; 7 Core Pipelines</p>
+
+<div class="diagram">
+
+  <!-- ═══ FLOW 1: Content Ingestion → Brain ═══ -->
+  <div class="flow-section s-ingest">
+    <div class="flow-title"><span class="num">1</span> Content Ingestion Pipeline</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">Documents<div class="sub">MD / TXT files</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#3b82f6" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Shared Pipeline<div class="sub">1_New → 2_CEO → 3_Approved</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">4_Ready_to_Seed<div class="sub">Staging queue</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Seed Watcher<div class="sub">ai.dwe.seed-watcher</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-llm">Ollama Embed<div class="sub">nomic-embed-text / 768d</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">n8n Ingest<div class="sub">webhook/openclaw-ingest</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#a855f7" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">Pinecone dwe-v3<div class="sub">12,729 vectors</div></div>
+    </div>
+    <div class="branch-label">Also feeds from:</div>
+    <div class="branch">
+      <div class="flow-node n-input" style="min-width:100px;">Notion Sync<div class="sub">10min polling</div></div>
+      <div class="flow-node n-input" style="min-width:100px;">Nightly Review<div class="sub">2am MEMORY_INDEX</div></div>
+      <div class="flow-node n-input" style="min-width:100px;">Agent Memory<div class="sub">memory_* files</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 2: Brain Query ═══ -->
+  <div class="flow-section s-brain">
+    <div class="flow-title"><span class="num">2</span> Brain Query Flow (RAG + Live Intel)</div>
+    <div class="flow-row">
+      <div class="flow-node n-agent">Agent / CEO<div class="sub">brain_query.sh</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">Intel Lookup<div class="sub">intel_lookup.py → local + Sheet</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">n8n Query<div class="sub">webhook/openclaw-query</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-llm">Ollama Embed<div class="sub">nomic-embed-text</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#a855f7" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">Pinecone Search<div class="sub">Top-K cosine similarity</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-llm">Ollama qwen2.5:3b<div class="sub">Context + Query → Answer</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-output">Response + Intel<div class="sub">RAG answer + live structured data</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 3: Task Lifecycle ═══ -->
+  <div class="flow-section s-task">
+    <div class="flow-title"><span class="num">3</span> Task Lifecycle (Notion)</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">Task Source<div class="sub">CEO / Agent / Daemon</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#a855f7" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">Notion API<div class="sub">Create page</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#a855f7" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">Task DB<div class="sub">TAS-#### / Properties</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Anita Triage<div class="sub">Hourly / Auto-assign</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-agent">Agent Pickup<div class="sub">Heartbeat → Work</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#00d4aa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Follow-Up<div class="sub">2hr daemon check</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#a855f7" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-output">Done / Blocked<div class="sub">Status update</div></div>
+    </div>
+    <div class="branch-label">Tag routing:</div>
+    <div class="branch">
+      <div class="flow-node n-store" style="min-width:110px;">CEO Tasks<div class="sub">No Global Tags</div></div>
+      <div class="flow-node n-store" style="min-width:110px;">Agent Tasks<div class="sub">12-Agent Task</div></div>
+      <div class="flow-node n-store" style="min-width:110px;">Antigravity<div class="sub">Cache → CLI Panel</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 4: Alert Pipeline ═══ -->
+  <div class="flow-section s-alert">
+    <div class="flow-title"><span class="num">4</span> Alert & Notification Pipeline</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">Event Source<div class="sub">Daemon / Monitor / Agent</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#ef4444" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">notify_alert()<div class="sub">agent_heartbeat.sh</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#ef4444" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">n8n Alert Hub<div class="sub">webhook/dwe-agent-alert</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#ef4444" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Severity Switch<div class="sub">info / warning / critical</div></div>
+    </div>
+    <div class="branch-label">Parallel routing by severity:</div>
+    <div class="branch">
+      <div class="flow-node n-output" style="min-width:120px;">Telegram<div class="sub">All severities</div></div>
+      <div class="flow-node n-output" style="min-width:120px;">Pushover<div class="sub">Warning + Critical</div></div>
+      <div class="flow-node n-output" style="min-width:120px;">Gmail<div class="sub">Critical only</div></div>
+      <div class="flow-node n-alert" style="min-width:120px;">iMessage<div class="sub">Warning + Critical (local)</div></div>
+      <div class="flow-node n-agent" style="min-width:120px;">OpenClaw CTO<div class="sub">Warning + Critical</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 5: Revenue Pipeline ═══ -->
+  <div class="flow-section s-revenue">
+    <div class="flow-title"><span class="num">5</span> Revenue Pipeline #1 (DWE Marketing)</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">Lead Sources<div class="sub">SAM.gov / SBA / VetBiz</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Lead Scoring<div class="sub">Nicole / Auto-filter</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">Google Sheets<div class="sub">Prospect_DWE_Marketing</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Audit Runner<div class="sub">4hr auto-audit</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">Outreach Sender<div class="sub">6hr auto-send</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-output">Conversion<div class="sub">IncomeOps_Monitor</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 6: Email Pipeline ═══ -->
+  <div class="flow-section s-email">
+    <div class="flow-title"><span class="num">6</span> Email Processing Pipeline</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">Gmail Inbox<div class="sub">sirsid2001@gmail.com</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#60a5fa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">n8n Gmail Agent<div class="sub">Every 2min / gpt-4o-mini</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#60a5fa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">AI Triage<div class="sub">Star / Label / Archive</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#60a5fa" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">13 Labels<div class="sub">Auto-categorized</div></div>
+    </div>
+    <div class="branch-label">Agent routing (via OpenClaw):</div>
+    <div class="branch">
+      <div class="flow-node n-agent" style="min-width:100px;">CFO<div class="sub">Bills / Finance</div></div>
+      <div class="flow-node n-agent" style="min-width:100px;">CE<div class="sub">Engineering</div></div>
+      <div class="flow-node n-agent" style="min-width:100px;">CIO<div class="sub">Opportunities</div></div>
+      <div class="flow-node n-agent" style="min-width:100px;">COO<div class="sub">Projects</div></div>
+      <div class="flow-node n-agent" style="min-width:100px;">CTO<div class="sub">Security</div></div>
+    </div>
+    <div class="branch-label">CEO Dashboard path:</div>
+    <div class="branch">
+      <div class="flow-node n-input" style="min-width:110px;">collect_messages.py<div class="sub">Gmail URL extraction</div></div>
+      <div class="flow-node n-process" style="min-width:110px;">Comms Center<div class="sub">CEO Corner UI</div></div>
+      <div class="flow-node n-ext" style="min-width:110px;">Send to Notion<div class="sub">createNotionTask()</div></div>
+      <div class="flow-node n-store" style="min-width:110px;">Task + URL<div class="sub">Source link preserved</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FLOW 7: Vision Alignment Brief ═══ -->
+  <div class="flow-section s-vab">
+    <div class="flow-title"><span class="num">7</span> Vision Alignment Brief (VAB) Pipeline</div>
+    <div class="flow-row">
+      <div class="flow-node n-input">CEO Vision Brief<div class="sub">Drop in 1_New/</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#06b6d4" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">n8n VAB Pipeline<div class="sub">webhook /vab-pipeline</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#06b6d4" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-process">4-Phase Orchestration<div class="sub">Nicole → CTO → All → Anita</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#06b6d4" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-store">2_CEO_review/<div class="sub">Project plan + exec summary</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#06b6d4" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-agent">CEO Approval<div class="sub">Move to 3_Approved/</div></div>
+      <div class="flow-arrow"><svg viewBox="0 0 36 20"><path d="M0 10 L28 10 M22 4 L28 10 L22 16" stroke="#06b6d4" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="flow-node n-ext">Notion Tasks<div class="sub">Per-task creation</div></div>
+    </div>
+    <div class="branch-label">Change_Log auditing (L3):</div>
+    <div class="branch">
+      <div class="flow-node n-store" style="min-width:120px;">Change_Log<div class="sub">7 entries per run</div></div>
+      <div class="flow-node n-store" style="min-width:120px;">Notion Strategic<div class="sub">Original VAB stored</div></div>
+      <div class="flow-node n-store" style="min-width:120px;">Brain Seed<div class="sub">Auto-ingest to dwe-v3</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1a2040;border:1.5px solid #3b82f6;"></div>Input / Source</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#162030;border:1.5px solid #00d4aa;"></div>Process / Transform</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#101828;border:1.5px solid #f59e0b;border-bottom:3px solid #f59e0b;"></div>Data Store</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a1030;border:1.5px solid #a855f7;"></div>Output / Delivery</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#142040;border:1.5px solid #2244aa;"></div>Agent / Human</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a1510;border:1.5px solid #f59e0b;"></div>LLM / Embedding</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#10081c;border:1.5px solid #8b5cf6;"></div>External Service</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2a1018;border:1.5px solid #ef4444;"></div>Alert / Critical</div>
+</div>
+
+<p class="version">DWE Data Flow Diagram &bull; 7 Core Pipelines &bull; Updated 2026-03-24</p>
+
+</body>
+</html>
