@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page { size: letter; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; color: #1B1624; background: #FAF7F2; }
+
+.letterhead {
+    width: 8.5in;
+    min-height: 11in;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: #FAF7F2;
+}
+
+/* ═══ HEADER BAND (dark + shader waves) ═══ */
+.lh-header {
+    background: linear-gradient(160deg, #08051a, #0c0828 30%, #150a30 60%, #1a0835 80%, #120625);
+    padding: 28px 60px 22px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.lh-header .hw {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+.lh-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+.lh-logo .acc { color: #F5A623; }
+.lh-logo .llc { font-size: 0.4em; opacity: 0.7; letter-spacing: 0.08em; }
+.lh-tagline {
+    font-size: 8px;
+    color: #8B90A8;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+}
+.lh-contact {
+    text-align: right;
+    position: relative;
+    z-index: 1;
+    font-size: 8.5px;
+    color: #8B90A8;
+    line-height: 1.7;
+}
+.lh-contact a { color: #F5A623; text-decoration: none; }
+
+/* Rainbow divider */
+.lh-rainbow {
+    height: 3px;
+    background: linear-gradient(90deg, #E8734A, #F5A623, #F5D623, #4AE88A, #00dcff, #7B61FF, #cc00ff);
+}
+
+/* ═══ BODY ═══ */
+.lh-body {
+    flex: 1;
+    padding: 40px 60px;
+    font-size: 11px;
+    color: #1B1624;
+    line-height: 1.8;
+}
+.lh-body .date {
+    font-size: 10px;
+    color: #5A5A6E;
+    margin-bottom: 28px;
+}
+.lh-body .recipient {
+    margin-bottom: 24px;
+    font-size: 11px;
+    color: #1B1624;
+    line-height: 1.7;
+}
+.lh-body .salutation {
+    margin-bottom: 16px;
+    font-size: 11px;
+}
+.lh-body p {
+    font-size: 11px;
+    color: #1B1624;
+    line-height: 1.8;
+    margin-bottom: 14px;
+}
+.lh-body .closing {
+    margin-top: 28px;
+    font-size: 11px;
+    line-height: 1.8;
+}
+.lh-body .sig-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 14px;
+    color: #1B1624;
+    margin-top: 36px;
+}
+.lh-body .sig-title {
+    font-size: 10px;
+    color: #5A5A6E;
+    margin-top: 2px;
+}
+
+/* ═══ FOOTER ═══ */
+.lh-footer {
+    padding: 14px 60px;
+    background: #050814;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 7.5px;
+    color: #5a6080;
+}
+.lh-footer .badges {
+    display: flex;
+    gap: 12px;
+}
+.lh-footer .badge {
+    color: #F5A623;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+}
+.lh-footer .legal {
+    color: #3a4060;
+}
+</style>
+</head>
+<body>
+
+<div class="letterhead">
+    <!-- HEADER -->
+    <div class="lh-header">
+        <!-- Plasma wave SVG -->
+        <svg class="hw" viewBox="0 0 816 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs><filter id="g"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+            <path d="M-20,70 C70,25 180,80 320,40 C460,0 580,60 816,20" fill="none" stroke="#bb66ff" stroke-width="1.6" filter="url(#g)"/>
+            <path d="M-30,45 C90,85 220,15 370,55 C520,90 660,25 846,65" fill="none" stroke="#aa55ff" stroke-width="1.4" filter="url(#g)"/>
+            <path d="M-20,25 C100,65 240,5 390,45 C540,80 680,15 846,50" fill="none" stroke="#cc77ff" stroke-width="1.8" filter="url(#g)"/>
+            <path d="M-30,85 C60,40 180,90 330,48 C480,8 600,70 816,30" fill="none" stroke="#9944ee" stroke-width="1.4" filter="url(#g)"/>
+            <path d="M-20,55 C110,10 250,65 400,28 C550,0 680,50 846,18" fill="none" stroke="#dd88ff" stroke-width="1.2" filter="url(#g)"/>
+            <circle cx="150" cy="45" r="2" fill="#edf" fill-opacity="0.6"/>
+            <circle cx="380" cy="35" r="2.5" fill="#fff" fill-opacity="0.5"/>
+            <circle cx="560" cy="55" r="2" fill="#dbf" fill-opacity="0.55"/>
+            <circle cx="720" cy="25" r="2.5" fill="#edf" fill-opacity="0.5"/>
+        </svg>
+        <div>
+            <div class="lh-logo">The Veterans<span class="acc">,</span> Consultant<span class="llc">, LLC</span></div>
+            <div class="lh-tagline">Built to Serve &bull; Designed to Scale</div>
+        </div>
+        <div class="lh-contact">
+            <a href="https://theveteransconsultant.com">theveteransconsultant.com</a><br>
+            <a href="mailto:info@tvcpulse.com">info@tvcpulse.com</a><br>
+            Gulf Coast, FL
+        </div>
+    </div>
+
+    <!-- Rainbow divider -->
+    <div class="lh-rainbow"></div>
+
+    <!-- BODY (placeholder content) -->
+    <div class="lh-body">
+        <div class="date">[Date]</div>
+
+        <div class="recipient">
+            [Recipient Name]<br>
+            [Company Name]<br>
+            [Address]
+        </div>
+
+        <div class="salutation">Dear [Name],</div>
+
+        <p>[Letter body content goes here. This letterhead template follows the TVC Brand Style Guide — DM Serif Display headings, Inter body text, dark navy header with purple plasma wave shader, cream body, rainbow accent divider, and amber gold highlights.]</p>
+
+        <p>[Additional paragraphs as needed.]</p>
+
+        <div class="closing">
+            Respectfully,
+        </div>
+
+        <div class="sig-name">Sidney Garcia</div>
+        <div class="sig-title">Founder &amp; CEO, The Veterans Consultant, LLC</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="lh-footer">
+        <div class="badges">
+            <span class="badge">VOSB</span>
+            <span class="badge">SDVOSB</span>
+            <span class="badge">Minority-Owned</span>
+        </div>
+        <div class="legal">&copy; 2026 The Veterans Consultant, LLC &mdash; Confidential</div>
+    </div>
+</div>
+
+</body>
+</html>

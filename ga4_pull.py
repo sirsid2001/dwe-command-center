@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""
+GA4 Data Pull — caches website analytics for the dashboard
+Runs every 4 hours via launchd (ai.dwe.ga4-pull)
+Saves to ~/mission-control-server/ga4_cache.json
+"""
+import json, os, sys
+from datetime import datetime
+
+SKILL_DIR = os.path.expanduser('~/.openclaw/skills/gmail-api')
+TOKEN_PATH = os.path.join(SKILL_DIR, 'token_analytics.json')
+CACHE_PATH = os.path.join(os.path.expanduser('~/mission-control-server'), 'ga4_cache.json')
+PROPERTY = 'properties/349790229'
+LOG = os.path.expanduser('~/openclaw/logs/ga4-pull.log')
+
+def log(msg):
+    with open(LOG, 'a') as f:
+        f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
+
+try:
+    from google.oauth2.credentials import Credentials
+    from google.auth.transport.requests import Request
+    from googleapiclient.discovery import build
+except ImportError:
+    log("ERROR: google-auth or google-api-python-client not installed")
+    sys.exit(1)
+
+def get_creds():
+    creds = Credentials.from_authorized_user_file(TOKEN_PATH)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        with open(TOKEN_PATH, 'w') as f:
+            f.write(creds.to_json())
+    return creds
+
+def pull():
+    log("Starting GA4 pull...")
+    creds = get_creds()
+    api = build('analyticsdata', 'v1beta', credentials=creds)
+
+    # This week vs last week
+    compare = api.properties().runReport(property=PROPERTY, body={
+        'dateRanges': [
+            {'startDate': '7daysAgo', 'endDate': 'today', 'name': 'thisWeek'},
+            {'startDate': '14daysAgo', 'endDate': '8daysAgo', 'name': 'lastWeek'}
+        ],
+        'metrics': [
+            {'name': 'sessions'},
+            {'name': 'totalUsers'},
+            {'name': 'screenPageViews'},
+            {'name': 'averageSessionDuration'},
+            {'name': 'bounceRate'},
+            {'name': 'engagedSessions'}
+        ]
+    }).execute()
+
+    periods = {}
+    for row in compare.get('rows', []):
+        idx = row['dimensionValues'][0]['value']
+        name = 'thisWeek' if idx == 'date_range_0' else 'lastWeek'
+        m = row['metricValues']
+        periods[name] = {
+            'sessions': int(m[0]['value']),
+            'users': int(m[1]['value']),
+            'pageviews': int(m[2]['value']),
+            'avgDuration': round(float(m[3]['value'])),
+            'bounceRate': round(float(m[4]['value']) * 100, 1),
+            'engaged': int(m[5]['value'])
+        }
+
+    # Calculate deltas
+    tw = periods.get('thisWeek', {})
+    lw = periods.get('lastWeek', {})
+    deltas = {}
+    for key in ['sessions', 'users', 'pageviews']:
+        curr = tw.get(key, 0)
+        prev = lw.get(key, 0)
+        if prev > 0:
+            deltas[key] = round((curr - prev) / prev * 100, 1)
+        elif curr > 0:
+            deltas[key] = 100.0
+        else:
+            deltas[key] = 0.0
+
+    # Top pages
+    pages_resp = api.properties().runReport(property=PROPERTY, body={
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensions': [{'name': 'pagePath'}],
+        'metrics': [{'name': 'screenPageViews'}, {'name': 'totalUsers'}],
+        'orderBys': [{'metric': {'metricName': 'screenPageViews'}, 'desc': True}],
+        'limit': 5
+    }).execute()
+
+    top_pages = []
+    for row in pages_resp.get('rows', []):
+        top_pages.append({
+            'path': row['dimensionValues'][0]['value'],
+            'views': int(row['metricValues'][0]['value']),
+            'users': int(row['metricValues'][1]['value'])
+        })
+
+    # Traffic sources
+    sources_resp = api.properties().runReport(property=PROPERTY, body={
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensions': [{'name': 'sessionDefaultChannelGroup'}],
+        'metrics': [{'name': 'sessions'}],
+        'orderBys': [{'metric': {'metricName': 'sessions'}, 'desc': True}],
+        'limit': 5
+    }).execute()
+
+    sources = []
+    for row in sources_resp.get('rows', []):
+        sources.append({
+            'channel': row['dimensionValues'][0]['value'],
+            'sessions': int(row['metricValues'][0]['value'])
+        })
+
+    # Daily trend (last 7 days)
+    daily_resp = api.properties().runReport(property=PROPERTY, body={
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensions': [{'name': 'date'}],
+        'metrics': [{'name': 'sessions'}, {'name': 'screenPageViews'}, {'name': 'totalUsers'}],
+        'orderBys': [{'dimension': {'dimensionName': 'date'}, 'desc': False}]
+    }).execute()
+
+    daily = []
+    for row in daily_resp.get('rows', []):
+        d = row['dimensionValues'][0]['value']
+        daily.append({
+            'date': f"{d[:4]}-{d[4:6]}-{d[6:]}",
+            'sessions': int(row['metricValues'][0]['value']),
+            'pageviews': int(row['metricValues'][1]['value']),
+            'users': int(row['metricValues'][2]['value'])
+        })
+
+    # Build cache
+    cache = {
+        'updated': datetime.now().isoformat(),
+        'property': 'theveteransconsultant.com',
+        'thisWeek': tw,
+        'lastWeek': lw,
+        'deltas': deltas,
+        'topPages': top_pages,
+        'sources': sources,
+        'daily': daily
+    }
+
+    with open(CACHE_PATH, 'w') as f:
+        json.dump(cache, f, indent=2)
+
+    log(f"GA4 pull complete. Sessions: {tw.get('sessions',0)} (delta: {deltas.get('sessions',0)}%)")
+    print(json.dumps(cache, indent=2))
+
+if __name__ == '__main__':
+    pull()

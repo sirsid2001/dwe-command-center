@@ -1,0 +1,49 @@
+{
+  "updated": "2026-03-27T07:41:31.852415",
+  "property": "theveteransconsultant.com",
+  "thisWeek": {},
+  "lastWeek": {
+    "sessions": 3,
+    "users": 2,
+    "pageviews": 11,
+    "avgDuration": 244,
+    "bounceRate": 0.0,
+    "engaged": 3
+  },
+  "deltas": {
+    "sessions": -100.0,
+    "users": -100.0,
+    "pageviews": -100.0
+  },
+  "topPages": [
+    {
+      "path": "/contact/",
+      "views": 6,
+      "users": 1
+    },
+    {
+      "path": "/",
+      "views": 4,
+      "users": 2
+    },
+    {
+      "path": "/veteran-outreach/",
+      "views": 1,
+      "users": 1
+    }
+  ],
+  "sources": [
+    {
+      "channel": "Direct",
+      "sessions": 3
+    }
+  ],
+  "daily": [
+    {
+      "date": "2026-03-26",
+      "sessions": 3,
+      "pageviews": 11,
+      "users": 2
+    }
+  ]
+}

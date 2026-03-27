@@ -372,6 +372,23 @@ const server = http.createServer((req, res) => {
         case '/mc/daemon-health':
             getDaemonHealth(req, res);
             break;
+        case '/mc/night-mode':
+            if (req.method === 'POST' || req.method === 'GET') {
+                const nmAction = parsedUrl.query.action || 'start';
+                const nmScript = nmAction === 'stop'
+                    ? path.join(process.env.HOME, 'openclaw/bin/night_mode_stop.sh')
+                    : path.join(process.env.HOME, 'openclaw/bin/night_mode_start.sh');
+                const { execFile } = require('child_process');
+                execFile('bash', [nmScript], { timeout: 30000 }, (err, stdout, stderr) => {
+                    const nmState = JSON.parse(fs.readFileSync(path.join(process.env.HOME, 'openclaw/shared/night_mode.json'), 'utf8') || '{}');
+                    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ ok: true, action: nmAction, nightMode: nmState }));
+                });
+            } else {
+                res.writeHead(405, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Method not allowed' }));
+            }
+            break;
         case '/mc/backup':
             if (req.method === 'POST') {
                 runBackup(req, res);
@@ -738,6 +755,16 @@ const server = http.createServer((req, res) => {
         case '/mc/content-intel/ceo-brief':
             handleCeoIntelBrief(req, res);
             break;
+        case '/mc/ga4':
+            try {
+                const ga4Data = JSON.parse(fs.readFileSync(path.join(__dirname, 'ga4_cache.json'), 'utf8'));
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify(ga4Data));
+            } catch(e) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'No GA4 data cached yet', thisWeek: {}, lastWeek: {}, deltas: {} }));
+            }
+            break;
         case '/mc/night-mode':
             handleNightMode(req, res);
             break;
@@ -807,6 +834,18 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/pipeline-summary':
             getPipelineSummary(req, res);
+            break;
+        case '/mc/autoresearch':
+            getAutoresearchStatus(req, res);
+            break;
+        case '/mc/audit-clicks':
+            getAuditClicks(req, res);
+            break;
+        case '/mc/track-click':
+            trackButtonClick(req, res);
+            break;
+        case '/mc/click-stats':
+            getClickStats(req, res);
             break;
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
@@ -1713,7 +1752,7 @@ function getProspects(req, res, query) {
 
     const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
     const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
-    const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+    const range = encodeURIComponent(cfg.sheet_tab + '!A1:T500');
 
     const opts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
 
@@ -1725,16 +1764,19 @@ function getProspects(req, res, query) {
                 const raw = JSON.parse(body);
                 const rows = raw.values || [];
                 const header = rows[0] || [];
-                const prospects = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => {
+                const allProspects = rows.slice(1).filter(r => r[0] && r[0].trim()).map(r => {
                     const obj = {};
                     header.forEach((col, i) => { obj[col] = (r[i] || '').trim(); });
                     return obj;
                 });
-                // Stage counts
+                // Include all prospects in response but flag test rows
+                const prospects = allProspects;
+                // Stage counts exclude QA_Flag=T rows
+                const prodProspects = allProspects.filter(p => (p.QA_Flag || '').toUpperCase() !== 'T');
                 const stages = {};
-                prospects.forEach(p => { const s = p.Funnel_Stage || 'New'; stages[s] = (stages[s] || 0) + 1; });
+                prodProspects.forEach(p => { const s = p.Funnel_Stage || 'New'; stages[s] = (stages[s] || 0) + 1; });
                 res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
-                res.end(JSON.stringify({ ok: true, pipeline: cfg.pipeline_id, prospects, stage_counts: stages, total: prospects.length }));
+                res.end(JSON.stringify({ ok: true, pipeline: cfg.pipeline_id, prospects, stage_counts: stages, total: prodProspects.length, total_with_qa: allProspects.length }));
             } catch(e) { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message })); }
         });
     });
@@ -1788,10 +1830,11 @@ function addProspect(req, res, query) {
                         now,
                         now,
                         '', '', '', '',
-                        data.notes || ''
+                        data.notes || '',
+                        data.qa_flag || '' // Column T: QA_Flag — "T" = test lead, excluded from stats
                     ];
 
-                    const appendRange = encodeURIComponent(cfg.sheet_tab + '!A:S');
+                    const appendRange = encodeURIComponent(cfg.sheet_tab + '!A:T');
                     const appendPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${appendRange}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
                     const writeOpts = { hostname: 'gateway.maton.ai', path: appendPath, method: 'POST', headers: { 'Authorization': `Bearer ${MATON_KEY}`, 'Content-Type': 'application/json' } };
 
@@ -1829,7 +1872,7 @@ function updateProspect(req, res, query) {
             const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
 
             // Read all data to find the row
-            const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+            const range = encodeURIComponent(cfg.sheet_tab + '!A1:T500');
             const readOpts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
 
             const readReq = https.request(readOpts, (readRes) => {
@@ -1852,7 +1895,7 @@ function updateProspect(req, res, query) {
                         header.forEach((h, i) => { fieldMap[h] = i; });
 
                         // Apply updates
-                        const updatable = ['Business_Name', 'URL', 'Industry', 'Location', 'Lead_Score', 'Audit_Score', 'Funnel_Stage', 'Funding_Signal', 'Source', 'Last_Activity', 'Audit_Report_Path', 'Outreach_Status', 'Product_Offered', 'Monthly_Value', 'Notes', 'Contact_Email', 'Contact_Name'];
+                        const updatable = ['Business_Name', 'URL', 'Industry', 'Location', 'Lead_Score', 'Audit_Score', 'Funnel_Stage', 'Funding_Signal', 'Source', 'Last_Activity', 'Audit_Report_Path', 'Outreach_Status', 'Product_Offered', 'Monthly_Value', 'Notes', 'Contact_Email', 'Contact_Name', 'QA_Flag'];
                         updatable.forEach(f => {
                             if (data[f] !== undefined && fieldMap[f] !== undefined) {
                                 while (existing.length <= fieldMap[f]) existing.push('');
@@ -1866,7 +1909,7 @@ function updateProspect(req, res, query) {
                         }
 
                         const sheetRow = rowIdx + 1; // 1-indexed
-                        const writeRange = encodeURIComponent(cfg.sheet_tab + `!A${sheetRow}:S${sheetRow}`);
+                        const writeRange = encodeURIComponent(cfg.sheet_tab + `!A${sheetRow}:T${sheetRow}`);
                         const writePath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${writeRange}?valueInputOption=USER_ENTERED`;
                         const writeOpts = { hostname: 'gateway.maton.ai', path: writePath, method: 'PUT', headers: { 'Authorization': `Bearer ${MATON_KEY}`, 'Content-Type': 'application/json' } };
 
@@ -1895,7 +1938,7 @@ function getProspectStats(req, res, query) {
 
     const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
     const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
-    const range = encodeURIComponent(cfg.sheet_tab + '!A1:S500');
+    const range = encodeURIComponent(cfg.sheet_tab + '!A1:T500');
 
     const opts = { hostname: 'gateway.maton.ai', path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
 
@@ -1907,7 +1950,9 @@ function getProspectStats(req, res, query) {
                 const raw = JSON.parse(body);
                 const rows = raw.values || [];
                 const header = rows[0] || [];
-                const data = rows.slice(1).filter(r => r[0] && r[0].trim());
+                const qaIdx = header.indexOf('QA_Flag');
+                // Exclude QA_Flag=T rows from all stats
+                const data = rows.slice(1).filter(r => r[0] && r[0].trim() && (qaIdx === -1 || (r[qaIdx] || '').toUpperCase() !== 'T'));
 
                 const stageIdx = header.indexOf('Funnel_Stage');
                 const scoreIdx = header.indexOf('Audit_Score');
@@ -2719,8 +2764,8 @@ async function getAgentTasks(req, res) {
             { role: 'CEO',            name: 'Sidney',         icon: '👑',  id: 'ceo' },
             { role: 'CTO',            name: 'Steve',          icon: '⚙️',  id: 'cto' },
             { role: 'COO',            name: 'Anita',          icon: '📋',  id: 'anita' },
-            { role: 'CIO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
-            { role: 'Chief Engineer', name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
+            { role: 'CSO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
+            { role: 'CE',             name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
             { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
         ];
@@ -5649,6 +5694,167 @@ function handleCeoIntelBrief(req, res) {
             res.end(JSON.stringify({ error: e.message }));
         }
     });
+}
+
+// ── Audit Click Tracking ────────────────────────────────────────────────
+function getAuditClicks(req, res) {
+    // Read prospect data and find those with "Interested" stage (set by n8n webhook on click)
+    const MC_URL = 'http://localhost:' + (server.address()?.port || 8899);
+    // Query prospects directly from the pipeline
+    try {
+        const prospectsFile = path.join(process.env.HOME, 'openclaw/shared/outreach_queue');
+        const pipelineDir = path.join(process.env.HOME, 'openclaw/shared/config/pipelines');
+
+        // Scan audit dirs for aiso.json (has click data via prospect updates)
+        const auditsDir = path.join(process.env.HOME, 'openclaw/shared/audits/dwe-marketing');
+        const clicks = [];
+        if (fs.existsSync(auditsDir)) {
+            for (const leadDir of fs.readdirSync(auditsDir)) {
+                const auditPath = path.join(auditsDir, leadDir, 'audit.json');
+                const summaryPath = path.join(auditsDir, leadDir, 'AUDIT-SUMMARY.md');
+                if (fs.existsSync(summaryPath)) {
+                    const md = fs.readFileSync(summaryPath, 'utf8');
+                    const nameMatch = md.match(/^# .*?— (.+)$/m);
+                    const scoreMatch = md.match(/Score:\s*([\d.]+)\/100/);
+                    clicks.push({
+                        lead_id: leadDir,
+                        business_name: nameMatch ? nameMatch[1].trim() : leadDir,
+                        audit_score: scoreMatch ? parseFloat(scoreMatch[1]) : 0,
+                        has_report: fs.existsSync(path.join(auditsDir, leadDir, 'AUDIT-REPORT.pdf')),
+                        has_aiso: fs.existsSync(path.join(auditsDir, leadDir, 'aiso.json')),
+                    });
+                }
+            }
+        }
+
+        const json = JSON.stringify({
+            total_audits: clicks.length,
+            with_reports: clicks.filter(c => c.has_report).length,
+            with_aiso: clicks.filter(c => c.has_aiso).length,
+            audits: clicks.slice(-20).reverse(),
+        });
+        sendCompressed(req, res, 200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, Buffer.from(json));
+    } catch (e) {
+        sendCompressed(req, res, 200, { 'Content-Type': 'application/json' }, Buffer.from(JSON.stringify({ error: e.message })));
+    }
+}
+
+// ── Autoresearch Status ─────────────────────────────────────────────────
+function getAutoresearchStatus(req, res) {
+    const baseDir = path.join(process.env.HOME, 'openclaw/shared/config/pipelines/dwe-marketing/autoresearch');
+    const resultsPath = path.join(baseDir, 'results.tsv');
+    const promptLabPath = path.join(baseDir, 'prompt_lab.md');
+    const baselinePath = path.join(baseDir, 'prompt_lab_baseline.md');
+
+    const result = {
+        total_experiments: 0,
+        improvements: 0,
+        best_score: 0,
+        last_experiment: null,
+        recent: [],
+        prompt_changed: false,
+        daemon_loaded: false,
+    };
+
+    // Check if daemon is loaded
+    try {
+        const launchctlOut = require('child_process').execSync('launchctl list 2>/dev/null | grep autoresearch || true', { encoding: 'utf8' });
+        result.daemon_loaded = launchctlOut.includes('ai.dwe.autoresearch');
+    } catch (e) { /* ignore */ }
+
+    // Check if prompt has been modified from baseline
+    try {
+        const lab = fs.readFileSync(promptLabPath, 'utf8');
+        const baseline = fs.readFileSync(baselinePath, 'utf8');
+        result.prompt_changed = lab !== baseline;
+    } catch (e) { /* ignore */ }
+
+    // Parse results.tsv
+    try {
+        const tsv = fs.readFileSync(resultsPath, 'utf8').trim().split('\n');
+        if (tsv.length > 1) {
+            const rows = tsv.slice(1).map(line => {
+                const [exp_id, timestamp, mode, score, baseline, strategy, status, model] = line.split('\t');
+                return { exp_id, timestamp, mode, score: parseFloat(score) || 0, baseline: parseFloat(baseline) || 0, strategy, status, model };
+            });
+            result.total_experiments = rows.length;
+            result.improvements = rows.filter(r => r.status === 'kept').length;
+            const kept = rows.filter(r => r.status === 'kept');
+            result.best_score = kept.length > 0 ? Math.max(...kept.map(r => r.score)) : 0;
+            result.last_experiment = rows[rows.length - 1] || null;
+            result.recent = rows.slice(-10).reverse();
+        }
+    } catch (e) { /* no results yet */ }
+
+    const json = JSON.stringify(result);
+    sendCompressed(req, res, 200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, Buffer.from(json));
+}
+
+// ── TVC Website Button Click Tracking ──────────────────────────────────
+const CLICK_LOG = path.join(__dirname, 'tvc_click_log.json');
+
+function trackButtonClick(req, res) {
+    // Accept GET (from pixel/beacon) or POST
+    const query = url.parse(req.url, true).query || {};
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                logClick(data);
+            } catch(e) {
+                logClick(query);
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end('{"ok":true}');
+        });
+    } else {
+        logClick(query);
+        // Return 1x1 transparent GIF for beacon/img tracking
+        res.writeHead(200, { 'Content-Type': 'image/gif', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' });
+        res.end(Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64'));
+    }
+}
+
+function logClick(data) {
+    const entry = {
+        ts: new Date().toISOString(),
+        page: data.page || 'unknown',
+        button: data.button || 'unknown',
+        href: data.href || '',
+        ua: data.ua || '',
+        ref: data.ref || ''
+    };
+    let log = [];
+    try { log = JSON.parse(fs.readFileSync(CLICK_LOG, 'utf8')); } catch(e) {}
+    log.push(entry);
+    // Keep last 10,000 clicks
+    if (log.length > 10000) log = log.slice(-10000);
+    fs.writeFileSync(CLICK_LOG, JSON.stringify(log, null, 2));
+}
+
+function getClickStats(req, res) {
+    let log = [];
+    try { log = JSON.parse(fs.readFileSync(CLICK_LOG, 'utf8')); } catch(e) {}
+    const today = new Date().toISOString().split('T')[0];
+    const todayClicks = log.filter(e => e.ts.startsWith(today));
+    // Group by button
+    const byButton = {};
+    const byPage = {};
+    log.forEach(e => {
+        byButton[e.button] = (byButton[e.button] || 0) + 1;
+        byPage[e.page] = (byPage[e.page] || 0) + 1;
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.end(JSON.stringify({
+        ok: true,
+        total_clicks: log.length,
+        today_clicks: todayClicks.length,
+        by_button: byButton,
+        by_page: byPage,
+        recent: log.slice(-20).reverse()
+    }));
 }
 
 // Handle errors gracefully

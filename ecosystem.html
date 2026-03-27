@@ -243,6 +243,8 @@
             
             <!-- Command Center to Services -->
             <line class="connection online" x1="600" y1="400" x2="600" y2="550" />
+            <!-- Mac Mini to WordPress -->
+            <line class="connection online" x1="600" y1="400" x2="450" y2="700" />
             
             <!-- Nodes -->
             <!-- Central Hub - Mac Mini -->
@@ -332,6 +334,22 @@
                 <text class="node-label" y="15">AI Team</text>
                 <text class="node-subLabel" y="28">6 Agents</text>
             </g>
+
+            <!-- TVC Website (WordPress) -->
+            <g class="node" transform="translate(450, 700)">
+                <circle class="node-circle online" r="40" />
+                <text class="node-icon" y="-5">🌐</text>
+                <text class="node-label" y="15">WordPress</text>
+                <text class="node-subLabel" y="28">TVC Website</text>
+            </g>
+
+            <!-- AWS SES -->
+            <g class="node" transform="translate(750, 700)">
+                <circle class="node-circle online" r="40" />
+                <text class="node-icon" y="-5">📧</text>
+                <text class="node-label" y="15">AWS SES</text>
+                <text class="node-subLabel" y="28">Email / us-east-1</text>
+            </g>
         </svg>
     </div>
     
@@ -355,11 +373,11 @@
         <h3>System Overview</h3>
         <div class="status-stat">
             <span>Services Online</span>
-            <span class="status-value online">10/10</span>
+            <span class="status-value online">11/11</span>
         </div>
         <div class="status-stat">
             <span>Connections</span>
-            <span class="status-value online">12 Active</span>
+            <span class="status-value online">13 Active</span>
         </div>
         <div class="status-stat">
             <span>Last Check</span>
@@ -377,7 +395,8 @@
             { name: 'GitHub', status: 'online' },
             { name: 'OpenRouter', status: 'online' },
             { name: 'Ollama', status: 'online' },
-            { name: 'MCporter', status: 'online' }
+            { name: 'MCporter', status: 'online' },
+            { name: 'WordPress', status: 'online' }
         ];
         
         function updateStatus() {
