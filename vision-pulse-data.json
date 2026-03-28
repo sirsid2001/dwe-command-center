@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-03-26T08:00:45.783968",
+  "timestamp": "2026-03-27T08:00:37.360004",
   "score": 25,
   "objectives": {
     "SO1: Financial Independence": {
-      "active": 2,
-      "not_started": 43,
+      "active": 3,
+      "not_started": 41,
       "blocked": 0,
       "done_week": 0,
-      "total": 45,
+      "total": 44,
       "status": "ACTIVE",
-      "last_activity": "2026-03-26T03:08:00"
+      "last_activity": "2026-03-27T03:27:00"
     },
     "SO2: DWE Ecosystem": {
       "active": 2,
-      "not_started": 84,
+      "not_started": 77,
       "blocked": 0,
       "done_week": 0,
-      "total": 86,
+      "total": 79,
       "status": "ACTIVE",
-      "last_activity": "2026-03-26T04:11:00"
+      "last_activity": "2026-03-27T03:27:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
@@ -31,12 +31,12 @@
     },
     "SO4: Reserves": {
       "active": 1,
-      "not_started": 19,
+      "not_started": 17,
       "blocked": 0,
       "done_week": 0,
-      "total": 20,
+      "total": 18,
       "status": "ACTIVE",
-      "last_activity": "2026-03-26T03:08:00"
+      "last_activity": "2026-03-27T02:36:00"
     },
     "SO5: Family Trust": {
       "active": 0,
@@ -45,23 +45,23 @@
       "done_week": 0,
       "total": 7,
       "status": "STALE",
-      "last_activity": "2026-03-25T23:31:00"
+      "last_activity": "2026-03-27T03:27:00"
     }
   },
   "sla_violations": [],
   "drift_warnings": [
-    "103 unaligned/untagged tasks (28% drift)",
+    "99 unaligned/untagged tasks (28% drift)",
     "No weekly strategic input detected \u2014 score capped at 50"
   ],
-  "drift_pct": 27.6,
-  "so1_share": 33.3,
+  "drift_pct": 27.9,
+  "so1_share": 42.9,
   "focus_objectives": [
     "SO1",
     "SO2"
   ],
   "early_completion": false,
-  "operational_count": 111,
-  "unaligned_count": 102,
+  "operational_count": 107,
+  "unaligned_count": 98,
   "untagged_count": 1,
   "cadence": {
     "strategic_input": false,

@@ -95,7 +95,7 @@ function buildPage1(data) {
 <div class="sum">${data.summary}</div></div>
 <div class="sec"><div class="sh">Performance Overview</div>${bars}</div>
 <div class="cols"><div class="sec"><div class="sh" style="color:#dc2626">Critical Issues</div>${iss}</div><div class="sec"><div class="sh" style="color:#16a34a">Quick Wins</div>${win}</div></div>
-<div class="cta"><div><div class="ct">Ready to improve your digital presence?</div><div class="cst">Click below to see our services and connect with our team — no obligation.</div></div><a href="https://theveteransconsultant.com/services/?utm_source=audit_report&utm_medium=pdf&utm_campaign=${data.pipeline || 'dwe-marketing'}&utm_content=${data.leadId || ''}&utm_term=get_started" class="cb-btn" style="text-decoration:none;color:#111;display:inline-block;">See Our Services &rarr;</a></div>
+<div class="cta"><div><div class="ct">Your first month — just $49.</div><div class="cst">We'll fix the biggest issues from this audit in 30 days. No contracts. No risk.</div></div><a href="https://theveteransconsultant.com/get-started/?utm_source=audit_report&utm_medium=pdf&utm_campaign=${data.pipeline || 'dwe-marketing'}&utm_content=${data.leadId || ''}&utm_term=intro_offer" class="cb-btn" style="text-decoration:none;color:#111;display:inline-block;">Get Started for $49 &rarr;</a></div>
 <div class="trust-row"><span class="trust-badge">theveteransconsultant.com</span><span class="trust-badge">Veteran-Owned</span><span class="trust-badge">No Contracts</span><span class="trust-badge">30-Day Guarantee</span></div>
 </div>
 <div class="ft"><span>Confidential — Prepared for ${data.businessName} | The Veterans Consultant by DWE</span><span>Page 1 of 2</span></div>
@@ -112,7 +112,7 @@ function buildPage2(data) {
 <div class="logo" style="position:relative;z-index:1">The Veterans Consultant<span class="llc">, LLC</span></div>
 <div class="p2t">Detailed Factor Analysis</div><div class="p2b">${data.businessName} — ${data.url}</div><div class="ha"></div></div>
 <div class="body">${blocks}
-<div class="cta" style="margin-top:16px"><div><div class="ct">Let's fix these together.</div><div class="cst">Visit theveteransconsultant.com to learn more — or reply to Jake's email.</div></div><a href="https://theveteransconsultant.com/services/?utm_source=audit_report&utm_medium=pdf&utm_campaign=${data.pipeline || 'dwe-marketing'}&utm_content=${data.leadId || ''}&utm_term=get_started" class="cb-btn" style="text-decoration:none;color:#111;display:inline-block;">See Our Services &rarr;</a></div>
+<div class="cta" style="margin-top:16px"><div><div class="ct">Let's fix these together — $49 first month.</div><div class="cst">No contracts. If you don't see results in 30 days, you owe us nothing.</div></div><a href="https://theveteransconsultant.com/get-started/?utm_source=audit_report&utm_medium=pdf&utm_campaign=${data.pipeline || 'dwe-marketing'}&utm_content=${data.leadId || ''}&utm_term=intro_offer" class="cb-btn" style="text-decoration:none;color:#111;display:inline-block;">Get Started for $49 &rarr;</a></div>
 </div>
 <div class="ft"><span>Confidential — Prepared for ${data.businessName} | The Veterans Consultant by DWE</span><span>Page 2 of 2</span></div>
 </div>`;

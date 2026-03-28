@@ -11,16 +11,51 @@ const NOTION_API_KEY = (() => {
 })();
 const NOTION_DB_ID = '2f797f89-9129-8068-b8ae-c4321d1c72b7';
 
-// Cache for 5 minutes
+// Cache for stats
 let cachedStats = null;
 let cacheTime = 0;
 const CACHE_DURATION = 60 * 1000; // 1 minute
 
+// Cache for all tasks (expensive — 15s to fetch 1200+ tasks)
+let cachedTasks = null;
+let tasksCacheTime = 0;
+const TASKS_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 async function fetchAllNotionTasks() {
+    // Return cached tasks if fresh (avoids 15s Notion API pagination)
+    const now = Date.now();
+    if (cachedTasks && (now - tasksCacheTime) < TASKS_CACHE_DURATION) {
+        return cachedTasks;
+    }
+
+    // If cache is stale but exists, return stale cache and refresh in background
+    if (cachedTasks) {
+        // Trigger background refresh
+        _refreshTasksInBackground();
+        return cachedTasks;
+    }
+
+    // First load — must wait
+    return await _fetchTasksFromNotion();
+}
+
+let _refreshing = false;
+async function _refreshTasksInBackground() {
+    if (_refreshing) return;
+    _refreshing = true;
+    try {
+        const tasks = await _fetchTasksFromNotion();
+        cachedTasks = tasks;
+        tasksCacheTime = Date.now();
+    } catch(e) { console.error('[DWE Widget] Background refresh failed:', e.message); }
+    _refreshing = false;
+}
+
+async function _fetchTasksFromNotion() {
     const allTasks = [];
     let hasMore = true;
     let nextCursor = null;
-    
+
     while (hasMore && allTasks.length < 3000) {
         const options = {
             hostname: 'api.notion.com',
@@ -80,7 +115,12 @@ async function fetchAllNotionTasks() {
         hasMore = response.has_more;
         nextCursor = response.next_cursor;
     }
-    
+
+    // Cache the results
+    cachedTasks = allTasks;
+    tasksCacheTime = Date.now();
+    console.log(`[DWE Widget] Cached ${allTasks.length} tasks (${Date.now() - tasksCacheTime}ms)`);
+
     return allTasks;
 }
 

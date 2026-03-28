@@ -1,9 +1,9 @@
 {
   "currentVersion": "2026.3.22",
-  "latestVersion": "2026.3.23-2",
+  "latestVersion": "2026.3.24",
   "updateAvailable": true,
-  "lastChecked": "2026-03-25T14:01:10.596Z",
-  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.3.23-2",
+  "lastChecked": "2026-03-27T14:39:59.627Z",
+  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.3.24",
   "releaseNotes": "Multi-channel AI gateway with extensible messaging integrations",
   "dweImpact": null,
   "actions": [

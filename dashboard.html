@@ -1070,7 +1070,7 @@
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-server" style="color: #00ff88;">Online</div>
                         </div>
-                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.2rem;" id="stat-memory">— MB</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:#ffffff; margin-top:0.3rem;" id="stat-memory">— MB RAM</div>
                     </div>
                     <div class="stat-icon">🟢</div>
                 </div>
@@ -1080,7 +1080,7 @@
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-agents">6</div>
                         </div>
-                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.2rem;" id="stat-gateway">Checking...</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:#00dcff; margin-top:0.3rem;" id="stat-gateway">Checking...</div>
                     </div>
                     <div class="stat-icon">🤖</div>
                 </div>
@@ -1090,9 +1090,19 @@
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-inprogress">—</div>
                         </div>
-                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.4); margin-top:0.2rem;" id="stat-overdue">Loading Notion...</div>
+                        <div style="font-size:1.1rem; font-weight:700; color:#F5A623; margin-top:0.3rem;" id="stat-overdue">Loading Notion...</div>
                     </div>
                     <div class="stat-icon">📋</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Jarvis Delegations</div>
+                        <div class="stat-value-row">
+                            <div class="stat-value" id="stat-jarvis-today" style="color:#7B61FF;">—</div>
+                        </div>
+                        <div style="font-size:1.1rem; font-weight:700; margin-top:0.3rem;"><span id="stat-jarvis-month" style="color:#00dcff;">—</span> <span style="color:rgba(255,255,255,0.35);font-size:0.75rem;font-weight:400;">mo</span> · <span id="stat-jarvis-total" style="color:#F5A623;">—</span> <span style="color:rgba(255,255,255,0.35);font-size:0.75rem;font-weight:400;">total</span></div>
+                    </div>
+                    <div class="stat-icon">⚡</div>
                 </div>
                 <div class="stat-card brain" style="padding:1.2rem 1.3rem;">
                     <div class="stat-content">
@@ -1365,7 +1375,7 @@
                                     <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DO ↗</a>
                                     <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n ↗</a>
                                     <button onclick="fetchDOMetrics(true)" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">🔄</button>
-                                    <button id="n8n-optimize-btn" onclick="runSystemOptimize()" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
+                                    <button id="n8n-optimize-btn" onclick="runVpsOptimize()" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
                                 </div>
                                 <div id="n8n-optimize-result" style="display:none; margin-top:0.4rem; font-size:0.55rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
                             </div>
@@ -1556,6 +1566,24 @@
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
                         </a>
+                    </div>
+                    <!-- Row 2: GA4 Website Traffic -->
+                    <div id="ga4-widget" style="margin-top:0.8rem; background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2); border-radius:8px; padding:0.75rem 0.85rem;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+                            <div style="display:flex;align-items:center;gap:0.4rem;">
+                                <span style="font-size:0.75rem;">🌐</span>
+                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">TVC Website</span>
+                                <span id="ga4-trend" style="font-size:0.7rem;font-weight:700;margin-left:0.3rem;">—</span>
+                            </div>
+                            <span id="ga4-updated" style="font-size:0.5rem;color:rgba(255,255,255,0.25);"></span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.6rem;text-align:center;">
+                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Sessions</div><div id="ga4-sessions" style="color:#bb66ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-sessions-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Users</div><div id="ga4-users" style="color:#aa55ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-users-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Pageviews</div><div id="ga4-pageviews" style="color:#cc77ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-pageviews-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Bounce</div><div id="ga4-bounce" style="color:#9944ee;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div style="font-size:0.5rem;color:rgba(255,255,255,0.2);">rate</div></div>
+                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Top Page</div><div id="ga4-top-page" style="color:#dd88ff;font-size:0.7rem;font-weight:600;font-family:monospace;word-break:break-all;">—</div><div id="ga4-top-views" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2195,11 +2223,51 @@
                 </div>
             </div>
 
-            <!-- Autoresearch — Email Prompt Optimizer -->
-            <div class="service-panel" id="autoresearch-card" style="margin-bottom:1.5rem;">
+            <!-- Jake Inbox + Email Optimizer — same row -->
+            <div class="services-grid" style="margin-bottom:1.5rem;grid-template-columns:1fr 1fr;">
+            <div class="service-panel" id="jake-inbox-card">
+                <div class="panel-header">
+                    <div class="panel-icon">📧</div>
+                    <div class="panel-title">Jake Inbox</div>
+                    <div id="jake-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</div>
+                </div>
+                <div style="padding:0.6rem 0.85rem;">
+                    <!-- Stats row -->
+                    <div style="display:flex;gap:1rem;margin-bottom:0.75rem;">
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#F5A623;" id="jake-sent-count">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Sent</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#00dcff;" id="jake-inbound-count">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Replies</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#16a34a;" id="jake-unanswered-count">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Unanswered</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#cc00ff;" id="jake-queue-count">—</div>
+                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Queued</div>
+                        </div>
+                    </div>
+                    <!-- Recent messages -->
+                    <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Recent Activity</div>
+                    <div id="jake-inbox-list" style="display:flex;flex-direction:column;gap:0.25rem;max-height:160px;overflow-y:auto;">
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Loading...</div>
+                    </div>
+                </div>
+                <div class="panel-footer" style="font-size:0.6rem;color:rgba(255,255,255,0.3);padding:0.4rem 0.85rem;display:flex;justify-content:space-between;align-items:center;">
+                    <span id="jake-health">—</span>
+                    <span style="font-family:monospace;color:rgba(255,255,255,0.2);">jakem@tvcpulse.com</span>
+                </div>
+            </div>
+
+            <!-- Email Optimizer — Email Prompt Optimizer -->
+            <div class="service-panel" id="autoresearch-card">
                 <div class="panel-header">
                     <div class="panel-icon">🔬</div>
-                    <div class="panel-title">Autoresearch</div>
+                    <div class="panel-title">Email Optimizer</div>
                     <div id="autoresearch-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</div>
                 </div>
                 <div style="padding:0.6rem 0.85rem;">
@@ -2233,6 +2301,7 @@
                     <span style="font-family:monospace;color:rgba(255,255,255,0.2);">dwe-marketing / dry</span>
                 </div>
             </div>
+            </div><!-- close Jake+Email Optimizer grid row -->
 
             <!-- Daemon Health -->
             <div class="service-panel" id="daemon-health-card" style="margin-bottom:1.5rem;">
@@ -3884,6 +3953,73 @@
             }
         }
 
+        // ── Jake Inbox Dashboard ──────────────────────────────────────────────
+        async function fetchJakeInbox() {
+            try {
+                const r = await fetch('/mc/jake-inbox');
+                if (!r.ok) return;
+                const d = await r.json();
+                if (!d.ok) return;
+
+                const sc = document.getElementById('jake-sent-count'); if (sc) sc.textContent = d.outbound?.count || 0;
+                const ic = document.getElementById('jake-inbound-count'); if (ic) ic.textContent = d.inbound?.count || 0;
+                document.getElementById('jake-unanswered-count').textContent = d.unanswered?.count || 0;
+                document.getElementById('jake-queue-count').textContent = d.queue?.pending || 0;
+
+                // Color unanswered
+                const uaEl = document.getElementById('jake-unanswered-count');
+                uaEl.style.color = d.unanswered?.count > 0 ? '#dc2626' : '#16a34a';
+
+                // Badge
+                const badge = document.getElementById('jake-daemon-badge');
+                if (d.health?.status === 'WARNING') {
+                    badge.textContent = '⚠ action needed';
+                    badge.style.background = 'rgba(220,38,38,0.15)';
+                    badge.style.color = '#ff6b6b';
+                } else {
+                    badge.textContent = '✓ healthy';
+                    badge.style.background = 'rgba(22,163,74,0.15)';
+                    badge.style.color = '#00ff88';
+                }
+
+                // Build list — match Email Optimizer format (compact rows with colored dots)
+                const list = document.getElementById('jake-inbox-list');
+                let html = '';
+
+                const allMessages = [
+                    ...(d.unanswered?.messages || []).map(m => ({...m, type: 'unanswered'})),
+                    ...(d.inbound?.recent || []).slice(0, 4).map(m => ({...m, type: 'inbound'})),
+                ];
+
+                // Dedupe by id
+                const seen = new Set();
+                const unique = allMessages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+
+                unique.slice(0, 5).forEach(m => {
+                    const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 25);
+                    const subj = (m.subject || '').substring(0, 35);
+                    const color = m.type === 'unanswered' ? '#dc2626' : m.unread ? '#00dcff' : 'rgba(255,255,255,0.25)';
+                    const dot = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + color + ';margin-right:6px;flex-shrink:0;"></span>';
+                    html += '<div style="display:flex;align-items:center;font-size:0.7rem;color:rgba(255,255,255,0.6);padding:0.15rem 0;">' + dot + '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + from + ' — ' + subj + '</span></div>';
+                });
+
+                if (!html) html = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No inbound messages yet</div>';
+                list.innerHTML = html;
+
+                // Health footer
+                const healthEl = document.getElementById('jake-health');
+                if (d.health?.status === 'WARNING') {
+                    healthEl.textContent = '⚠ ' + d.health.unanswered_count + ' unanswered';
+                    healthEl.style.color = '#dc2626';
+                } else {
+                    healthEl.textContent = '✓ ' + (d.queue?.sent || 0) + ' sent · ' + (d.queue?.pending || 0) + ' pending';
+                    healthEl.style.color = 'rgba(255,255,255,0.3)';
+                }
+            } catch(e) {
+                document.getElementById('jake-inbox-list').innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span style="color:#dc2626;">Error: ' + e.message + '</span></div>';
+            }
+        }
+
         // ── Revenue & Pipeline tile ──────────────────────────────────────────
         async function fetchRevenuePipeline() {
             let failures = 0;
@@ -3906,6 +4042,7 @@
                     const ltStreams = (incRes.longterm_streams || []).filter(st => st.Stream_Name && (st.Status || '').includes('Active'));
                     document.getElementById('rev-lt-label').textContent = ltStreams.length + ' stream' + (ltStreams.length !== 1 ? 's' : '') + ' · monthly';
                     // Stream mini-cards inside each panel
+                    const getStreamUrl = (st) => st.Source_URL || '/revenue';
                     const buildMiniCard = (st, borderColor) => {
                         const name = (st.Stream_Name || '').replace(/^(Crypto: |BYTNEX |Bytnex )/i, '');
                         const daily = parseDollar(st['1_Day']);
@@ -3914,10 +4051,11 @@
                         const roiNum = parseFloat(roi);
                         const roiColor = isNaN(roiNum) ? '#888' : roiNum >= 0 ? '#00ff88' : '#ff4444';
                         const arrow = isNaN(roiNum) ? '' : roiNum >= 0 ? '▲' : '▼';
+                        const url = getStreamUrl(st);
                         return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${borderColor};border-radius:6px;padding:0.5rem 0.6rem;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
                                 <span style="font-size:0.65rem;font-weight:600;color:#e0e0e0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;">${name}</span>
-                                <span style="font-size:0.6rem;color:${roiColor};font-family:monospace;font-weight:600;">${arrow} ${roi}</span>
+                                <a href="${url}" target="_blank" style="font-size:0.55rem;color:${roiColor};font-family:monospace;font-weight:600;text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">${arrow || '↗'} ${roi !== '—' ? roi : 'Open'}</a>
                             </div>
                             <div style="display:flex;justify-content:space-between;font-size:0.55rem;">
                                 <span style="color:rgba(255,255,255,0.35);">Daily <span style="color:#00ff88;font-family:monospace;font-weight:600;">${fmtCur(daily)}</span></span>
@@ -4597,6 +4735,7 @@
             try {
                 const d = await fetch('/mc/heartbeat').then(r => r.json());
                 const list = document.getElementById('heartbeat-list');
+                if (!list) return;
                 list.innerHTML = '';
                 d.agents.forEach(a => {
                     const dotClass = a.status === 'ok' ? '' : a.status === 'stale' ? ' error' : ' offline';
@@ -4614,7 +4753,7 @@
                     </div>`;
                 });
             } catch(e) {
-                document.getElementById('heartbeat-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+                const hbEl = document.getElementById('heartbeat-list'); if (hbEl) hbEl.innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
             }
         }
 
@@ -5113,7 +5252,7 @@
                     </div>`;
                 }).join('');
             } catch(e) {
-                document.getElementById('agent-tasks-grid').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+                const errGrid = document.getElementById('agent-tasks-grid'); if (errGrid) errGrid.innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
             }
         }
 
@@ -5122,6 +5261,7 @@
             try {
                 const d = await fetch('/mc/acp').then(r => r.json());
                 const list = document.getElementById('acp-agent-list');
+                if (!list) return;
                 if (!d.agents || !d.agents.length) {
                     list.innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span>No session data</span></div>';
                     return;
@@ -5146,7 +5286,7 @@
                     </div>`;
                 }).join('');
             } catch (e) {
-                document.getElementById('acp-agent-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+                const acpEl = document.getElementById('acp-agent-list'); if (acpEl) acpEl.innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
             }
         }
 
@@ -5490,6 +5630,9 @@
         // Auto-refresh pipeline every 30s
         setInterval(fetchPipeline, 30000);
 
+        // Auto-refresh Jake inbox every 5 minutes
+        setInterval(fetchJakeInbox, 300000);
+
         // ── /mc/digitalocean-status → droplet health metrics ──────────────
         async function fetchDOMetrics(forceRefresh) {
             const panel = document.getElementById('do-metrics-content');
@@ -5631,13 +5774,39 @@
 
         // ── System Optimize ──────────────────────────────────────────────
         async function runSystemOptimize() {
-            const btn = document.getElementById('optimize-btn');
-            const result = document.getElementById('optimize-result');
+            // Update both panels (Mac Mini + n8n)
+            const btns = [document.getElementById('optimize-btn'), document.getElementById('n8n-optimize-btn')].filter(Boolean);
+            const results = [document.getElementById('optimize-result'), document.getElementById('n8n-optimize-result')].filter(Boolean);
+            btns.forEach(b => { b.textContent = '⏳ Running...'; b.disabled = true; });
+            results.forEach(r => r.style.display = 'none');
+            try {
+                const d = await fetch('/mc/system-optimize', { method: 'POST' }).then(r => r.json());
+                results.forEach(r => r.style.display = 'block');
+                if (d.ok) {
+                    btns.forEach(b => { b.textContent = '✅ Done'; b.style.color = '#00ff88'; b.style.borderColor = 'rgba(0,255,136,0.3)'; });
+                    results.forEach(r => r.innerHTML = (d.steps || []).map(s => `<div>✓ ${s}</div>`).join(''));
+                } else {
+                    btns.forEach(b => { b.textContent = '⚠️ Error'; b.style.color = '#f5a623'; });
+                    results.forEach(r => r.innerHTML = `<div style="color:#f5a623;">${d.error || 'Unknown error'}</div>`);
+                }
+            } catch(e) {
+                btns.forEach(b => { b.textContent = '⚠️ Error'; });
+                results.forEach(r => { r.style.display = 'block'; r.innerHTML = `<div style="color:#f5a623;">${e.message}</div>`; });
+            }
+            setTimeout(() => {
+                btns.forEach(b => { b.textContent = '⚡ Optimize'; b.disabled = false; b.style.color = '#ffa028'; b.style.borderColor = 'rgba(255,160,40,0.3)'; });
+            }, 8000);
+        }
+
+        // ── VPS Optimize (n8n panel) ────────────────────────────────────────
+        async function runVpsOptimize() {
+            const btn = document.getElementById('n8n-optimize-btn');
+            const result = document.getElementById('n8n-optimize-result');
             btn.textContent = '⏳ Running...';
             btn.disabled = true;
             result.style.display = 'none';
             try {
-                const d = await fetch('/mc/system-optimize', { method: 'POST' }).then(r => r.json());
+                const d = await fetch('/mc/vps-optimize', { method: 'POST' }).then(r => r.json());
                 result.style.display = 'block';
                 if (d.ok) {
                     btn.textContent = '✅ Done';
@@ -5747,7 +5916,7 @@
             fetchSprintStatus();
         }
 
-        async function fetchAutoresearch() {
+        async function fetchEmailOptimizer() {
             try {
                 const data = await fetch('/mc/autoresearch').then(r => r.json());
                 // Stats
@@ -5838,13 +6007,72 @@
                 fetchOpenclawVersion(),
                 fetchDOMetrics(),
                 fetchRevenuePipeline(),
+                fetchJakeInbox(),
                 fetchN8nWorkflows(),
                 fetchTailscale(),
                 fetchN8nUptime(),
                 fetchTunnels(),
-                fetchAutoresearch()
+                fetchEmailOptimizer(),
+                fetchGA4(),
+                fetchJarvisStats()
             ]);
             // refresh complete
+        }
+
+        async function fetchJarvisStats() {
+            try {
+                const d = await fetch('/mc/jarvis-stats').then(r => r.json());
+                const el = (id) => document.getElementById(id);
+                if (el('stat-jarvis-today')) el('stat-jarvis-today').textContent = d.today || 0;
+                if (el('stat-jarvis-month')) el('stat-jarvis-month').textContent = d.thisMonth || 0;
+                if (el('stat-jarvis-total')) el('stat-jarvis-total').textContent = d.total || 0;
+                // byAgent breakdown available at /mc/jarvis-stats
+            } catch(e) {}
+        }
+
+        // ── GA4 Website Traffic Widget ──────────────────────────────────────
+        async function fetchGA4() {
+            try {
+                const r = await fetch('/mc/ga4');
+                const d = await r.json();
+                if (d.error) return;
+                const tw = d.thisWeek || {};
+                const lw = d.lastWeek || {};
+                const dl = d.deltas || {};
+                const fmt = (v) => v !== undefined ? v : '—';
+                const delta = (v) => {
+                    if (v === undefined || v === 0) return '';
+                    const arrow = v > 0 ? '↑' : '↓';
+                    const color = v > 0 ? '#00ff88' : '#ff4444';
+                    return `<span style="color:${color}">${arrow}${Math.abs(v)}%</span>`;
+                };
+                // Overall trend
+                const sessD = dl.sessions || 0;
+                const trendEl = document.getElementById('ga4-trend');
+                if (trendEl) {
+                    if (sessD > 0) trendEl.innerHTML = `<span style="color:#00ff88">↑ ${sessD}%</span>`;
+                    else if (sessD < 0) trendEl.innerHTML = `<span style="color:#ff4444">↓ ${Math.abs(sessD)}%</span>`;
+                    else trendEl.textContent = '—';
+                }
+                const s = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = fmt(val); };
+                const h = (id, val) => { const e = document.getElementById(id); if (e) e.innerHTML = val; };
+                s('ga4-sessions', tw.sessions);
+                s('ga4-users', tw.users);
+                s('ga4-pageviews', tw.pageviews);
+                s('ga4-bounce', tw.bounceRate !== undefined ? tw.bounceRate + '%' : '—');
+                h('ga4-sessions-delta', delta(dl.sessions));
+                h('ga4-users-delta', delta(dl.users));
+                h('ga4-pageviews-delta', delta(dl.pageviews));
+                if (d.topPages && d.topPages[0]) {
+                    s('ga4-top-page', d.topPages[0].path);
+                    s('ga4-top-views', d.topPages[0].views + ' views');
+                }
+                if (d.updated) {
+                    const u = new Date(d.updated);
+                    const e = document.getElementById('ga4-updated');
+                    if (e) e.textContent = 'Updated ' + u.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+                }
+            } catch(e) {}
         }
 
         // ── CSS1 Sea Life Background ──────────────────────────────────────────

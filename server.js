@@ -584,6 +584,25 @@ const server = http.createServer((req, res) => {
                 res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
             }
             break;
+        case '/mc/vps-optimize':
+            if (req.method === 'POST') {
+                const { exec: execVps } = require('child_process');
+                const vpsScript = path.join(__dirname, 'vps_optimize.sh');
+                execVps(`bash "${vpsScript}"`, { timeout: 30000, env: { HOME: process.env.HOME, PATH: '/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin' } }, (err, stdout, stderr) => {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    try {
+                        const lines = stdout.trim().split('\n');
+                        const jsonLine = lines[lines.length - 1];
+                        const result = JSON.parse(jsonLine);
+                        res.end(JSON.stringify(result));
+                    } catch(e) {
+                        res.end(JSON.stringify({ ok: false, error: err ? err.message : 'parse error', raw: stdout.slice(0, 300) }));
+                    }
+                });
+            } else {
+                res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));
+            }
+            break;
         case '/mc/n8n-workflows':
             getN8nWorkflows(req, res);
             break;
@@ -737,6 +756,12 @@ const server = http.createServer((req, res) => {
         case '/mc/outreach-queue':
             getOutreachQueue(req, res, parsedUrl.query);
             break;
+        case '/mc/jarvis-stats':
+            getJarvisStats(req, res);
+            break;
+        case '/mc/jarvis-log':
+            logJarvisDelegation(req, res);
+            break;
         case '/mc/outreach-approve':
             approveOutreachEmail(req, res);
             break;
@@ -813,6 +838,10 @@ const server = http.createServer((req, res) => {
             }
             break;
         }
+        // ── Jake Email Dashboard ──────────────────────────────────────────
+        case '/mc/jake-inbox':
+            getJakeInbox(req, res);
+            break;
         // ── Proposal & Deal Management endpoints ────────────────────────
         case '/mc/proposal-queue':
             getProposalQueue(req, res);
@@ -875,6 +904,40 @@ const server = http.createServer((req, res) => {
 });
 
 // ── Night Mode — start/stop via Alexa → HA → MC ─────────────────────
+// ── Jarvis Delegation Stats ──────────────────────────────────────────
+const JARVIS_LOG_FILE = path.join(process.env.HOME, 'openclaw/logs/jarvis-delegations.jsonl');
+function logJarvisDelegation(req, res) {
+    if (req.method !== 'POST') { res.writeHead(405); res.end('POST only'); return; }
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+        try {
+            const entry = JSON.parse(body);
+            entry.logged_at = new Date().toISOString();
+            fs.appendFileSync(JARVIS_LOG_FILE, JSON.stringify(entry) + '\n');
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true }));
+        } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
+    });
+}
+function getJarvisStats(req, res) {
+    try {
+        const lines = fs.existsSync(JARVIS_LOG_FILE) ? fs.readFileSync(JARVIS_LOG_FILE, 'utf8').trim().split('\n').filter(Boolean) : [];
+        const entries = lines.map(l => { try { return JSON.parse(l); } catch(e) { return null; } }).filter(Boolean);
+        const today = new Date().toISOString().slice(0, 10);
+        const thisWeek = entries.filter(e => e.logged_at && e.logged_at >= today.slice(0,8) + '01');
+        const todayEntries = entries.filter(e => e.logged_at && e.logged_at.startsWith(today));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            total: entries.length,
+            today: todayEntries.length,
+            thisMonth: thisWeek.length,
+            recent: entries.slice(-5).reverse(),
+            byAgent: entries.reduce((acc, e) => { const a = e.source || e.agent || '?'; acc[a] = (acc[a]||0)+1; return acc; }, {})
+        }));
+    } catch(e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
+}
+
 function handleNightMode(req, res) {
     const STATE_FILE = path.join(process.env.HOME, 'openclaw/shared/night_mode.json');
     if (req.method === 'GET') {
@@ -1115,23 +1178,28 @@ function handleWF2Config(req, res) {
 
 // DWE Widget Status Handler
 async function handleDWEStatus(req, res) {
+    const timeoutMs = 8000;
+    const fallback = {
+        total: 1214, completed: 973, inProgress: 7, remaining: 234,
+        maxIdNumber: 1743, lastUpdated: new Date().toISOString(),
+        source: 'cache-fallback'
+    };
     try {
-        const stats = await getDWEStats();
-        res.writeHead(200, { 
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-        });
+        const statsPromise = getDWEStats();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), timeoutMs));
+        const stats = await Promise.race([statsPromise, timeoutPromise]);
+        // Cache last good result
+        handleDWEStatus._cache = stats;
+        handleDWEStatus._cacheTime = Date.now();
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
         res.end(JSON.stringify(stats));
     } catch (e) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ 
-            error: 'Failed to fetch stats',
-            total: 1020,
-            completed: 562,
-            inProgress: 4,
-            remaining: 458,
-            lastUpdated: new Date().toISOString()
-        }));
+        // Return cached result if available, otherwise fallback
+        const cached = handleDWEStatus._cache || fallback;
+        cached.stale = true;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(cached));
     }
 }
 
@@ -1189,6 +1257,30 @@ function getIncomeOps(req, res) {
                     return obj;
                 });
 
+                // Fetch hyperlinks from Source Platform column (C5:C50)
+                const hlPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}?ranges=IncomeOps_Monitor!C5:C50&fields=sheets.data.rowData.values.hyperlink,sheets.data.rowData.values.formattedValue`;
+                const hlOpts = { hostname: 'gateway.maton.ai', path: hlPath, method: 'GET', headers: { 'Authorization': `Bearer ${MATON_KEY}` } };
+                const hlReq = https.request(hlOpts, (hlRes) => {
+                    let hlBody = '';
+                    hlRes.on('data', c => hlBody += c);
+                    hlRes.on('end', () => {
+                        try {
+                            const hlData = JSON.parse(hlBody);
+                            const rowData = (hlData.sheets && hlData.sheets[0] && hlData.sheets[0].data && hlData.sheets[0].data[0] && hlData.sheets[0].data[0].rowData) || [];
+                            rowData.forEach((rd, i) => {
+                                if (i < streams.length && rd.values && rd.values[0] && rd.values[0].hyperlink) {
+                                    streams[i].Source_URL = rd.values[0].hyperlink;
+                                }
+                            });
+                        } catch(e) { /* hyperlink fetch failed, continue without */ }
+
+                        finishIncomeOps();
+                    });
+                });
+                hlReq.on('error', () => finishIncomeOps());
+                hlReq.end();
+
+                function finishIncomeOps() {
                 // Split streams by Income Type
                 const cashflowStreams = streams.filter(s => s.Income_Type === 'Cash Flow');
                 const longtermStreams = streams.filter(s => s.Income_Type !== 'Cash Flow');
@@ -1228,6 +1320,7 @@ function getIncomeOps(req, res) {
                     summary,
                     updated: new Date().toISOString()
                 }));
+                } // end finishIncomeOps
             } catch(e) {
                 res.writeHead(500, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
@@ -5736,6 +5829,101 @@ function getAuditClicks(req, res) {
         sendCompressed(req, res, 200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, Buffer.from(json));
     } catch (e) {
         sendCompressed(req, res, 200, { 'Content-Type': 'application/json' }, Buffer.from(JSON.stringify({ error: e.message })));
+    }
+}
+
+// ── Jake Email Dashboard — real-time inbox status via Gmail API ─────────
+function getJakeInbox(req, res) {
+    const { execSync } = require('child_process');
+    try {
+        const script = `
+import json, os, base64
+from datetime import datetime, timezone
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+token_path = os.path.expanduser("~/.openclaw/skills/gmail-api/token.json")
+creds = Credentials.from_authorized_user_file(token_path, ["https://www.googleapis.com/auth/gmail.modify"])
+service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+
+# 1. Emails SENT by Jake (outbound)
+sent = service.users().messages().list(userId="me", q="from:jakem@tvcpulse.com", maxResults=50).execute()
+sent_msgs = []
+for m in sent.get("messages", [])[:20]:
+    meta = service.users().messages().get(userId="me", id=m["id"], format="metadata",
+        metadataHeaders=["To","Subject","Date"]).execute()
+    h = {x["name"]: x["value"] for x in meta.get("payload",{}).get("headers",[])}
+    sent_msgs.append({"to": h.get("To",""), "subject": h.get("Subject",""), "date": h.get("Date",""), "id": m["id"]})
+
+# 2. Emails TO Jake (inbound/replies)
+inbound = service.users().messages().list(userId="me", q="to:jakem@tvcpulse.com -from:jakem@tvcpulse.com", maxResults=50).execute()
+inbound_msgs = []
+for m in inbound.get("messages", [])[:20]:
+    meta = service.users().messages().get(userId="me", id=m["id"], format="metadata",
+        metadataHeaders=["From","Subject","Date"]).execute()
+    h = {x["name"]: x["value"] for x in meta.get("payload",{}).get("headers",[])}
+    labels = meta.get("labelIds", [])
+    inbound_msgs.append({
+        "from": h.get("From",""), "subject": h.get("Subject",""), "date": h.get("Date",""),
+        "id": m["id"], "unread": "UNREAD" in labels
+    })
+
+# 3. Unanswered — inbound with no reply in thread
+unanswered = []
+for msg in inbound_msgs:
+    thread = service.users().threads().get(userId="me", id=service.users().messages().get(
+        userId="me", id=msg["id"], format="minimal").execute().get("threadId",""),
+        format="metadata", metadataHeaders=["From"]).execute()
+    thread_froms = set()
+    for tm in thread.get("messages",[]):
+        for h in tm.get("payload",{}).get("headers",[]):
+            if h["name"] == "From":
+                thread_froms.add(h["value"].lower())
+    # If Jake never replied in this thread, it's unanswered
+    jake_replied = any("jakem@tvcpulse.com" in f for f in thread_froms if "jakem" in f)
+    has_reply_from_us = any("sirsid2001" in f or "theveteransconsultant" in f for f in thread_froms)
+    if not jake_replied and not has_reply_from_us:
+        unanswered.append(msg)
+
+# 4. Outreach queue stats
+queue_dir = os.path.expanduser("~/openclaw/shared/outreach_queue")
+queue_files = [f for f in os.listdir(queue_dir) if f.endswith(".json")] if os.path.isdir(queue_dir) else []
+queue_stats = {"total": 0, "sent": 0, "pending": 0, "failed": 0}
+for qf in queue_files:
+    try:
+        item = json.load(open(os.path.join(queue_dir, qf)))
+        queue_stats["total"] += 1
+        status = item.get("status", "")
+        if status == "sent": queue_stats["sent"] += 1
+        elif status == "send_failed": queue_stats["failed"] += 1
+        else: queue_stats["pending"] += 1
+    except: pass
+
+result = {
+    "ok": True,
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "outbound": {"count": len(sent_msgs), "recent": sent_msgs[:10]},
+    "inbound": {"count": len(inbound_msgs), "recent": inbound_msgs[:10], "unread": sum(1 for m in inbound_msgs if m.get("unread"))},
+    "unanswered": {"count": len(unanswered), "messages": unanswered[:10]},
+    "queue": queue_stats,
+    "health": {
+        "status": "WARNING" if len(unanswered) > 0 else "OK",
+        "unanswered_count": len(unanswered),
+        "oldest_unanswered": unanswered[-1]["date"] if unanswered else None
+    }
+}
+
+print(json.dumps(result))
+`;
+        const result = execSync(`python3 -c '${script.replace(/'/g, "'\\''")}'`, {
+            timeout: 30000,
+            env: { ...process.env, HOME: process.env.HOME }
+        }).toString();
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' });
+        res.end(result);
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message?.substring(0, 300) || 'Unknown error' }));
     }
 }
 
