@@ -127,7 +127,7 @@ body{font-family:'Inter',sans-serif;background:#050814;color:#1B1624;-webkit-fon
 .pg{width:794px;height:1123px;position:relative;display:flex;flex-direction:column;overflow:hidden;page-break-after:always;background:#050814}
 
 /* ═══ HEADER (dark + waves) ═══ */
-.hdr{background:linear-gradient(160deg,#08051a,#0c0828 30%,#150a30 60%,#1a0835 80%,#120625);padding:36px 48px 28px;color:#fff;position:relative;overflow:hidden}
+.hdr{background:url('https://theveteransconsultant.com/wp-content/uploads/2026/03/tvc-proposal-header-bg-scaled.png') center center / cover no-repeat,linear-gradient(160deg,#08051a,#0c0828 30%,#150a30 60%,#1a0835 80%,#120625);padding:36px 48px 28px;color:#fff;position:relative;overflow:hidden}
 .hdr2{padding:22px 48px 18px}
 .hw{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .ht{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative;z-index:1}
@@ -145,7 +145,7 @@ body{font-family:'Inter',sans-serif;background:#050814;color:#1B1624;-webkit-fon
 
 /* ═══ BODY (cream/light) ═══ */
 .body{padding:24px 48px;flex:1;background:#FAF7F2}
-.p2 .body{background:linear-gradient(180deg,#050814 0%,#0d0a1f 30%,#1a0e2e 50%,#0d0a1f 70%,#050814 100%)}
+.p2 .body{background:url('https://theveteransconsultant.com/wp-content/uploads/2026/03/tvc-proposal-header-bg-scaled.png') center center / cover no-repeat fixed,linear-gradient(180deg,#050814 0%,#0d0a1f 30%,#1a0e2e 50%,#0d0a1f 70%,#050814 100%)}
 
 /* Score row */
 .score-row{display:flex;align-items:center;gap:22px;margin-bottom:0;padding:20px 24px;background:#0a0e1a;border-bottom:1px solid #1a1f35;border-radius:0;margin:-24px -48px 24px;padding:24px 48px}
