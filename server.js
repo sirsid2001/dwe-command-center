@@ -651,6 +651,16 @@ const server = http.createServer((req, res) => {
         case '/mc/acp':
             getAgentSessions(req, res);
             break;
+        case '/mc/agent-model':
+            if (req.method === 'POST') {
+                setAgentModel(req, res);
+            } else if (req.method === 'GET') {
+                getAgentModels(req, res);
+            } else {
+                res.writeHead(405, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Method not allowed' }));
+            }
+            break;
         case '/mc/income-ops':
             getIncomeOps(req, res);
             break;
@@ -1337,6 +1347,71 @@ function getIncomeOps(req, res) {
 }
 
 // ── MQT Price — fetches live MQT price from DexScreener ───────────────
+// MQT constants for sheet sync
+const MQT_HOLDINGS = 1300;       // total MQT in Golden Hatchery
+const MQT_COMPOUND_RATE = 0.0022; // 0.22% daily compound rate
+const MQT_CYCLE_DAYS = 210;       // cycle length
+const MQT_ORIGINAL_COST = 7850;   // original USD investment
+
+function syncMqtPriceToSheet(price) {
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+
+    // Compound interest: MQT earned = holdings * ((1+rate)^days - 1)
+    const r = 1 + MQT_COMPOUND_RATE;
+    const day1Mqt = MQT_HOLDINGS * MQT_COMPOUND_RATE;
+    const day7Mqt = MQT_HOLDINGS * (Math.pow(r, 7) - 1);
+    const day30Mqt = MQT_HOLDINGS * (Math.pow(r, 30) - 1);
+    const cycleMqt = MQT_HOLDINGS * (Math.pow(r, MQT_CYCLE_DAYS) - 1);
+    // 365d = 1 full cycle + 155 days of next cycle (principal resets)
+    const day155Mqt = MQT_HOLDINGS * (Math.pow(r, 155) - 1);
+    const day365Mqt = cycleMqt + day155Mqt;
+    const endBalance = Math.round(MQT_HOLDINGS * Math.pow(r, MQT_CYCLE_DAYS));
+
+    const staked = Math.round(MQT_HOLDINGS * price);
+    const daily = '$' + (day1Mqt * price).toFixed(2);
+    const weekly = '$' + Math.round(day7Mqt * price);
+    const monthly = '$' + Math.round(day30Mqt * price);
+    const yearly = '$' + Math.round(day365Mqt * price).toLocaleString();
+    const projUnits = endBalance.toLocaleString() + ' MQT';
+    const profit = Math.round(staked - MQT_ORIGINAL_COST);
+    const cyclEarn = Math.round(cycleMqt * price);
+    const priceStr = price.toFixed(2);
+
+    // Batch update: J11 (unit price), H12:R12 (hatchery values), B18:B20 (scenarios)
+    const batchBody = JSON.stringify({
+        valueInputOption: 'RAW',
+        data: [
+            { range: 'IncomeOps_Monitor!J11', values: [['$' + priceStr]] },
+            { range: 'IncomeOps_Monitor!H12:Q12', values: [[
+                '$' + staked.toLocaleString(), '$0', MQT_HOLDINGS + ' MQT', day1Mqt.toFixed(4) + ' MQT', 'Y',
+                daily, weekly, monthly, yearly, projUnits
+            ]] },
+            { range: 'IncomeOps_Monitor!R12', values: [[
+                (profit >= 0 ? '$' : '-$') + Math.abs(profit).toLocaleString()
+            ]] },
+            { range: 'IncomeOps_Monitor!B18:B20', values: [
+                ['MQT @ Current ($' + priceStr + ')'],
+                ['$' + staked.toLocaleString()],
+                ['$' + cyclEarn.toLocaleString()]
+            ] }
+        ]
+    });
+
+    const batchPath = `/google-sheets/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`;
+    const opts = {
+        hostname: 'gateway.maton.ai', path: batchPath, method: 'POST',
+        headers: { 'Authorization': `Bearer ${MATON_KEY}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(batchBody) }
+    };
+    const req = https.request(opts, (apiRes) => {
+        let b = ''; apiRes.on('data', c => b += c);
+        apiRes.on('end', () => { try { console.log('[MQT] Sheet synced @ $' + priceStr); } catch(e) {} });
+    });
+    req.on('error', (e) => console.error('[MQT] Sheet sync error:', e.message));
+    req.write(batchBody);
+    req.end();
+}
+
 function getMqtPrice(req, res) {
     const MQT_CONTRACT = '0xef0cdae2FfEEeFA539a244a16b3f46ba75b8c810';
     const apiUrl = `https://api.dexscreener.com/latest/dex/tokens/${MQT_CONTRACT}`;
@@ -1354,6 +1429,10 @@ function getMqtPrice(req, res) {
                     return;
                 }
                 const price = parseFloat(pairs[0].priceUsd) || 0;
+
+                // Auto-sync MQT price to IncomeOps_Monitor sheet
+                syncMqtPriceToSheet(price);
+
                 res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
                 res.end(JSON.stringify({
                     ok: true,
@@ -3938,12 +4017,11 @@ async function getSystemHealth(req, res) {
     }
 }
 
-// --- Sidney Device Presence (iPhone + Apple Watch) ---
+// --- Sidney Device Presence (iPhone → implies Watch on wrist) ---
 let sidneyDevicesCache = { iphone: null, watch: null, fetchedAt: null };
 
 // Known device identifiers
 const IPHONE_MAC = 'c4:5b:ac:a3:d3:dd';
-const WATCH_BONJOUR = 'OverWatch-P';
 
 async function pollSidneyDevices() {
     const run = (cmd, timeoutMs = 5000) => new Promise((resolve) => {
@@ -3951,11 +4029,9 @@ async function pollSidneyDevices() {
     });
 
     try {
-        // Strategy: send a targeted ping to refresh ARP cache, then check ARP table by MAC.
-        // Apple devices throttle ICMP but ARP entries persist if device is on WiFi.
+        // Ping to refresh ARP cache, then check ARP table by MAC
         await run('/sbin/ping -c 1 -t 1 192.168.1.114 2>/dev/null', 3000);
 
-        // iPhone: check ARP table for known MAC (-n skips slow DNS lookups)
         const arpTable = await run('/usr/sbin/arp -an');
         let iphoneOnline = false, iphoneIP = null;
         const iphoneLine = arpTable.split('\n').find(l => l.includes(IPHONE_MAC));
@@ -3965,22 +4041,11 @@ async function pollSidneyDevices() {
             iphoneIP = m ? m[1] : null;
         }
 
-        // Apple Watch: resolve mDNS hostname via ping, then verify in ARP table.
-        // Ping may fail (watchOS throttles ICMP) but mDNS resolution populates ARP.
-        let watchOnline = false, watchIP = null;
-        const watchPingOut = await run(`/sbin/ping -c 1 -t 2 ${WATCH_BONJOUR}.local 2>&1 || true`, 5000);
-        const watchIpMatch = watchPingOut.match(/\((\d+\.\d+\.\d+\.\d+)\)/);
-        if (watchIpMatch) {
-            watchIP = watchIpMatch[1];
-            // Re-check ARP (may have been updated by the ping attempt)
-            const arpRefresh = await run('/usr/sbin/arp -an');
-            const watchArp = arpRefresh.split('\n').find(l => l.includes(watchIP));
-            watchOnline = !!(watchArp && !watchArp.includes('(incomplete)'));
-        }
-
+        // Apple Watch connects via Bluetooth to iPhone — not directly on WiFi.
+        // If iPhone is on the network, Sidney has his watch on (always wears it).
         sidneyDevicesCache = {
             iphone: { online: iphoneOnline, ip: iphoneIP, name: 'iPhone' },
-            watch:  { online: watchOnline,  ip: watchIP,  name: 'Apple Watch' },
+            watch:  { online: iphoneOnline, ip: null, name: 'Apple Watch', viaIphone: true },
             fetchedAt: Date.now()
         };
     } catch (e) {
@@ -4623,6 +4688,85 @@ function getAgentSessions(req, res) {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ agents: [], error: err.message }));
     }
+}
+
+// ── Agent Model Selector ──────────────────────────────────────────────────────
+const OPENCLAW_CONFIG = path.join(process.env.HOME, '.openclaw', 'openclaw.json');
+const MODEL_OPTIONS = [
+    { value: 'smart-routing', label: 'Smart Routing', desc: 'Kimi → MiniMax → GLM → OpenRouter' },
+    { value: 'ollama/kimi-k2.5:cloud', label: 'Kimi K2.5', desc: 'Ollama Cloud (free)' },
+    { value: 'ollama/minimax-m2.7:cloud', label: 'MiniMax M2.7', desc: 'Ollama Cloud (free)' },
+    { value: 'ollama/glm-5:cloud', label: 'GLM-5', desc: 'Ollama Cloud (free)' },
+    { value: 'openrouter/auto', label: 'OpenRouter Auto', desc: 'Paid — last resort' },
+];
+const SMART_ROUTING_PRIMARY = 'ollama/kimi-k2.5:cloud';
+const SMART_ROUTING_FALLBACKS = ['ollama/minimax-m2.7:cloud', 'ollama/glm-5:cloud', 'openrouter/auto'];
+
+function getAgentModels(req, res) {
+    try {
+        const cfg = JSON.parse(fs.readFileSync(OPENCLAW_CONFIG, 'utf8'));
+        const defaultPrimary = cfg.agents?.defaults?.model?.primary || 'openrouter/auto';
+        const defaultFallbacks = cfg.agents?.defaults?.model?.fallbacks || [];
+        const agents = {};
+        (cfg.agents?.list || []).forEach(a => {
+            if (a.id === 'herald') return; // skip non-team agents
+            const primary = a.model?.primary;
+            const fallbacks = a.model?.fallbacks;
+            // If agent has no override, or matches smart routing defaults, it's "smart-routing"
+            if (!primary || (primary === defaultPrimary && !fallbacks)) {
+                agents[a.id] = 'smart-routing';
+            } else {
+                agents[a.id] = primary;
+            }
+        });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, agents, options: MODEL_OPTIONS }));
+    } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+function setAgentModel(req, res) {
+    collectBody(req, (body) => {
+        try {
+            const { agent, model } = JSON.parse(body);
+            if (!agent || !model) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Missing agent or model' }));
+                return;
+            }
+            const cfg = JSON.parse(fs.readFileSync(OPENCLAW_CONFIG, 'utf8'));
+            const agentEntry = (cfg.agents?.list || []).find(a => a.id === agent);
+            if (!agentEntry) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: `Agent "${agent}" not found` }));
+                return;
+            }
+            if (model === 'smart-routing') {
+                // Remove per-agent override → falls back to defaults
+                delete agentEntry.model;
+            } else {
+                // Set specific model, no fallbacks (force this model)
+                agentEntry.model = { primary: model };
+            }
+            fs.writeFileSync(OPENCLAW_CONFIG, JSON.stringify(cfg, null, 2), 'utf8');
+            // Restart gateway to apply
+            exec(`launchctl kickstart -k gui/${process.getuid()}/ai.openclaw.gateway`, { timeout: 15000 }, (err) => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    ok: true,
+                    agent,
+                    model,
+                    gatewayRestarted: !err,
+                    gatewayError: err ? err.message : null
+                }));
+            });
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
 }
 
 // ── Document Pipeline ─────────────────────────────────────────────────────────
