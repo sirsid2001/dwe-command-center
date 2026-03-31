@@ -1,11 +1,67 @@
 {
-  "lastScan": "2026-03-18T23:24:11.792Z",
+  "lastScan": "2026-03-30T20:49:01.741Z",
   "weeklyStats": {
     "nuggets": 1,
     "videos": 1,
-    "avgScore": 9
+    "avgScore": 7
   },
   "recentNuggets": [
+    {
+      "videoId": "TEST_AI_AGENT_001",
+      "title": "How I Make $10K/Month With AI Agents and n8n Automation",
+      "channel": "Nick Saraev",
+      "score": 7,
+      "verdict": "SKIM",
+      "verdict_reason": "The video provides useful insights into AI agent and n8n automation strategies, but the specific implementation details are more suited for DWE's technical agents to handle.",
+      "video_summary": [
+        "Nick Saraev demonstrates how he uses AI agents and n8n automation to generate $10K/month income.",
+        "Key tools include OpenClaw, Pinecone, AWS SES, Ollama, Docker, Telegram, Notion.",
+        "Revenue model involves a subscription SaaS service and niche consulting for small business owners.",
+        "The workflow includes lead generation via vector search, automated email sequences, and AI scoring.",
+        "Operational costs are kept low at under $50/month."
+      ],
+      "key_highlights": [
+        {
+          "highlight": "Lead generation using Pinecone vector search and automated email sequences with AWS SES.",
+          "dwe_application": "DWE can implement similar workflows for their own AI agents to improve lead management and automation.",
+          "urgency": "this_month"
+        }
+      ],
+      "agent_assignments": [
+        {
+          "agent": "Steve",
+          "task": "Implement and optimize the lead generation workflow using Pinecone and AWS SES."
+        },
+        {
+          "agent": "Nicole",
+          "task": "Explore subscription SaaS models for DWE's offerings based on Saraev’s strategy."
+        }
+      ],
+      "tools_mentioned": [
+        "n8n",
+        "OpenClaw",
+        "Pinecone",
+        "AWS SES",
+        "Ollama",
+        "Docker",
+        "Telegram",
+        "Notion"
+      ],
+      "revenue_potential": null,
+      "nuggets": [],
+      "summary": "",
+      "tags": [
+        "AI automation",
+        "lead generation",
+        "subscription SaaS"
+      ],
+      "actionItems": [
+        "Assign Steve to research and implement the lead generation workflow.",
+        "Have Nicole review and potentially adopt a subscription SaaS model for DWE."
+      ],
+      "url": "https://www.youtube.com/watch?v=TEST_AI_AGENT_001",
+      "timestamp": "2026-03-30T20:49:01.741Z"
+    },
     {
       "videoId": "sample123",
       "title": "How to Build a $50K/mo AI Agent Business",
@@ -65,9 +121,9 @@
   ],
   "channelStats": {
     "Nick Saraev": {
-      "videos": 1,
-      "totalScore": 9,
-      "avgScore": 9
+      "videos": 2,
+      "totalScore": 16,
+      "avgScore": 8
     }
   }
 }

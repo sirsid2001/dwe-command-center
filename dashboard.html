@@ -2204,12 +2204,22 @@
 
             <!-- CIO Pipeline + Financial Pulse -->
             <div class="services-grid" style="margin-bottom:1.5rem;grid-template-columns:1fr 1fr;">
-                <div class="service-panel">
+                <div class="service-panel" style="overflow:hidden;">
                     <div class="panel-header">
                         <div class="panel-icon">📈</div>
-                        <div class="panel-title">CIO Pipeline</div>
+                        <div class="panel-title">Opportunity Funnel</div>
+                        <div id="cso-total-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(245,166,35,0.15);color:#F5A623;">0 total</div>
                     </div>
-                    <div id="cso-pipeline-list" style="flex:1;">
+                    <!-- Funnel stage header -->
+                    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Intake<br><span id="cnt-Intake" style="color:#F5A623;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Under Review<br><span id="cnt-Under-Review" style="color:#00dcff;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Qualified<br><span id="cnt-Qualified" style="color:#22c55e;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">In Dev<br><span id="cnt-In-Development" style="color:#a855f7;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;">Rejected<br><span id="cnt-Rejected" style="color:#ef4444;font-weight:700;">0</span></div>
+                    </div>
+                    <!-- Funnel cards area -->
+                    <div id="cso-pipeline-list" style="flex:1;overflow-y:auto;max-height:200px;">
                         <div class="service-item"><span class="pulse-dot offline"></span><span>Loading...</span></div>
                     </div>
                     <div class="panel-footer" style="font-size:0.65rem;color:rgba(255,255,255,0.4);padding:0.5rem 0.75rem;" id="cso-last-report">—</div>
@@ -5356,27 +5366,62 @@
             }
         }
 
-        // ── /mc/cso → Nicole CSO opportunity pipeline ─────────────────────────
+        // ── /mc/cso → Opportunity Funnel pipeline (CIO) ───────────────────────
         async function fetchCSoPipeline() {
+            const stageColors = {
+                'Intake': '#F5A623', 'Under Review': '#00dcff',
+                'Qualified': '#22c55e', 'In Development': '#a855f7', 'Rejected': '#ef4444'
+            };
+            const stageCntIds = {
+                'Intake': 'cnt-Intake', 'Under Review': 'cnt-Under-Review',
+                'Qualified': 'cnt-Qualified', 'In Development': 'cnt-In-Development', 'Rejected': 'cnt-Rejected'
+            };
             try {
                 const d = await fetch('/mc/cso').then(r => r.json());
                 const list = document.getElementById('cso-pipeline-list');
                 list.innerHTML = '';
+
+                // Update stage count badges
+                const counts = d.stage_counts || {};
+                for (const [stage, cntId] of Object.entries(stageCntIds)) {
+                    const el = document.getElementById(cntId);
+                    if (el) el.textContent = counts[stage] || 0;
+                }
+                const total = d.total || 0;
+                const badge = document.getElementById('cso-total-badge');
+                if (badge) badge.textContent = `${total} total`;
+
                 if (!d.opportunities || d.opportunities.length === 0) {
-                    list.innerHTML = `<div class="service-item" style="font-size:0.72rem;color:rgba(255,255,255,0.4);padding:0.75rem;">${d.note || 'No opportunities in pipeline yet.'}</div>`;
+                    list.innerHTML = `<div class="service-item" style="font-size:0.72rem;color:rgba(255,255,255,0.4);padding:0.75rem;">No opportunities tracked yet. Drop a file into ~/openclaw/shared/opportunities/intake/</div>`;
                 } else {
-                    d.opportunities.slice(0,5).forEach(o => {
-                        const scoreColor = o.score >= 7 ? '#22c55e' : o.score >= 4 ? '#f59e0b' : '#ef4444';
-                        list.innerHTML += `<div class="service-item">
-                            <span class="label">${o.name}</span>
-                            <span style="font-size:0.7rem;color:${scoreColor};font-weight:700;">${o.score}/10</span>
-                            <span style="font-size:0.65rem;color:rgba(255,255,255,0.4);">${o.status || ''}</span>
+                    // Show most recent 8, sorted by dropped_at desc
+                    const sorted = [...d.opportunities].sort((a,b) => (b.dropped_at||'') > (a.dropped_at||'') ? 1 : -1);
+                    sorted.slice(0, 8).forEach(o => {
+                        const score = parseInt(o.fit_score) || 0;
+                        const scoreColor = score >= 7 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444';
+                        const stage = o.stage || 'Intake';
+                        const stageColor = stageColors[stage] || '#F5A623';
+                        const filterBadge = o.hard_filter === 'PASS'
+                            ? '<span style="font-size:0.55rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:3px;padding:1px 5px;margin-left:4px;">PASS</span>'
+                            : o.hard_filter === 'FAIL'
+                            ? '<span style="font-size:0.55rem;background:rgba(239,68,68,0.15);color:#ef4444;border-radius:3px;padding:1px 5px;margin-left:4px;">FAIL</span>'
+                            : '';
+                        list.innerHTML += `<div class="service-item" style="align-items:flex-start;flex-direction:column;gap:2px;padding:0.4rem 0.75rem;">
+                            <div style="display:flex;width:100%;align-items:center;gap:6px;">
+                                <span style="font-size:0.68rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.name || o.filename}</span>
+                                <span style="font-size:0.65rem;color:${scoreColor};font-weight:700;white-space:nowrap;">${score}/10${filterBadge}</span>
+                            </div>
+                            <div style="display:flex;gap:8px;font-size:0.6rem;color:rgba(255,255,255,0.4);">
+                                <span style="color:${stageColor};">${stage}</span>
+                                <span>${o.source || 'CEO drop'}</span>
+                                <span>${o.dropped_at ? new Date(o.dropped_at).toLocaleDateString() : ''}</span>
+                            </div>
                         </div>`;
                     });
                 }
-                document.getElementById('cso-last-report').textContent = d.lastReport
-                    ? `Last report: ${new Date(d.lastReport).toLocaleString()}`
-                    : 'No report yet';
+                document.getElementById('cso-last-report').textContent = d.lastUpdated
+                    ? `Updated: ${new Date(d.lastUpdated).toLocaleTimeString()}`
+                    : 'No data yet';
             } catch(e) {
                 document.getElementById('cso-pipeline-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
             }

@@ -2548,12 +2548,15 @@ function getAgents(req, res) {
     exec('nc -z 127.0.0.1 3000 && echo "open" || echo "closed"', { timeout: 5000 }, (err, out) => {
         const gatewayUp = (out || '').trim() === 'open';
         const agents = [
-            { id: 'cto',            name: 'Steve',          role: 'Chief Technology Officer', telegram: '@DWE_CTO_Bot',    status: gatewayUp ? 'online' : 'offline' },
-            { id: 'anita',          name: 'Anita',          role: 'Chief Operating Officer',  telegram: 'anita-coo',       status: gatewayUp ? 'online' : 'offline' },
-            { id: 'nicole',         name: 'Nicole',         role: 'Chief Strategic Officer',  telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
-            { id: 'chief-engineer', name: 'Chief Engineer', role: 'Engineering Lead',         telegram: null,              status: gatewayUp ? 'online' : 'offline' },
-            { id: 'cfo',            name: 'Fran',           role: 'Chief Financial Officer',  telegram: '@DWE_CFO_Bot',    status: gatewayUp ? 'online' : 'offline' },
-            { id: 'main',           name: 'Main',           role: 'Primary Assistant',        telegram: null,              status: gatewayUp ? 'online' : 'offline' }
+            { id: 'cto',            name: 'Steve',          role: 'Chief Technology Officer',  telegram: '@DWE_CTO_Bot',    status: gatewayUp ? 'online' : 'offline' },
+            { id: 'anita',          name: 'Anita',          role: 'Chief Operating Officer',   telegram: 'anita-coo',       status: gatewayUp ? 'online' : 'offline' },
+            { id: 'nicole',         name: 'Nicole',         role: 'Chief Information Officer', telegram: 'nicole-cos',      status: gatewayUp ? 'online' : 'offline' },
+            { id: 'chief-engineer', name: 'Chief Engineer', role: 'Engineering Lead',          telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'cfo',            name: 'Fran',           role: 'Chief Financial Officer',   telegram: '@DWE_CFO_Bot',    status: gatewayUp ? 'online' : 'offline' },
+            { id: 'main',           name: 'Main',           role: 'Primary Assistant',         telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'jarvis',         name: 'Jarvis',         role: 'Execution Layer',           telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'herald',         name: 'Herald',         role: 'SEO & AISO Specialist',     telegram: null,              status: gatewayUp ? 'online' : 'offline' },
+            { id: 'validator',      name: 'Victor',         role: 'QA & Validation',           telegram: null,              status: gatewayUp ? 'online' : 'offline' }
         ];
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ agents, count: agents.length, gatewayUp }));
@@ -2888,10 +2891,13 @@ function getAgentRouting(req, res) {
     const agents = [
         { id: 'cto',            name: 'Steve',          emoji: '💻', role: 'Technical & infrastructure',     channel: 'Telegram @DWE_CTO_Bot' },
         { id: 'anita',          name: 'Anita',          emoji: '⚙️', role: 'Operations & task coordination', channel: 'Telegram anita-coo' },
-        { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Strategy & revenue discovery',   channel: 'Telegram nicole-cos' },
+        { id: 'nicole',         name: 'Nicole',         emoji: '📋', role: 'Revenue & intelligence (CIO)',   channel: 'Telegram nicole-cos' },
         { id: 'chief-engineer', name: 'Chief Engineer', emoji: '🔧', role: 'Infrastructure & daemons',       channel: 'OpenClaw session' },
         { id: 'cfo',            name: 'Fran',           emoji: '💰', role: 'Finance & budgets',              channel: 'Telegram @DWE_CFO_Bot' },
-        { id: 'main',           name: 'Main',           emoji: '🚀', role: 'Primary assistant (web chat)',   channel: 'OpenClaw webchat' }
+        { id: 'main',           name: 'Main',           emoji: '🚀', role: 'Primary assistant (web chat)',   channel: 'OpenClaw webchat' },
+        { id: 'jarvis',         name: 'Jarvis',         emoji: '⚡', role: 'Execution layer (headless)',     channel: 'Delegation webhook' },
+        { id: 'herald',         name: 'Herald',         emoji: '🔍', role: 'SEO & AISO specialist',          channel: 'OpenClaw session' },
+        { id: 'validator',      name: 'Victor',         emoji: '✅', role: 'QA & validation',               channel: 'OpenClaw session' }
     ];
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ agents, timestamp: new Date().toISOString() }));
@@ -2936,7 +2942,7 @@ async function getAgentTasks(req, res) {
             { role: 'CEO',            name: 'Sidney',         icon: '👑',  id: 'ceo' },
             { role: 'CTO',            name: 'Steve',          icon: '⚙️',  id: 'cto' },
             { role: 'COO',            name: 'Anita',          icon: '📋',  id: 'anita' },
-            { role: 'CSO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
+            { role: 'CIO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
             { role: 'CE',             name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
             { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
@@ -4367,16 +4373,68 @@ function getHeartbeats(req, res) {
 }
 
 function getCSoPipeline(req, res) {
-    const PIPELINE_FILE = `${process.env.HOME}/openclaw/logs/cso_pipeline.json`;
+    const INTAKE_JSONL = `${process.env.HOME}/openclaw/logs/opportunity_intake.jsonl`;
+    const LEGACY_FILE  = `${process.env.HOME}/openclaw/logs/cso_pipeline.json`;
+
     try {
-        if (fs.existsSync(PIPELINE_FILE)) {
-            const data = JSON.parse(fs.readFileSync(PIPELINE_FILE, 'utf8'));
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(data));
-        } else {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ opportunities: [], count: 0, lastReport: null, note: 'No pipeline data yet — Nicole CIO will populate this file during sessions.' }));
+        let opportunities = [];
+
+        // Read from opportunity_intake.jsonl (primary source)
+        if (fs.existsSync(INTAKE_JSONL)) {
+            const lines = fs.readFileSync(INTAKE_JSONL, 'utf8').split('\n').filter(l => l.trim());
+            for (const line of lines) {
+                try {
+                    const rec = JSON.parse(line);
+                    // Determine stage — score/filter always override watcher-set stage
+                    const score = parseInt(rec.fit_score) || 0;
+                    const filter = (rec.hard_filter || '').toUpperCase();
+                    let stage;
+                    if (filter === 'FAIL' || score < 4) stage = 'Rejected';
+                    else if (score >= 7 && filter === 'PASS') stage = 'Qualified';
+                    else if (rec.notified_nicole) stage = 'Under Review';
+                    else stage = rec.stage || 'Intake';
+                    opportunities.push({
+                        id: rec.filename + '_' + (rec.dropped_at || ''),
+                        name: rec.opportunity_name || rec.filename,
+                        fit_score: rec.fit_score || 0,
+                        hard_filter: rec.hard_filter || 'UNKNOWN',
+                        source: rec.source || 'CEO drop',
+                        estimated_effort: rec.estimated_effort || 'Unknown',
+                        estimated_roi_tier: rec.estimated_roi_tier || 'Unknown',
+                        recommended_action: rec.recommended_action || '',
+                        stage: stage,
+                        dropped_at: rec.dropped_at || rec.processed_at,
+                        filename: rec.filename
+                    });
+                } catch (_) {}
+            }
         }
+
+        // Fall back to legacy file if no intake data yet
+        if (opportunities.length === 0 && fs.existsSync(LEGACY_FILE)) {
+            const legacyData = JSON.parse(fs.readFileSync(LEGACY_FILE, 'utf8'));
+            if (legacyData.opportunities) {
+                opportunities = legacyData.opportunities;
+            }
+        }
+
+        // Build stage counts
+        const stages = ['Intake', 'Under Review', 'Qualified', 'In Development', 'Rejected'];
+        const stage_counts = {};
+        for (const s of stages) stage_counts[s] = 0;
+        for (const opp of opportunities) {
+            const s = opp.stage || 'Intake';
+            if (stage_counts[s] !== undefined) stage_counts[s]++;
+            else stage_counts[s] = 1;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            opportunities,
+            stage_counts,
+            total: opportunities.length,
+            lastUpdated: new Date().toISOString()
+        }));
     } catch (e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
