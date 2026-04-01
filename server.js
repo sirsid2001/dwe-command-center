@@ -165,7 +165,7 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'revenue.html'), 'text/html', req);
         return;
     }
-    if (pathname === '/funnel' || pathname === '/funnel.html') {
+    if (pathname === '/funnel' || pathname === '/funnel.html' || pathname === '/pipelines' || pathname === '/pipelines.html') {
         serveFile(res, path.join(__dirname, 'funnel.html'), 'text/html', req);
         return;
     }
@@ -553,6 +553,9 @@ const server = http.createServer((req, res) => {
         case '/mc/openrouter-credits':
             getOpenRouterCredits(req, res);
             break;
+        case '/mc/teamorouter-credits':
+            getTeamoRouterCredits(req, res);
+            break;
         case '/mc/digitalocean-status':
             getDigitalOceanStatus(req, res);
             break;
@@ -642,6 +645,12 @@ const server = http.createServer((req, res) => {
         case '/mc/cso':
             getCSoPipeline(req, res);
             break;
+        case '/mc/opp-pipeline':
+            getOppPipeline(req, res);
+            break;
+        case '/mc/n8n-wf-status':
+            getN8nWfStatus(req, res);
+            break;
         case '/mc/financial':
             getFinancialPulse(req, res);
             break;
@@ -684,6 +693,12 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/pipeline/open-finder':
             openPipelineInFinder(req, res);
+            break;
+        case '/mc/swarm-review':
+            runSwarmReview(req, res);
+            break;
+        case '/mc/swarm-status':
+            getSwarmStatus(req, res);
             break;
         case '/dwe/status':
             handleDWEStatus(req, res);
@@ -3323,6 +3338,49 @@ function getOpenRouterCredits(req, res) {
     res.end(JSON.stringify(orCreditsCache || { remaining: null, fetchedAt: null }));
 }
 
+// TeamoRouter credits — cached, refreshed every 5 minutes
+const TEAMOROUTER_API_KEY = (() => {
+    if (process.env.TEAMOROUTER_API_KEY && !process.env.TEAMOROUTER_API_KEY.startsWith('your_')) return process.env.TEAMOROUTER_API_KEY;
+    try { return fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/TEAMOROUTER_API_KEY="?([^"\n]+)"?/)?.[1]?.trim() || ''; } catch(e) { return ''; }
+})();
+
+let teamoCreditsCache = null;
+const TEAMO_CREDITS_TTL = 5 * 60 * 1000;
+
+function fetchTeamoRouterCredits() {
+    if (!TEAMOROUTER_API_KEY) return;
+    const opts = {
+        hostname: 'router.teamolab.com',
+        path: '/v1/billing/me/balance',
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${TEAMOROUTER_API_KEY}` }
+    };
+    const req = https.request(opts, ores => {
+        let data = '';
+        ores.on('data', c => data += c);
+        ores.on('end', () => {
+            try {
+                const j = JSON.parse(data);
+                const d = j.data || j;
+                const available = parseFloat(d.available_balance) || 0;
+                const spent = parseFloat(d.lifetime_spent) || 0;
+                const total = available + spent;
+                teamoCreditsCache = { remaining: available, usage: spent, total, status: d.status || 'unknown', fetchedAt: Date.now() };
+            } catch(e) {}
+        });
+    });
+    req.on('error', () => {});
+    req.end();
+}
+fetchTeamoRouterCredits();
+setInterval(fetchTeamoRouterCredits, TEAMO_CREDITS_TTL);
+
+function getTeamoRouterCredits(req, res) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (!TEAMOROUTER_API_KEY) { res.end(JSON.stringify({ error: 'No API key', remaining: null })); return; }
+    res.end(JSON.stringify(teamoCreditsCache || { remaining: null, fetchedAt: null }));
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // n8n Workflow Inventory — cached, refreshed every 3 minutes
 // ══════════════════════════════════════════════════════════════════════
@@ -4441,6 +4499,130 @@ function getCSoPipeline(req, res) {
     }
 }
 
+function getOppPipeline(req, res) {
+    // Reads Product_Pipeline tab from DW Control Sheet
+    // Returns stage counts for the full TAS-1025 opportunity pipeline
+    const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+    const range = encodeURIComponent('Product_Pipeline!A1:K200');
+    const opts = {
+        hostname: 'gateway.maton.ai',
+        path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`,
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${MATON_KEY}` }
+    };
+    const apiReq = https.request(opts, (apiRes) => {
+        let body = '';
+        apiRes.on('data', chunk => body += chunk);
+        apiRes.on('end', () => {
+            try {
+                const raw = JSON.parse(body);
+                const rows = raw.values || [];
+                const header = rows[0] || [];
+                const statusIdx = header.indexOf('Status');
+                const nameIdx = header.indexOf('Product / Service');
+                const verdictIdx = header.indexOf('VERDICT');
+                const sourceIdx = header.indexOf('Source ID');
+
+                // Funnel stages — map raw Status values to display stages
+                const stageMap = {
+                    'Needs Gate 1': 'Gate 1',
+                    'Needs Gate 2': 'Gate 2',
+                    'Needs Gate 3': 'Gate 3',
+                    'Needs POC': 'POC',
+                    'Needs POC + Research': 'POC',
+                    'Needs POC+Research': 'POC',
+                    'Needs POC (sign up 3 lender partners)': 'POC',
+                    'Needs licensing + POC': 'POC',
+                    'Needs curriculum + POC': 'POC',
+                    'Pilot — Build First': 'Pilot',
+                    'Ready to Launch': 'Ready to Launch'
+                };
+                const stageOrder = ['Gate 1', 'Gate 2', 'Gate 3', 'POC', 'Pilot', 'Ready to Launch'];
+                const stage_counts = {};
+                stageOrder.forEach(s => stage_counts[s] = 0);
+
+                const opportunities = rows.slice(1).filter(r => r[0]).map(r => {
+                    const rawStatus = statusIdx >= 0 ? (r[statusIdx] || '') : '';
+                    const stage = stageMap[rawStatus] || rawStatus || 'POC';
+                    if (stage_counts[stage] !== undefined) stage_counts[stage]++;
+                    return {
+                        id: sourceIdx >= 0 ? (r[sourceIdx] || '') : '',
+                        name: nameIdx >= 0 ? (r[nameIdx] || '') : '',
+                        verdict: verdictIdx >= 0 ? (r[verdictIdx] || '') : '',
+                        status: rawStatus,
+                        stage
+                    };
+                });
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, opportunities, stage_counts, total: opportunities.length, lastUpdated: new Date().toISOString() }));
+            } catch(e) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Parse error: ' + e.message }));
+            }
+        });
+    });
+    apiReq.on('error', (e) => {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    });
+    apiReq.end();
+}
+
+function getN8nWfStatus(req, res) {
+    // Returns last execution status for TAS-1025 n8n workflows
+    const N8N_API_KEY = process.env.N8N_API_KEY || require('fs').readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8').match(/N8N_API_KEY=([^\n]+)/)?.[1]?.trim() || '';
+    const workflows = [
+        { id: 'CNkbCCRhRNrlbIHv', name: 'WF2: Reddit Scraper', stage: 'Gate 1' },
+        { id: 'Em0T5U5VdzrE615T', name: 'WF12: Daily Top 3',   stage: 'Gate 3' },
+        { id: '3b4NTJeI3E8rEwZq', name: 'WF8: Tri-Factor',     stage: 'Gate 2' }
+    ];
+
+    let pending = workflows.length;
+    const results = [];
+
+    workflows.forEach(wf => {
+        const opts = {
+            hostname: 'n8n.tvcpulse.com',
+            path: `/api/v1/executions?workflowId=${wf.id}&limit=1`,
+            method: 'GET',
+            headers: { 'X-N8N-API-KEY': N8N_API_KEY }
+        };
+        const req2 = https.request(opts, (res2) => {
+            let body = '';
+            res2.on('data', c => body += c);
+            res2.on('end', () => {
+                try {
+                    const d = JSON.parse(body);
+                    const exec = (d.data || [])[0];
+                    results.push({
+                        id: wf.id,
+                        name: wf.name,
+                        stage: wf.stage,
+                        status: exec ? exec.status : 'unknown',
+                        lastRun: exec ? (exec.stoppedAt || exec.finishedAt || exec.startedAt || '').slice(0, 19) : null
+                    });
+                } catch(e) {
+                    results.push({ id: wf.id, name: wf.name, stage: wf.stage, status: 'unknown', lastRun: null });
+                }
+                if (--pending === 0) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: true, workflows: results }));
+                }
+            });
+        });
+        req2.on('error', () => {
+            results.push({ id: wf.id, name: wf.name, stage: wf.stage, status: 'unreachable', lastRun: null });
+            if (--pending === 0) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, workflows: results }));
+            }
+        });
+        req2.end();
+    });
+}
+
 function getFinancialPulse(req, res) {
     const PULSE_FILE = `${process.env.HOME}/openclaw/logs/financial_pulse.json`;
     try {
@@ -4972,6 +5154,55 @@ function readPipelineFile(req, res) {
     } catch(e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+// ── Swarm Review (on-demand trigger) ─────────────────────────────────────
+
+function runSwarmReview(req, res) {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+        try {
+            const { pipelines = [], concern = '', steps = [] } = JSON.parse(body || '{}');
+            const timestamp = new Date().toISOString();
+            const logFile = path.join(process.env.HOME, 'openclaw/logs/swarm-diagnosis.log');
+            const script = path.join(process.env.HOME, 'openclaw/agents/anita/skills/swarm-diagnosis/swarm_diagnosis.sh');
+            const out = fs.openSync(logFile, 'a');
+            const child = require('child_process').spawn('bash', [script], {
+                detached: true,
+                stdio: ['ignore', out, out],
+                env: { ...process.env, SWARM_ON_DEMAND: '1', SWARM_CONCERN: concern, SWARM_PIPELINES: pipelines.join(','), SWARM_STEPS: JSON.stringify(steps) }
+            });
+            child.unref();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, message: 'Swarm dispatched', timestamp }));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
+}
+
+function getSwarmStatus(req, res) {
+    try {
+        const logFile = path.join(process.env.HOME, 'openclaw/logs/swarm-diagnosis.log');
+        const content = fs.readFileSync(logFile, 'utf8');
+        const lines = content.split('\n').filter(Boolean);
+        const last200 = lines.slice(-200).join('\n');
+        // Check for outcome markers written by the swarm script
+        const fixed = last200.includes('SWARM_RESULT: FIXED');
+        const escalatedMatch = last200.match(/SWARM_RESULT: ESCALATED (TAS-[A-Z0-9]+)/);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            ok: true,
+            log: last200,
+            fixed: fixed || false,
+            escalated: escalatedMatch ? escalatedMatch[1] : null
+        }));
+    } catch (e) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, log: 'No swarm log found.' }));
     }
 }
 
@@ -6038,86 +6269,7 @@ function getAuditClicks(req, res) {
 function getJakeInbox(req, res) {
     const { execSync } = require('child_process');
     try {
-        const script = `
-import json, os, base64
-from datetime import datetime, timezone
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-
-token_path = os.path.expanduser("~/.openclaw/skills/gmail-api/token.json")
-creds = Credentials.from_authorized_user_file(token_path, ["https://www.googleapis.com/auth/gmail.modify"])
-service = build("gmail", "v1", credentials=creds, cache_discovery=False)
-
-# 1. Emails SENT by Jake (outbound)
-sent = service.users().messages().list(userId="me", q="from:jakem@tvcpulse.com", maxResults=50).execute()
-sent_msgs = []
-for m in sent.get("messages", [])[:20]:
-    meta = service.users().messages().get(userId="me", id=m["id"], format="metadata",
-        metadataHeaders=["To","Subject","Date"]).execute()
-    h = {x["name"]: x["value"] for x in meta.get("payload",{}).get("headers",[])}
-    sent_msgs.append({"to": h.get("To",""), "subject": h.get("Subject",""), "date": h.get("Date",""), "id": m["id"]})
-
-# 2. Emails TO Jake (inbound/replies)
-inbound = service.users().messages().list(userId="me", q="to:jakem@tvcpulse.com -from:jakem@tvcpulse.com", maxResults=50).execute()
-inbound_msgs = []
-for m in inbound.get("messages", [])[:20]:
-    meta = service.users().messages().get(userId="me", id=m["id"], format="metadata",
-        metadataHeaders=["From","Subject","Date"]).execute()
-    h = {x["name"]: x["value"] for x in meta.get("payload",{}).get("headers",[])}
-    labels = meta.get("labelIds", [])
-    inbound_msgs.append({
-        "from": h.get("From",""), "subject": h.get("Subject",""), "date": h.get("Date",""),
-        "id": m["id"], "unread": "UNREAD" in labels
-    })
-
-# 3. Unanswered — inbound with no reply in thread
-unanswered = []
-for msg in inbound_msgs:
-    thread = service.users().threads().get(userId="me", id=service.users().messages().get(
-        userId="me", id=msg["id"], format="minimal").execute().get("threadId",""),
-        format="metadata", metadataHeaders=["From"]).execute()
-    thread_froms = set()
-    for tm in thread.get("messages",[]):
-        for h in tm.get("payload",{}).get("headers",[]):
-            if h["name"] == "From":
-                thread_froms.add(h["value"].lower())
-    # If Jake never replied in this thread, it's unanswered
-    jake_replied = any("jakem@tvcpulse.com" in f for f in thread_froms if "jakem" in f)
-    has_reply_from_us = any("sirsid2001" in f or "theveteransconsultant" in f for f in thread_froms)
-    if not jake_replied and not has_reply_from_us:
-        unanswered.append(msg)
-
-# 4. Outreach queue stats
-queue_dir = os.path.expanduser("~/openclaw/shared/outreach_queue")
-queue_files = [f for f in os.listdir(queue_dir) if f.endswith(".json")] if os.path.isdir(queue_dir) else []
-queue_stats = {"total": 0, "sent": 0, "pending": 0, "failed": 0}
-for qf in queue_files:
-    try:
-        item = json.load(open(os.path.join(queue_dir, qf)))
-        queue_stats["total"] += 1
-        status = item.get("status", "")
-        if status == "sent": queue_stats["sent"] += 1
-        elif status == "send_failed": queue_stats["failed"] += 1
-        else: queue_stats["pending"] += 1
-    except: pass
-
-result = {
-    "ok": True,
-    "timestamp": datetime.now(timezone.utc).isoformat(),
-    "outbound": {"count": len(sent_msgs), "recent": sent_msgs[:10]},
-    "inbound": {"count": len(inbound_msgs), "recent": inbound_msgs[:10], "unread": sum(1 for m in inbound_msgs if m.get("unread"))},
-    "unanswered": {"count": len(unanswered), "messages": unanswered[:10]},
-    "queue": queue_stats,
-    "health": {
-        "status": "WARNING" if len(unanswered) > 0 else "OK",
-        "unanswered_count": len(unanswered),
-        "oldest_unanswered": unanswered[-1]["date"] if unanswered else None
-    }
-}
-
-print(json.dumps(result))
-`;
-        const result = execSync(`python3 -c '${script.replace(/'/g, "'\\''")}'`, {
+        const result = execSync('python3 /Users/elf-6/openclaw/bin/jake_inbox_status.py', {
             timeout: 30000,
             env: { ...process.env, HOME: process.env.HOME }
         }).toString();

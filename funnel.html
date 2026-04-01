@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DWE | Revenue Funnel</title>
+    <title>DWE | Pipelines</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,7 +21,7 @@
         .cogs-btn { color: rgba(255,255,255,0.4); font-size: 1rem; cursor: pointer; padding: 0.3rem; transition: all 0.2s; text-decoration: none; }
         .cogs-btn:hover { color: #ffaa00; }
 
-        .content { padding: 80px 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .content { padding: 80px 2rem 3rem; display: flex; flex-direction: column; gap: 2rem; }
 
         /* Ops toolbar */
         .ops-toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -29,7 +29,7 @@
         .ops-pill:hover { background: rgba(255,170,0,0.1); border-color: rgba(255,170,0,0.3); color: #ffaa00; }
         .ops-pill .pill-icon { font-size: 0.75rem; }
 
-        .card { background: rgba(20,20,40,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.25rem; backdrop-filter: blur(12px); }
+        .card { background: rgba(20,20,40,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 1.75rem; backdrop-filter: blur(12px); }
         .card-title { color: rgba(255,255,255,0.5); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
 
         /* Top stats row */
@@ -45,16 +45,22 @@
 
         /* Funnel visualization — single row across the page */
         .funnel-stages { display: flex; align-items: stretch; gap: 0; }
-        .funnel-stage { flex: 1; text-align: center; padding: 0.75rem 0.25rem 0.75rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 200px; background: none; }
-        .funnel-stage .funnel-top { min-height: 105px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; }
+        .funnel-stage { flex: 1; text-align: center; padding: 1.1rem 0.5rem 0.75rem; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 280px; background: none; }
+        .funnel-stage .funnel-top { height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100%; flex-shrink: 0; }
         .funnel-stage .count-divider { width: 55%; height: 1px; background: rgba(255,255,255,0.1); margin: 0.4rem 0 0.3rem; }
-        .funnel-stage .tech-footer { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding-top: 0.4rem; }
-        .funnel-stage .count { font-size: 1.8rem; font-weight: 800; }
+        .funnel-stage .tech-footer { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.15rem; padding-top: 0.4rem; overflow: hidden; }
+        .funnel-stage .count { font-size: 2.2rem; font-weight: 800; }
         .funnel-stage .name { font-size: 0.6rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; }
         .funnel-stage .bar { width: 100%; height: 14px; margin: 0.15rem 0 0; flex-shrink: 0; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%); border-radius: 0; }
         .funnel-stage .step-num { font-size: 0.48rem; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.25rem; font-family: monospace; }
         .funnel-stage .stage-cogs { position: absolute; top: 4px; right: 6px; color: rgba(255,255,255,0.2); font-size: 0.7rem; text-decoration: none; transition: color 0.2s; }
         .funnel-stage .stage-cogs:hover { color: #ffaa00; }
+        .step-checkbox { display: block; margin: auto auto 0; accent-color: #F5A623; cursor: pointer; width: 15px; height: 15px; opacity: 0.35; transition: opacity 0.15s; flex-shrink: 0; }
+        .step-checkbox:checked { opacity: 1; }
+        .step-checkbox:hover { opacity: 0.75; }
+        .funnel-stage.swarm-checking { box-shadow: inset 0 0 0 2px rgba(245,166,35,0.6); background: rgba(245,166,35,0.04); transition: all 0.4s; }
+        .funnel-stage.swarm-ok      { box-shadow: inset 0 0 0 2px rgba(0,255,136,0.6); background: rgba(0,255,136,0.04); transition: all 0.4s; }
+        .funnel-stage.swarm-error   { box-shadow: inset 0 0 0 2px rgba(255,68,68,0.6);  background: rgba(255,68,68,0.04);  transition: all 0.4s; }
         .funnel-arrow { display: flex; align-items: center; justify-content: center; width: 30px; flex-shrink: 0; }
         .funnel-arrow .rate { font-size: 0.55rem; color: rgba(255,255,255,0.3); font-weight: 500; writing-mode: vertical-rl; }
 
@@ -139,6 +145,17 @@
         .queue-status.skipped { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
         .queue-count-badge { background: rgba(255,170,0,0.15); color: #ffaa00; padding: 0.1rem 0.45rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 600; margin-left: 0.4rem; }
 
+        /* Health signal badges — show pipeline problems at a glance */
+        .health-badge { font-size:0.48rem; font-weight:700; padding:0.1rem 0.4rem; border-radius:1rem; letter-spacing:0.05em; margin-bottom:0.2rem; display:inline-block; }
+        .health-badge.warn  { background:rgba(255,170,0,0.15); color:#ffaa00; border:1px solid rgba(255,170,0,0.3); }
+        .health-badge.ok    { background:rgba(0,255,136,0.08); color:#00ff88; border:1px solid rgba(0,255,136,0.2); }
+
+        /* Pipeline identity header */
+        .pipeline-identity { display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+        .pipeline-num { font-size:0.6rem; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.08em; font-weight:600; }
+        .pipeline-name { font-size:0.85rem; color:rgba(255,255,255,0.85); font-weight:700; }
+        .pipeline-agent { font-size:0.6rem; color:rgba(255,170,0,0.7); font-weight:500; }
+
         @media (max-width: 900px) {
             .stats-row { grid-template-columns: repeat(2, 1fr); }
             .products-grid { grid-template-columns: repeat(2, 1fr); }
@@ -149,17 +166,27 @@
 </head>
 <body>
     <div class="header">
-        <h1>Revenue Funnel</h1>
+        <h1>Pipelines</h1>
         <div class="header-right">
             <select class="pipeline-select" id="pipeline-select" onchange="fetchData()">
                 <option value="">Loading...</option>
             </select>
             <span class="updated-text" id="updated-text"></span>
             <button class="refresh-btn" onclick="fetchData()">Refresh</button>
+            <button class="refresh-btn" id="swarm-run-btn" onclick="runSwarmReview()" style="background:rgba(245,166,35,0.15);border-color:rgba(245,166,35,0.4);color:#F5A623;">🐝 Run Swarm Review</button>
             <a href="/revenue" class="back-btn">Revenue</a>
             <a href="/" class="back-btn">← Dashboard</a>
             <a id="cogs-link" href="/mc/config?pipeline=dwe-marketing" target="_blank" class="cogs-btn" title="Pipeline Config">⚙</a>
         </div>
+    </div>
+
+    <!-- Swarm results bar — appears when review is running -->
+    <div id="swarm-bar" style="display:none;position:fixed;top:56px;left:0;right:0;z-index:999;background:rgba(10,10,20,0.97);border-bottom:1px solid rgba(245,166,35,0.3);padding:0.5rem 1.5rem;display:none;flex-direction:column;gap:0.35rem;">
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span id="swarm-bar-status" style="font-size:0.68rem;font-weight:700;color:#F5A623;"></span>
+            <button onclick="document.getElementById('swarm-bar').style.display='none'" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:0.8rem;">✕</button>
+        </div>
+        <pre id="swarm-bar-log" style="font-size:0.58rem;color:rgba(255,255,255,0.45);white-space:pre-wrap;max-height:140px;overflow-y:auto;margin:0;font-family:monospace;line-height:1.4;"></pre>
     </div>
 
     <div class="content">
@@ -198,19 +225,27 @@
             </div>
         </div>
 
-        <!-- Funnel Visualization -->
+        <!-- Pipeline #1 — DWE Marketing -->
         <div class="card">
-            <div class="card-title">Pipeline Funnel</div>
+            <div class="pipeline-identity">
+                <span class="pipeline-num">Pipeline #1</span>
+                <span class="pipeline-name">DWE Marketing Services</span>
+                <span class="pipeline-agent">(Jake Martinez)</span>
+            </div>
             <div class="funnel-stages" id="funnel-viz">
                 <div class="empty-msg">Loading funnel data...</div>
             </div>
         </div>
 
-        <!-- Outreach Queue -->
-        <div class="card" id="outreach-queue-card" style="display:none;">
-            <div class="card-title">Outreach Queue <span class="queue-count-badge" id="queue-count-badge">0</span></div>
-            <div id="outreach-queue-list">
-                <div class="empty-msg">No emails in queue</div>
+        <!-- Pipeline #2 — Opportunity Capture -->
+        <div class="card">
+            <div class="pipeline-identity">
+                <span class="pipeline-num">Pipeline #2</span>
+                <span class="pipeline-name">Opportunity Capture</span>
+                <span class="pipeline-agent">(Nicole — TAS-1025)</span>
+            </div>
+            <div class="funnel-stages" id="opp-funnel-viz">
+                <div class="empty-msg">Loading opportunity data...</div>
             </div>
         </div>
 
@@ -251,6 +286,85 @@
                     <div class="empty-msg">No conversion data yet</div>
                 </div>
             </div>
+
+            <!-- Jake Inbox + Email Optimizer — Pipeline Tools -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+
+            <!-- Jake Inbox -->
+            <div class="card" id="jake-inbox-card" style="padding:0;overflow:hidden;">
+                <div style="padding:0.75rem 1rem;display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:1rem;">📧</span>
+                    <span style="font-size:0.85rem;font-weight:600;color:#fff;">Jake Inbox</span>
+                    <span id="jake-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</span>
+                </div>
+                <div style="padding:0.75rem 1rem;">
+                    <div style="display:flex;gap:0.75rem;margin-bottom:0.75rem;">
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#F5A623;" id="jake-sent-count">—</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Sent</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#00dcff;" id="jake-inbound-count">—</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Replies</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#16a34a;" id="jake-unanswered-count">—</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Unanswered</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#cc00ff;" id="jake-queue-count">—</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Queued</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.6rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Recent Activity</div>
+                    <div id="jake-inbox-list" style="display:flex;flex-direction:column;gap:0.25rem;max-height:200px;overflow-y:auto;">
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Loading...</div>
+                    </div>
+                </div>
+                <div style="font-size:0.55rem;color:rgba(255,255,255,0.25);padding:0.4rem 1rem;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;">
+                    <span id="jake-health">—</span>
+                    <span style="font-family:monospace;">jakem@tvcpulse.com</span>
+                </div>
+            </div>
+
+            <!-- Email Optimizer -->
+            <div class="card" id="autoresearch-card" style="padding:0;overflow:hidden;">
+                <div style="padding:0.75rem 1rem;display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:1rem;">🔬</span>
+                    <span style="font-size:0.85rem;font-weight:600;color:#fff;">Email Optimizer</span>
+                    <span id="autoresearch-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</span>
+                </div>
+                <div style="padding:0.75rem 1rem;">
+                    <div style="display:flex;gap:0.75rem;margin-bottom:0.75rem;">
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#00f5ff;" id="ar-total">0</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Experiments</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#00ff88;" id="ar-improvements">0</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Improvements</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.4rem;font-weight:700;color:#F5A623;" id="ar-best">0</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Best Score</div>
+                        </div>
+                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.4rem;">
+                            <div style="font-size:1.1rem;font-weight:600;color:rgba(255,255,255,0.5);" id="ar-prompt-status">—</div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Prompt</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.6rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Recent Experiments</div>
+                    <div id="ar-recent" style="display:flex;flex-direction:column;gap:0.25rem;max-height:200px;overflow-y:auto;">
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No experiments yet — daemon runs nightly at 11 PM</div>
+                    </div>
+                </div>
+                <div style="font-size:0.55rem;color:rgba(255,255,255,0.25);padding:0.4rem 1rem;border-top:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;">
+                    <span id="ar-last-run">—</span>
+                    <span style="font-family:monospace;">dwe-marketing / dry</span>
+                </div>
+            </div>
+
+            </div><!-- close Jake+Optimizer grid -->
         </div>
     </div>
 
@@ -297,7 +411,6 @@
                 document.getElementById('stats-api-link').href = '/mc/prospects/stats?pipeline=' + p;
                 document.getElementById('audit-prompt-link').href = '/mc/prompt/audit?pipeline=' + p;
                 document.getElementById('outreach-prompt-link').href = '/mc/prompt/outreach?pipeline=' + p;
-                fetchOutreachQueue();
             } catch(e) { console.error('Failed to fetch', e); }
         }
 
@@ -410,7 +523,7 @@
                 'Lead Generation': { label: 'Sourcing', href: sheetUrl + '/edit#gid=1468071313' },
                 'New': { label: 'View Sheet', href: sheetUrl },
                 'Audited': { label: 'View Reports', href: `/mc/audit-reports?pipeline=${pipeline}` },
-                'Outreach Sent': { label: 'View Queue', href: '#outreach-queue-card' },
+                'Outreach Sent': { label: 'View Log', href: '/mc/logs/outreach' },
                 'Responded': { label: 'View Sheet', href: sheetUrl },
                 'Proposal': { label: 'Proposal Queue', href: '/mc/proposal-queue?pipeline=' + pipeline },
                 'Client': { label: 'Active Deals', href: '/mc/deals?pipeline=' + pipeline },
@@ -432,6 +545,19 @@
                 const configUrl = stageConfig[stage];
                 const cogsHtml = configUrl ? `<a href="${configUrl}" target="_blank" class="stage-cogs" title="Settings">⚙</a>` : '';
 
+                // Health signal badge — visible problem detection without clicking
+                let healthHtml = '';
+                const prevCount = i > 0 ? (stages[stageOrder[i-1]] || 0) : 0;
+                if (stage === 'Client' && count > 0) {
+                    healthHtml = `<div class="health-badge ok">★ REVENUE</div>`;
+                } else if (stage === 'Responded' && count > 0) {
+                    healthHtml = `<div class="health-badge ok">✓ ACTIVE</div>`;
+                } else if (stage === 'Outreach Sent' && count < 5) {
+                    healthHtml = `<div class="health-badge warn">⚠ LOW OUTPUT</div>`;
+                } else if (count === 0 && prevCount > 10 && stage !== 'Disqualified') {
+                    healthHtml = `<div class="health-badge warn">⚠ STALLED</div>`;
+                }
+
                 // Tech attribution badge
                 const tech = stageTech[stage] || {};
                 const statusIcons = { working: '&#x2705;', gap: '&#x26D4;', partial: '&#x26A0;&#xFE0F;', manual: '&#x1F464;' };
@@ -442,9 +568,13 @@
                 const ioHtml = tech.input ? `<div class="tech-io">${esc(tech.input)} &rarr; ${esc(tech.output)}</div>` : '';
                 const scheduleHtml = tech.interval ? `<div class="tech-schedule">${esc(tech.plist || '')} &middot; ${esc(tech.interval)}</div>` : '';
 
-                funnelHtml += `<div class="funnel-stage stage-${cls}">
+                const plist = tech.plist || '';
+                const automation = tech.automation || '';
+                const stepId = `step-p1-${i}`;
+                funnelHtml += `<div class="funnel-stage stage-${cls}" id="${stepId}">
                     ${cogsHtml}
                     <div class="funnel-top">
+                        ${healthHtml}
                         <div class="count">${count}</div>
                         <div class="count-divider"></div>
                         <div class="name">${esc(stage)}</div>
@@ -457,6 +587,8 @@
                         ${ioHtml}
                         ${scheduleHtml}
                     </div>
+                    <input type="checkbox" class="step-checkbox" title="Flag for swarm review"
+                        data-stage-id="${stepId}" data-pipeline="dwe-marketing" data-step="${esc(stage)}" data-plist="${esc(plist)}" data-automation="${esc(automation)}" />
                 </div>`;
                 if (i < stageOrder.length - 1) {
                     const convKey = stage + ' → ' + stageOrder[i + 1];
@@ -537,117 +669,290 @@
             area.innerHTML = html;
         }
 
-        // === Outreach Queue ===
-        let queueData = [];
+        // === Pipeline #2 — Revenue Opportunities (TAS-1025) ===
+        // Full funnel: Discovery → Gate Eval → POC → Pilot → Launch
+        const oppStageOrder = ['Gate 1', 'Gate 2', 'Gate 3', 'POC', 'Pilot', 'Ready to Launch'];
+        const oppStageClasses = { 'Gate 1': 'leadgen', 'Gate 2': 'new', 'Gate 3': 'audited', 'POC': 'outreach', 'Pilot': 'responded', 'Ready to Launch': 'client' };
+        const oppStageTech = {
+            'Gate 1': { automation: 'WF2/WF7/WF9', input: 'Reddit + Product Hunt', output: 'Scored opportunity', plist: 'n8n (4h)', interval: 'every 4-6h', status: 'working' },
+            'Gate 2': { automation: 'WF8 Tri-Factor', input: 'Pain + Solution + Trend', output: 'Tri-factor score', plist: 'n8n (4h)', interval: 'every 4h', status: 'working' },
+            'Gate 3': { automation: 'WF12 Daily Top 3', input: 'Top scored opps', output: 'CEO briefing', plist: 'n8n (8:45am)', interval: 'daily', status: 'working' },
+            'POC': { automation: 'Nicole + Jarvis', input: 'Validated opp', output: 'POC build', plist: '—', interval: 'manual', status: 'manual' },
+            'Pilot': { automation: 'Pilot build', input: 'POC complete', output: 'First client', plist: '—', interval: 'manual', status: 'manual' },
+            'Ready to Launch': { automation: 'New Pipeline', input: 'Pilot success', output: 'Revenue pipeline', plist: '—', interval: 'manual', status: 'working' }
+        };
 
-        async function fetchOutreachQueue() {
-            const pipeline = document.getElementById('pipeline-select').value;
-            if (!pipeline) return;
+        async function fetchOpportunityPipeline() {
             try {
-                const r = await fetch('/mc/outreach-queue?pipeline=' + pipeline);
-                const json = await r.json();
-                if (json.ok) {
-                    queueData = json.queue;
-                    renderOutreachQueue();
-                }
-            } catch(e) { console.error('Failed to fetch outreach queue', e); }
-        }
+                const [d, wfStatus] = await Promise.all([
+                    fetch('/mc/opp-pipeline').then(r => r.json()),
+                    fetch('/mc/n8n-wf-status').then(r => r.json()).catch(() => ({ workflows: [] }))
+                ]);
+                if (!d.ok) throw new Error(d.error || 'API error');
+                const stageCounts = d.stage_counts || {};
+                // Build n8n status map by stage
+                const n8nByStage = {};
+                (wfStatus.workflows || []).forEach(wf => { n8nByStage[wf.stage] = wf; });
+                const viz = document.getElementById('opp-funnel-viz');
+                if (!viz) return;
 
-        function renderOutreachQueue() {
-            const card = document.getElementById('outreach-queue-card');
-            const list = document.getElementById('outreach-queue-list');
-            const badge = document.getElementById('queue-count-badge');
-            const pending = queueData.filter(q => q.status === 'pending');
+                let html = '';
+                oppStageOrder.forEach((stage, i) => {
+                    const count = stageCounts[stage] || 0;
+                    const cls = oppStageClasses[stage] || 'new';
+                    const tech = oppStageTech[stage] || {};
+                    // Overlay live n8n execution status on automated stages
+                    const n8nWf = n8nByStage[stage];
+                    let techStatus = tech.status || 'manual';
+                    let techIcon = techStatus === 'working' ? '&#x2705;' : '&#x1F464;';
+                    if (n8nWf) {
+                        if (n8nWf.status === 'success') { techStatus = 'working'; techIcon = '&#x2705;'; }
+                        else if (n8nWf.status === 'error') { techStatus = 'gap'; techIcon = '&#x26D4;'; }
+                        else if (n8nWf.status === 'running') { techStatus = 'partial'; techIcon = '&#x23F3;'; }
+                    }
+                    const techLabel = n8nWf ? esc(n8nWf.name) : esc(tech.automation || '—');
+                    const techBadgeHtml = `<div class="tech-badge ${techStatus}">${techIcon} ${techLabel}</div>`;
+                    const ioHtml = tech.input ? `<div class="tech-io">${esc(tech.input)} &rarr; ${esc(tech.output)}</div>` : '';
+                    const scheduleHtml = tech.interval ? `<div class="tech-schedule">${esc(tech.plist || '')} &middot; ${esc(tech.interval)}</div>` : '';
 
-            if (queueData.length === 0) { card.style.display = 'none'; return; }
-            card.style.display = '';
-            badge.textContent = pending.length;
+                    // Health badges
+                    let healthHtml = '';
+                    if (stage === 'Ready to Launch' && count > 0) healthHtml = `<div class="health-badge ok">★ LAUNCH READY</div>`;
+                    else if (stage === 'Pilot' && count > 0) healthHtml = `<div class="health-badge ok">✓ IN PILOT</div>`;
+                    else if (stage === 'POC' && count > 20) healthHtml = `<div class="health-badge warn">⚠ BACKLOG</div>`;
 
-            if (queueData.length === 0) {
-                list.innerHTML = '<div class="empty-msg">No emails in queue</div>';
-                return;
+                    const plist2 = tech.plist || '';
+                    const automation2 = tech.automation || '';
+                    const stepId2 = `step-p2-${i}`;
+                    html += `<div class="funnel-stage stage-${cls}" id="${stepId2}">
+                        <div class="funnel-top">
+                            ${healthHtml}
+                            <div class="count">${count}</div>
+                            <div class="count-divider"></div>
+                            <div class="name">${esc(stage)}</div>
+                        </div>
+                        <div class="bar"></div>
+                        <div class="step-num">Step ${i + 1}</div>
+                        <div class="tech-footer">
+                            ${techBadgeHtml}
+                            ${ioHtml}
+                            ${scheduleHtml}
+                        </div>
+                        <input type="checkbox" class="step-checkbox" title="Flag for swarm review"
+                            data-stage-id="${stepId2}" data-pipeline="opportunity-capture" data-step="${esc(stage)}" data-plist="${esc(plist2)}" data-automation="${esc(automation2)}" />
+                    </div>`;
+                    if (i < oppStageOrder.length - 1) {
+                        html += `<div class="funnel-arrow"><span class="rate"></span></div>`;
+                    }
+                });
+                viz.innerHTML = html;
+            } catch(e) {
+                const viz = document.getElementById('opp-funnel-viz');
+                if (viz) viz.innerHTML = '<div class="empty-msg">Failed to load opportunity data — ' + e.message + '</div>';
             }
-
-            list.innerHTML = queueData.map(q => {
-                const statusCls = q.status || 'pending';
-                const isPending = q.status === 'pending';
-                const actionsHtml = isPending ? `
-                    <button class="queue-btn approve" onclick="approveEmail('${esc(q.lead_id)}')">Approve &amp; Send</button>
-                    <button class="queue-btn edit" onclick="editEmail('${esc(q.lead_id)}')">Edit</button>
-                    <button class="queue-btn skip" onclick="skipEmail('${esc(q.lead_id)}')">Skip</button>
-                ` : `<span class="queue-status ${statusCls}">${esc(q.status)}</span>`;
-
-                return `<div class="queue-item" id="qi-${esc(q.lead_id)}">
-                    <div class="qi-header">
-                        <span class="qi-to">${esc(q.name || '')} &lt;${esc(q.to || '')}&gt;</span>
-                        <span class="qi-meta">Score: ${esc(q.audit_score || '?')} | ${esc(q.lead_id || '')} | ${esc((q.queued_at || '').slice(0,10))}</span>
-                    </div>
-                    <div class="qi-subject" id="qi-subject-${esc(q.lead_id)}">${esc(q.subject || '(no subject)')}</div>
-                    <div class="qi-body" id="qi-body-${esc(q.lead_id)}">${esc(q.body_text || '')}</div>
-                    <div class="qi-actions" id="qi-actions-${esc(q.lead_id)}">${actionsHtml}</div>
-                </div>`;
-            }).join('');
         }
 
-        async function approveEmail(leadId) {
-            if (!confirm('Approve and send this email?')) return;
+        // ── Jake Inbox ─────────────────────────────────────────────────
+        async function fetchJakeInbox() {
             try {
-                const r = await fetch('/mc/outreach-approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lead_id: leadId })
-                });
-                const json = await r.json();
-                alert(json.message || json.error);
-                fetchOutreachQueue();
-            } catch(e) { alert('Error: ' + e.message); }
+                const r = await fetch('/mc/jake-inbox');
+                if (!r.ok) return;
+                const d = await r.json();
+                if (!d.ok) return;
+
+                const sc = document.getElementById('jake-sent-count'); if (sc) sc.textContent = d.outbound?.count || 0;
+                const ic = document.getElementById('jake-inbound-count'); if (ic) ic.textContent = d.inbound?.count || 0;
+                document.getElementById('jake-unanswered-count').textContent = d.unanswered?.count || 0;
+                document.getElementById('jake-queue-count').textContent = d.queue?.pending || 0;
+
+                const uaEl = document.getElementById('jake-unanswered-count');
+                uaEl.style.color = d.unanswered?.count > 0 ? '#dc2626' : '#16a34a';
+
+                const badge = document.getElementById('jake-daemon-badge');
+                if (d.health?.status === 'WARNING') {
+                    badge.textContent = 'action needed'; badge.style.background = 'rgba(220,38,38,0.15)'; badge.style.color = '#ff6b6b';
+                } else {
+                    badge.textContent = 'healthy'; badge.style.background = 'rgba(22,163,74,0.15)'; badge.style.color = '#00ff88';
+                }
+
+                const list = document.getElementById('jake-inbox-list');
+                let html = '';
+                const replies = (d.inbound?.recent || []).map(m => ({...m, type: 'reply'}));
+                const sentMsgs = (d.outbound?.recent || []).slice(0, 3).map(m => ({...m, type: 'sent'}));
+
+                if (replies.length > 0) {
+                    html += '<div style="font-size:0.6rem;color:#00dcff;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;font-weight:600;">Replies (' + replies.length + ')</div>';
+                    replies.slice(0, 5).forEach(m => {
+                        const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 30);
+                        const subj = (m.subject || '').substring(0, 40);
+                        const dateStr = m.date ? new Date(m.date).toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                        const unreadBadge = m.unread ? '<span style="background:#00dcff;color:#0a0a1a;font-size:0.5rem;padding:1px 4px;border-radius:3px;margin-left:4px;font-weight:700;">NEW</span>' : '';
+                        html += '<div style="background:rgba(0,220,255,0.06);border:1px solid rgba(0,220,255,0.15);border-radius:6px;padding:0.35rem 0.5rem;margin-bottom:0.25rem;">' +
+                            '<div style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#00dcff;flex-shrink:0;"></span>' +
+                            '<span style="font-size:0.7rem;color:#00dcff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + from + '</span>' + unreadBadge +
+                            '<span style="margin-left:auto;font-size:0.55rem;color:rgba(255,255,255,0.3);">' + dateStr + '</span></div>' +
+                            '<div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + subj + '</div></div>';
+                    });
+                }
+                if (sentMsgs.length > 0) {
+                    html += '<div style="font-size:0.6rem;color:rgba(245,166,35,0.6);text-transform:uppercase;letter-spacing:0.08em;margin:0.4rem 0 0.3rem;font-weight:600;">Recent Sent</div>';
+                    sentMsgs.forEach(m => {
+                        const to = (m.to || '').replace(/<[^>]+>/g, '').trim().substring(0, 25);
+                        const subj = (m.subject || '').substring(0, 35);
+                        html += '<div style="display:flex;align-items:center;font-size:0.7rem;color:rgba(255,255,255,0.4);padding:0.15rem 0;">' +
+                            '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#F5A623;margin-right:6px;flex-shrink:0;opacity:0.5;"></span>' +
+                            '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + to + ' — ' + subj + '</span></div>';
+                    });
+                }
+                if (!html) html = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No activity yet</div>';
+                list.innerHTML = html;
+
+                const healthEl = document.getElementById('jake-health');
+                if (d.health?.status === 'WARNING') {
+                    healthEl.textContent = d.health.unanswered_count + ' unanswered'; healthEl.style.color = '#dc2626';
+                } else {
+                    healthEl.textContent = (d.queue?.sent || 0) + ' sent · ' + (d.queue?.pending || 0) + ' pending'; healthEl.style.color = 'rgba(255,255,255,0.3)';
+                }
+            } catch(e) {
+                const list = document.getElementById('jake-inbox-list');
+                if (list) list.innerHTML = '<div style="font-size:0.7rem;color:#dc2626;">Error: ' + e.message + '</div>';
+            }
         }
 
-        async function skipEmail(leadId) {
+        // ── Email Optimizer ───────────────────────────────────────────────
+        async function fetchAutoresearch() {
             try {
-                const r = await fetch('/mc/outreach-skip', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lead_id: leadId })
+                const r = await fetch('/mc/autoresearch-status');
+                if (!r.ok) return;
+                const d = await r.json();
+                if (!d.ok) return;
+
+                document.getElementById('ar-total').textContent = d.total_experiments || 0;
+                document.getElementById('ar-improvements').textContent = d.improvements || 0;
+                document.getElementById('ar-best').textContent = d.best_score ? d.best_score.toFixed(1) : '0';
+
+                const ps = document.getElementById('ar-prompt-status');
+                if (d.evolved) { ps.textContent = 'Evolved'; ps.style.color = '#00ff88'; }
+                else { ps.textContent = 'Base'; ps.style.color = 'rgba(255,255,255,0.5)'; }
+
+                const badge = document.getElementById('autoresearch-daemon-badge');
+                badge.textContent = 'Loaded'; badge.style.background = 'rgba(22,163,74,0.15)'; badge.style.color = '#00ff88';
+
+                const recent = document.getElementById('ar-recent');
+                let html = '';
+                (d.recent || []).slice(0, 6).forEach(e => {
+                    const scoreColor = e.score >= 85 ? '#00ff88' : e.score >= 75 ? '#ffaa00' : '#ff6666';
+                    const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit',hour12:true}) : '';
+                    html += '<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.7rem;color:rgba(255,255,255,0.5);padding:0.1rem 0;">' +
+                        '<span style="color:rgba(255,255,255,0.2);">—</span>' +
+                        '<span style="font-family:monospace;color:rgba(255,255,255,0.3);">' + (e.id || '') + '</span>' +
+                        '<span style="font-weight:700;color:' + scoreColor + ';">' + (e.score || 0).toFixed(1) + '</span>' +
+                        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (e.description || '').substring(0, 45) + '...</span>' +
+                        '<span style="color:rgba(255,255,255,0.2);font-size:0.6rem;">' + time + '</span></div>';
                 });
-                const json = await r.json();
-                fetchOutreachQueue();
-            } catch(e) { alert('Error: ' + e.message); }
-        }
+                if (html) recent.innerHTML = html;
 
-        function editEmail(leadId) {
-            const subjectEl = document.getElementById('qi-subject-' + leadId);
-            const bodyEl = document.getElementById('qi-body-' + leadId);
-            const actionsEl = document.getElementById('qi-actions-' + leadId);
-            const origSubject = subjectEl.textContent;
-            const origBody = bodyEl.textContent;
-
-            subjectEl.innerHTML = `<input type="text" value="${origSubject.replace(/"/g, '&quot;')}" id="qi-edit-subject-${leadId}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;padding:0.3rem;border-radius:4px;font-family:Inter,sans-serif;font-size:0.8rem;">`;
-            bodyEl.innerHTML = `<textarea id="qi-edit-body-${leadId}" style="width:100%;min-height:100px;background:rgba(0,0,0,0.3);border:1px solid rgba(0,200,255,0.3);color:rgba(255,255,255,0.8);padding:0.5rem;border-radius:4px;font-family:Inter,sans-serif;font-size:0.72rem;resize:vertical;">${esc(origBody)}</textarea>`;
-            actionsEl.innerHTML = `
-                <button class="queue-btn approve" onclick="saveAndApprove('${leadId}')">Save &amp; Approve</button>
-                <button class="queue-btn skip" onclick="fetchOutreachQueue()">Cancel</button>
-            `;
-        }
-
-        async function saveAndApprove(leadId) {
-            const subject = document.getElementById('qi-edit-subject-' + leadId).value;
-            const bodyText = document.getElementById('qi-edit-body-' + leadId).value;
-            if (!confirm('Approve and send this edited email?')) return;
-            try {
-                const r = await fetch('/mc/outreach-approve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lead_id: leadId, subject, body_text: bodyText })
-                });
-                const json = await r.json();
-                alert(json.message || json.error);
-                fetchOutreachQueue();
-            } catch(e) { alert('Error: ' + e.message); }
+                if (d.last_run) document.getElementById('ar-last-run').textContent = 'Last: ' + new Date(d.last_run).toLocaleString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+            } catch(e) {}
         }
 
         // Init
         loadPipelines().then(() => fetchData());
+        fetchOpportunityPipeline();
+        fetchJakeInbox();
+        fetchAutoresearch();
+        setInterval(fetchJakeInbox, 300000);
+        setInterval(fetchAutoresearch, 300000);
+
+        // Swarm Review — collects checked steps, colors cards by result
+        async function runSwarmReview() {
+            const checked = [...document.querySelectorAll('.step-checkbox:checked')];
+            if (checked.length === 0) { alert('Check at least one step to review.'); return; }
+
+            const steps = checked.map(c => ({
+                stageId: c.dataset.stageId,
+                pipeline: c.dataset.pipeline,
+                step: c.dataset.step,
+                plist: c.dataset.plist,
+                automation: c.dataset.automation
+            }));
+            const pipelines = [...new Set(steps.map(s => s.pipeline))];
+            const concern = steps.map(s => `${s.pipeline}/${s.step}(${s.plist||s.automation})`).join('; ');
+
+            const btn = document.getElementById('swarm-run-btn');
+            const bar = document.getElementById('swarm-bar');
+            const statusEl = document.getElementById('swarm-bar-status');
+            const logEl = document.getElementById('swarm-bar-log');
+
+            // Mark all checked cards yellow (checking)
+            steps.forEach(s => {
+                const card = document.getElementById(s.stageId);
+                if (card) { card.classList.remove('swarm-ok','swarm-error'); card.classList.add('swarm-checking'); }
+            });
+
+            btn.disabled = true;
+            btn.textContent = 'Running...';
+            bar.style.display = 'flex';
+            statusEl.style.color = '#F5A623';
+            statusEl.textContent = `🐝 Swarm checking ${steps.length} step(s): ${steps.map(s=>s.step).join(', ')}`;
+            logEl.textContent = '';
+
+            try {
+                const res = await fetch('/mc/swarm-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pipelines, concern, steps })
+                });
+                const data = await res.json();
+
+                let polls = 0;
+                const interval = setInterval(async () => {
+                    polls++;
+                    try {
+                        const r = await fetch('/mc/swarm-status');
+                        const d = await r.json();
+                        logEl.textContent = d.log || '';
+                        logEl.scrollTop = logEl.scrollHeight;
+
+                        const done = d.fixed || d.escalated || polls >= 24;
+                        if (done) {
+                            clearInterval(interval);
+                            btn.disabled = false;
+                            btn.textContent = '🐝 Run Swarm Review';
+                            // Color cards based on outcome
+                            const resultClass = d.fixed ? 'swarm-ok' : 'swarm-error';
+                            steps.forEach(s => {
+                                const card = document.getElementById(s.stageId);
+                                if (card) { card.classList.remove('swarm-checking'); card.classList.add(resultClass); }
+                            });
+                            if (d.fixed) {
+                                statusEl.style.color = '#00ff88';
+                                statusEl.textContent = '✓ Fixed — Victor queued for validation';
+                            } else if (d.escalated) {
+                                statusEl.style.color = '#ff4444';
+                                statusEl.textContent = `⚠ Problem found → CE [${d.escalated}] — Victor validates after CE closes it`;
+                            } else {
+                                // No marker — treat as ok (swarm ran, no critical issues logged)
+                                steps.forEach(s => {
+                                    const card = document.getElementById(s.stageId);
+                                    if (card) { card.classList.remove('swarm-checking','swarm-error'); card.classList.add('swarm-ok'); }
+                                });
+                                statusEl.style.color = '#00ff88';
+                                statusEl.textContent = '✓ Swarm complete — no critical issues found';
+                            }
+                        }
+                    } catch(err) {}
+                }, 5000);
+            } catch(e) {
+                steps.forEach(s => {
+                    const card = document.getElementById(s.stageId);
+                    if (card) { card.classList.remove('swarm-checking'); card.classList.add('swarm-error'); }
+                });
+                statusEl.style.color = '#ef4444';
+                statusEl.textContent = 'Dispatch failed: ' + e.message;
+                btn.disabled = false; btn.textContent = '🐝 Run Swarm Review';
+            }
+        }
     </script>
 </body>
 </html>

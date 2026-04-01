@@ -1261,6 +1261,13 @@
                                     <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     <a href="https://openrouter.ai/settings/credits" target="_blank" style="font-size:0.5rem; padding:1px 5px; background:rgba(255,200,80,0.15); border:1px solid rgba(255,200,80,0.35); border-radius:3px; color:rgba(255,200,80,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">+ Credits</a>
                                 </div>
+                                <!-- TeamoRouter credit balance -->
+                                <div id="oc-teamorouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.3rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
+                                    <span id="oc-teamorouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">TeamoRouter</span>
+                                    <span id="oc-teamorouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <a href="https://router.teamolab.com/dashboard?user_id=u-ec2d70bcecab42039cb09599136e567f" target="_blank" style="font-size:0.5rem; padding:1px 5px; background:rgba(100,200,255,0.15); border:1px solid rgba(100,200,255,0.35); border-radius:3px; color:rgba(100,200,255,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">Dashboard</a>
+                                </div>
                                 <!-- Daemon statuses -->
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
@@ -1488,6 +1495,24 @@
                                     <a href="https://login.tailscale.com/admin/machines" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(72,128,255,0.12); border:1px solid rgba(72,128,255,0.3); border-radius:4px; color:#6da3ff; cursor:pointer; text-decoration:none; text-align:center;">Admin ↗</a>
                                 </div>
                             </div>
+                            <!-- TVC Website (GA4 traffic) — same row as Secure Tunnels -->
+                            <div id="ga4-widget" style="background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.5rem;">
+                                    <span style="font-size:0.75rem;">🌐</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">TVC Website</span>
+                                    <span id="ga4-trend" style="font-size:0.7rem;font-weight:700;margin-left:0.3rem;">—</span>
+                                    <span id="ga4-updated" style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.25);"></span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;">
+                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Sessions</div><div id="ga4-sessions" style="color:#bb66ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-sessions-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Users</div><div id="ga4-users" style="color:#aa55ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-users-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Pageviews</div><div id="ga4-pageviews" style="color:#cc77ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-pageviews-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;text-align:center;">
+                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Bounce</div><div id="ga4-bounce" style="color:#9944ee;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div style="font-size:0.5rem;color:rgba(255,255,255,0.2);">rate</div></div>
+                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Top Page</div><div id="ga4-top-page" style="color:#dd88ff;font-size:0.7rem;font-weight:600;font-family:monospace;word-break:break-all;">—</div><div id="ga4-top-views" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1557,11 +1582,11 @@
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
                         </a>
-                        <!-- Funnels sub-card (clickable) -->
-                        <a href="/funnel" style="text-decoration:none;color:inherit;background:rgba(255,149,0,0.08); border:1px solid rgba(255,149,0,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,149,0,0.15)';this.style.borderColor='rgba(255,149,0,0.35)'" onmouseout="this.style.background='rgba(255,149,0,0.08)';this.style.borderColor='rgba(255,149,0,0.2)'">
+                        <!-- Pipelines sub-card (clickable) -->
+                        <a href="/pipelines" style="text-decoration:none;color:inherit;background:rgba(255,149,0,0.08); border:1px solid rgba(255,149,0,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,149,0,0.15)';this.style.borderColor='rgba(255,149,0,0.35)'" onmouseout="this.style.background='rgba(255,149,0,0.08)';this.style.borderColor='rgba(255,149,0,0.2)'">
                             <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                 <span style="font-size:0.75rem;">🔄</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Funnels</span>
+                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Pipelines</span>
                             </div>
                             <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#ff9500; letter-spacing:0.02em;" id="funnel-value">—</div>
                             <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="funnel-label">pipeline value</div>
@@ -1569,24 +1594,6 @@
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
                         </a>
-                    </div>
-                    <!-- Row 2: GA4 Website Traffic -->
-                    <div id="ga4-widget" style="margin-top:0.8rem; background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2); border-radius:8px; padding:0.75rem 0.85rem;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
-                            <div style="display:flex;align-items:center;gap:0.4rem;">
-                                <span style="font-size:0.75rem;">🌐</span>
-                                <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">TVC Website</span>
-                                <span id="ga4-trend" style="font-size:0.7rem;font-weight:700;margin-left:0.3rem;">—</span>
-                            </div>
-                            <span id="ga4-updated" style="font-size:0.5rem;color:rgba(255,255,255,0.25);"></span>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.6rem;text-align:center;">
-                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Sessions</div><div id="ga4-sessions" style="color:#bb66ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-sessions-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Users</div><div id="ga4-users" style="color:#aa55ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-users-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Pageviews</div><div id="ga4-pageviews" style="color:#cc77ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-pageviews-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Bounce</div><div id="ga4-bounce" style="color:#9944ee;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div style="font-size:0.5rem;color:rgba(255,255,255,0.2);">rate</div></div>
-                            <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Top Page</div><div id="ga4-top-page" style="color:#dd88ff;font-size:0.7rem;font-weight:600;font-family:monospace;word-break:break-all;">—</div><div id="ga4-top-views" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1711,7 +1718,7 @@
                             <a id="ai-team-btn" href="/ai-team" style="text-decoration:none;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.35);color:#00ff88;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;">AI Team &rarr;</a>
                         </div>
                     </div>
-                    <div id="team-overview-grid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.6rem;padding:0.5rem 0;overflow-x:auto;">
+                    <div id="team-overview-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.6rem;padding:0.5rem 0;overflow-x:auto;">
                         <div style="grid-column:1/-1;color:rgba(255,255,255,0.3);font-size:0.72rem;padding:0.5rem;">Loading team data...</div>
                     </div>
                 </div>
@@ -2236,85 +2243,7 @@
                 </div>
             </div>
 
-            <!-- Jake Inbox + Email Optimizer — same row -->
-            <div class="services-grid" style="margin-bottom:1.5rem;grid-template-columns:1fr 1fr;">
-            <div class="service-panel" id="jake-inbox-card">
-                <div class="panel-header">
-                    <div class="panel-icon">📧</div>
-                    <div class="panel-title">Jake Inbox</div>
-                    <div id="jake-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</div>
-                </div>
-                <div style="padding:0.6rem 0.85rem;">
-                    <!-- Stats row -->
-                    <div style="display:flex;gap:1rem;margin-bottom:0.75rem;">
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#F5A623;" id="jake-sent-count">—</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Sent</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#00dcff;" id="jake-inbound-count">—</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Replies</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#16a34a;" id="jake-unanswered-count">—</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Unanswered</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#cc00ff;" id="jake-queue-count">—</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Queued</div>
-                        </div>
-                    </div>
-                    <!-- Recent messages -->
-                    <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Recent Activity</div>
-                    <div id="jake-inbox-list" style="display:flex;flex-direction:column;gap:0.25rem;max-height:160px;overflow-y:auto;">
-                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">Loading...</div>
-                    </div>
-                </div>
-                <div class="panel-footer" style="font-size:0.6rem;color:rgba(255,255,255,0.3);padding:0.4rem 0.85rem;display:flex;justify-content:space-between;align-items:center;">
-                    <span id="jake-health">—</span>
-                    <span style="font-family:monospace;color:rgba(255,255,255,0.2);">jakem@tvcpulse.com</span>
-                </div>
-            </div>
-
-            <!-- Email Optimizer — Email Prompt Optimizer -->
-            <div class="service-panel" id="autoresearch-card">
-                <div class="panel-header">
-                    <div class="panel-icon">🔬</div>
-                    <div class="panel-title">Email Optimizer</div>
-                    <div id="autoresearch-daemon-badge" style="margin-left:auto;font-size:0.6rem;padding:2px 8px;border-radius:4px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);">checking...</div>
-                </div>
-                <div style="padding:0.6rem 0.85rem;">
-                    <!-- Stats row -->
-                    <div style="display:flex;gap:1rem;margin-bottom:0.75rem;">
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#00f5ff;" id="ar-total">0</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Experiments</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#00ff88;" id="ar-improvements">0</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Improvements</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.4rem;font-weight:700;color:#F5A623;" id="ar-best">0</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Best Score</div>
-                        </div>
-                        <div style="flex:1;text-align:center;background:rgba(255,255,255,0.04);border-radius:8px;padding:0.6rem 0.5rem;">
-                            <div style="font-size:1.1rem;font-weight:600;" id="ar-prompt-status" style="color:rgba(255,255,255,0.5);">—</div>
-                            <div style="font-size:0.6rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Prompt</div>
-                        </div>
-                    </div>
-                    <!-- Recent experiments -->
-                    <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Recent Experiments</div>
-                    <div id="ar-recent" style="display:flex;flex-direction:column;gap:0.25rem;max-height:160px;overflow-y:auto;">
-                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No experiments yet — daemon runs nightly at 11 PM</div>
-                    </div>
-                </div>
-                <div class="panel-footer" style="font-size:0.6rem;color:rgba(255,255,255,0.3);padding:0.4rem 0.85rem;display:flex;justify-content:space-between;align-items:center;">
-                    <span id="ar-last-run">—</span>
-                    <span style="font-family:monospace;color:rgba(255,255,255,0.2);">dwe-marketing / dry</span>
-                </div>
-            </div>
-            </div><!-- close Jake+Email Optimizer grid row -->
+            <!-- Jake Inbox + Email Optimizer moved to /funnel (Pipeline page) -->
 
             <!-- Daemon Health -->
             <div class="service-panel" id="daemon-health-card" style="margin-bottom:1.5rem;">
@@ -2341,6 +2270,23 @@
                 </div>
                 <div id="pipeline-board" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;min-height:180px;max-height:320px;">
                     <!-- injected by fetchPipeline() -->
+                </div>
+                <!-- Swarm Review Panel -->
+                <div id="swarm-review-panel" style="margin-top:12px;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07);">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <span style="font-size:0.6rem;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:0.08em;white-space:nowrap;">SWARM REVIEW</span>
+                        <input id="swarm-concern" type="text" placeholder="Specific concern (optional)..."
+                            style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:5px 9px;color:rgba(255,255,255,0.7);font-size:0.65rem;outline:none;" />
+                        <button id="swarm-run-btn" onclick="runSwarmReview()"
+                            style="background:#F5A623;color:#000;border:none;border-radius:5px;padding:5px 14px;font-weight:700;font-size:0.65rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                            Run Swarm Review
+                        </button>
+                    </div>
+                    <div id="swarm-stage-checks" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;"></div>
+                    <div id="swarm-results" style="display:none;background:rgba(0,0,0,0.4);border-radius:6px;padding:10px;max-height:260px;overflow-y:auto;">
+                        <div id="swarm-results-status" style="font-size:0.6rem;font-weight:700;margin-bottom:6px;"></div>
+                        <pre id="swarm-results-log" style="font-size:0.6rem;color:rgba(255,255,255,0.55);white-space:pre-wrap;margin:0;font-family:monospace;"></pre>
+                    </div>
                 </div>
             </div>
 
@@ -3617,10 +3563,25 @@
         // ── /mc/services → external service health ────────────────────────────
         async function fetchServices() {
             try {
-                const [d, cr] = await Promise.all([
+                const [d, cr, tcr] = await Promise.all([
                     fetch('/mc/services').then(r => r.json()),
-                    fetch('/mc/openrouter-credits').then(r => r.json()).catch(() => null)
+                    fetch('/mc/openrouter-credits').then(r => r.json()).catch(() => null),
+                    fetch('/mc/teamorouter-credits').then(r => r.json()).catch(() => null)
                 ]);
+                // TeamoRouter credit display
+                const trDot = document.getElementById('oc-teamorouter-dot');
+                const trCredit = document.getElementById('oc-teamorouter-credit');
+                if (tcr && tcr.remaining !== undefined && tcr.remaining !== null) {
+                    const trem = tcr.remaining;
+                    const tColor = trem >= 5 ? '#22c55e' : trem >= 1 ? '#f59e0b' : '#ef4444';
+                    const tDotColor = trem >= 5 ? '#00ff88' : trem >= 1 ? '#f59e0b' : '#ff4444';
+                    trDot.style.background = tDotColor;
+                    trCredit.textContent = `$${trem.toFixed(2)}`;
+                    trCredit.style.color = tColor;
+                } else {
+                    trDot.style.background = '#555';
+                    trCredit.textContent = '—';
+                }
                 const list = document.getElementById('services-list');
                 list.innerHTML = '';
                 d.services.forEach(s => {
@@ -3999,24 +3960,52 @@
                 const list = document.getElementById('jake-inbox-list');
                 let html = '';
 
-                const allMessages = [
-                    ...(d.unanswered?.messages || []).map(m => ({...m, type: 'unanswered'})),
-                    ...(d.inbound?.recent || []).slice(0, 4).map(m => ({...m, type: 'inbound'})),
-                ];
+                // Show replies first (highlighted), then unanswered, then recent sent
+                const replies = (d.inbound?.recent || []).map(m => ({...m, type: 'reply'}));
+                const unansweredMsgs = (d.unanswered?.messages || []).map(m => ({...m, type: 'unanswered'}));
+                const sentMsgs = (d.outbound?.recent || []).slice(0, 3).map(m => ({...m, type: 'sent'}));
 
-                // Dedupe by id
-                const seen = new Set();
-                const unique = allMessages.filter(m => { if (seen.has(m.id)) return false; seen.add(m.id); return true; });
+                // Replies section
+                if (replies.length > 0) {
+                    html += '<div style="font-size:0.6rem;color:#00dcff;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;font-weight:600;">Replies (' + replies.length + ')</div>';
+                    replies.slice(0, 5).forEach(m => {
+                        const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 30);
+                        const subj = (m.subject || '').substring(0, 40);
+                        const dateStr = m.date ? new Date(m.date).toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+                        const unreadBadge = m.unread ? '<span style="background:#00dcff;color:#0a0a1a;font-size:0.5rem;padding:1px 4px;border-radius:3px;margin-left:4px;font-weight:700;">NEW</span>' : '';
+                        html += '<div style="background:rgba(0,220,255,0.06);border:1px solid rgba(0,220,255,0.15);border-radius:6px;padding:0.35rem 0.5rem;margin-bottom:0.25rem;">' +
+                            '<div style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#00dcff;flex-shrink:0;"></span>' +
+                            '<span style="font-size:0.7rem;color:#00dcff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + from + '</span>' + unreadBadge +
+                            '<span style="margin-left:auto;font-size:0.55rem;color:rgba(255,255,255,0.3);">' + dateStr + '</span></div>' +
+                            '<div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + subj + '</div></div>';
+                    });
+                }
 
-                unique.slice(0, 5).forEach(m => {
-                    const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 25);
-                    const subj = (m.subject || '').substring(0, 35);
-                    const color = m.type === 'unanswered' ? '#dc2626' : m.unread ? '#00dcff' : 'rgba(255,255,255,0.25)';
-                    const dot = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + color + ';margin-right:6px;flex-shrink:0;"></span>';
-                    html += '<div style="display:flex;align-items:center;font-size:0.7rem;color:rgba(255,255,255,0.6);padding:0.15rem 0;">' + dot + '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + from + ' — ' + subj + '</span></div>';
-                });
+                // Unanswered section
+                if (unansweredMsgs.length > 0) {
+                    html += '<div style="font-size:0.6rem;color:#dc2626;text-transform:uppercase;letter-spacing:0.08em;margin:0.4rem 0 0.3rem;font-weight:600;">Unanswered (' + unansweredMsgs.length + ')</div>';
+                    unansweredMsgs.slice(0, 3).forEach(m => {
+                        const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 25);
+                        const subj = (m.subject || '').substring(0, 35);
+                        html += '<div style="display:flex;align-items:center;font-size:0.7rem;color:rgba(255,255,255,0.6);padding:0.15rem 0;">' +
+                            '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#dc2626;margin-right:6px;flex-shrink:0;"></span>' +
+                            '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + from + ' — ' + subj + '</span></div>';
+                    });
+                }
 
-                if (!html) html = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No inbound messages yet</div>';
+                // Recent sent
+                if (sentMsgs.length > 0) {
+                    html += '<div style="font-size:0.6rem;color:rgba(245,166,35,0.6);text-transform:uppercase;letter-spacing:0.08em;margin:0.4rem 0 0.3rem;font-weight:600;">Recent Sent</div>';
+                    sentMsgs.forEach(m => {
+                        const to = (m.to || '').replace(/<[^>]+>/g, '').trim().substring(0, 25);
+                        const subj = (m.subject || '').substring(0, 35);
+                        html += '<div style="display:flex;align-items:center;font-size:0.7rem;color:rgba(255,255,255,0.4);padding:0.15rem 0;">' +
+                            '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#F5A623;margin-right:6px;flex-shrink:0;opacity:0.5;"></span>' +
+                            '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + to + ' — ' + subj + '</span></div>';
+                    });
+                }
+
+                if (!html) html = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.3);">No activity yet</div>';
                 list.innerHTML = html;
 
                 // Health footer
@@ -4819,6 +4808,14 @@
                         { id: 'ai.dwe.agent-heartbeat-cfo', short: 'Heartbeat' },
                         { id: 'ai.dwe.cfo-task-followup',   short: 'Follow-Up' },
                     ]},
+                    { id: 'main',  label: 'Main',           title: 'Coordinator', icon: '🎯', taskId: null,    hbId: null,    sessId: 'main',          isHuman: false, daemons: [] },
+                    { id: 'jarvis',label: 'Jarvis',         title: 'Execution',   icon: '🤖', taskId: 'jarvis',hbId: null,    sessId: 'jarvis',        isHuman: false, daemons: [] },
+                    { id: 'jake',  label: 'Jake',           title: 'Pipeline Agent', icon: '📧', taskId: 'jake', hbId: null,    sessId: null,            isHuman: false, daemons: [
+                        { id: 'ai.dwe.audit-runner',      short: 'Audit' },
+                        { id: 'ai.dwe.outreach-sender',   short: 'Outreach' },
+                        { id: 'ai.dwe.contact-enricher',  short: 'Enricher' },
+                    ]},
+                    { id: 'validator', label: 'Validator',  title: 'QA',          icon: '✅', taskId: null,    hbId: null,    sessId: 'validator',     isHuman: false, daemons: [] },
                 ];
 
                 // Priority config — always show all 4 levels
@@ -4958,6 +4955,7 @@
                     let modelHtml = '';
                     function modelColorFor(m) {
                         if (!m) return '#22c55e';
+                        if (m.includes('TeamoRouter')) return '#00dcff';
                         if (m.startsWith('anthropic/') || m.startsWith('openclaw/') || m.toLowerCase().includes('sonic')) return '#ef4444';
                         if (m.includes('auto') || m.includes('minimax')) return '#22c55e';
                         if (m.includes('ollama')) return '#22c55e';
@@ -4965,23 +4963,29 @@
                         return '#f59e0b';
                     }
                     function modelDisplayFor(m) {
-                        if (!m) return 'or/m2.7';
+                        if (!m) return 'teamo/free';
+                        if (m === 'teamorouter/TeamoRouter-free') return 'teamo/free';
+                        if (m === 'teamorouter/TeamoRouter-best') return 'teamo/best';
+                        if (m === 'openrouter/anthropic/claude-sonnet-4') return 'claude/sonnet-4';
                         if (m === 'openrouter/minimax/minimax-m2.7') return 'minimax/m2.7';
                         if (m === 'ollama/qwen2.5:7b') return 'ollama/qwen2.5';
-                        return m.replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
+                        return m.replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('teamorouter/', 'teamo/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
                     }
                     // Config-based model lookup per agent
                     const agentModelConfig = {
-                        'main': 'openrouter/minimax/minimax-m2.7',
-                        'cto': 'openrouter/minimax/minimax-m2.7',
-                        'anita': 'ollama/qwen2.5:7b',
-                        'nicole': 'openrouter/minimax/minimax-m2.7',
-                        'chief-engineer': 'openrouter/minimax/minimax-m2.7',
-                        'cfo': 'openrouter/minimax/minimax-m2.7',
-                        'jarvis': 'openrouter/minimax/minimax-m2.7',
+                        'main': 'teamorouter/TeamoRouter-free',
+                        'cto': 'teamorouter/TeamoRouter-free',
+                        'anita': 'teamorouter/TeamoRouter-free',
+                        'nicole': 'teamorouter/TeamoRouter-free',
+                        'chief-engineer': 'teamorouter/TeamoRouter-free',
+                        'cfo': 'teamorouter/TeamoRouter-free',
+                        'jarvis': 'teamorouter/TeamoRouter-free',
+                        'jake': 'teamorouter/TeamoRouter-free',
+                        'herald': 'openrouter/anthropic/claude-sonnet-4',
+                        'validator': 'teamorouter/TeamoRouter-free',
                     };
                     if (!agent.isHuman) {
-                        const modelFull = s?.model || agentModelConfig[agent.id] || 'openrouter/minimax/minimax-m2.7';
+                        const modelFull = s?.model || agentModelConfig[agent.id] || 'teamorouter/TeamoRouter-free';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
                             <span style="font-size:0.58rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
@@ -4989,7 +4993,7 @@
                     } else {
                         // Sidney: show main agent's model with same color logic
                         const mainSess = sessionById['main'];
-                        const mainFull = mainSess?.model || agentModelConfig['main'] || 'openrouter/minimax/minimax-m2.7';
+                        const mainFull = mainSess?.model || agentModelConfig['main'] || 'teamorouter/TeamoRouter-free';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
                             <span style="font-size:0.58rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
@@ -5062,7 +5066,7 @@
 
                     // ── New card layout (mockup v2) ──
                     // Header: icon + name + role | model code tag
-                    const modelFull2 = agent.isHuman ? (agentModelConfig['main'] || '') : (s?.model || agentModelConfig[agent.id] || 'openrouter/minimax/minimax-m2.7');
+                    const modelFull2 = agent.isHuman ? (agentModelConfig['main'] || '') : (s?.model || agentModelConfig[agent.id] || 'teamorouter/TeamoRouter-free');
                     const modelDisp2 = modelDisplayFor(modelFull2);
                     const modelClr2  = modelColorFor(modelFull2);
 
@@ -5116,10 +5120,10 @@
                     // Model selector dropdown (non-human agents only)
                     const modelSelectHtml = (!agent.isHuman && agent.id !== 'jarvis')
                         ? `<select id="model-select-${agent.id}" onchange="changeAgentModel('${agent.id}', this.value)" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#22c55e;font-size:0.6rem;font-family:'Inter',monospace;padding:2px 4px;border-radius:4px;cursor:pointer;max-width:140px;outline:none;appearance:auto;" title="Change model for ${agent.label}">
-                            <option value="smart-routing" style="background:#1a1f4e;color:#22c55e;">Smart Routing</option>
+                            <option value="teamorouter/TeamoRouter-free" style="background:#1a1f4e;color:#00dcff;">TeamoRouter Free</option>
+                            <option value="teamorouter/TeamoRouter-best" style="background:#1a1f4e;color:#00dcff;">TeamoRouter Best</option>
+                            <option value="ollama/qwen2.5:7b" style="background:#1a1f4e;color:#22c55e;">Ollama Qwen 2.5</option>
                             <option value="ollama/kimi-k2.5:cloud" style="background:#1a1f4e;color:#22c55e;">Kimi K2.5</option>
-                            <option value="ollama/minimax-m2.7:cloud" style="background:#1a1f4e;color:#22c55e;">MiniMax M2.7</option>
-                            <option value="ollama/glm-5:cloud" style="background:#1a1f4e;color:#22c55e;">GLM-5</option>
                             <option value="openrouter/auto" style="background:#1a1f4e;color:#f59e0b;">OpenRouter Auto</option>
                         </select>`
                         : `<code style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.65rem;color:#22c55e;">${modelDisp2}</code>`;
@@ -5732,9 +5736,86 @@
                     });
                 });
 
+                renderSwarmChecks();
             } catch(e) {
                 const b = document.getElementById('pipeline-board');
                 if (b) b.innerHTML = `<div style="padding:1rem;color:#ef4444;font-size:0.7rem;">Failed to load pipeline</div>`;
+            }
+        }
+
+        function renderSwarmChecks() {
+            const container = document.getElementById('swarm-stage-checks');
+            if (!container) return;
+            const labels = { '1_New': 'New', '2_CEO_review': 'CEO Review', '3_Approved': 'Approved', '4_Ready_to_Seed': 'Ready to Seed', '5_Archive': 'Archive' };
+            container.innerHTML = Object.keys(labels).map(s =>
+                `<label style="display:flex;align-items:center;gap:5px;font-size:0.6rem;color:rgba(255,255,255,0.4);cursor:pointer;">
+                    <input type="checkbox" value="${s}" style="accent-color:#F5A623;" checked /> ${labels[s]}
+                </label>`
+            ).join('');
+        }
+        document.addEventListener('DOMContentLoaded', renderSwarmChecks);
+
+        async function runSwarmReview() {
+            const checks = [...document.querySelectorAll('#swarm-stage-checks input[type=checkbox]:checked')].map(c => c.value);
+            const concern = document.getElementById('swarm-concern').value;
+            const btn = document.getElementById('swarm-run-btn');
+            const statusEl = document.getElementById('swarm-results-status');
+            const logEl = document.getElementById('swarm-results-log');
+            const resultsEl = document.getElementById('swarm-results');
+
+            btn.disabled = true;
+            btn.textContent = 'Dispatching...';
+            resultsEl.style.display = 'block';
+            statusEl.style.color = 'rgba(255,255,255,0.4)';
+            statusEl.textContent = 'Swarm dispatching...';
+            logEl.textContent = '';
+
+            try {
+                const res = await fetch('/mc/swarm-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pipelines: checks, concern })
+                });
+                const data = await res.json();
+                const ts = new Date(data.timestamp).toLocaleTimeString();
+                statusEl.textContent = `Swarm dispatched at ${ts} — running diagnostics...`;
+                btn.textContent = 'Running...';
+
+                let polls = 0;
+                const interval = setInterval(async () => {
+                    polls++;
+                    try {
+                        const r = await fetch('/mc/swarm-status');
+                        const d = await r.json();
+                        logEl.textContent = d.log || '';
+                        resultsEl.scrollTop = resultsEl.scrollHeight;
+
+                        if (d.fixed) {
+                            statusEl.style.color = '#00ff88';
+                            statusEl.textContent = 'Fixed ✓ — Victor queued for validation';
+                            clearInterval(interval);
+                            btn.disabled = false;
+                            btn.textContent = 'Run Swarm Review';
+                        } else if (d.escalated) {
+                            statusEl.style.color = '#F5A623';
+                            statusEl.textContent = `Task created → CE [${d.escalated}] — Victor will validate after CE completes`;
+                            clearInterval(interval);
+                            btn.disabled = false;
+                            btn.textContent = 'Run Swarm Review';
+                        } else if (polls >= 24) {
+                            statusEl.style.color = 'rgba(255,255,255,0.4)';
+                            statusEl.textContent = 'Swarm ran — check log above for results';
+                            clearInterval(interval);
+                            btn.disabled = false;
+                            btn.textContent = 'Run Swarm Review';
+                        }
+                    } catch(err) {}
+                }, 5000);
+            } catch(e) {
+                statusEl.style.color = '#ef4444';
+                statusEl.textContent = 'Failed to dispatch swarm: ' + e.message;
+                btn.disabled = false;
+                btn.textContent = 'Run Swarm Review';
             }
         }
 
