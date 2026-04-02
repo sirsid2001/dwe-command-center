@@ -3745,6 +3745,9 @@
                         'ai.dwe.night-mode-heartbeat':{ dot: 'hud-night-mode-dot',     st: 'hud-night-mode-st' },
                         'ai.dwe.teams-mute-watcher':  { dot: 'hud-meeting-mute-dot',  st: 'hud-meeting-mute-st' },
                         'ai.dwe.openclaw-backup':     { dot: 'hud-oc-backup-dot',      st: 'hud-oc-backup-st' },
+                        'ai.dwe.daily-ops-log':       { dot: 'hud-daily-ops-dot',      st: 'hud-daily-ops-st' },
+                        'ai.dwe.audit-runner':        { dot: 'hud-audit-runner-dot',   st: 'hud-audit-runner-st' },
+                        'ai.dwe.outreach-sender':     { dot: 'hud-outreach-dot',       st: 'hud-outreach-st' },
                     };
                     if (hudMap[s.id]) {
                         const h = hudMap[s.id];
@@ -3855,6 +3858,7 @@
                     'Follow-Up':   { daemons: [], prefix: ['ai.dwe.ce-task', 'ai.dwe.cto-task', 'ai.dwe.nicole-task', 'ai.dwe.cfo-task'] },
                     'Brain':       { daemons: [], prefix: ['ai.dwe.seed-', 'ai.dwe.notion-sync', 'ai.dwe.brain-', 'ai.dwe.nightly-', 'ai.dwe.memory-decay'] },
                     'Monitoring':  { daemons: [], prefix: ['ai.dwe.health-', 'ai.dwe.anomaly-', 'ai.dwe.ralphy-', 'com.dwe.ops-'] },
+                    'Pipeline':    { daemons: [], prefix: ['ai.dwe.audit-runner', 'ai.dwe.outreach-sender', 'ai.dwe.daily-ops-log', 'ai.dwe.campaign-sender', 'ai.dwe.pipeline-responder', 'ai.dwe.reply-tracker', 'ai.dwe.contact-enricher', 'ai.dwe.hvac-lead-scraper'] },
                     'Routine':     { daemons: [], prefix: ['ai.dwe.clawhub-', 'ai.dwe.soul-', 'ai.dwe.night-mode', 'ai.dwe.teams-mute', 'ai.dwe.openclaw-backup', 'ai.dwe.morning-'] },
                     'Other':       { daemons: [], prefix: [] }
                 };
@@ -3884,7 +3888,7 @@
 
                 // Render categories
                 let html = '';
-                const catOrder = ['Core', 'PM', 'Heartbeats', 'Follow-Up', 'Brain', 'Monitoring', 'Routine', 'Other'];
+                const catOrder = ['Core', 'Pipeline', 'PM', 'Heartbeats', 'Follow-Up', 'Brain', 'Monitoring', 'Routine', 'Other'];
                 catOrder.forEach(cat => {
                     const info = categories[cat];
                     if (!info.daemons.length) return;
