@@ -3722,7 +3722,7 @@ function getSshTunnels(req, res) {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 reverse: { up: reverseUp, pid: reversePid, note: 'Ollama · SSH · Dashboard → VPS' },
-                forward: { up: forwardUp, note: '64.23.238.56' }
+                forward: { up: forwardUp, note: '86.48.27.45' }
             }));
         });
     });
@@ -3780,7 +3780,7 @@ function getInternetStatus(req, res) {
 const SERVICE_IP_MAP = {
     // prefix → service name (matched against connection remote IPs)
     '208.103.161': 'notion',
-    '64.23.238.56': 'n8n',
+    '86.48.27.45': 'n8n',
     '104.18.2': 'openrouter',
     '104.18.3': 'openrouter',
     '140.82.11': 'github',
