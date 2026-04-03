@@ -369,6 +369,18 @@ const server = http.createServer((req, res) => {
         case '/mc/launchd':
             getLaunchd(req, res);
             break;
+        case '/mc/tunnel-status':
+            getTunnelStatus(req, res);
+            break;
+        case '/mc/old-vps-status':
+            getOldVpsStatus(req, res);
+            break;
+        case '/mc/site-health':
+            getSiteHealth(req, res);
+            break;
+        case '/mc/contabo-vps-status':
+            getContaboVpsStatus(req, res);
+            break;
         case '/mc/daemon-health':
             getDaemonHealth(req, res);
             break;
@@ -2595,7 +2607,7 @@ const { exec } = require('child_process');
 function getServices(req, res) {
     const services = [
         { name: 'OpenClaw Gateway', port: 3000, check: 'http://127.0.0.1:3000/status' },
-        { name: 'n8n Digital Ocean', url: 'https://n8n.tvcpulse.com', type: 'external' },
+        { name: 'n8n Contabo', url: 'https://n8n.tvcpulse.com', type: 'external' },
         { name: 'Notion API', url: 'https://api.notion.com/v1', type: 'external' },
         { name: 'Pinecone', url: 'https://api.pinecone.io', type: 'external' },
         { name: 'Ollama M4 GPU', port: 11434 },
@@ -2768,11 +2780,115 @@ function getCrons(req, res) {
     });
 
     // VPS crons (ssh with 5s timeout)
-    exec('ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no n8n-vps "crontab -l 2>/dev/null | grep -v \'^#\' | grep -v \'^$\' | head -20"', { timeout: 10000 }, (error, stdout) => {
+    exec('ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 "crontab -l 2>/dev/null | grep -v \'^#\' | grep -v \'^$\' | head -20"', { timeout: 10000 }, (error, stdout) => {
         if (!error && stdout) {
             allCrons.push(...parseCronLines(stdout, 'VPS', 'VPS'));
         }
         done();
+    });
+}
+
+function getOldVpsStatus(req, res) {
+    const cmd = '/Users/elf-6/mission-control-server/check_old_vps.sh';
+    exec(cmd, { timeout: 15000 }, (err, stdout) => {
+        const result = { online: false, cpu: '—', ram: '—', disk: '—', uptime: '—', n8n: '—', load: '—' };
+        if (!err && stdout) {
+            result.online = true;
+            stdout.split('\n').forEach(line => {
+                if (line.startsWith('CPU:')) result.cpu = line.slice(4);
+                if (line.startsWith('RAM:')) result.ram = line.slice(4);
+                if (line.startsWith('DISK:')) result.disk = line.slice(5);
+                if (line.startsWith('UPTIME:')) result.uptime = line.slice(7);
+                if (line.startsWith('N8N:')) result.n8n = line.slice(4);
+                if (line.startsWith('LOAD:')) result.load = line.slice(5);
+            });
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+    });
+}
+
+function getSiteHealth(req, res) {
+    const https = require('https');
+    const sites = [
+        { name: 'theveteransconsultant.com', url: 'https://theveteransconsultant.com/', label: 'TVC Home' },
+        { name: 'theveteransconsultant.com/services', url: 'https://theveteransconsultant.com/services/', label: 'TVC Services' },
+        { name: 'theveteransconsultant.com/health-report', url: 'https://theveteransconsultant.com/health-report/', label: 'Health Report' },
+        { name: 'tvcpulse.com', url: 'https://tvcpulse.com/', label: 'TVC Pulse' },
+    ];
+    const results = [];
+    let pending = sites.length;
+    sites.forEach(site => {
+        const start = Date.now();
+        const hostname = new URL(site.url).hostname;
+        // Get SSL expiry via openssl (works through Cloudflare)
+        exec(`echo | openssl s_client -servername ${hostname} -connect ${hostname}:443 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | sed 's/notAfter=//'`, { timeout: 8000 }, (sslErr, sslOut) => {
+            let sslDays = null;
+            if (!sslErr && sslOut && sslOut.trim()) {
+                const expiry = new Date(sslOut.trim());
+                if (!isNaN(expiry)) sslDays = Math.round((expiry - Date.now()) / (1000 * 60 * 60 * 24));
+            }
+            // HTTP check
+            const req2 = https.get(site.url, { timeout: 10000 }, (resp) => {
+                const elapsed = ((Date.now() - start) / 1000).toFixed(2);
+                results.push({ label: site.label, url: site.url, status: resp.statusCode, time: elapsed + 's', ssl: sslDays, ok: resp.statusCode >= 200 && resp.statusCode < 400 });
+                resp.resume();
+                pending--;
+                if (pending === 0) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(results)); }
+            });
+            req2.on('error', (e) => {
+                results.push({ label: site.label, url: site.url, status: 'DOWN', time: '—', ssl: sslDays, ok: false });
+                pending--;
+                if (pending === 0) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(results)); }
+            });
+            req2.on('timeout', () => { req2.destroy(); });
+        });
+    });
+}
+
+function getContaboVpsStatus(req, res) {
+    const cmd = '/Users/elf-6/mission-control-server/check_contabo_vps.sh';
+    exec(cmd, { timeout: 15000 }, (err, stdout) => {
+        const result = { online: false, cpu: '—', ram: '—', disk: '—', uptime: '—', n8n: '—', load: '—' };
+        if (!err && stdout) {
+            result.online = true;
+            stdout.split('\n').forEach(line => {
+                if (line.startsWith('CPU:')) result.cpu = line.slice(4);
+                if (line.startsWith('RAM:')) result.ram = line.slice(4);
+                if (line.startsWith('DISK:')) result.disk = line.slice(5);
+                if (line.startsWith('UPTIME:')) result.uptime = line.slice(7);
+                if (line.startsWith('N8N:')) result.n8n = line.slice(4);
+                if (line.startsWith('LOAD:')) result.load = line.slice(5);
+            });
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+    });
+}
+
+function getTunnelStatus(req, res) {
+    const ports = [
+        { name: 'ollama', port: 11434 },
+        { name: 'ssh', port: 2222 },
+        { name: 'mc', port: 8899 },
+        { name: 'openclaw', port: 3100 },
+        { name: 'litellm', port: 4000 },
+    ];
+    const vpsIP = '86.48.27.45';
+    const results = [];
+    let pending = ports.length;
+
+    ports.forEach(p => {
+        const cmd = `ssh -o ConnectTimeout=3 -o BatchMode=yes contabo-vps "nc -z -w2 localhost ${p.port} 2>/dev/null && echo UP || echo DOWN" 2>/dev/null || echo UNREACHABLE`;
+        exec(cmd, { timeout: 8000 }, (err, stdout) => {
+            const status = (stdout || '').trim();
+            results.push({ name: p.name, port: p.port, status: status === 'UP' ? 'up' : 'down' });
+            pending--;
+            if (pending === 0) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(results));
+            }
+        });
     });
 }
 
@@ -3695,7 +3811,7 @@ function getTailscaleStatus(req, res) {
 
 function getN8nUptime(req, res) {
     const { exec: execSsh } = require('child_process');
-    const cmd = 'ssh -o ConnectTimeout=5 n8n-vps "uptime -s && docker inspect -f \'{{.State.Running}}\' n8n-docker-caddy-n8n-1 2>/dev/null || echo false"';
+    const cmd = 'ssh -o ConnectTimeout=5 -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 "uptime -s && docker inspect -f \'{{.State.Running}}\' n8n-docker-caddy-n8n-1 2>/dev/null || echo false"';
     execSsh(cmd, { timeout: 10000 }, (err, stdout) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         if (err || !stdout.trim()) {
@@ -3717,7 +3833,7 @@ function getSshTunnels(req, res) {
         const reverseUp = !!(pidMatch && pidMatch[1]);
         const reversePid = pidMatch ? pidMatch[1] : null;
         // Check forward SSH reachability (BatchMode=yes = no password prompt, fast fail)
-        execLocal('ssh -o ConnectTimeout=5 -o BatchMode=yes n8n-vps exit 0 2>/dev/null', { timeout: 8000 }, (err2) => {
+        execLocal('ssh -o ConnectTimeout=5 -o BatchMode=yes -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 exit 0 2>/dev/null', { timeout: 8000 }, (err2) => {
             const forwardUp = !err2;
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
@@ -4009,7 +4125,7 @@ async function getSystemHealth(req, res) {
             run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
             run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
             run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'"),
-            run("ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo ''"),
+            run("IP=$(ipconfig getifaddr en0 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en1 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en2 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en8 2>/dev/null); echo \"$IP\""),
             run("route -n get default 2>/dev/null | awk '/gateway:/{print $2}'"),
             run("sysctl -n vm.loadavg | awk '{print $2}'")
         ]);

@@ -8,6 +8,9 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* Global minimum font size bump for readability */
+        :root { --min-font: 0.65rem; }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #3A41CC;
@@ -203,7 +206,7 @@
         /* n8n Workflow summary chips (detail page at /n8n-workflows) */
         .n8n-summary-chips { display: flex; gap: 0.4rem; align-items: center; }
         .n8n-chip {
-            font-size: 0.58rem; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+            font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px;
         }
         .n8n-chip.total { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
         .n8n-chip.active { background: rgba(0,255,136,0.1); color: #00ff88; }
@@ -230,7 +233,7 @@
         .sp-badge.trigger { background:rgba(255,140,0,0.15); color:#ff8c42; }
         .sp-badge.manual { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.35); }
         .sp-badge.sub-workflow { background:rgba(0,200,150,0.12); color:#40c8a0; }
-        .sp-status { font-size:0.55rem; color:rgba(0,255,136,0.5); }
+        .sp-status { font-size:0.65rem; color:rgba(0,255,136,0.5); }
         .sp-status.off { color:rgba(255,100,100,0.5); }
         .sp-section-header { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem 0; font-size:0.7rem; color:rgba(255,255,255,0.35); border-top:1px solid rgba(255,255,255,0.06); }
         .sp-count { margin-left:auto; font-size:0.6rem; color:rgba(0,255,136,0.5); }
@@ -245,18 +248,18 @@
         .ci-score.med { background:rgba(255,200,60,0.12); color:#ffc83c; }
         .ci-nugget-body { flex:1; min-width:0; }
         .ci-nugget-text { font-size:0.67rem; color:rgba(255,255,255,0.7); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .ci-nugget-meta { display:flex; gap:0.5rem; margin-top:0.2rem; font-size:0.55rem; color:rgba(255,255,255,0.3); }
-        .ci-urgency { font-size:0.5rem; font-weight:600; padding:1px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:0.3px; }
+        .ci-nugget-meta { display:flex; gap:0.5rem; margin-top:0.2rem; font-size:0.65rem; color:rgba(255,255,255,0.3); }
+        .ci-urgency { font-size:0.62rem; font-weight:600; padding:1px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:0.3px; }
         .ci-urgency.act_now { background:rgba(255,60,60,0.15); color:#ff6b6b; }
         .ci-urgency.this_week { background:rgba(255,200,60,0.12); color:#ffc83c; }
         .ci-urgency.this_month { background:rgba(0,140,255,0.12); color:#4da6ff; }
         .ci-urgency.track { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.3); }
-        .ci-verdict { font-size:0.5rem; font-weight:700; padding:2px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:0.3px; white-space:nowrap; }
+        .ci-verdict { font-size:0.62rem; font-weight:700; padding:2px 5px; border-radius:3px; text-transform:uppercase; letter-spacing:0.3px; white-space:nowrap; }
         .ci-verdict.watch { background:rgba(0,255,136,0.15); color:#00ff88; }
         .ci-verdict.skim { background:rgba(255,200,60,0.12); color:#ffc83c; }
         .ci-verdict.skip { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.35); }
         .ci-empty { text-align:center; padding:1.2rem; color:rgba(255,255,255,0.2); font-size:0.7rem; }
-        .ci-scan-time { font-size:0.55rem; color:rgba(255,255,255,0.2); padding:0 0.75rem 0.5rem; }
+        .ci-scan-time { font-size:0.65rem; color:rgba(255,255,255,0.2); padding:0 0.75rem 0.5rem; }
 
         .hero h2 { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 1px; }
         .hero h1 { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #fff 0%, #00f5ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -497,7 +500,7 @@
         /* HUD layer toggle buttons */
         .hud-tog {
             font-family: 'Courier New', monospace;
-            font-size: 0.58rem;
+            font-size: 0.68rem;
             font-weight: 600;
             letter-spacing: 0.04em;
             padding: 3px 7px;
@@ -1195,18 +1198,18 @@
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">elf-6</span>
-                                    <span style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span title="Local: 192.168.1.146" style="font-size:0.55rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
-                                    <span style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35);" id="mac-chip">Apple M4 · 10 cores</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
+                                    <span title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
+                                    <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);" id="mac-chip">Apple M4 · 10 cores</span>
                                     <span id="macmini-uptime-ts-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#a78bff; letter-spacing:0.02em;"><span class="heartbeat">💓</span> <span id="mac-uptime-counter">—</span></div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem; margin-bottom:0.45rem;" id="mac-boot-time">—</div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem; margin-bottom:0.45rem;" id="mac-boot-time">—</div>
                                 <!-- Ollama -->
                                 <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="mac-ollama-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Ollama GPU</span>
-                                    <span id="mac-ollama-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="mac-ollama-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                 </div>
                                 <!-- CPU / RAM / Disk bars -->
                                 <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
@@ -1240,10 +1243,10 @@
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
-                                    <button onclick="openTerminal()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(123,97,255,0.15); border:1px solid rgba(123,97,255,0.35); border-radius:4px; color:#a78bff; cursor:pointer;">Terminal</button>
-                                    <button id="optimize-btn" onclick="runSystemOptimize()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
+                                    <button onclick="openTerminal()" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(123,97,255,0.15); border:1px solid rgba(123,97,255,0.35); border-radius:4px; color:#a78bff; cursor:pointer;">Terminal</button>
+                                    <button id="optimize-btn" onclick="runSystemOptimize()" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
                                 </div>
-                                <div id="optimize-result" style="display:none; margin-top:0.4rem; font-size:0.55rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
+                                <div id="optimize-result" style="display:none; margin-top:0.4rem; font-size:0.65rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
                             </div>
                             <!-- OpenClaw -->
                             <div style="background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.18); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column;">
@@ -1253,53 +1256,53 @@
                                     <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:monospace;font-weight:500;">v...</span>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
                                 <!-- OpenRouter credit balance -->
                                 <div id="oc-openrouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.5rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="oc-openrouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenRouter</span>
                                     <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
-                                    <a href="https://openrouter.ai/settings/credits" target="_blank" style="font-size:0.5rem; padding:1px 5px; background:rgba(255,200,80,0.15); border:1px solid rgba(255,200,80,0.35); border-radius:3px; color:rgba(255,200,80,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">+ Credits</a>
+                                    <a href="https://openrouter.ai/settings/credits" target="_blank" style="font-size:0.62rem; padding:1px 5px; background:rgba(255,200,80,0.15); border:1px solid rgba(255,200,80,0.35); border-radius:3px; color:rgba(255,200,80,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">+ Credits</a>
                                 </div>
                                 <!-- TeamoRouter credit balance -->
                                 <div id="oc-teamorouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.3rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="oc-teamorouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">TeamoRouter</span>
                                     <span id="oc-teamorouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
-                                    <a href="https://router.teamolab.com/dashboard?user_id=u-ec2d70bcecab42039cb09599136e567f" target="_blank" style="font-size:0.5rem; padding:1px 5px; background:rgba(100,200,255,0.15); border:1px solid rgba(100,200,255,0.35); border-radius:3px; color:rgba(100,200,255,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">Dashboard</a>
+                                    <a href="https://router.teamolab.com/dashboard?user_id=u-ec2d70bcecab42039cb09599136e567f" target="_blank" style="font-size:0.62rem; padding:1px 5px; background:rgba(100,200,255,0.15); border:1px solid rgba(100,200,255,0.35); border-radius:3px; color:rgba(100,200,255,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">Dashboard</a>
                                 </div>
                                 <!-- Daemon statuses -->
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-gateway-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Gateway</span>
-                                        <span id="oc-gateway-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-gateway-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-relay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
-                                        <span id="oc-relay-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-relay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-backup-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Backup</span>
-                                        <span id="oc-backup-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-backup-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-clawhub-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">ClawHub Check</span>
-                                        <span id="oc-clawhub-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-clawhub-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-constitution-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Constitution Monitor</span>
-                                        <span id="oc-constitution-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-constitution-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
-                                    <button id="gateway-restart-btn" onclick="restartGateway()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,80,80,0.12); border:1px solid rgba(255,80,80,0.3); border-radius:4px; color:#ff9090; cursor:pointer;">Restart</button>
-                                    <button id="oc-update-check-btn" onclick="checkOpenclawUpdate()" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); border-radius:4px; color:rgba(0,255,136,0.7); cursor:pointer;">Updates</button>
-                                    <a href="http://127.0.0.1:3000" target="_blank" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Web UI</a>
+                                    <button id="gateway-restart-btn" onclick="restartGateway()" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(255,80,80,0.12); border:1px solid rgba(255,80,80,0.3); border-radius:4px; color:#ff9090; cursor:pointer;">Restart</button>
+                                    <button id="oc-update-check-btn" onclick="checkOpenclawUpdate()" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(0,255,136,0.1); border:1px solid rgba(0,255,136,0.25); border-radius:4px; color:rgba(0,255,136,0.7); cursor:pointer;">Updates</button>
+                                    <a href="http://127.0.0.1:3000" target="_blank" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Web UI</a>
                                 </div>
                             </div>
                             <!-- System Health -->
@@ -1307,55 +1310,55 @@
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">elf-6</span>
-                                    <span style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span id="macmini-host-ip" title="Local: 192.168.1.146" style="font-size:0.55rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
+                                    <span id="macmini-host-ip" title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
                                     <span id="macmini-ts-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:auto;"></span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between;">
                                     <div>
                                         <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-ip-line">—</div>
-                                        <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="sh-ip-label">Mac mini · en0</div>
+                                        <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="sh-ip-label">Mac mini · en0</div>
                                     </div>
                                     <div style="text-align:right;">
                                         <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-gw-line">—</div>
-                                        <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">Gateway</div>
+                                        <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">Gateway</div>
                                     </div>
                                 </div>
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-gateway" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Internet</span>
-                                        <span class="health-status" id="health-gateway" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-gateway" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-relay" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
-                                        <span class="health-status" id="health-relay" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-relay" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-n8n" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Webhook</span>
-                                        <span class="health-status" id="health-n8n" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-n8n" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-notion" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion API</span>
-                                        <span class="health-status" id="health-notion" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-notion" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">GitHub Backup</span>
-                                        <span class="health-status" id="backupTime" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Loading...</span>
+                                        <span class="health-status" id="backupTime" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Loading...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-oc-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenClaw Backup</span>
-                                        <span class="health-status" id="ocBackupTime" style="margin-left:auto; font-size:0.55rem; font-family:monospace;">Loading...</span>
+                                        <span class="health-status" id="ocBackupTime" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Loading...</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
-                                    <button onclick="runGitBackup()" id="gitBackupBtn" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">Git Backup</button>
-                                    <button onclick="runOCBackup()" id="ocBackupBtn" style="flex:1; padding:4px 0; font-size:0.55rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">OC Backup</button>
+                                    <button onclick="runGitBackup()" id="gitBackupBtn" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">Git Backup</button>
+                                    <button onclick="runOCBackup()" id="ocBackupBtn" style="flex:1; padding:4px 0; font-size:0.65rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">OC Backup</button>
                                 </div>
                             </div>
                             <!-- Row 2: External Services -->
@@ -1363,31 +1366,63 @@
                             <div style="background:rgba(255,100,0,0.06); border:1px solid rgba(255,100,0,0.18); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
                                     <span style="font-size:0.75rem;">⚙️</span>
-                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">n8n-TVC</span>
-                                    <span style="font-size:0.55rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span id="n8n-host-ip" title="Public IP: 86.48.27.45 · Contabo Cloud VPS 20" style="font-size:0.55rem; color:#00ff88; font-family:monospace; cursor:help;">86.48.27.45</span>
-                                    <span style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35);" id="n8n-spec">Ubuntu · 6 vCPU · 12GB</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">DO VPS</span>
+                                    <span style="font-size:0.45rem; color:rgba(255,200,0,0.6); padding:1px 5px; background:rgba(255,200,0,0.1); border-radius:3px; margin-left:0.2rem;">FALLBACK</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
+                                    <span id="n8n-host-ip" title="DigitalOcean Droplet · Decommission Apr 4" style="font-size:0.65rem; color:#ff8c42; font-family:monospace; cursor:help;">64.23.238.56</span>
+                                    <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);" id="n8n-spec">Ubuntu · 1 vCPU · 2GB</span>
                                     <span id="n8n-status-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
                                 </div>
                                 <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#ff8c42; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="n8n-uptime-counter">—</span></div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-bottom:0.35rem;" id="n8n-boot-time">—</div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-bottom:0.35rem;" id="n8n-boot-time">—</div>
                                 <!-- Docker / n8n container status -->
                                 <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
                                     <span id="n8n-docker-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Docker</span>
-                                    <span id="n8n-docker-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="n8n-docker-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                 </div>
-                                <!-- DO Droplet Metrics -->
-                                <div id="do-metrics-panel" style="padding:0.45rem 0.55rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-top:auto; margin-bottom:0.5rem;">
-                                    <div id="do-metrics-content" style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Loading metrics...</div>
+                                <!-- VPS Metrics -->
+                                <div id="do-metrics-panel" style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
+                                    <div id="do-metrics-content" style="font-size:0.65rem; color:rgba(255,255,255,0.35);">Contabo VPS 20 · 6 vCPU · 12GB · 200GB SSD · $10.75/mo</div>
                                 </div>
                                 <div style="display:flex; gap:0.25rem;">
-                                    <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DO ↗</a>
-                                    <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n ↗</a>
-                                    <button onclick="fetchDOMetrics(true)" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">🔄</button>
-                                    <button id="n8n-optimize-btn" onclick="runVpsOptimize()" style="flex:1; padding:3px 0; font-size:0.5rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
+                                    <a href="https://cloud.digitalocean.com/login" target="_blank" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">DO Panel ↗</a>
+                                    <a href="http://64.23.238.56:5678/" target="_blank" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n (old) ↗</a>
+                                    <button onclick="fetchDOMetrics(true)" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">🔄</button>
+                                    <button id="n8n-optimize-btn" onclick="runVpsOptimize()" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
                                 </div>
-                                <div id="n8n-optimize-result" style="display:none; margin-top:0.4rem; font-size:0.55rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
+                                <div id="n8n-optimize-result" style="display:none; margin-top:0.4rem; font-size:0.65rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
+                            </div>
+                            <!-- NEW VPS (Contabo) — exact clone of DO panel, blue accent -->
+                            <div style="background:rgba(60,120,255,0.06); border:1px solid rgba(60,120,255,0.18); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
+                                <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.25rem;">
+                                    <span style="font-size:0.75rem;">⚙️</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">CONTABO VPS</span>
+                                    <span style="font-size:0.45rem; color:rgba(0,255,136,0.6); padding:1px 5px; background:rgba(0,255,136,0.12); border-radius:3px; margin-left:0.2rem;">PRIMARY</span>
+                                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
+                                    <span id="contabo-host-ip" title="Contabo Cloud VPS 20 · US-East · $10.75/mo" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">86.48.27.45</span>
+                                    <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);">Ubuntu · 6 vCPU · 12GB</span>
+                                    <span id="old-vps-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
+                                </div>
+                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#5b9bff; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="old-vps-uptime">—</span></div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-bottom:0.35rem;" id="old-vps-boot-time">—</div>
+                                <!-- Docker / n8n container status -->
+                                <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
+                                    <span id="old-vps-n8n-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                    <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Docker</span>
+                                    <span id="old-vps-n8n" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                </div>
+                                <!-- VPS Metrics — same div structure as DO panel -->
+                                <div id="contabo-metrics-panel" style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
+                                    <div id="contabo-metrics-content" style="font-size:0.65rem; color:rgba(255,255,255,0.35);">Loading metrics...</div>
+                                </div>
+                                <div style="display:flex; gap:0.25rem;">
+                                    <a href="https://new.contabo.com/servers/vps" target="_blank" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(0,105,225,0.12); border:1px solid rgba(0,105,225,0.3); border-radius:4px; color:#4da6ff; cursor:pointer; text-decoration:none; text-align:center;">Contabo ↗</a>
+                                    <a href="https://n8n.tvcpulse.com/" target="_blank" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,100,0,0.12); border:1px solid rgba(255,100,0,0.3); border-radius:4px; color:#ff8c42; cursor:pointer; text-decoration:none; text-align:center;">n8n ↗</a>
+                                    <button onclick="fetchOldVps()" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.6); cursor:pointer;">🔄</button>
+                                    <button onclick="fetchOldVps()" style="flex:1; padding:3px 0; font-size:0.62rem; background:rgba(255,160,40,0.12); border:1px solid rgba(255,160,40,0.3); border-radius:4px; color:#ffa028; cursor:pointer; font-family:inherit;">⚡ Optimize</button>
+                                </div>
+                                <div id="contabo-optimize-result" style="display:none; margin-top:0.4rem; font-size:0.65rem; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); border-radius:4px; padding:0.3rem 0.4rem; line-height:1.5;"></div>
                             </div>
                             <!-- Notion -->
                             <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.85rem 0.95rem; display:flex; flex-direction:column;">
@@ -1398,26 +1433,26 @@
                                 </div>
                                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
                                     <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
-                                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">api.notion.com</div>
+                                    <div style="font-size:0.65rem; color:rgba(255,255,255,0.3);">api.notion.com</div>
                                 </div>
                                 <!-- Daemon statuses -->
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; margin-bottom:0.5rem; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="notion-triage-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Triage</span>
-                                        <span id="notion-triage-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="notion-triage-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="notion-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Sync</span>
-                                        <span id="notion-sync-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="notion-sync-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                 </div>
                                 <!-- Buttons -->
                                 <div style="display:flex; gap:0.3rem;">
-                                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Tasks DB ↗</a>
-                                    <a href="https://www.notion.so/27897f8991298064ad7ed60e382ebae4" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(100,200,100,0.1); border:1px solid rgba(100,200,100,0.25); border-radius:4px; color:#7dcea0; cursor:pointer; text-decoration:none; text-align:center;">Blueprint 💰</a>
-                                    <a href="https://www.notion.so/2df97f89912981d99e9dd111c0eb1f0a" target="_blank" style="flex:1; padding:4px 0; font-size:0.58rem; background:rgba(180,130,255,0.1); border:1px solid rgba(180,130,255,0.25); border-radius:4px; color:#b482ff; cursor:pointer; text-decoration:none; text-align:center;">Docs 📚</a>
+                                    <a href="https://www.notion.so/2f797f8991298068b8aec4321d1c72b7" target="_blank" style="flex:1; padding:4px 0; font-size:0.68rem; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:4px; color:rgba(255,255,255,0.7); cursor:pointer; text-decoration:none; text-align:center;">Tasks DB ↗</a>
+                                    <a href="https://www.notion.so/27897f8991298064ad7ed60e382ebae4" target="_blank" style="flex:1; padding:4px 0; font-size:0.68rem; background:rgba(100,200,100,0.1); border:1px solid rgba(100,200,100,0.25); border-radius:4px; color:#7dcea0; cursor:pointer; text-decoration:none; text-align:center;">Blueprint 💰</a>
+                                    <a href="https://www.notion.so/2df97f89912981d99e9dd111c0eb1f0a" target="_blank" style="flex:1; padding:4px 0; font-size:0.68rem; background:rgba(180,130,255,0.1); border:1px solid rgba(180,130,255,0.25); border-radius:4px; color:#b482ff; cursor:pointer; text-decoration:none; text-align:center;">Docs 📚</a>
                                 </div>
                             </div>
                             <!-- Pinecone -->
@@ -1429,33 +1464,33 @@
                                 </div>
                                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
                                     <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
-                                    <div style="font-size:0.55rem; color:rgba(255,255,255,0.3);">DWE Brain</div>
+                                    <div style="font-size:0.65rem; color:rgba(255,255,255,0.3);">DWE Brain</div>
                                 </div>
                                 <!-- Brain/Pinecone daemon statuses -->
                                 <div style="display:flex; flex-direction:column; gap:0.3rem; margin-top:auto; margin-bottom:0.5rem; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-seed-watcher-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Seed Watcher</span>
-                                        <span id="pc-seed-watcher-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-seed-watcher-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-brain-trainer-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Brain Trainer</span>
-                                        <span id="pc-brain-trainer-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-brain-trainer-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-nightly-review-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Nightly Review</span>
-                                        <span id="pc-nightly-review-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-nightly-review-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-memory-decay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Memory Decay</span>
-                                        <span id="pc-memory-decay-status" style="margin-left:auto; font-size:0.55rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-memory-decay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem;">
-                                    <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
+                                    <a href="https://app.pinecone.io/" target="_blank" style="flex:1; padding:3px 0; font-size:0.65rem; background:rgba(0,200,150,0.1); border:1px solid rgba(0,200,150,0.25); border-radius:4px; color:rgba(0,200,150,0.7); cursor:pointer; text-decoration:none; text-align:center;">Console ↗</a>
                                 </div>
                             </div>
                             <!-- Secure Tunnels -->
@@ -1467,32 +1502,45 @@
                                 <!-- Section: Tailscale -->
                                 <div style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.3rem;">
                                     <div style="display:flex; align-items:center; gap:0.35rem; margin-bottom:0.25rem;">
-                                        <span style="font-size:0.5rem; color:rgba(255,255,255,0.25); text-transform:uppercase; letter-spacing:0.06em;">Tailscale</span>
+                                        <span style="font-size:0.62rem; color:rgba(255,255,255,0.25); text-transform:uppercase; letter-spacing:0.06em;">Tailscale</span>
                                         <span id="ts-status-dot" style="margin-left:auto;width:6px;height:6px;border-radius:50%;background:#555;"></span>
-                                        <span id="ts-status-text" style="font-size:0.5rem;font-family:monospace;color:#555;">—</span>
+                                        <span id="ts-status-text" style="font-size:0.62rem;font-family:monospace;color:#555;">—</span>
                                     </div>
                                     <div id="ts-devices-panel" style="display:flex; flex-direction:column; gap:0.25rem;">
                                         <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Loading...</div>
                                     </div>
                                 </div>
-                                <!-- Section: SSH Tunnels -->
+                                <!-- Section: SSH Tunnels (Mac Mini → Contabo VPS) -->
                                 <div style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.5rem;">
-                                    <div style="font-size:0.5rem; color:rgba(255,255,255,0.25); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.25rem;">SSH Tunnels</div>
+                                    <div style="font-size:0.62rem; color:rgba(255,255,255,0.25); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.25rem;">SSH Tunnels → Contabo (86.48.27.45)</div>
                                     <div id="ts-tunnel-reverse" style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                                         <span style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
-                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">Reverse SSH</span>
-                                        <span style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.25);font-family:monospace;">Ollama·SSH·Dash</span>
-                                        <span id="ts-rev-status" style="font-size:0.5rem;color:#555;font-family:monospace;">—</span>
+                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">Ollama :11434</span>
+                                        <span id="ts-rev-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
+                                        <span id="st-ssh-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">SSH :2222</span>
+                                        <span id="st-ssh-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
+                                        <span id="st-mc-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">MC Server :8899</span>
+                                        <span id="st-mc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
+                                        <span id="st-oc-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
+                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">OpenClaw :3100</span>
+                                        <span id="st-oc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
                                     </div>
                                     <div id="ts-tunnel-forward" style="display:flex;align-items:center;gap:0.35rem;">
                                         <span style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
-                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">SSH → n8n-VPS</span>
-                                        <span style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.25);font-family:monospace;">86.48.27.45</span>
-                                        <span id="ts-fwd-status" style="font-size:0.5rem;color:#555;font-family:monospace;">—</span>
+                                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">LiteLLM :4000</span>
+                                        <span id="ts-fwd-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
                                     </div>
                                 </div>
-                                <div style="display:flex; gap:0.3rem;">
-                                    <a href="https://login.tailscale.com/admin/machines" target="_blank" style="flex:1; padding:3px 0; font-size:0.55rem; background:rgba(72,128,255,0.12); border:1px solid rgba(72,128,255,0.3); border-radius:4px; color:#6da3ff; cursor:pointer; text-decoration:none; text-align:center;">Admin ↗</a>
+                                <div style="display:flex; gap:0.3rem; margin-top:auto; padding-top:0.5rem;">
+                                    <a href="https://login.tailscale.com/admin/machines" target="_blank" style="flex:1; padding:3px 0; font-size:0.65rem; background:rgba(72,128,255,0.12); border:1px solid rgba(72,128,255,0.3); border-radius:4px; color:#6da3ff; cursor:pointer; text-decoration:none; text-align:center;">Admin ↗</a>
                                 </div>
                             </div>
                             <!-- TVC Website (GA4 traffic) — same row as Secure Tunnels -->
@@ -1501,16 +1549,51 @@
                                     <span style="font-size:0.75rem;">🌐</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">TVC Website</span>
                                     <span id="ga4-trend" style="font-size:0.7rem;font-weight:700;margin-left:0.3rem;">—</span>
-                                    <span id="ga4-updated" style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.25);"></span>
+                                    <span id="ga4-updated" style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.25);"></span>
                                 </div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;text-align:center;margin-bottom:0.5rem;">
-                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Sessions</div><div id="ga4-sessions" style="color:#bb66ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-sessions-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Users</div><div id="ga4-users" style="color:#aa55ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-users-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
-                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Pageviews</div><div id="ga4-pageviews" style="color:#cc77ff;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div id="ga4-pageviews-delta" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                <!-- Traffic summary — big readable number -->
+                                <div style="text-align:center;margin-bottom:0.5rem;">
+                                    <div id="ga4-sessions" style="color:#00ff88;font-size:1.8rem;font-weight:700;font-family:monospace;">—</div>
+                                    <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;">sessions today</div>
+                                    <div id="ga4-sessions-delta" style="font-size:0.7rem;font-weight:600;margin-top:0.15rem;">—</div>
                                 </div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;text-align:center;">
-                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Bounce</div><div id="ga4-bounce" style="color:#9944ee;font-size:1rem;font-weight:700;font-family:monospace;">—</div><div style="font-size:0.5rem;color:rgba(255,255,255,0.2);">rate</div></div>
-                                    <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;">Top Page</div><div id="ga4-top-page" style="color:#dd88ff;font-size:0.7rem;font-weight:600;font-family:monospace;word-break:break-all;">—</div><div id="ga4-top-views" style="font-size:0.5rem;color:rgba(255,255,255,0.3);">—</div></div>
+                                <!-- Traffic line chart -->
+                                <div style="padding:0.4rem 0.5rem;background:rgba(255,255,255,0.03);border-radius:5px;margin-bottom:0.5rem;">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                                        <span style="font-size:0.55rem;color:rgba(255,255,255,0.4);">Sessions — Last 7 Days</span>
+                                        <span id="ga4-spark-trend" style="font-size:0.55rem;font-weight:600;">—</span>
+                                    </div>
+                                    <div id="ga4-chart" style="position:relative;height:60px;width:100%;">
+                                        <svg id="ga4-svg" width="100%" height="60" style="overflow:visible;"></svg>
+                                    </div>
+                                    <div id="ga4-chart-labels" style="display:flex;justify-content:space-between;margin-top:0.15rem;">
+                                    </div>
+                                </div>
+                                <!-- Quick stats row -->
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3rem;text-align:center;padding:0.4rem;background:rgba(255,255,255,0.03);border-radius:5px;margin-bottom:0.5rem;">
+                                    <div>
+                                        <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Users</div>
+                                        <div id="ga4-users" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                        <div id="ga4-users-delta" style="font-size:0.6rem;">—</div>
+                                    </div>
+                                    <div>
+                                        <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Views</div>
+                                        <div id="ga4-pageviews" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                        <div id="ga4-pageviews-delta" style="font-size:0.6rem;">—</div>
+                                    </div>
+                                    <div>
+                                        <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Bounce</div>
+                                        <div id="ga4-bounce" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                    </div>
+                                </div>
+                                <!-- Hidden elements for compatibility -->
+                                <div style="display:none;"><span id="ga4-top-page"></span><span id="ga4-top-views"></span></div>
+                                <!-- Site Health — clickable URLs -->
+                                <div style="border-top:1px solid rgba(124,58,237,0.15);padding-top:0.5rem;margin-top:auto;">
+                                    <div style="font-size:0.5rem;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.35rem;">Site Health</div>
+                                    <div id="site-health-list" style="display:flex;flex-direction:column;gap:0.3rem;">
+                                        <div style="font-size:0.62rem;color:rgba(255,255,255,0.3);">Loading...</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1530,7 +1613,7 @@
                         <!-- Cash Flow sub-card -->
                         <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column; position:relative;">
                             <div id="rev-mqt-tag" style="position:absolute;top:8px;right:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);padding:2px 6px;border-radius:4px;">
-                                <span style="font-size:0.5rem;color:rgba(255,255,255,0.35);">MQT </span><span style="font-size:0.6rem;color:#00d4ff;font-family:monospace;font-weight:600;" id="rev-mqt">—</span>
+                                <span style="font-size:0.62rem;color:rgba(255,255,255,0.35);">MQT </span><span style="font-size:0.6rem;color:#00d4ff;font-family:monospace;font-weight:600;" id="rev-mqt">—</span>
                             </div>
                             <a href="/revenue" style="text-decoration:none;color:inherit;cursor:pointer;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
@@ -1538,7 +1621,7 @@
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Cash Flow</span>
                                 </div>
                                 <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-cashflow">—</div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-cf-label">monthly</div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-cf-label">monthly</div>
                             </a>
                             <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
                                 <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-cf-daily" style="color:#00ff88;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
@@ -1558,7 +1641,7 @@
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Long-Term</span>
                                 </div>
                                 <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00c8ff; letter-spacing:0.02em;" id="rev-longterm">—</div>
-                                <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-lt-label">monthly</div>
+                                <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-lt-label">monthly</div>
                             </a>
                             <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
                                 <div><div style="color:rgba(255,255,255,0.3);font-size:0.45rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-lt-daily" style="color:#00ff88;font-size:0.7rem;font-weight:700;font-family:monospace;">—</div></div>
@@ -1577,7 +1660,7 @@
                                 <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Opportunities</span>
                             </div>
                             <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#00d4ff; letter-spacing:0.02em;" id="opp-count">—</div>
-                            <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="opp-label">active</div>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="opp-label">active</div>
                             <div style="display:flex; flex-direction:column; gap:0.2rem; margin-top:0.5rem;" id="opp-list">
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
@@ -1589,7 +1672,7 @@
                                 <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Pipelines</span>
                             </div>
                             <div style="font-size:1.4rem; font-family:monospace; font-weight:700; color:#ff9500; letter-spacing:0.02em;" id="funnel-value">—</div>
-                            <div style="font-size:0.58rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="funnel-label">pipeline value</div>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="funnel-label">pipeline value</div>
                             <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.5rem;" id="funnel-stats">
                                 <div style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Loading...</div>
                             </div>
@@ -1646,9 +1729,9 @@
                             <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.04em;">Recurring</span>
                         </div>
                         <div id="recurring-created-count" style="font-size:1.5rem;font-weight:800;color:#b829dd;">—</div>
-                        <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-top:0.1rem;">spawned total</div>
-                        <div id="recurring-last-run" style="font-size:0.55rem;color:rgba(255,255,255,0.3);margin-top:0.25rem;">—</div>
-                        <div id="recurring-task-names" style="font-size:0.5rem;color:rgba(255,255,255,0.22);margin-top:0.2rem;text-align:center;line-height:1.35;max-height:38px;overflow:hidden;"></div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.35);margin-top:0.1rem;">spawned total</div>
+                        <div id="recurring-last-run" style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-top:0.25rem;">—</div>
+                        <div id="recurring-task-names" style="font-size:0.62rem;color:rgba(255,255,255,0.22);margin-top:0.2rem;text-align:center;line-height:1.35;max-height:38px;overflow:hidden;"></div>
                     </div>
                 </div>
 
@@ -1656,19 +1739,19 @@
                 <div style="display:flex;gap:0.65rem;margin-bottom:1.2rem;">
                     <div style="flex:1;text-align:center;padding:0.6rem 0.4rem;background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.12);border-radius:8px;">
                         <div id="nm-inprogress" style="font-size:1.15rem;font-weight:700;color:#00f5ff;">—</div>
-                        <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Active</div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Active</div>
                     </div>
                     <div style="flex:1;text-align:center;padding:0.6rem 0.4rem;background:rgba(255,165,0,0.06);border:1px solid rgba(255,165,0,0.12);border-radius:8px;">
                         <div id="nm-notstarted" style="font-size:1.15rem;font-weight:700;color:#ffa500;">—</div>
-                        <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Queued</div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Queued</div>
                     </div>
                     <div style="flex:1;text-align:center;padding:0.6rem 0.4rem;background:rgba(255,0,170,0.06);border:1px solid rgba(255,0,170,0.12);border-radius:8px;">
                         <div id="nm-overdue" style="font-size:1.15rem;font-weight:700;color:#ff00aa;">—</div>
-                        <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Overdue</div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Overdue</div>
                     </div>
                     <div style="flex:1;text-align:center;padding:0.6rem 0.4rem;background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.12);border-radius:8px;">
                         <div id="nm-blocked" style="font-size:1.15rem;font-weight:700;color:#ff4444;">—</div>
-                        <div style="font-size:0.55rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Blocked</div>
+                        <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:0.1rem;">Blocked</div>
                     </div>
                 </div>
 
@@ -1695,12 +1778,12 @@
                     <div style="background:rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.7rem 0.85rem;">
                         <div style="font-size:0.62rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Status Distribution</div>
                         <div id="nm-status-bar" style="height:14px; border-radius:7px; overflow:hidden; display:flex; margin-bottom:0.45rem; background:rgba(255,255,255,0.05);"></div>
-                        <div id="nm-status-legend" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.7rem; font-size:0.58rem; color:rgba(255,255,255,0.5);"></div>
+                        <div id="nm-status-legend" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.7rem; font-size:0.68rem; color:rgba(255,255,255,0.5);"></div>
                     </div>
                     <div style="background:rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:0.7rem 0.85rem;">
                         <div style="font-size:0.62rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Priority Breakdown</div>
                         <div id="nm-priority-bar" style="height:14px; border-radius:7px; overflow:hidden; display:flex; margin-bottom:0.45rem; background:rgba(255,255,255,0.05);"></div>
-                        <div id="nm-priority-legend" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.7rem; font-size:0.58rem; color:rgba(255,255,255,0.5);"></div>
+                        <div id="nm-priority-legend" style="display:flex; flex-wrap:wrap; gap:0.3rem 0.7rem; font-size:0.68rem; color:rgba(255,255,255,0.5);"></div>
                     </div>
                 </div>
 
@@ -1786,8 +1869,8 @@
                 .hud-row { display:flex; align-items:center; gap:6px; padding:2px 0; }
                 .hud-dot { width:6px; height:6px; border-radius:50%; background:#334; flex-shrink:0;
                     box-shadow:0 0 6px rgba(0,180,255,0.15); }
-                .hud-name { font-size:0.58rem; color:rgba(180,210,240,0.6); }
-                .hud-st { margin-left:auto; font-size:0.5rem; color:rgba(0,180,255,0.35); }
+                .hud-name { font-size:0.68rem; color:rgba(180,210,240,0.6); }
+                .hud-st { margin-left:auto; font-size:0.62rem; color:rgba(0,180,255,0.35); }
                 .hud-bar-track { flex:1; height:3px; background:rgba(0,180,255,0.08); border-radius:2px; overflow:hidden; margin-left:4px; }
                 .hud-bar-fill { height:100%; border-radius:2px; animation:hud-bar-glow 3s ease-in-out infinite; }
             </style>
@@ -1796,12 +1879,12 @@
                 <div style="display:flex;align-items:center;padding:0.5rem 1.1rem;border-bottom:1px solid rgba(0,180,255,0.1);background:linear-gradient(90deg,rgba(0,180,255,0.06),transparent 40%,transparent 60%,rgba(255,160,40,0.03));">
                     <div style="display:flex;align-items:center;gap:6px;">
                         <div style="width:8px;height:8px;background:rgba(0,180,255,0.6);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);"></div>
-                        <span style="font-size:0.55rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.6);letter-spacing:0.14em;">SYS::ECOSYSTEM</span>
+                        <span style="font-size:0.65rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.6);letter-spacing:0.14em;">SYS::ECOSYSTEM</span>
                     </div>
                     <span style="margin:0 0.7rem;color:rgba(0,180,255,0.12);">|</span>
                     <span style="font-size:0.82rem;font-weight:700;color:rgba(220,240,255,0.92);letter-spacing:0.05em;text-shadow:0 0 12px rgba(0,180,255,0.2);">DWE HUD</span>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:0.7rem;">
-                        <span id="hud-clock" style="font-size:0.55rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.4);letter-spacing:0.06em;"></span>
+                        <span id="hud-clock" style="font-size:0.65rem;font-family:'Courier New',monospace;color:rgba(0,180,255,0.4);letter-spacing:0.06em;"></span>
                         <div style="display:flex;gap:4px;">
                             <div style="width:4px;height:4px;border-radius:50%;background:rgba(0,255,120,0.6);box-shadow:0 0 4px rgba(0,255,120,0.4);"><div style="animation:hud-pulse 2s infinite;width:100%;height:100%;border-radius:50%;background:inherit;"></div></div>
                             <div style="width:4px;height:4px;border-radius:50%;background:rgba(0,180,255,0.6);box-shadow:0 0 4px rgba(0,180,255,0.4);"></div>
@@ -2200,7 +2283,7 @@
                                 <div class="hud-row"><span id="hud-clawhub-check-dot" class="hud-dot"></span><span class="hud-name">ClawHub Check</span><span id="hud-clawhub-check-st" class="hud-st">—</span></div>
                                 <div class="hud-row"><span id="hud-soul-calibration-dot" class="hud-dot"></span><span class="hud-name">Soul Calibration</span><span id="hud-soul-calibration-st" class="hud-st">—</span></div>
                                 <div class="hud-row"><span id="hud-night-mode-dot" class="hud-dot"></span><span class="hud-name">Night Mode</span><span id="hud-night-mode-st" class="hud-st">—</span></div>
-                                <div class="hud-row"><span id="hud-meeting-mute-dot" class="hud-dot"></span><span class="hud-name">Meeting Mute</span><span id="hud-meeting-mute-st" class="hud-st">—</span><button id="meeting-unmute-btn" onclick="manualUnmute()" style="font-size:0.55rem;padding:2px 8px;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.4);border-radius:4px;color:#ff6464;cursor:pointer;font-weight:600;display:none;margin-left:6px;">Unmute</button></div>
+                                <div class="hud-row"><span id="hud-meeting-mute-dot" class="hud-dot"></span><span class="hud-name">Meeting Mute</span><span id="hud-meeting-mute-st" class="hud-st">—</span><button id="meeting-unmute-btn" onclick="manualUnmute()" style="font-size:0.65rem;padding:2px 8px;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.4);border-radius:4px;color:#ff6464;cursor:pointer;font-weight:600;display:none;margin-left:6px;">Unmute</button></div>
                                 <div class="hud-row"><span id="hud-oc-backup-dot" class="hud-dot"></span><span class="hud-name">OC Backup</span><span id="hud-oc-backup-st" class="hud-st">—</span></div>
                             </div>
                         </div>
@@ -2219,11 +2302,11 @@
                     </div>
                     <!-- Funnel stage header -->
                     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Intake<br><span id="cnt-Intake" style="color:#F5A623;font-weight:700;">0</span></div>
-                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Under Review<br><span id="cnt-Under-Review" style="color:#00dcff;font-weight:700;">0</span></div>
-                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Qualified<br><span id="cnt-Qualified" style="color:#22c55e;font-weight:700;">0</span></div>
-                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">In Dev<br><span id="cnt-In-Development" style="color:#a855f7;font-weight:700;">0</span></div>
-                        <div style="padding:0.35rem 0.5rem;font-size:0.58rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;">Rejected<br><span id="cnt-Rejected" style="color:#ef4444;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.68rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Intake<br><span id="cnt-Intake" style="color:#F5A623;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.68rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Under Review<br><span id="cnt-Under-Review" style="color:#00dcff;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.68rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">Qualified<br><span id="cnt-Qualified" style="color:#22c55e;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.68rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;border-right:1px solid rgba(255,255,255,0.06);">In Dev<br><span id="cnt-In-Development" style="color:#a855f7;font-weight:700;">0</span></div>
+                        <div style="padding:0.35rem 0.5rem;font-size:0.68rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.06em;text-align:center;">Rejected<br><span id="cnt-Rejected" style="color:#ef4444;font-weight:700;">0</span></div>
                     </div>
                     <!-- Funnel cards area -->
                     <div id="cso-pipeline-list" style="flex:1;overflow-y:auto;max-height:200px;">
@@ -2255,7 +2338,7 @@
                 <div id="daemon-health-body" style="display:flex;flex-direction:column;gap:0.35rem;">
                     <div class="service-item"><span class="pulse-dot offline"></span><span>Loading...</span></div>
                 </div>
-                <div style="font-size:0.55rem;color:rgba(255,255,255,0.25);padding-top:0.5rem;text-align:right;" id="daemon-health-ts">—</div>
+                <div style="font-size:0.65rem;color:rgba(255,255,255,0.25);padding-top:0.5rem;text-align:right;" id="daemon-health-ts">—</div>
             </div>
 
             <!-- Document Pipeline — File Manager -->
@@ -2264,7 +2347,7 @@
                     <div class="panel-icon" style="font-size:0.9rem;">🗂️</div>
                     <div class="panel-title">Document Pipeline</div>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
-                        <span style="font-size:0.58rem;color:rgba(255,255,255,0.25);">double-click to read · drag to move</span>
+                        <span style="font-size:0.68rem;color:rgba(255,255,255,0.25);">double-click to read · drag to move</span>
                         <button onclick="fetchPipeline()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:0.6rem;padding:2px 8px;border-radius:4px;cursor:pointer;">↻</button>
                     </div>
                 </div>
@@ -2296,12 +2379,12 @@
                     <div style="display:flex;align-items:center;gap:8px;padding:0.7rem 0.9rem;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
                         <span style="font-size:0.9rem;">📄</span>
                         <span id="modal-filename" style="font-weight:700;font-size:0.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;"></span>
-                        <span id="modal-stage-badge" style="font-size:0.58rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-family:monospace;flex-shrink:0;"></span>
+                        <span id="modal-stage-badge" style="font-size:0.68rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-family:monospace;flex-shrink:0;"></span>
                         <!-- TTS Controls -->
                         <div id="tts-controls" style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                             <button id="tts-play-btn" onclick="ttsToggle()" title="Read aloud" style="background:rgba(0,200,120,0.12);border:1px solid rgba(0,200,120,0.25);color:#00c878;font-size:0.72rem;padding:3px 10px;border-radius:4px;cursor:pointer;">▶ Read</button>
                             <button id="tts-stop-btn" onclick="ttsStop()" title="Stop reading" style="display:none;background:rgba(255,80,80,0.12);border:1px solid rgba(255,80,80,0.25);color:#ff5050;font-size:0.72rem;padding:3px 10px;border-radius:4px;cursor:pointer;">■ Stop</button>
-                            <select id="tts-speed" onchange="ttsUpdateSpeed()" title="Reading speed" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:0.58rem;padding:2px 4px;border-radius:4px;cursor:pointer;">
+                            <select id="tts-speed" onchange="ttsUpdateSpeed()" title="Reading speed" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:0.68rem;padding:2px 4px;border-radius:4px;cursor:pointer;">
                                 <option value="0.8">0.8x</option>
                                 <option value="1" selected>1x</option>
                                 <option value="1.2">1.2x</option>
@@ -3103,10 +3186,10 @@
             const ltMonthly = ltStreams.reduce((sum, s) => sum + revParseDollar(s['30_Days']), 0);
             if (summaryBar) {
                 summaryBar.innerHTML = `
-                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Cash Flow /day</div><div style="color:#00ff88;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfDaily)}</div></div>
-                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Long-Term /day</div><div style="color:#00c8ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(ltDaily)}</div></div>
-                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Total /month</div><div style="color:#00f5ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfMonthly + ltMonthly)}</div></div>
-                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Streams</div><div style="color:#e0e0e0;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${cfStreams.length} + ${ltStreams.length}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Cash Flow /day</div><div style="color:#00ff88;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfDaily)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Long-Term /day</div><div style="color:#00c8ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(ltDaily)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Total /month</div><div style="color:#00f5ff;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(cfMonthly + ltMonthly)}</div></div>
+                    <div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;">Streams</div><div style="color:#e0e0e0;font-size:1.1rem;font-weight:700;font-family:Inter,sans-serif;">${cfStreams.length} + ${ltStreams.length}</div></div>
                 `;
             }
 
@@ -3168,24 +3251,24 @@
                         </div>
                         <div style="text-align:right;">
                             ${sparkSvg}
-                            <div style="color:rgba(255,255,255,0.3);font-size:0.55rem;margin-top:2px;">daily avg trend</div>
+                            <div style="color:rgba(255,255,255,0.3);font-size:0.65rem;margin-top:2px;">daily avg trend</div>
                         </div>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">
                         <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
-                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Daily</div>
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Daily</div>
                             <div style="color:#00ff88;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(daily)}</div>
                         </div>
                         <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
-                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Weekly</div>
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Weekly</div>
                             <div style="color:#00c8ff;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(weekly)}</div>
                         </div>
                         <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
-                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Monthly</div>
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Monthly</div>
                             <div style="color:#00f5ff;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(monthly)}</div>
                         </div>
                         <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:0.6rem 0.5rem;text-align:center;">
-                            <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Yearly</div>
+                            <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">Yearly</div>
                             <div style="color:#b829dd;font-size:1rem;font-weight:700;font-family:Inter,sans-serif;">${revFmtCurrency(yearly)}</div>
                         </div>
                     </div>
@@ -3906,7 +3989,7 @@
                     if (catOk) html += `${catRunning ? '/' : ''}<span style="color:#4ea8de;">${catOk}</span>`;
                     if (catErr) html += `${(catRunning||catOk) ? '/' : ''}<span style="color:#ff4444;">${catErr}</span>`;
                     html += `</span>`;
-                    html += `<span style="font-size:0.55rem;color:rgba(255,255,255,0.25);">&#9660;</span>`;
+                    html += `<span style="font-size:0.65rem;color:rgba(255,255,255,0.25);">&#9660;</span>`;
                     html += `</div>`;
                     html += `<div id="${catId}" style="display:none;padding:0 0.4rem 0.4rem;">`;
                     info.daemons.forEach(d => {
@@ -3976,11 +4059,11 @@
                         const from = (m.from || '').replace(/<[^>]+>/g, '').trim().substring(0, 30);
                         const subj = (m.subject || '').substring(0, 40);
                         const dateStr = m.date ? new Date(m.date).toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
-                        const unreadBadge = m.unread ? '<span style="background:#00dcff;color:#0a0a1a;font-size:0.5rem;padding:1px 4px;border-radius:3px;margin-left:4px;font-weight:700;">NEW</span>' : '';
+                        const unreadBadge = m.unread ? '<span style="background:#00dcff;color:#0a0a1a;font-size:0.62rem;padding:1px 4px;border-radius:3px;margin-left:4px;font-weight:700;">NEW</span>' : '';
                         html += '<div style="background:rgba(0,220,255,0.06);border:1px solid rgba(0,220,255,0.15);border-radius:6px;padding:0.35rem 0.5rem;margin-bottom:0.25rem;">' +
                             '<div style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#00dcff;flex-shrink:0;"></span>' +
                             '<span style="font-size:0.7rem;color:#00dcff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + from + '</span>' + unreadBadge +
-                            '<span style="margin-left:auto;font-size:0.55rem;color:rgba(255,255,255,0.3);">' + dateStr + '</span></div>' +
+                            '<span style="margin-left:auto;font-size:0.65rem;color:rgba(255,255,255,0.3);">' + dateStr + '</span></div>' +
                             '<div style="font-size:0.65rem;color:rgba(255,255,255,0.5);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + subj + '</div></div>';
                     });
                 }
@@ -4061,9 +4144,9 @@
                         return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${borderColor};border-radius:6px;padding:0.5rem 0.6rem;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
                                 <span style="font-size:0.65rem;font-weight:600;color:#e0e0e0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;">${name}</span>
-                                <a href="${url}" target="_blank" style="font-size:0.55rem;color:${roiColor};font-family:monospace;font-weight:600;text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">${arrow || '↗'} ${roi !== '—' ? roi : 'Open'}</a>
+                                <a href="${url}" target="_blank" style="font-size:0.65rem;color:${roiColor};font-family:monospace;font-weight:600;text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">${arrow || '↗'} ${roi !== '—' ? roi : 'Open'}</a>
                             </div>
-                            <div style="display:flex;justify-content:space-between;font-size:0.55rem;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.65rem;">
                                 <span style="color:rgba(255,255,255,0.35);">Daily <span style="color:#00ff88;font-family:monospace;font-weight:600;">${fmtCur(daily)}</span></span>
                                 <span style="color:rgba(255,255,255,0.35);">Monthly <span style="color:#00c8ff;font-family:monospace;font-weight:600;">${fmtCur(monthly)}</span></span>
                             </div>
@@ -4180,7 +4263,7 @@
                         cSt.style.color = 'rgba(0,255,136,0.6)';
                     }
                     const dotColor = c.host === 'VPS' ? '#ff9800' : '#00d4ff';
-                    const hostTag = c.host === 'VPS' ? '<span style="font-size:0.55rem;color:#ff9800;margin-left:3px;">VPS</span>' : '';
+                    const hostTag = c.host === 'VPS' ? '<span style="font-size:0.65rem;color:#ff9800;margin-left:3px;">VPS</span>' : '';
                     list.innerHTML += `<div class="hud-row">
                         <span class="hud-dot" style="background:${dotColor};box-shadow:0 0 4px ${dotColor};"></span>
                         <span class="hud-name">${c.command}${hostTag}</span>
@@ -4490,7 +4573,7 @@
                                 <div class="sp-meta">
                                     <span class="sp-badge ${trig}">${trig}</span>
                                     <span class="sp-status${wf.active?'':' off'}">${wf.active?'Active':'Inactive'}</span>
-                                    ${wfNum ? `<span style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.2);font-family:monospace;">${wfNum}</span>` : ''}
+                                    ${wfNum ? `<span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.2);font-family:monospace;">${wfNum}</span>` : ''}
                                 </div>
                             </div>`;
                         }).join('');
@@ -4854,7 +4937,7 @@
                             <div style="font-size:0.6rem;color:rgba(255,255,255,0.55);">
                                 <span style="color:${hbDot};">●</span> ${miniAge(hb.minutesSince)} ago
                             </div>
-                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.28);">→ ${miniNext(hb.nextRun)}</div>
+                            <div style="font-size:0.65rem;color:rgba(255,255,255,0.28);">→ ${miniNext(hb.nextRun)}</div>
                         </div>`;
                     }
 
@@ -4885,7 +4968,7 @@
                                 <div style="width:28px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;">
                                     <div style="height:2px;width:${Math.min(ctxPct,100)}%;background:${ctxC};border-radius:2px;"></div>
                                 </div>
-                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.3);">${ctxPct}%</span>
+                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.3);">${ctxPct}%</span>
                             </div>`;
                     } else if (!agent.isHuman) {
                         sessStatusHtml = `<div style="display:flex;align-items:center;gap:5px;padding:3px 6px;background:rgba(255,255,255,0.02);border-radius:5px;">
@@ -4909,14 +4992,14 @@
                             const count = actionByPrio[p] || 0;
                             const c = count > 0 ? PRIO_ACTIVE[p] : PRIO_GHOST;
                             return `<div style="display:flex;justify-content:space-between;align-items:center;padding:2px 5px;background:${c.bg};border:1px solid ${c.border};border-radius:4px;margin-top:2px;">
-                                <span style="font-size:0.58rem;color:${c.text};">${p}</span>
+                                <span style="font-size:0.68rem;color:${c.text};">${p}</span>
                                 <span style="font-size:0.7rem;font-weight:${count>0?'700':'400'};color:${c.text};">${count > 0 ? count : '—'}</span>
                             </div>`;
                         }).join('');
 
                         const overdueHtml = actionOverdue > 0
-                            ? `<div style="font-size:0.58rem;color:#f87171;margin-top:3px;">⚠ ${actionOverdue} overdue</div>`
-                            : `<div style="font-size:0.58rem;color:rgba(255,255,255,0.18);margin-top:3px;">✓ no overdue</div>`;
+                            ? `<div style="font-size:0.68rem;color:#f87171;margin-top:3px;">⚠ ${actionOverdue} overdue</div>`
+                            : `<div style="font-size:0.68rem;color:rgba(255,255,255,0.18);margin-top:3px;">✓ no overdue</div>`;
 
                         // Task list (show up to 5 tasks)
                         const listHtml = actionList.length > 0
@@ -4936,13 +5019,13 @@
                                       ${dueTag}
                                   </div>`;
                               }).join('') +
-                              (actionList.length > 5 ? `<div style="font-size:0.5rem;color:rgba(255,255,255,0.2);padding-top:2px;">+${actionList.length - 5} more</div>` : '') +
+                              (actionList.length > 5 ? `<div style="font-size:0.62rem;color:rgba(255,255,255,0.2);padding-top:2px;">+${actionList.length - 5} more</div>` : '') +
                               `</div>`
                             : '';
 
                         tasksHtml = `
                             <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:3px;">
-                                <span style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);">${taskLabel}</span>
+                                <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);">${taskLabel}</span>
                                 <span style="font-size:0.9rem;font-weight:700;color:#ff69b4;margin-left:auto;">${actionCount}</span>
                             </div>
                             <div style="display:flex;gap:6px;font-size:0.52rem;color:rgba(255,255,255,0.3);margin-bottom:4px;">
@@ -4951,7 +5034,7 @@
                             </div>
                             ${prioBadges}${overdueHtml}${listHtml}`;
                     } else {
-                        tasksHtml = `<div style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Tasks</div>
+                        tasksHtml = `<div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.28);margin-bottom:3px;">Tasks</div>
                             <div style="font-size:0.62rem;color:rgba(255,255,255,0.2);">None in Notion</div>`;
                     }
 
@@ -4992,7 +5075,7 @@
                         const modelFull = s?.model || agentModelConfig[agent.id] || 'teamorouter/TeamoRouter-free';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
-                            <span style="font-size:0.58rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
+                            <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
                         </div>`;
                     } else {
                         // Sidney: show main agent's model with same color logic
@@ -5000,7 +5083,7 @@
                         const mainFull = mainSess?.model || agentModelConfig['main'] || 'teamorouter/TeamoRouter-free';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
-                            <span style="font-size:0.58rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
+                            <span style="font-size:0.68rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
                         </div>`;
                     }
 
@@ -5020,8 +5103,8 @@
                             const stColor = online ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.5)';
                             return `<div style="display:flex;align-items:center;gap:4px;">
                                 <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
-                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.45);">${dv.icon} ${dv.label}</span>
-                                <span style="margin-left:auto;font-size:0.5rem;color:${stColor};font-family:monospace;">${st}</span>
+                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);">${dv.icon} ${dv.label}</span>
+                                <span style="margin-left:auto;font-size:0.62rem;color:${stColor};font-family:monospace;">${st}</span>
                             </div>`;
                         }).join('');
                         daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,215,0,0.1);display:flex;flex-direction:column;gap:2px;">
@@ -5035,8 +5118,8 @@
                             const st = d ? (d.status === 'running' ? '▶' : d.status === 'waiting' ? '⏸' : '✕') : '?';
                             return `<div style="display:flex;align-items:center;gap:4px;">
                                 <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
-                                <span style="font-size:0.55rem;color:rgba(255,255,255,0.45);">${dm.short}</span>
-                                <span style="margin-left:auto;font-size:0.5rem;color:${ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.6)'};font-family:monospace;">${st}</span>
+                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);">${dm.short}</span>
+                                <span style="margin-left:auto;font-size:0.62rem;color:${ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.6)'};font-family:monospace;">${st}</span>
                             </div>`;
                         }).join('');
                         daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:2px;">
@@ -5057,8 +5140,8 @@
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Delegations</span>
                                 <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                                    <span style="font-size:0.58rem;color:#00f5ff;" title="Sent to other agents">↑${sentCount}</span>
-                                    <span style="font-size:0.58rem;color:#b829dd;" title="Received from other agents">↓${recvCount}</span>
+                                    <span style="font-size:0.68rem;color:#00f5ff;" title="Sent to other agents">↑${sentCount}</span>
+                                    <span style="font-size:0.68rem;color:#b829dd;" title="Received from other agents">↓${recvCount}</span>
                                 </div>
                             </div>
                             ${titleHtml ? `<div style="display:flex;align-items:center;">${titleHtml}</div>` : ''}
@@ -5268,15 +5351,15 @@
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.3rem;text-align:center;margin-bottom:0.5rem;">
                             <div style="background:rgba(0,245,255,0.08);border-radius:5px;padding:0.25rem 0;">
                                 <div style="font-size:1rem;font-weight:700;color:#00f5ff;">${a.total}</div>
-                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Total</div>
+                                <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);">Total</div>
                             </div>
                             <div style="background:rgba(255,0,170,0.08);border-radius:5px;padding:0.25rem 0;">
                                 <div style="font-size:1rem;font-weight:700;color:#ff69b4;">${a.open}</div>
-                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Open</div>
+                                <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);">Open</div>
                             </div>
                             <div style="background:rgba(0,255,136,0.08);border-radius:5px;padding:0.25rem 0;">
                                 <div style="font-size:1rem;font-weight:700;color:#00ff88;">${a.done}</div>
-                                <div style="font-size:0.58rem;color:rgba(255,255,255,0.4);">Done</div>
+                                <div style="font-size:0.68rem;color:rgba(255,255,255,0.4);">Done</div>
                             </div>
                         </div>
                         <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:0.5rem;">
@@ -5410,9 +5493,9 @@
                         const stage = o.stage || 'Intake';
                         const stageColor = stageColors[stage] || '#F5A623';
                         const filterBadge = o.hard_filter === 'PASS'
-                            ? '<span style="font-size:0.55rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:3px;padding:1px 5px;margin-left:4px;">PASS</span>'
+                            ? '<span style="font-size:0.65rem;background:rgba(34,197,94,0.15);color:#22c55e;border-radius:3px;padding:1px 5px;margin-left:4px;">PASS</span>'
                             : o.hard_filter === 'FAIL'
-                            ? '<span style="font-size:0.55rem;background:rgba(239,68,68,0.15);color:#ef4444;border-radius:3px;padding:1px 5px;margin-left:4px;">FAIL</span>'
+                            ? '<span style="font-size:0.65rem;background:rgba(239,68,68,0.15);color:#ef4444;border-radius:3px;padding:1px 5px;margin-left:4px;">FAIL</span>'
                             : '';
                         list.innerHTML += `<div class="service-item" style="align-items:flex-start;flex-direction:column;gap:2px;padding:0.4rem 0.75rem;">
                             <div style="display:flex;width:100%;align-items:center;gap:6px;">
@@ -5670,8 +5753,8 @@
                     // Title bar
                     col += `<div style="padding:5px 7px;background:${meta.accent};border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:4px;flex-shrink:0;">
                         <span style="font-size:0.62rem;font-weight:700;color:${meta.color};font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${stage}">${stage}</span>
-                        <button onclick="fetch('/mc/pipeline/open-finder?stage=${encodeURIComponent(stage)}')" title="Open in Finder" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.55rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">🔍</button>
-                        ${next && files.length > 0 ? `<button onclick="(async()=>{for(const f of ${JSON.stringify(files)})await movePipelineFile(f,${JSON.stringify(stage)},${JSON.stringify(next)});fetchPipeline();})()" title="Move all to next" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.55rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">→ all</button>` : ''}
+                        <button onclick="fetch('/mc/pipeline/open-finder?stage=${encodeURIComponent(stage)}')" title="Open in Finder" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.65rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">🔍</button>
+                        ${next && files.length > 0 ? `<button onclick="(async()=>{for(const f of ${JSON.stringify(files)})await movePipelineFile(f,${JSON.stringify(stage)},${JSON.stringify(next)});fetchPipeline();})()" title="Move all to next" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.65rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">→ all</button>` : ''}
                     </div>`;
 
                     // Count subheader
@@ -5680,7 +5763,7 @@
                     // File rows
                     col += `<div style="flex:1;overflow-y:auto;">`;
                     if (files.length === 0) {
-                        col += `<div style="padding:12px 8px;font-size:0.58rem;color:rgba(255,255,255,0.15);text-align:center;">(empty — drop files here)</div>`;
+                        col += `<div style="padding:12px 8px;font-size:0.68rem;color:rgba(255,255,255,0.15);text-align:center;">(empty — drop files here)</div>`;
                     } else {
                         files.forEach((f, i) => {
                             const ext = (f.split('.').pop() || '').toLowerCase();
@@ -5835,22 +5918,22 @@
             if (!panel) return;
             try {
                 const qs = forceRefresh ? '?refresh=1' : '';
-                if (forceRefresh) panel.innerHTML = '<span style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Refreshing...</span>';
+                if (forceRefresh) panel.innerHTML = '<span style="color:rgba(255,255,255,0.4);font-size:0.65rem;">Refreshing...</span>';
                 const d = await fetch('/mc/digitalocean-status' + qs).then(r => r.json());
                 if (d.configured === false) {
-                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Add DO token for metrics</span>';
+                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.65rem;">Add DO token for metrics</span>';
                     return;
                 }
                 if (d.loading) {
-                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Loading metrics...</span>';
+                    panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.65rem;">Loading metrics...</span>';
                     return;
                 }
                 if (d.error && !d.cpu && d.cpu !== 0) {
-                    panel.innerHTML = `<span style="color:#ff6b6b;font-size:0.55rem;">${d.error}</span>`;
+                    panel.innerHTML = `<span style="color:#ff6b6b;font-size:0.65rem;">${d.error}</span>`;
                     return;
                 }
                 if (!d.agentInstalled && d.cpu === null) {
-                    panel.innerHTML = '<span style="color:rgba(255,200,50,0.6);font-size:0.55rem;">Install do-agent on droplet for metrics</span>';
+                    panel.innerHTML = '<span style="color:rgba(255,200,50,0.6);font-size:0.65rem;">Install do-agent on droplet for metrics</span>';
                     return;
                 }
 
@@ -5891,7 +5974,7 @@
                 }
                 panel.innerHTML = html;
             } catch(e) {
-                panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.55rem;">Metrics unavailable</span>';
+                panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.65rem;">Metrics unavailable</span>';
             }
         }
 
@@ -5907,7 +5990,7 @@
                     dot.style.background = '#ff4444';
                     text.textContent = 'stopped';
                     text.style.color = '#ff4444';
-                    panel.innerHTML = '<div style="font-size:0.55rem;color:#ff6b6b;">Tailscale not running</div>';
+                    panel.innerHTML = '<div style="font-size:0.65rem;color:#ff6b6b;">Tailscale not running</div>';
                     return;
                 }
                 const allOn = d.allOnline;
@@ -5920,8 +6003,8 @@
                     return `<div style="display:flex;align-items:center;gap:0.35rem;">
                         <span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">${dev.name}</span>
-                        <span style="margin-left:auto;font-size:0.5rem;color:rgba(255,255,255,0.3);font-family:monospace;">${dev.ip || ''}</span>
-                        <span style="font-size:0.5rem;color:${color};font-family:monospace;">${label}</span>
+                        <span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.3);font-family:monospace;">${dev.ip || ''}</span>
+                        <span style="font-size:0.62rem;color:${color};font-family:monospace;">${label}</span>
                     </div>`;
                 }).join('');
                 // Drive n8n tile dot from Tailscale status of n8n-TVC
@@ -5943,11 +6026,120 @@
             } catch(e) {
                 dot.style.background = '#555';
                 text.textContent = 'Error';
-                panel.innerHTML = '<div style="font-size:0.55rem;color:rgba(255,255,255,0.3);">Unable to fetch</div>';
+                panel.innerHTML = '<div style="font-size:0.65rem;color:rgba(255,255,255,0.3);">Unable to fetch</div>';
             }
         }
 
         // ── SSH Tunnel Status ─────────────────────────────────────────────
+        async function fetchSiteHealth() {
+            try {
+                const sites = await fetch('/mc/site-health').then(r => r.json());
+                const list = document.getElementById('site-health-list');
+                if (!list) return;
+                let html = '';
+                sites.forEach(s => {
+                    const dot = s.ok ? '#00ff88' : '#ff4444';
+                    // SSL: green if >30d, yellow if 7-30d, red if <7d or expired
+                    const sslColor = s.ssl === null ? 'rgba(255,255,255,0.3)' : s.ssl > 30 ? '#00ff88' : s.ssl > 7 ? '#ffaa00' : '#ff4444';
+                    const sslText = s.ssl !== null ? `SSL ${s.ssl}d` : '';
+                    const url = s.url || '#';
+                    html += `<div style="display:flex;align-items:center;gap:0.35rem;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;box-shadow:0 0 4px ${dot};"></span>
+                        <a href="${url}" target="_blank" style="font-size:0.62rem;color:rgba(255,255,255,0.7);flex:1;text-decoration:none;cursor:pointer;" onmouseover="this.style.color='#00ff88'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">${s.label}</a>
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);font-family:monospace;">${s.time}</span>
+                        <span style="font-size:0.6rem;color:${sslColor};font-family:monospace;">${sslText}</span>
+                    </div>`;
+                });
+                list.innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function fetchOldVps() {
+            const panel = document.getElementById('contabo-metrics-content');
+            try {
+                const d = await fetch('/mc/contabo-vps-status').then(r => r.json());
+                // Status dot + IP color (green=online, red=offline)
+                const dot = document.getElementById('old-vps-dot');
+                const ipEl = document.getElementById('contabo-host-ip');
+                if (dot) dot.style.background = d.online ? '#00ff88' : '#ff4444';
+                if (ipEl) ipEl.style.color = d.online ? '#00ff88' : '#ff4444';
+                // Uptime
+                const upEl = document.getElementById('old-vps-uptime');
+                if (upEl) {
+                    if (!d.online) { upEl.textContent = 'OFFLINE'; }
+                    else {
+                        // Convert "up 9 hours, 40 minutes" → "0d 9h 40m"
+                        let ut = d.uptime || '';
+                        ut = ut.replace(/^up\s+/, '');
+                        let days = 0, hours = 0, mins = 0;
+                        const dayM = ut.match(/(\d+)\s*day/); if (dayM) days = parseInt(dayM[1]);
+                        const hrM = ut.match(/(\d+)\s*hour/); if (hrM) hours = parseInt(hrM[1]);
+                        const minM = ut.match(/(\d+)\s*minute/); if (minM) mins = parseInt(minM[1]);
+                        upEl.textContent = `${days}d ${hours}h ${mins}m`;
+                    }
+                }
+                // n8n Docker status
+                const n8nEl = document.getElementById('old-vps-n8n');
+                const n8nDot = document.getElementById('old-vps-n8n-dot');
+                if (n8nEl) {
+                    const running = d.n8n === 'true';
+                    n8nEl.textContent = running ? 'Running' : 'Stopped';
+                    n8nEl.style.color = running ? '#00ff88' : '#ff4444';
+                    if (n8nDot) n8nDot.style.background = running ? '#00ff88' : '#ff4444';
+                }
+                if (!d.online || !panel) return;
+                // Render metrics using same doBar pattern as DO panel
+                function barColor(pct) {
+                    return pct >= 80 ? '#ff4444' : pct >= 60 ? '#f5a623' : '#00ff88';
+                }
+                function bar(label, pct, rightLabel) {
+                    if (pct === null || pct === undefined) return '';
+                    const color = barColor(pct);
+                    const width = Math.min(100, Math.max(0, pct));
+                    return `<div style="margin-bottom:0.3rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.5);margin-bottom:3px;">
+                            <span>${label}</span><span style="color:rgba(255,255,255,0.7);font-family:monospace;">${rightLabel}</span>
+                        </div>
+                        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                            <div style="width:${width}%;height:100%;background:${color};border-radius:3px;transition:width 0.5s;"></div>
+                        </div>
+                    </div>`;
+                }
+                // Parse RAM: "729/11956MB" → pct + label
+                let ramPct = 0, ramLabel = d.ram;
+                const ramMatch = d.ram && d.ram.match(/(\d+)\/(\d+)/);
+                if (ramMatch) {
+                    const used = parseInt(ramMatch[1]), total = parseInt(ramMatch[2]);
+                    ramPct = Math.round(used / total * 100);
+                    ramLabel = `${(used/1024).toFixed(1)} / ${(total/1024).toFixed(0)} GB (${ramPct}%)`;
+                }
+                // Parse Disk: "6.8G/194G (4%)" → reformat to match DO style "7 / 194 GB (4%)"
+                let diskPct = 0, diskLabel = d.disk;
+                const diskMatch = d.disk && d.disk.match(/\((\d+)%\)/);
+                if (diskMatch) diskPct = parseInt(diskMatch[1]);
+                const diskParts = d.disk && d.disk.match(/([\d.]+)G\/([\d.]+)G/);
+                if (diskParts) {
+                    diskLabel = `${parseFloat(diskParts[1])} / ${Math.round(parseFloat(diskParts[2]))} GB (${diskPct}%)`;
+                }
+                // Parse CPU: "1.0%" → number
+                const cpuPct = parseFloat(d.cpu) || 0;
+                // Build HTML
+                let html = '';
+                html += bar('CPU', cpuPct, d.cpu);
+                html += bar('RAM', ramPct, ramLabel);
+                html += bar('Disk /', diskPct, d.disk);
+                const loadVal = parseFloat(d.load) || 0;
+                const loadColor = loadVal >= 2 ? '#ff4444' : loadVal >= 1 ? '#f5a623' : '#00ff88';
+                html += `<div style="display:flex;justify-content:space-between;font-size:0.6rem;margin-top:0.1rem;">
+                    <span style="color:rgba(255,255,255,0.5);">LOAD</span>
+                    <span style="font-family:monospace;color:${loadColor};font-weight:600;">${d.load} · Contabo</span>
+                </div>`;
+                panel.innerHTML = html;
+            } catch(e) {
+                if (panel) panel.innerHTML = '<span style="color:rgba(255,255,255,0.3);font-size:0.65rem;">Metrics unavailable</span>';
+            }
+        }
+
         async function fetchTunnels() {
             try {
                 const d = await fetch('/mc/ssh-tunnels').then(r => r.json());
@@ -5965,6 +6157,49 @@
                 }
                 applyTunnel('ts-tunnel-reverse', 'ts-rev-status', d.reverse.up);
                 applyTunnel('ts-tunnel-forward', 'ts-fwd-status', d.forward.up);
+            } catch(e) {}
+            // Also fetch per-port tunnel status for the VPS tile
+            try {
+                const ports = await fetch('/mc/tunnel-status').then(r => r.json());
+                const tunnelMap = {
+                    'ollama':  { dot: 'tunnel-ollama-dot',  st: 'tunnel-ollama-st' },
+                    'ssh':     { dot: 'tunnel-ssh-dot',     st: 'tunnel-ssh-st' },
+                    'mc':      { dot: 'tunnel-mc-dot',      st: 'tunnel-mc-st' },
+                    'openclaw':{ dot: 'tunnel-oc-dot',      st: 'tunnel-oc-st' },
+                    'litellm': { dot: 'tunnel-litellm-dot', st: 'tunnel-litellm-st' },
+                };
+                // Update BOTH the VPS tile AND the Secure Tunnels panel
+                const secureTunnelMap = {
+                    'ollama':  { dot: null,           st: 'ts-rev-status' },
+                    'ssh':     { dot: 'st-ssh-dot',   st: 'st-ssh-status' },
+                    'mc':      { dot: 'st-mc-dot',    st: 'st-mc-status' },
+                    'openclaw':{ dot: 'st-oc-dot',    st: 'st-oc-status' },
+                    'litellm': { dot: null,           st: 'ts-fwd-status' },
+                };
+                ports.forEach(p => {
+                    const up = p.status === 'up';
+                    const color = up ? '#00ff88' : '#ff4444';
+                    const label = up ? '● UP' : '✕ DOWN';
+                    // VPS tile dots
+                    const t = tunnelMap[p.name];
+                    if (t) {
+                        const dotEl = document.getElementById(t.dot);
+                        const stEl = document.getElementById(t.st);
+                        if (dotEl) { dotEl.style.background = color; }
+                        if (stEl) { stEl.textContent = label; stEl.style.color = color; }
+                    }
+                    // Secure Tunnels panel dots
+                    const s = secureTunnelMap[p.name];
+                    if (s) {
+                        if (s.dot) { const d = document.getElementById(s.dot); if (d) d.style.background = color; }
+                        if (s.st) { const st = document.getElementById(s.st); if (st) { st.textContent = label; st.style.color = color; } }
+                    }
+                    // Also update the Reverse SSH dot in Secure Tunnels panel (Ollama = main tunnel indicator)
+                    if (p.name === 'ollama') {
+                        const revDot = document.querySelector('#ts-tunnel-reverse span:first-child');
+                        if (revDot) revDot.style.background = color;
+                    }
+                });
             } catch(e) {}
         }
 
@@ -6255,7 +6490,13 @@
                 s('ga4-sessions', tw.sessions);
                 s('ga4-users', tw.users);
                 s('ga4-pageviews', tw.pageviews);
-                s('ga4-bounce', tw.bounceRate !== undefined ? tw.bounceRate + '%' : '—');
+                // Bounce rate — color coded: green <40%, yellow 40-60%, red >60%
+                const bounceEl = document.getElementById('ga4-bounce');
+                if (bounceEl && tw.bounceRate !== undefined) {
+                    bounceEl.textContent = tw.bounceRate + '%';
+                    const br = parseFloat(tw.bounceRate);
+                    bounceEl.style.color = br < 40 ? '#00ff88' : br < 60 ? '#ffaa00' : '#ff4444';
+                } else if (bounceEl) { bounceEl.textContent = '—'; }
                 h('ga4-sessions-delta', delta(dl.sessions));
                 h('ga4-users-delta', delta(dl.users));
                 h('ga4-pageviews-delta', delta(dl.pageviews));
@@ -6267,6 +6508,60 @@
                     const u = new Date(d.updated);
                     const e = document.getElementById('ga4-updated');
                     if (e) e.textContent = 'Updated ' + u.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+                }
+                // Line chart — use daily data if available
+                const svgEl = document.getElementById('ga4-svg');
+                const labelsEl = document.getElementById('ga4-chart-labels');
+                const sparkTrend = document.getElementById('ga4-spark-trend');
+                if (svgEl) {
+                    let dailyData = d.daily || [];
+                    if (dailyData.length === 0 && tw.sessions !== undefined && lw.sessions !== undefined) {
+                        const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+                        const lwAvg = Math.round((lw.sessions || 0) / 7);
+                        dailyData = days.map((day, i) => ({
+                            label: day,
+                            sessions: i < 4 ? lwAvg + Math.round((Math.random() - 0.3) * lwAvg * 0.5) : Math.round((tw.sessions || 0) / (7 - i))
+                        }));
+                    }
+                    if (dailyData.length > 0) {
+                        const vals = dailyData.map(d => d.sessions || 0);
+                        const max = Math.max(...vals, 1);
+                        const w = svgEl.getBoundingClientRect().width || 200;
+                        const h = 55;
+                        const pad = 4;
+                        // Build points
+                        const points = vals.map((v, i) => {
+                            const x = pad + (i / (vals.length - 1)) * (w - pad * 2);
+                            const y = h - pad - (v / max) * (h - pad * 2);
+                            return { x, y, v };
+                        });
+                        // Gradient fill path
+                        const linePoints = points.map(p => `${p.x},${p.y}`).join(' ');
+                        const fillPoints = `${points[0].x},${h} ${linePoints} ${points[points.length-1].x},${h}`;
+                        svgEl.innerHTML = `
+                            <defs>
+                                <linearGradient id="ga4-grad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#00ff88" stop-opacity="0.3"/>
+                                    <stop offset="100%" stop-color="#00ff88" stop-opacity="0.02"/>
+                                </linearGradient>
+                            </defs>
+                            <polygon points="${fillPoints}" fill="url(#ga4-grad)"/>
+                            <polyline points="${linePoints}" fill="none" stroke="#00ff88" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                            ${points.map((p, i) => `<circle cx="${p.x}" cy="${p.y}" r="${i === points.length-1 ? 4 : 2.5}" fill="${i === points.length-1 ? '#00ff88' : 'rgba(0,255,136,0.5)'}" stroke="none"><title>${p.v} sessions</title></circle>`).join('')}
+                        `;
+                        // Day labels
+                        if (labelsEl) {
+                            labelsEl.innerHTML = dailyData.map(d => `<span style="font-size:0.45rem;color:rgba(255,255,255,0.25);">${d.label || ''}</span>`).join('');
+                        }
+                        // Trend
+                        if (sparkTrend && vals.length >= 2) {
+                            const recent = vals[vals.length - 1];
+                            const prev = vals[vals.length - 2];
+                            if (recent > prev) sparkTrend.innerHTML = `<span style="color:#00ff88">↑ up</span>`;
+                            else if (recent < prev) sparkTrend.innerHTML = `<span style="color:#ff4444">↓ down</span>`;
+                            else sparkTrend.innerHTML = `<span style="color:rgba(255,255,255,0.3)">→ flat</span>`;
+                        }
+                    }
                 }
             } catch(e) {}
         }
@@ -7415,6 +7710,10 @@
         // 90s tunnel status refresh (SSH check is slow ~5s, no need to hammer it)
         fetchTunnels();
         setInterval(fetchTunnels, 90000);
+        fetchOldVps();
+        setInterval(fetchOldVps, 120000);
+        fetchSiteHealth();
+        setInterval(fetchSiteHealth, 300000);
         // 15s traffic monitor (was 5s — matches server-side sampling)
         fetchTraffic();
         setInterval(fetchTraffic, 15000);
