@@ -1,14 +1,14 @@
 {
-  "updated": "2026-04-03T01:35:37.976306",
+  "updated": "2026-04-03T05:35:40.963823",
   "property": "theveteransconsultant.com",
   "thisWeek": {},
   "lastWeek": {
-    "sessions": 36,
-    "users": 19,
-    "pageviews": 75,
-    "avgDuration": 310,
-    "bounceRate": 38.9,
-    "engaged": 22
+    "sessions": 3,
+    "users": 2,
+    "pageviews": 11,
+    "avgDuration": 244,
+    "bounceRate": 0.0,
+    "engaged": 3
   },
   "deltas": {
     "sessions": -100.0,
@@ -18,8 +18,8 @@
   "topPages": [
     {
       "path": "/",
-      "views": 37,
-      "users": 10
+      "views": 34,
+      "users": 9
     },
     {
       "path": "/get-started/",
@@ -32,24 +32,24 @@
       "users": 2
     },
     {
-      "path": "/contact/",
-      "views": 7,
-      "users": 1
-    },
-    {
       "path": "/services/",
       "views": 6,
       "users": 1
+    },
+    {
+      "path": "/veteran-outreach/",
+      "views": 4,
+      "users": 3
     }
   ],
   "sources": [
     {
       "channel": "Direct",
-      "sessions": 20
+      "sessions": 17
     },
     {
       "channel": "Unassigned",
-      "sessions": 13
+      "sessions": 14
     },
     {
       "channel": "Organic Search",
@@ -61,12 +61,6 @@
     }
   ],
   "daily": [
-    {
-      "date": "2026-03-26",
-      "sessions": 3,
-      "pageviews": 11,
-      "users": 2
-    },
     {
       "date": "2026-03-27",
       "sessions": 12,
@@ -105,8 +99,8 @@
     },
     {
       "date": "2026-04-02",
-      "sessions": 2,
-      "pageviews": 4,
+      "sessions": 3,
+      "pageviews": 5,
       "users": 2
     }
   ]
