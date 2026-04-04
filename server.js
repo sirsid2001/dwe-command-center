@@ -3076,10 +3076,17 @@ async function getAgentTasks(req, res) {
             { role: 'CIO',            name: 'Nicole',         icon: '📈',  id: 'nicole' },
             { role: 'CE',             name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
             { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
+            { role: 'Jarvis',         name: 'Jarvis',         icon: '⚡',  id: 'jarvis' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
         ];
         const DONE_STATUSES = new Set(['Done', 'Completed', 'Complete', 'Review', 'Archived']);
         const PRIORITY_ORDER = ['Critical', 'High', 'Medium', 'Low', 'No Priority'];
+
+        // Normalize role aliases so tasks don't fall into Unassigned
+        const ROLE_ALIASES = { 'Chief Engineer': 'CE', 'Chief': 'CTO', 'CSO': 'CIO' };
+        for (const t of allTasks) {
+            if (ROLE_ALIASES[t.role]) t.role = ROLE_ALIASES[t.role];
+        }
 
         const KNOWN_ROLES = new Set(AGENTS.map(a => a.role));
         const ACTIONABLE_STATUSES = new Set(['Not started', 'Not Started', 'In Progress', 'In progress']);
