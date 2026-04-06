@@ -434,4 +434,4 @@ function getCachedResults() {
     return null;
 }
 
-module.exports = { enrichScrapeResults, getCachedResults };
+module.exports = { enrichScrapeResults, getCachedResults, getYouTubeTranscript, getYouTubeTitle, ollamaChat, parseVTT };

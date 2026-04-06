@@ -175,6 +175,7 @@
         .stage-client .f-count { color: #a29bfe; } .stage-client .f-bar { background: rgba(162,155,254,0.65); }
         .stage-upsell .f-count { color: #fd79a8; } .stage-upsell .f-bar { background: rgba(253,121,168,0.65); }
         .stage-cashflow .f-count { color: #c8a84e; } .stage-cashflow .f-bar { background: rgba(200,168,78,0.65); }
+        .stage-youtube-intel .f-count { color: #ffc83c; } .stage-youtube-intel .f-bar { background: rgba(255,200,60,0.65); }
         .stage-ywyc .f-count { color: #00ff88; } .stage-ywyc .f-bar { background: rgba(0,255,136,0.65); }
 
         /* Checkbox overlay for checkable stages */
@@ -505,8 +506,23 @@
                     <span>This Week: <span class="ci-stat-val" id="ci-week-nuggets">0</span> nuggets from <span class="ci-stat-val" id="ci-week-videos">0</span> videos</span>
                     <span>Avg Score: <span class="ci-stat-val" id="ci-week-avg">—</span></span>
                 </div>
+                <div id="yt-intel-form" style="display:flex;gap:0.4rem;padding:0.3rem 0.75rem 0.5rem;align-items:center;">
+                    <input id="yt-intel-url" type="text" placeholder="Paste YouTube URL..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.35rem 0.5rem;color:#fff;font-size:0.7rem;font-family:Inter,sans-serif;outline:none;" />
+                    <select id="yt-intel-agents" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.35rem 0.3rem;color:rgba(255,255,255,0.7);font-size:0.6rem;font-family:Inter,sans-serif;outline:none;">
+                        <option value="auto">Auto-route</option>
+                        <option value="cto">CTO</option>
+                        <option value="chief-engineer">Chief Engineer</option>
+                        <option value="cfo">CFO (Fran)</option>
+                        <option value="nicole">Nicole</option>
+                        <option value="jake">Jake</option>
+                        <option value="anita">Anita</option>
+                        <option value="all">All Agents</option>
+                    </select>
+                    <button onclick="ytIntelAnalyze()" id="yt-intel-btn" style="background:rgba(255,200,60,0.15);border:1px solid rgba(255,200,60,0.3);color:#ffc83c;border-radius:6px;padding:0.35rem 0.6rem;cursor:pointer;font-size:0.6rem;font-weight:600;font-family:Inter,sans-serif;white-space:nowrap;">Analyze</button>
+                </div>
+                <div id="yt-intel-status" style="display:none;padding:0.2rem 0.75rem 0.4rem;font-size:0.65rem;color:rgba(255,200,60,0.7);"></div>
                 <div id="ci-nuggets" class="ci-nuggets">
-                    <div class="ci-empty">No nuggets yet — pipeline will populate once YouTube channels are monitored</div>
+                    <div class="ci-empty">No nuggets yet — paste a YouTube URL above or use the Apple Shortcut to analyze videos</div>
                 </div>
                 <div id="ci-scan-time" class="ci-scan-time"></div>
             </div>
@@ -757,6 +773,55 @@
                     <span id="cf-last-updated" style="font-size:0.55rem;color:#aaa;">—</span>
                     <span style="font-size:0.5rem;color:#ccc;">Live from Google Sheets</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- STEP 8: YouTube Intel — RSS feeds + video analysis -->
+        <div id="step-panel-youtube-intel" class="step-panel grid-full">
+            <div class="card" style="border-color:rgba(255,200,60,0.2);margin-bottom:1rem;">
+                <div class="card-title">
+                    <span class="icon">📺</span> YouTube Intel Feeds
+                    <a href="netnewswire://" style="margin-left:auto;display:inline-flex;align-items:center;gap:0.4rem;background:rgba(255,200,60,0.15);border:1px solid rgba(255,200,60,0.3);color:#ffc83c;border-radius:0.4rem;padding:0.3rem 0.7rem;text-decoration:none;font-size:0.7rem;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,200,60,0.28)'" onmouseout="this.style.background='rgba(255,200,60,0.15)'">Open NetNewsWire →</a>
+                </div>
+                <p style="color:rgba(255,255,255,0.6);font-size:0.8rem;line-height:1.6;margin:0.5rem 0;">Click a feed below to subscribe, or open NetNewsWire to browse. Paste interesting video URLs below to analyze.</p>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;margin:1rem 0;">
+                    <a href="feed://www.youtube.com/feeds/videos.xml?channel_id=UCc-FovAyBAQDw2Y7PQ_v0Zw" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.9rem;background:rgba(255,200,60,0.08);border:1px solid rgba(255,200,60,0.2);border-radius:8px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,200,60,0.15)'" onmouseout="this.style.background='rgba(255,200,60,0.08)'">
+                        <span style="font-size:1rem;">🔍</span>
+                        <div><div style="color:#ffc83c;font-size:0.85rem;font-weight:600;">Julian Goldie SEO</div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;">SEO strategies, AI content, link building</div></div>
+                        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.7rem;">Open in Reader →</span>
+                    </a>
+                    <a href="feed://www.youtube.com/feeds/videos.xml?channel_id=UC2b2wgxm0vFjQfJJ0iRcFRw" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.9rem;background:rgba(255,200,60,0.08);border:1px solid rgba(255,200,60,0.2);border-radius:8px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,200,60,0.15)'" onmouseout="this.style.background='rgba(255,200,60,0.08)'">
+                        <span style="font-size:1rem;">🤖</span>
+                        <div><div style="color:#ffc83c;font-size:0.85rem;font-weight:600;">AI-GPT Workshop</div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;">AI automation, GPT workflows</div></div>
+                        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.7rem;">Open in Reader →</span>
+                    </a>
+                    <a href="feed://www.youtube.com/feeds/videos.xml?channel_id=UCbo-KbSjJDG6JWQ_MTZ_rNA" style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.9rem;background:rgba(255,200,60,0.08);border:1px solid rgba(255,200,60,0.2);border-radius:8px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,200,60,0.15)'" onmouseout="this.style.background='rgba(255,200,60,0.08)'">
+                        <span style="font-size:1rem;">⚡</span>
+                        <div><div style="color:#ffc83c;font-size:0.85rem;font-weight:600;">Nick Saraev</div><div style="color:rgba(255,255,255,0.35);font-size:0.65rem;">AI automation, Make/n8n, business systems</div></div>
+                        <span style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.7rem;">Open in Reader →</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Analyze Video (same form as main dashboard) -->
+            <div class="card" style="border-color:rgba(255,200,60,0.15);">
+                <div class="card-title" style="margin-bottom:0.5rem;"><span class="icon">🧠</span> Analyze Video</div>
+                <div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.4rem;">
+                    <input id="yt-intel-url-step" type="text" placeholder="Paste YouTube URL..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.45rem 0.6rem;color:#fff;font-size:0.8rem;font-family:Inter,sans-serif;outline:none;" onkeydown="if(event.key==='Enter')ytIntelAnalyzeStep()" />
+                    <select id="yt-intel-agents-step" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.45rem 0.4rem;color:rgba(255,255,255,0.7);font-size:0.7rem;font-family:Inter,sans-serif;outline:none;">
+                        <option value="auto">Auto-route</option>
+                        <option value="cto">CTO</option>
+                        <option value="chief-engineer">Chief Engineer</option>
+                        <option value="cfo">CFO (Fran)</option>
+                        <option value="nicole">Nicole</option>
+                        <option value="jake">Jake</option>
+                        <option value="anita">Anita</option>
+                        <option value="all">All Agents</option>
+                    </select>
+                    <button onclick="ytIntelAnalyzeStep()" id="yt-intel-btn-step" style="background:rgba(255,200,60,0.15);border:1px solid rgba(255,200,60,0.3);color:#ffc83c;border-radius:6px;padding:0.45rem 0.7rem;cursor:pointer;font-size:0.7rem;font-weight:600;font-family:Inter,sans-serif;white-space:nowrap;">Analyze</button>
+                </div>
+                <div id="yt-intel-status-step" style="display:none;font-size:0.75rem;color:rgba(255,200,60,0.8);padding:0.3rem 0;"></div>
+                <div id="yt-intel-recent-step" style="display:flex;flex-direction:column;gap:0.3rem;max-height:250px;overflow-y:auto;margin-top:0.5rem;"></div>
             </div>
         </div>
 
@@ -1254,7 +1319,7 @@
         }
         const CEO_PIPELINE_KEY = 'dwe_ceo_pipeline';
         const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Cash Flow', 'Proposal', 'Client', 'Upsell', 'Daily YWYC'];
-        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Cash Flow': 'cashflow', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Daily YWYC': 'ywyc' };
+        const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Cash Flow': 'cashflow', 'YouTube Intel': 'youtube-intel', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Daily YWYC': 'ywyc' };
 
         // Checkable items override specific stages (position 0 = first stage)
         const CEO_CHECKABLE = [
@@ -1264,6 +1329,7 @@
             { position: 3, id: 'process-newsletter', label: 'Process Interests', url: '' },
             { position: 4, id: 'pipeline-outreach', label: 'Pipeline & Outreach', url: '/funnel' },
             { position: 5, id: 'cashflow', label: 'Cash Flow', url: '' },
+            { position: 6, id: 'youtube-intel', label: 'YouTube Intel', url: '' },
             { position: 9, id: 'daily-ywyc', label: 'Daily YWYC', url: 'https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70' },
         ];
 
@@ -2275,6 +2341,117 @@
                 setTimeout(() => { btn.textContent = 'Re-auth'; btn.disabled = false; }, 3000);
             }
         }
+
+        // ── YouTube Intel Analyze ──
+        async function ytIntelAnalyze() {
+            const urlInput = document.getElementById('yt-intel-url');
+            const agentSelect = document.getElementById('yt-intel-agents');
+            const btn = document.getElementById('yt-intel-btn');
+            const statusEl = document.getElementById('yt-intel-status');
+            const videoUrl = urlInput.value.trim();
+            if (!videoUrl) { urlInput.focus(); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Fetching transcript and running analysis...';
+
+            try {
+                const agents = agentSelect.value === 'all' ?
+                    ['cto','chief-engineer','cfo','nicole','jake','anita'] :
+                    [agentSelect.value];
+
+                const resp = await fetch('/mc/yt-intel/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: videoUrl, agents })
+                });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    if (data.duplicate) {
+                        statusEl.textContent = `Already analyzed: ${data.existing.title} (${data.existing.verdict}, score ${data.existing.score}/10)`;
+                    } else {
+                        statusEl.innerHTML = `<strong>${data.verdict}</strong> (${data.score}/10) — ${data.title}<br/>Sent to: ${data.agents_notified.join(', ')}${data.has_transcript ? '' : ' (no transcript)'}`;
+                        urlInput.value = '';
+                        fetchContentIntel(); // refresh nugget list
+                    }
+                } else {
+                    statusEl.textContent = `Error: ${data.error}`;
+                }
+            } catch(e) {
+                statusEl.textContent = `Failed: ${e.message}`;
+            }
+            btn.textContent = 'Analyze';
+            btn.disabled = false;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 15000);
+        }
+
+        // ── YouTube Intel Analyze (Step panel version) ──
+        async function ytIntelAnalyzeStep() {
+            const urlInput = document.getElementById('yt-intel-url-step');
+            const agentSelect = document.getElementById('yt-intel-agents-step');
+            const btn = document.getElementById('yt-intel-btn-step');
+            const statusEl = document.getElementById('yt-intel-status-step');
+            const videoUrl = urlInput.value.trim();
+            if (!videoUrl) { urlInput.focus(); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Fetching transcript and running analysis...';
+
+            try {
+                const agents = agentSelect.value === 'all' ?
+                    ['cto','chief-engineer','cfo','nicole','jake','anita'] :
+                    [agentSelect.value];
+
+                const resp = await fetch('/mc/yt-intel/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: videoUrl, agents })
+                });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    if (data.duplicate) {
+                        statusEl.textContent = 'Already analyzed: ' + data.existing.title + ' (' + data.existing.verdict + ', score ' + data.existing.score + '/10)';
+                    } else {
+                        statusEl.innerHTML = '<strong>' + data.verdict + '</strong> (' + data.score + '/10) — ' + data.title + '<br/>Sent to: ' + data.agents_notified.join(', ') + (data.has_transcript ? '' : ' (no transcript)');
+                        urlInput.value = '';
+                        ytIntelLoadRecent();
+                    }
+                } else {
+                    statusEl.textContent = 'Error: ' + data.error;
+                }
+            } catch(e) {
+                statusEl.textContent = 'Failed: ' + e.message;
+            }
+            btn.textContent = 'Analyze';
+            btn.disabled = false;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 15000);
+        }
+
+        async function ytIntelLoadRecent() {
+            try {
+                const d = await fetch('/mc/content-intel').then(r => r.json());
+                const el = document.getElementById('yt-intel-recent-step');
+                const nuggets = (d.recentNuggets || []).slice(0, 8);
+                if (!nuggets.length) { el.innerHTML = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.25);text-align:center;padding:0.5rem;">No videos analyzed yet</div>'; return; }
+                el.innerHTML = nuggets.map(n => {
+                    const vc = n.verdict === 'WATCH' ? '#00ff88' : n.verdict === 'SKIM' ? '#ffc83c' : 'rgba(255,255,255,0.35)';
+                    const sc = n.score >= 7 ? '#00ff88' : n.score >= 5 ? '#ffc83c' : 'rgba(255,255,255,0.4)';
+                    const ago = Math.round((Date.now() - new Date(n.timestamp).getTime()) / 3600000);
+                    const at = ago < 1 ? 'just now' : ago + 'h ago';
+                    return '<a href="' + (n.url || '#') + '" target="_blank" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.5rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:8px;text-decoration:none;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'rgba(255,200,60,0.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.07)\'">' +
+                        '<span style="font-size:0.7rem;font-weight:700;color:' + vc + ';min-width:35px;">' + (n.verdict||'?') + '</span>' +
+                        '<span style="font-size:0.75rem;font-weight:700;color:' + sc + ';font-family:monospace;min-width:22px;">' + n.score + '</span>' +
+                        '<span style="font-size:0.72rem;color:rgba(255,255,255,0.75);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (n.title||'?') + '</span>' +
+                        '<span style="font-size:0.6rem;color:rgba(255,255,255,0.25);white-space:nowrap;">' + at + '</span></a>';
+                }).join('');
+            } catch(e) {}
+        }
+        ytIntelLoadRecent();
 
         // ── Content Intelligence ──
         async function fetchContentIntel() {

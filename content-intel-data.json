@@ -1,11 +1,102 @@
 {
-  "lastScan": "2026-03-30T20:49:01.741Z",
+  "lastScan": "2026-04-05T23:15:47.827Z",
   "weeklyStats": {
-    "nuggets": 1,
-    "videos": 1,
-    "avgScore": 7
+    "nuggets": 4,
+    "videos": 4,
+    "avgScore": 5.3
   },
   "recentNuggets": [
+    {
+      "videoId": "Af4HcozqZOc",
+      "title": "Honestly I would love some wine  #wealth #usa🇺🇸 #moneytips #wine",
+      "channel": "",
+      "score": 6,
+      "verdict": "SKIM",
+      "verdict_reason": "The video is about a financial investment strategy, not directly related to building a digital workforce ecosystem.",
+      "video_summary": [
+        "Billionaires store wine in bonded warehouses to avoid taxes and potentially earn interest on the value of their collections.",
+        "Wine can be classified as a wasting asset but may appreciate over time, offering tax advantages.",
+        "Wine collections can serve as collateral for loans."
+      ],
+      "key_highlights": [],
+      "agent_assignments": [
+        {
+          "agent": "cfo"
+        },
+        {
+          "agent": "CFO/Fran"
+        }
+      ],
+      "tools_mentioned": [],
+      "revenue_potential": null,
+      "tags": [
+        "finance",
+        "investing"
+      ],
+      "url": "https://www.youtube.com/watch?v=Af4HcozqZOc",
+      "timestamp": "2026-04-05T23:15:47.801Z"
+    },
+    {
+      "videoId": "jEFpBfNAggI",
+      "title": "Video jEFpBfNAggI",
+      "channel": "",
+      "score": 6,
+      "verdict": "SKIM",
+      "verdict_reason": "Title does not provide specific content relevant to DWE.",
+      "video_summary": [
+        "No transcript available, analyzing based on title only."
+      ],
+      "key_highlights": [],
+      "agent_assignments": [
+        {
+          "agent": "cto"
+        },
+        {
+          "agent": "chief-engineer"
+        },
+        {
+          "agent": "anita"
+        },
+        {
+          "agent": "nicole"
+        }
+      ],
+      "tools_mentioned": [
+        "Pinecone",
+        "n8n",
+        "Ollama local LLM",
+        "Claude Code"
+      ],
+      "revenue_potential": null,
+      "tags": [
+        "ai-agents",
+        "automation",
+        "coding",
+        "project-management"
+      ],
+      "url": "https://www.youtube.com/watch?v=jEFpBfNAggI",
+      "timestamp": "2026-04-05T21:47:46.099Z"
+    },
+    {
+      "videoId": "dQw4w9WgXcQ",
+      "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+      "channel": "",
+      "score": 2,
+      "verdict": "SKIP",
+      "verdict_reason": "The transcript is a song and does not contain relevant information for building a digital workforce ecosystem.",
+      "video_summary": [],
+      "key_highlights": [],
+      "agent_assignments": [
+        {
+          "agent": "cto"
+        }
+      ],
+      "tools_mentioned": [],
+      "revenue_potential": null,
+      "tags": [],
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "timestamp": "2026-04-05T21:47:11.652Z"
+    },
     {
       "videoId": "TEST_AI_AGENT_001",
       "title": "How I Make $10K/Month With AI Agents and n8n Automation",
@@ -124,6 +215,11 @@
       "videos": 2,
       "totalScore": 16,
       "avgScore": 8
+    },
+    "Unknown": {
+      "videos": 3,
+      "totalScore": 14,
+      "avgScore": 4.7
     }
   }
 }

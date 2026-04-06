@@ -1,10 +1,10 @@
 {
-  "currentVersion": "2026.3.28",
-  "latestVersion": "2026.4.1",
-  "updateAvailable": true,
-  "lastChecked": "2026-04-02T17:21:01.266Z",
-  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.4.1",
-  "releaseNotes": "Multi-channel AI gateway with extensible messaging integrations",
+  "currentVersion": "2026.4.2",
+  "latestVersion": "2026.4.2",
+  "updateAvailable": false,
+  "lastChecked": "2026-04-06T01:21:45.418Z",
+  "releaseUrl": "https://www.npmjs.com/package/openclaw/v/2026.4.2",
+  "releaseNotes": null,
   "dweImpact": null,
   "actions": [
     "Run global package manager update with spec openclaw@latest",

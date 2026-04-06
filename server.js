@@ -59,6 +59,7 @@ const opsLog = require('./ops-log.js');
 const sprintRetro = require('./sprint-retro.js');
 const skoolScraper = require('./skool-scraper.js');
 const skoolPipeline = require('./skool-pipeline.js');
+const ytIntel = require('./yt-intel.js');
 
 // PID file management — prevents zombie processes on restart
 const PID_FILE = path.join(__dirname, 'mc-server.pid');
@@ -816,6 +817,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/content-intel/ceo-brief':
             handleCeoIntelBrief(req, res);
+            break;
+        case '/mc/yt-intel/ingest':
+            ytIntel.handleYtIntelIngest(req, res);
             break;
         case '/mc/ga4':
             try {

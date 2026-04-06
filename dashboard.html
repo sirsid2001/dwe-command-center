@@ -1681,6 +1681,37 @@
                 </div>
             </div>
 
+            <!-- YouTube Intel -->
+            <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(255,200,60,0.25);">
+                <div class="panel-header">
+                    <div class="panel-icon">📺</div>
+                    <div class="panel-title">YouTube Intel</div>
+                    <div style="margin-left:auto;display:flex;gap:0.4rem;align-items:center;">
+                        <span id="yt-intel-count" style="font-size:0.6rem;color:rgba(255,200,60,0.7);font-weight:600;">—</span>
+                    </div>
+                </div>
+                <div style="padding:0.8rem 1.1rem;">
+                    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.6rem;">
+                        <input id="yt-url-input" type="text" placeholder="Paste YouTube URL..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.5rem 0.7rem;color:#fff;font-size:0.8rem;font-family:Inter,sans-serif;outline:none;" onkeydown="if(event.key==='Enter')ytAnalyze()" />
+                        <select id="yt-agent-select" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.5rem 0.4rem;color:rgba(255,255,255,0.7);font-size:0.75rem;font-family:Inter,sans-serif;outline:none;">
+                            <option value="auto">Auto-route</option>
+                            <option value="cto">CTO</option>
+                            <option value="chief-engineer">Chief Engineer</option>
+                            <option value="cfo">CFO (Fran)</option>
+                            <option value="nicole">Nicole</option>
+                            <option value="jake">Jake</option>
+                            <option value="anita">Anita</option>
+                            <option value="all">All Agents</option>
+                        </select>
+                        <button onclick="ytAnalyze()" id="yt-analyze-btn" style="background:rgba(255,200,60,0.15);border:1px solid rgba(255,200,60,0.3);color:#ffc83c;border-radius:8px;padding:0.5rem 0.9rem;cursor:pointer;font-size:0.75rem;font-weight:600;font-family:Inter,sans-serif;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,200,60,0.28)'" onmouseout="this.style.background='rgba(255,200,60,0.15)'">Analyze</button>
+                    </div>
+                    <div id="yt-status" style="display:none;font-size:0.75rem;color:rgba(255,200,60,0.8);padding:0.3rem 0;margin-bottom:0.4rem;"></div>
+                    <div id="yt-recent" style="display:flex;flex-direction:column;gap:0.35rem;max-height:200px;overflow-y:auto;">
+                        <div style="font-size:0.7rem;color:rgba(255,255,255,0.25);">Paste a YouTube URL above to analyze and route to agents</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Notion Task Management (combined) -->
             <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(200,200,200,0.25);">
                 <div class="panel-header">
@@ -4108,6 +4139,83 @@
                 document.getElementById('jake-inbox-list').innerHTML = '<div class="service-item"><span class="pulse-dot offline"></span><span style="color:#dc2626;">Error: ' + e.message + '</span></div>';
             }
         }
+
+        // ── YouTube Intel ─────────────────────────────────────────────────────
+        async function ytAnalyze() {
+            const urlInput = document.getElementById('yt-url-input');
+            const agentSelect = document.getElementById('yt-agent-select');
+            const btn = document.getElementById('yt-analyze-btn');
+            const statusEl = document.getElementById('yt-status');
+            const videoUrl = urlInput.value.trim();
+            if (!videoUrl) { urlInput.focus(); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Fetching transcript and running analysis...';
+
+            try {
+                const agents = agentSelect.value === 'all' ?
+                    ['cto','chief-engineer','cfo','nicole','jake','anita'] :
+                    [agentSelect.value];
+
+                const resp = await fetch('/mc/yt-intel/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: videoUrl, agents })
+                });
+                const data = await resp.json();
+
+                if (data.ok) {
+                    if (data.duplicate) {
+                        statusEl.textContent = 'Already analyzed: ' + data.existing.title + ' (' + data.existing.verdict + ', score ' + data.existing.score + '/10)';
+                    } else {
+                        statusEl.innerHTML = '<strong>' + data.verdict + '</strong> (' + data.score + '/10) — ' + data.title + '<br/>Sent to: ' + data.agents_notified.join(', ') + (data.has_transcript ? '' : ' (no transcript)');
+                        urlInput.value = '';
+                        fetchYtIntelRecent();
+                    }
+                } else {
+                    statusEl.textContent = 'Error: ' + data.error;
+                }
+            } catch(e) {
+                statusEl.textContent = 'Failed: ' + e.message;
+            }
+            btn.textContent = 'Analyze';
+            btn.disabled = false;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 15000);
+        }
+
+        async function fetchYtIntelRecent() {
+            try {
+                const d = await fetch('/mc/content-intel').then(r => r.json());
+                const countEl = document.getElementById('yt-intel-count');
+                const recentEl = document.getElementById('yt-recent');
+                const nuggets = (d.recentNuggets || []).slice(0, 8);
+                countEl.textContent = nuggets.length + ' analyzed';
+
+                if (nuggets.length === 0) {
+                    recentEl.innerHTML = '<div style="font-size:0.7rem;color:rgba(255,255,255,0.25);">No videos analyzed yet</div>';
+                    return;
+                }
+
+                recentEl.innerHTML = nuggets.map(n => {
+                    const verdictColor = n.verdict === 'WATCH' ? '#00ff88' : n.verdict === 'SKIM' ? '#ffc83c' : 'rgba(255,255,255,0.35)';
+                    const scoreColor = n.score >= 7 ? '#00ff88' : n.score >= 5 ? '#ffc83c' : 'rgba(255,255,255,0.4)';
+                    const ago = Math.round((Date.now() - new Date(n.timestamp).getTime()) / 3600000);
+                    const agoText = ago < 1 ? 'just now' : ago + 'h ago';
+                    return '<a href="' + (n.url || '#') + '" target="_blank" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.5rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:8px;text-decoration:none;transition:border-color 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(255,200,60,0.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.07)\'">' +
+                        '<span style="font-size:0.7rem;font-weight:700;color:' + verdictColor + ';min-width:35px;">' + (n.verdict || '?') + '</span>' +
+                        '<span style="font-size:0.75rem;font-weight:700;color:' + scoreColor + ';font-family:monospace;min-width:22px;">' + n.score + '</span>' +
+                        '<span style="font-size:0.72rem;color:rgba(255,255,255,0.75);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (n.title || '?') + '</span>' +
+                        '<span style="font-size:0.6rem;color:rgba(255,255,255,0.25);white-space:nowrap;">' + agoText + '</span>' +
+                    '</a>';
+                }).join('');
+            } catch(e) {}
+        }
+
+        // Load on startup
+        fetchYtIntelRecent();
+        setInterval(fetchYtIntelRecent, 120000);
 
         // ── Revenue & Pipeline tile ──────────────────────────────────────────
         async function fetchRevenuePipeline() {
