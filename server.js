@@ -761,6 +761,9 @@ const server = http.createServer((req, res) => {
         case '/mc/mqt-price':
             getMqtPrice(req, res);
             break;
+        case '/mc/mqt-paper':
+            getMqtPaperTrading(req, res);
+            break;
         case '/mc/prospects':
             getProspects(req, res, parsedUrl.query);
             break;
@@ -814,6 +817,17 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/content-intel':
             handleContentIntel(req, res);
+            break;
+        case '/mc/smart-money-intel':
+            try {
+                const intelPath = path.join(os.homedir(), 'openclaw/shared/intel/latest_signals.json');
+                const data = fs.readFileSync(intelPath, 'utf8');
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(data);
+            } catch(e) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'No intel data available', top_signals: [] }));
+            }
             break;
         case '/mc/content-intel/ceo-brief':
             handleCeoIntelBrief(req, res);
@@ -1482,6 +1496,53 @@ function getMqtPrice(req, res) {
         res.writeHead(502, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'DexScreener API error: ' + e.message }));
     });
+}
+
+function getMqtPaperTrading(req, res) {
+    const homeDir = require('os').homedir();
+    const signalPath = path.join(homeDir, 'openclaw/shared/mqt_latest_signal.json');
+    const portfolioPath = path.join(homeDir, 'openclaw/shared/mqt_paper_trading_state.json');
+    const tradeLogPath = path.join(homeDir, 'openclaw/shared/mqt_trade_log.json');
+
+    let signal = {}, portfolio = {}, trades = [];
+    try { signal = JSON.parse(fs.readFileSync(signalPath, 'utf8')); } catch(e) {}
+    try { portfolio = JSON.parse(fs.readFileSync(portfolioPath, 'utf8')); } catch(e) { portfolio = { usdt_balance: 1000, mqt_balance: 0, position: null, total_trades: 0, total_pnl: 0 }; }
+    try { trades = JSON.parse(fs.readFileSync(tradeLogPath, 'utf8')); } catch(e) {}
+
+    const price = signal.price || 0;
+    const totalQty = portfolio.total_qty || 0;
+    const posValue = totalQty * price;
+    const totalValue = (portfolio.usdt_balance || 0) + posValue;
+    const avgEntry = portfolio.avg_entry_price || 0;
+    const gainPct = avgEntry > 0 ? ((price - avgEntry) / avgEntry * 100) : 0;
+
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+    res.end(JSON.stringify({
+        ok: true,
+        price: price,
+        change24h: signal.price_change_24h || 0,
+        ma: signal.ma,
+        signal: signal.signal || 'HOLD',
+        reason: signal.reason || '',
+        timestamp: signal.timestamp || '',
+        portfolio: {
+            usdt: portfolio.usdt_balance || 1000,
+            mqt: totalQty,
+            totalValue: totalValue,
+            pnl: portfolio.total_pnl || 0,
+            trades: portfolio.total_trades || 0,
+            buys: portfolio.trade_count_buys || 0,
+            sells: portfolio.trade_count_sells || 0,
+            avgEntry: avgEntry,
+            gainPct: gainPct,
+            floor: portfolio.floor_price || null,
+            trailingActive: portfolio.trailing_active || false,
+            ladderTiers: (portfolio.ladder_tiers || []).map(t => ({drop: t.drop_pct, buy: t.buy_pct, triggered: t.triggered})),
+            hasPosition: totalQty > 0,
+            daysHeld: 0
+        },
+        recentTrades: (trades || []).slice(-5)
+    }));
 }
 
 // ── Prospect Pipeline — replicable funnel system ──────────────────────
@@ -3081,6 +3142,7 @@ async function getAgentTasks(req, res) {
             { role: 'CE',             name: 'Chief Engineer', icon: '🔧',  id: 'ce' },
             { role: 'CFO',            name: 'Fran',           icon: '💰',  id: 'cfo' },
             { role: 'Jarvis',         name: 'Jarvis',         icon: '⚡',  id: 'jarvis' },
+            { role: 'QA',             name: 'Victor',         icon: '✅',  id: 'validator' },
             { role: 'Unassigned',     name: 'Unassigned',     icon: '📥',  id: 'main' },
         ];
         const DONE_STATUSES = new Set(['Done', 'Completed', 'Complete', 'Review', 'Archived']);
@@ -3112,10 +3174,13 @@ async function getAgentTasks(req, res) {
             const overdue = open.filter(t => t.pastDue || (t.dueDate && new Date(t.dueDate) < new Date())).length;
 
             // Actionable tasks: Status ∈ {Not Started, In Progress} AND (dueDate ≤ today OR no dueDate)
-            const actionable = tasks.filter(t =>
-                ACTIONABLE_STATUSES.has(t.status) &&
-                (!t.dueDate || t.dueDate <= todayStr)
-            );
+            // QA role: show ALL open tasks regardless of due date (QA tasks depend on other agents finishing first)
+            const actionable = role === 'QA'
+                ? open.filter(t => !DONE_STATUSES.has(t.status))
+                : tasks.filter(t =>
+                    ACTIONABLE_STATUSES.has(t.status) &&
+                    (!t.dueDate || t.dueDate <= todayStr)
+                );
             const actionableByPriority = {};
             for (const p of PRIORITY_ORDER) actionableByPriority[p] = 0;
             for (const t of actionable) {

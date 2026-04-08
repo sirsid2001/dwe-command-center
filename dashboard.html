@@ -1185,6 +1185,41 @@
                     <div class="stat-icon" style="background:linear-gradient(135deg,rgba(184,41,221,0.2),rgba(0,245,255,0.1)); align-self:flex-start;">🧬</div>
                 </div>
 
+                <!-- Smart Money Intel — Signals Table -->
+                <div class="stat-card" style="border-left-color:#ffd700; grid-column: span 3;">
+                    <div class="stat-content" style="width:100%;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span style="font-size:1rem;">📡</span>
+                                <div class="stat-label" style="margin-bottom:0;">Smart Money Intel</div>
+                                <span id="intel-signal-count" style="font-size:0.62rem;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:#ffd700;padding:2px 8px;border-radius:10px;font-weight:600;">—</span>
+                            </div>
+                            <div style="display:flex;gap:0.5rem;align-items:center;">
+                                <span style="font-size:0.62rem;color:rgba(255,255,255,0.3);" id="intel-last-updated">Live</span>
+                                <button onclick="loadSmartMoneyIntel()" style="font-size:0.65rem;padding:5px 10px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:4px;color:#ffd700;cursor:pointer;">↻ Refresh</button>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table style="width:100%;border-collapse:collapse;font-size:0.68rem;">
+                                <thead>
+                                    <tr style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">
+                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Source</th>
+                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Asset</th>
+                                        <th style="text-align:center;padding:4px 8px 6px;font-weight:500;">Action</th>
+                                        <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Amount</th>
+                                        <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Score</th>
+                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="intel-signals-body">
+                                    <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">Loading smart money signals…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="intel-error" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:#ff6b6b;padding:6px 10px;background:rgba(255,0,0,0.08);border-radius:5px;"></div>
+                    </div>
+                </div>
+
                 <!-- System Uptime + Mac mini Health — unified card -->
                 <div class="stat-card" style="border-left-color:#7b61ff; grid-column: span 3;">
                     <div class="stat-content" style="width:100%;">
@@ -1708,6 +1743,63 @@
                     <div id="yt-status" style="display:none;font-size:0.75rem;color:rgba(255,200,60,0.8);padding:0.3rem 0;margin-bottom:0.4rem;"></div>
                     <div id="yt-recent" style="display:flex;flex-direction:column;gap:0.35rem;max-height:200px;overflow-y:auto;">
                         <div style="font-size:0.7rem;color:rgba(255,255,255,0.25);">Paste a YouTube URL above to analyze and route to agents</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MQT Paper Trading Dashboard -->
+            <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(63,185,80,0.3);">
+                <div class="panel-header">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div class="panel-icon">📈</div>
+                        <div class="panel-title">MQT Paper Trading</div>
+                    </div>
+                    <div style="margin-left:auto;display:flex;gap:0.4rem;align-items:center;">
+                        <span style="font-size:0.6rem;color:rgba(63,185,80,0.7);font-weight:600;background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.2);padding:2px 7px;border-radius:10px;">PAPER ONLY</span>
+                        <button onclick="fetchMQT()" style="font-size:0.65rem;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;cursor:pointer;">↻ Refresh</button>
+                    </div>
+                </div>
+                <div style="padding:0.75rem 1rem;">
+                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-bottom:0.6rem;">Live Avalanche DEX signal feed · MQT/USDT · Paper trading only · No real funds</p>
+                    <div id="mqt-widget" style="background:#0d1117;border:1px solid rgba(63,185,80,0.15);border-radius:8px;padding:1.2rem;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                            <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">MQT Price</div>
+                                <div id="mqt-price" style="font-size:2rem;font-family:monospace;font-weight:700;color:#3fb950;">—</div>
+                                <div id="mqt-change" style="font-size:1rem;color:rgba(255,255,255,0.4);margin-top:0.2rem;">—</div>
+                            </div>
+                            <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">10-Day MA</div>
+                                <div id="mqt-ma" style="font-size:2rem;font-family:monospace;font-weight:700;color:#00c8ff;">—</div>
+                                <div id="mqt-signal" style="font-size:1rem;margin-top:0.2rem;">—</div>
+                            </div>
+                            <div style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.2);border-radius:8px;padding:1rem;text-align:center;">
+                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">Paper Portfolio</div>
+                                <div id="mqt-balance" style="font-size:2rem;font-family:monospace;font-weight:700;color:#ff9500;">—</div>
+                                <div id="mqt-pnl" style="font-size:1rem;color:rgba(255,255,255,0.4);margin-top:0.2rem;">—</div>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:1rem;">
+                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Position</div>
+                                <div id="mqt-position" style="font-size:1rem;color:rgba(255,255,255,0.7);">No open position</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:1rem;">
+                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Strategy</div>
+                                <div style="font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.6;">
+                                    Buy: 5% below MA · Sell: 15% up or 8% trailing stop · Max hold: 10 days
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top:0.8rem;display:flex;justify-content:space-between;align-items:center;">
+                            <span id="mqt-updated" style="font-size:0.75rem;color:rgba(255,255,255,0.2);">Loading...</span>
+                            <div style="display:flex;gap:0.4rem;">
+                                <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);">24h Vol:</span>
+                                <span id="mqt-volume" style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-family:monospace;">—</span>
+                                <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-left:0.5rem;">Liq:</span>
+                                <span id="mqt-liquidity" style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-family:monospace;">—</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -4717,6 +4809,94 @@
             btn.disabled = false;
         }
 
+        // ── Smart Money Intel Widget ──────────────────────────────────────────────
+        const INTEL_SIGNALS_URL = '/mc/smart-money-intel';
+
+        function actionStyle(action) {
+            if (action === 'BUY') return '<span style="color:#00ff88;font-weight:700;">BUY</span>';
+            if (action === 'SELL') return '<span style="color:#ff4d6d;font-weight:700;">SELL</span>';
+            return `<span style="color:rgba(255,255,255,0.6);">${action}</span>`;
+        }
+
+        function sourceTag(source) {
+            const colors = {
+                'capitol_trades':    'rgba(0,245,255,0.15)|rgba(0,245,255,0.4)',
+                'quiver_quant':      'rgba(100,200,255,0.15)|rgba(100,200,255,0.4)',
+                'finviz_insider':    'rgba(255,215,0,0.15)|rgba(255,215,0,0.4)',
+                'unusual_whales':    'rgba(200,100,255,0.15)|rgba(200,100,255,0.4)',
+                'dexscreener_whales':'rgba(0,255,136,0.15)|rgba(0,255,136,0.4)',
+                'snowtrace_wallets': 'rgba(255,165,0,0.15)|rgba(255,165,0,0.4)',
+            };
+            const [bg, color] = (colors[source] || 'rgba(255,255,255,0.1)|rgba(255,255,255,0.5)').split('|');
+            const label = source.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            return `<span style="font-size:0.6rem;padding:2px 6px;border-radius:4px;background:${bg};color:${color};white-space:nowrap;">${label}</span>`;
+        }
+
+        function scoreColor(score) {
+            if (score >= 13) return '#ffd700';
+            if (score >= 10) return '#00ff88';
+            if (score >= 7)  return '#00f5ff';
+            return 'rgba(255,255,255,0.5)';
+        }
+
+        function fmtAmount(val) {
+            if (!val) return '—';
+            if (val >= 1_000_000) return '$' + (val / 1_000_000).toFixed(1) + 'M';
+            if (val >= 1_000)     return '$' + (val / 1_000).toFixed(0) + 'K';
+            return '$' + val.toFixed(0);
+        }
+
+        async function loadSmartMoneyIntel() {
+            const tbody  = document.getElementById('intel-signals-body');
+            const errBox = document.getElementById('intel-error');
+            const count  = document.getElementById('intel-signal-count');
+            const stamp  = document.getElementById('intel-last-updated');
+            if (!tbody) return;
+            errBox.style.display = 'none';
+            try {
+                const r = await fetch(INTEL_SIGNALS_URL);
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const d = await r.json();
+                const signals = (d.top_signals || []).slice(0, 10);
+                if (!signals.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">No signals available.</td></tr>';
+                    count.textContent = '0';
+                    return;
+                }
+                count.textContent = `${signals.length} signals`;
+                const now = new Date();
+                stamp.textContent = `Updated ${now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
+                tbody.innerHTML = signals.map(s => {
+                    const action = s.action || '—';
+                    const source = s.source || 'unknown';
+                    const ticker = s.ticker || '—';
+                    const amount = s.amount_usd || 0;
+                    const score  = s.score  || 0;
+                    const date   = s.date   || '—';
+                    const meta   = s.meta   || {};
+                    // Sector badge
+                    const sector = meta.sector || '';
+                    const sectorTag = sector
+                        ? `<span style="font-size:0.58rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);margin-left:4px;">${sector}</span>`
+                        : '';
+                    return `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:6px 8px;">${sourceTag(source)}</td>
+                        <td style="padding:6px 8px;font-weight:700;color:#fff;letter-spacing:0.03em;">${ticker}${sectorTag}</td>
+                        <td style="padding:6px 8px;text-align:center;">${actionStyle(action)}</td>
+                        <td style="padding:6px 8px;text-align:right;color:rgba(255,255,255,0.75);">${fmtAmount(amount)}</td>
+                        <td style="padding:6px 8px;text-align:right;font-weight:700;color:${scoreColor(score)};">${score.toFixed(2)}</td>
+                        <td style="padding:6px 8px;color:rgba(255,255,255,0.3);font-size:0.62rem;">${date}</td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                errBox.style.display = 'block';
+                errBox.textContent = '⚠️ Could not load signals: ' + e.message;
+            }
+        }
+
+        // Auto-load on dashboard open
+        window.addEventListener('DOMContentLoaded', loadSmartMoneyIntel);
+
         // ── /mc/backup ─────────────────────────────────────────────────────────
         // ── /mc/internet → ping-based connectivity ────────────────────────────
         async function fetchInternet() {
@@ -5011,7 +5191,7 @@
                         { id: 'ai.dwe.outreach-sender',   short: 'Outreach' },
                         { id: 'ai.dwe.contact-enricher',  short: 'Enricher' },
                     ]},
-                    { id: 'validator', label: 'Validator',  title: 'QA',          icon: '✅', taskId: null,    hbId: null,    sessId: 'validator',     isHuman: false, daemons: [] },
+                    { id: 'validator', label: 'Victor',     title: 'QA',          icon: '✅', taskId: 'validator', hbId: null, sessId: 'validator',     isHuman: false, daemons: [] },
                 ];
 
                 // Priority config — always show all 4 levels
@@ -7829,6 +8009,51 @@
         // 15s local process traffic (was 5s)
         fetchLocalTraffic();
         setInterval(fetchLocalTraffic, 15000);
+
+        // ── MQT Paper Trading Widget ─────────────────────────────────
+        async function fetchMQT() {
+            try {
+                const d = await fetch('/mc/mqt-paper').then(r => r.json());
+                if (!d.ok) return;
+                const el = id => document.getElementById(id);
+                if (el('mqt-price')) el('mqt-price').textContent = '$' + (d.price || 0).toFixed(4);
+                if (el('mqt-change')) {
+                    const ch = d.change24h || 0;
+                    el('mqt-change').textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '% 24h';
+                    el('mqt-change').style.color = ch >= 0 ? '#3fb950' : '#f85149';
+                }
+                if (el('mqt-ma')) el('mqt-ma').textContent = d.ma ? '$' + d.ma.toFixed(4) : 'Building...';
+                if (el('mqt-signal')) {
+                    const icons = { BUY: '🟢 BUY', SELL: '🔴 SELL', HOLD: '⚪ HOLD' };
+                    el('mqt-signal').textContent = icons[d.signal] || d.signal;
+                    el('mqt-signal').style.color = d.signal === 'BUY' ? '#3fb950' : d.signal === 'SELL' ? '#f85149' : 'rgba(255,255,255,0.4)';
+                }
+                if (el('mqt-balance')) el('mqt-balance').textContent = '$' + (d.portfolio?.totalValue || 1000).toFixed(0);
+                if (el('mqt-pnl')) {
+                    const pnl = d.portfolio?.pnl || 0;
+                    el('mqt-pnl').textContent = 'P&L: ' + (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2);
+                    el('mqt-pnl').style.color = pnl >= 0 ? '#3fb950' : '#f85149';
+                }
+                if (el('mqt-position')) {
+                    const p = d.portfolio;
+                    if (p?.hasPosition) {
+                        const ladderStatus = (p.ladderTiers || []).map((t,i) => t.triggered ? `L${i+1}✅` : `L${i+1}⏳-${t.drop}%`).join(' ');
+                        el('mqt-position').innerHTML = `
+                            <div>Entry: $${(p.avgEntry||0).toFixed(4)} · Qty: ${(p.mqt||0).toFixed(2)} MQT · ${(p.gainPct||0) >= 0 ? '+' : ''}${(p.gainPct||0).toFixed(1)}%</div>
+                            <div style="margin-top:4px;">Floor: $${(p.floor||0).toFixed(4)} · Trailing: ${p.trailingActive ? '🟢 ON' : '⏳ WAITING'}</div>
+                            <div style="margin-top:4px;font-size:0.8rem;">${ladderStatus}</div>
+                        `;
+                    } else {
+                        el('mqt-position').textContent = 'No open position · ' + (p?.trades || 0) + ' total trades';
+                    }
+                }
+                if (el('mqt-volume')) el('mqt-volume').textContent = '$' + Math.round(d.volume24h || 0).toLocaleString();
+                if (el('mqt-liquidity')) el('mqt-liquidity').textContent = '$' + Math.round(d.liquidity || 0).toLocaleString();
+                if (el('mqt-updated')) el('mqt-updated').textContent = d.timestamp ? 'Updated: ' + new Date(d.timestamp).toLocaleTimeString() : '';
+            } catch(e) { console.log('[MQT] fetch error:', e); }
+        }
+        fetchMQT();
+        setInterval(fetchMQT, 60000);
 
         // ── 5-minute idle → full page reload ─────────────────────────────────
         const IDLE_RELOAD_MS = 5 * 60 * 1000;
