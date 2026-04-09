@@ -81,6 +81,33 @@ const PID_FILE = path.join(__dirname, 'mc-server.pid');
 const PORT = 8899;
 const HOST = '0.0.0.0';  // listen on all interfaces (LAN accessible)
 const DATA_FILE = path.join(__dirname, 'mc-data.json');
+
+// ── Server-side response cache ────────────────────────────────────────────
+// Caches slow endpoint responses so repeat loads are instant.
+// Used by: income-ops, n8n-uptime, services, acp, crons
+const _responseCache = new Map(); // key → { data, ts }
+function cachedResponse(req, res, ttlMs, fetchFn) {
+    const key = req.url || req;
+    const now = Date.now();
+    const cached = _responseCache.get(key);
+    if (cached && (now - cached.ts) < ttlMs) {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'X-Cache': 'HIT' });
+        res.end(cached.data);
+        return;
+    }
+    // Intercept the real response
+    const _origWriteHead = res.writeHead.bind(res);
+    const _origEnd = res.end.bind(res);
+    let _statusCode = 200;
+    res.writeHead = (code, headers) => { _statusCode = code; return _origWriteHead(code, headers); };
+    res.end = (body) => {
+        if (_statusCode === 200 && typeof body === 'string') {
+            _responseCache.set(key, { data: body, ts: now });
+        }
+        return _origEnd(body);
+    };
+    fetchFn(req, res);
+}
 const ACTIVITY_FILE = path.join(__dirname, 'mc-activity.json');
 const HTML_FILE = path.join(__dirname, 'dashboard.html');
 
@@ -362,10 +389,10 @@ const server = http.createServer((req, res) => {
             handleUpload(req, res);
             break;
         case '/mc/services':
-            getServices(req, res);
+            cachedResponse(req, res, 30000, getServices);  // 30s cache
             break;
         case '/mc/crons':
-            getCrons(req, res);
+            cachedResponse(req, res, 60000, getCrons);     // 60s cache
             break;
         case '/mc/launchd':
             getLaunchd(req, res);
@@ -576,7 +603,7 @@ const server = http.createServer((req, res) => {
             getTailscaleStatus(req, res);
             break;
         case '/mc/n8n-uptime':
-            getN8nUptime(req, res);
+            cachedResponse(req, res, 60000, getN8nUptime);  // 60s cache (VPS ping is slow)
             break;
         case '/mc/ssh-tunnels':
             getSshTunnels(req, res);
@@ -668,10 +695,10 @@ const server = http.createServer((req, res) => {
             getFinancialPulse(req, res);
             break;
         case '/mc/agent-tasks':
-            getAgentTasks(req, res);
+            cachedResponse(req, res, 120000, getAgentTasks);  // 2min cache (Notion API is slow ~19s)
             break;
         case '/mc/acp':
-            getAgentSessions(req, res);
+            cachedResponse(req, res, 30000, getAgentSessions);  // 30s cache (OpenClaw session read is slow)
             break;
         case '/mc/agent-model':
             if (req.method === 'POST') {
@@ -684,7 +711,7 @@ const server = http.createServer((req, res) => {
             }
             break;
         case '/mc/income-ops':
-            getIncomeOps(req, res);
+            cachedResponse(req, res, 60000, getIncomeOps);  // 60s cache (Google Sheets fetch)
             break;
         case '/mc/change-log':
             getChangeLog(req, res);
@@ -931,6 +958,47 @@ const server = http.createServer((req, res) => {
         case '/mc/click-stats':
             getClickStats(req, res);
             break;
+        case '/mc/batch': {
+            // Batch endpoint: runs multiple mc/* calls in parallel, returns one JSON blob.
+            // Cuts initial dashboard load from ~84 HTTP round-trips to 1.
+            const batchFetch = (endpoint) => new Promise((resolve) => {
+                const bReq = http.get(`http://127.0.0.1:${PORT}${endpoint}`, (bRes) => {
+                    let raw = '';
+                    bRes.on('data', c => raw += c);
+                    bRes.on('end', () => {
+                        try { resolve({ k: endpoint, v: JSON.parse(raw) }); }
+                        catch(e) { resolve({ k: endpoint, v: null }); }
+                    });
+                });
+                bReq.on('error', () => resolve({ k: endpoint, v: null }));
+                bReq.setTimeout(8000, () => { bReq.destroy(); resolve({ k: endpoint, v: null }); });
+            });
+            // Excluded (too slow for batch — load lazily after paint):
+            //   /mc/agent-tasks ~19s (Notion API)
+            //   /mc/acp          ~9s (OpenClaw session files)
+            //   /mc/crons        ~5s (launchctl list)
+            //   /mc/n8n-uptime   ~5s (VPS ping)
+            //   /mc/services     ~3s (external checks)
+            //   /mc/income-ops   ~1s (Google Sheets)
+            // All fast endpoints (<500ms) are batched here:
+            const BATCH_ENDPOINTS = [
+                '/mc/status', '/mc/agents', '/mc/heartbeat',
+                '/mc/launchd', '/mc/delegation-stats', '/mc/brain',
+                '/mc/system', '/mc/internet', '/mc/sprint', '/mc/cso',
+                '/mc/financial', '/mc/n8n-workflows',
+                '/mc/jarvis-stats', '/mc/ga4', '/mc/tailscale', '/mc/pipeline',
+                '/mc/daemon-health', '/mc/migration',
+                '/mc/recurring-tasks', '/mc/openrouter-credits', '/mc/autoresearch',
+                '/mc/content-intel', '/mc/openclaw-version', '/mc/sidney-devices',
+            ];
+            Promise.all(BATCH_ENDPOINTS.map(batchFetch)).then((results) => {
+                const out = {};
+                results.forEach(r => { out[r.k] = r.v; });
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify(out));
+            });
+            break;
+        }
         default:
             // Check for /mc/audit-report/PP-XXXX pattern
             if (pathname.startsWith('/mc/audit-report/')) {

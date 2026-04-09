@@ -5331,7 +5331,9 @@
                     let modelHtml = '';
                     function modelColorFor(m) {
                         if (!m) return '#22c55e';
-                        if (m.includes('TeamoRouter')) return '#00dcff';
+                        if (m.includes('m2.7') || m.includes('minimax')) return '#00dcff';
+                        if (m.includes('glm-5')) return '#22c55e';
+                        if (m.includes('kimi')) return '#a855f7';
                         if (m.startsWith('anthropic/') || m.startsWith('openclaw/') || m.toLowerCase().includes('sonic')) return '#ef4444';
                         if (m.includes('auto') || m.includes('minimax')) return '#22c55e';
                         if (m.includes('ollama')) return '#22c55e';
@@ -5339,29 +5341,32 @@
                         return '#f59e0b';
                     }
                     function modelDisplayFor(m) {
-                        if (!m) return 'teamo/free';
-                        if (m === 'teamorouter/TeamoRouter-free') return 'teamo/free';
-                        if (m === 'teamorouter/TeamoRouter-best') return 'teamo/best';
+                        if (!m) return 'M2.7 Cloud';
+                        if (m === 'ollama/minimax-m2.7:cloud') return 'M2.7 Cloud';
+                        if (m === 'ollama/glm-5:cloud') return 'GLM-5 Cloud';
+                        if (m === 'ollama/kimi-k2.5:cloud') return 'Kimi K2.5';
+                        if (m === 'ollama/qwen2.5:7b') return 'Qwen 2.5 Local';
+                        if (m === 'ollama/llava:7b') return 'LLaVA Local';
                         if (m === 'openrouter/anthropic/claude-sonnet-4') return 'claude/sonnet-4';
                         if (m === 'openrouter/minimax/minimax-m2.7') return 'minimax/m2.7';
                         if (m === 'ollama/qwen2.5:7b') return 'ollama/qwen2.5';
-                        return m.replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('teamorouter/', 'teamo/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
+                        return m.replace('ollama/', '').replace('ollama/', 'local/').replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
                     }
                     // Config-based model lookup per agent
                     const agentModelConfig = {
-                        'main': 'teamorouter/TeamoRouter-free',
-                        'cto': 'teamorouter/TeamoRouter-free',
-                        'anita': 'teamorouter/TeamoRouter-free',
-                        'nicole': 'teamorouter/TeamoRouter-free',
-                        'chief-engineer': 'teamorouter/TeamoRouter-free',
-                        'cfo': 'teamorouter/TeamoRouter-free',
-                        'jarvis': 'teamorouter/TeamoRouter-free',
-                        'jake': 'teamorouter/TeamoRouter-free',
+                        'main': 'ollama/minimax-m2.7:cloud',
+                        'cto': 'ollama/minimax-m2.7:cloud',
+                        'anita': 'ollama/minimax-m2.7:cloud',
+                        'nicole': 'ollama/minimax-m2.7:cloud',
+                        'chief-engineer': 'ollama/minimax-m2.7:cloud',
+                        'cfo': 'ollama/minimax-m2.7:cloud',
+                        'jarvis': 'ollama/minimax-m2.7:cloud',
+                        'jake': 'ollama/minimax-m2.7:cloud',
                         'herald': 'openrouter/anthropic/claude-sonnet-4',
-                        'validator': 'teamorouter/TeamoRouter-free',
+                        'validator': 'ollama/minimax-m2.7:cloud',
                     };
                     if (!agent.isHuman) {
-                        const modelFull = s?.model || agentModelConfig[agent.id] || 'teamorouter/TeamoRouter-free';
+                        const modelFull = s?.model || agentModelConfig[agent.id] || 'ollama/minimax-m2.7:cloud';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
                             <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
@@ -5369,7 +5374,7 @@
                     } else {
                         // Sidney: show main agent's model with same color logic
                         const mainSess = sessionById['main'];
-                        const mainFull = mainSess?.model || agentModelConfig['main'] || 'teamorouter/TeamoRouter-free';
+                        const mainFull = mainSess?.model || agentModelConfig['main'] || 'ollama/minimax-m2.7:cloud';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
                             <span style="font-size:0.68rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
@@ -5442,7 +5447,7 @@
 
                     // ── New card layout (mockup v2) ──
                     // Header: icon + name + role | model code tag
-                    const modelFull2 = agent.isHuman ? (agentModelConfig['main'] || '') : (s?.model || agentModelConfig[agent.id] || 'teamorouter/TeamoRouter-free');
+                    const modelFull2 = agent.isHuman ? (agentModelConfig['main'] || '') : (s?.model || agentModelConfig[agent.id] || 'ollama/minimax-m2.7:cloud');
                     const modelDisp2 = modelDisplayFor(modelFull2);
                     const modelClr2  = modelColorFor(modelFull2);
 
@@ -5496,11 +5501,11 @@
                     // Model selector dropdown (non-human agents only)
                     const modelSelectHtml = (!agent.isHuman && agent.id !== 'jarvis')
                         ? `<select id="model-select-${agent.id}" onchange="changeAgentModel('${agent.id}', this.value)" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#22c55e;font-size:0.6rem;font-family:'Inter',monospace;padding:2px 4px;border-radius:4px;cursor:pointer;max-width:140px;outline:none;appearance:auto;" title="Change model for ${agent.label}">
-                            <option value="teamorouter/TeamoRouter-free" style="background:#1a1f4e;color:#00dcff;">TeamoRouter Free</option>
-                            <option value="teamorouter/TeamoRouter-best" style="background:#1a1f4e;color:#00dcff;">TeamoRouter Best</option>
-                            <option value="ollama/qwen2.5:7b" style="background:#1a1f4e;color:#22c55e;">Ollama Qwen 2.5</option>
-                            <option value="ollama/kimi-k2.5:cloud" style="background:#1a1f4e;color:#22c55e;">Kimi K2.5</option>
-                            <option value="openrouter/auto" style="background:#1a1f4e;color:#f59e0b;">OpenRouter Auto</option>
+                            <option value="ollama/minimax-m2.7:cloud" style="background:#1a1f4e;color:#00dcff;">M2.7 Cloud (Default)</option>
+                            <option value="ollama/glm-5:cloud" style="background:#1a1f4e;color:#00dcff;">GLM-5 Cloud</option>
+                            <option value="ollama/kimi-k2.5:cloud" style="background:#1a1f4e;color:#22c55e;">Kimi K2.5 Cloud</option>
+                            <option value="ollama/qwen2.5:7b" style="background:#1a1f4e;color:#f59e0b;">Qwen 2.5 7B (Local)</option>
+                            <option value="ollama/llava:7b" style="background:#1a1f4e;color:#f59e0b;">LLaVA 7B Vision (Local)</option>
                         </select>`
                         : `<code style="position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.65rem;color:#22c55e;">${modelDisp2}</code>`;
 
@@ -6700,7 +6705,74 @@
             }
         }
 
+        // ── Batch cache: populated by /mc/batch, consumed by individual fetch fns ──
+        let _mcBatch = {};
+        const _originalFetch = window.fetch.bind(window);
+
+        // mcFetch: during a batch cycle, serve from cache instead of hitting network
+        async function mcFetch(url) {
+            if (_mcBatch[url]) {
+                const cached = _mcBatch[url];
+                return { json: () => Promise.resolve(cached), ok: true };
+            }
+            return _originalFetch(url);
+        }
+
+        // Patch individual fetch callers to use mcFetch during batch cycle
+        const _fetchOverride = (origFetch) => {
+            window.fetch = function(url, opts) {
+                if (!opts && typeof url === 'string' && url.startsWith('/mc/') && _mcBatch[url]) {
+                    const cached = _mcBatch[url];
+                    return Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        json: () => Promise.resolve(cached)
+                    });
+                }
+                return origFetch(url, opts);
+            };
+        };
+        _fetchOverride(_originalFetch);
+
         async function refreshAll() {
+            // Single batch call replaces ~30 individual network requests
+            try {
+                const batch = await _originalFetch('/mc/batch').then(r => r.json());
+                // Remap batch keys to the URLs the fetch functions use
+                // Slow endpoints excluded from batch (load lazily post-paint):
+                // /mc/agent-tasks ~19s, /mc/acp ~9s, /mc/crons ~5s, /mc/n8n-uptime ~5s, /mc/services ~3s, /mc/income-ops ~1s
+                // All have server-side cache so repeat loads are fast.
+                _mcBatch = {
+                    '/mc/status':             batch['/mc/status'],
+                    '/mc/agents':             batch['/mc/agents'],
+                    '/mc/heartbeat':          batch['/mc/heartbeat'],
+                    '/mc/launchd':            batch['/mc/launchd'],
+                    '/mc/delegation-stats':   batch['/mc/delegation-stats'],
+                    '/mc/brain':              batch['/mc/brain'],
+                    '/mc/system':             batch['/mc/system'],
+                    '/mc/internet':           batch['/mc/internet'],
+                    '/mc/sprint':             batch['/mc/sprint'],
+                    '/mc/cso':                batch['/mc/cso'],
+                    '/mc/financial':          batch['/mc/financial'],
+                    '/mc/n8n-workflows':      batch['/mc/n8n-workflows'],
+                    '/mc/jarvis-stats':       batch['/mc/jarvis-stats'],
+                    '/mc/ga4':                batch['/mc/ga4'],
+                    '/mc/tailscale':          batch['/mc/tailscale'],
+                    '/mc/pipeline':           batch['/mc/pipeline'],
+                    '/mc/daemon-health':      batch['/mc/daemon-health'],
+                    '/mc/migration':          batch['/mc/migration'],
+                    '/mc/recurring-tasks':    batch['/mc/recurring-tasks'],
+                    '/mc/openrouter-credits': batch['/mc/openrouter-credits'],
+                    '/mc/autoresearch':       batch['/mc/autoresearch'],
+                    '/mc/content-intel':      batch['/mc/content-intel'],
+                    '/mc/openclaw-version':   batch['/mc/openclaw-version'],
+                    '/mc/sidney-devices':     batch['/mc/sidney-devices'],
+                };
+            } catch(e) {
+                console.warn('[batch] failed, falling back to individual fetches', e);
+                _mcBatch = {};
+            }
+
             await Promise.all([
                 fetchStatus(),
                 fetchDWEStats(),
@@ -6725,18 +6797,17 @@
                 updateOCBackupTime(),
                 fetchInternet(),
                 fetchOpenclawVersion(),
-                fetchDOMetrics(),
                 fetchRevenuePipeline(),
-                fetchJakeInbox(),
                 fetchN8nWorkflows(),
                 fetchTailscale(),
                 fetchN8nUptime(),
-                fetchTunnels(),
                 fetchEmailOptimizer(),
                 fetchGA4(),
                 fetchJarvisStats()
             ]);
-            // refresh complete
+
+            // Clear cache after cycle so next manual clicks go to network
+            _mcBatch = {};
         }
 
         async function fetchJarvisStats() {
@@ -7987,28 +8058,24 @@
         refreshMeetingStatus();
         setInterval(refreshMeetingStatus, 30000);
 
-        // Initial load + 60s auto-refresh
+        // ── Initial load + auto-refresh (optimized) ──────────────────────────
+        // refreshAll uses /mc/batch (1 request) — no need for duplicate timers
         refreshAll();
         updateCeoCornerStatus();
-        setInterval(refreshAll, 60000);
-        setInterval(updateCeoCornerStatus, 60000);
-        // Dedicated 60s refresh for Brain Knowledge + Mac mini Health
-        setInterval(fetchBrain, 60000);
-        setInterval(fetchSystem, 60000);
-        setInterval(fetchInternet, 60000);
-        // 90s tunnel status refresh (SSH check is slow ~5s, no need to hammer it)
+        setInterval(refreshAll, 90000);           // was 60s; batch is fast so 90s is plenty
+        setInterval(updateCeoCornerStatus, 90000);
+        // Slow-poll: these are NOT in the batch (external/heavy checks)
         fetchTunnels();
-        setInterval(fetchTunnels, 90000);
+        setInterval(fetchTunnels, 120000);        // SSH tunnel check — slow, 2min
         fetchOldVps();
-        setInterval(fetchOldVps, 120000);
+        setInterval(fetchOldVps, 180000);         // old VPS — low priority, 3min
         fetchSiteHealth();
-        setInterval(fetchSiteHealth, 300000);
-        // 15s traffic monitor (was 5s — matches server-side sampling)
+        setInterval(fetchSiteHealth, 300000);     // site health — 5min
+        // Fast pollers: not in batch (need sub-60s freshness)
         fetchTraffic();
-        setInterval(fetchTraffic, 15000);
-        // 15s local process traffic (was 5s)
+        setInterval(fetchTraffic, 15000);         // live traffic — 15s
         fetchLocalTraffic();
-        setInterval(fetchLocalTraffic, 15000);
+        setInterval(fetchLocalTraffic, 15000);    // live local traffic — 15s
 
         // ── MQT Paper Trading Widget ─────────────────────────────────
         async function fetchMQT() {

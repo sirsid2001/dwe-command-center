@@ -1,42 +1,42 @@
 {
-  "timestamp": "2026-04-07T08:00:37.497079",
-  "score": 75,
+  "timestamp": "2026-04-08T08:00:37.452167",
+  "score": 50,
   "objectives": {
     "SO1: Financial Independence": {
-      "active": 7,
-      "not_started": 21,
+      "active": 4,
+      "not_started": 32,
       "blocked": 0,
-      "done_week": 0,
-      "total": 28,
-      "status": "ACTIVE",
-      "last_activity": "2026-04-07T05:36:00"
+      "done_week": 1,
+      "total": 36,
+      "status": "ON TRACK",
+      "last_activity": "2026-04-08T11:03:00"
     },
     "SO2: DWE Ecosystem": {
-      "active": 22,
-      "not_started": 144,
+      "active": 11,
+      "not_started": 116,
       "blocked": 0,
-      "done_week": 0,
-      "total": 166,
-      "status": "ACTIVE",
-      "last_activity": "2026-04-07T05:37:00"
+      "done_week": 16,
+      "total": 127,
+      "status": "ON TRACK",
+      "last_activity": "2026-04-08T11:03:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
       "not_started": 0,
       "blocked": 0,
-      "done_week": 0,
+      "done_week": 1,
       "total": 0,
       "status": "NO TASKS",
       "last_activity": null
     },
     "SO4: Reserves": {
-      "active": 2,
-      "not_started": 15,
+      "active": 0,
+      "not_started": 11,
       "blocked": 0,
-      "done_week": 0,
-      "total": 17,
-      "status": "ACTIVE",
-      "last_activity": "2026-04-07T05:36:00"
+      "done_week": 2,
+      "total": 11,
+      "status": "SLOW",
+      "last_activity": "2026-04-07T19:51:00"
     },
     "SO5: Family Trust": {
       "active": 0,
@@ -45,7 +45,7 @@
       "done_week": 0,
       "total": 4,
       "status": "STALE",
-      "last_activity": "2026-04-07T01:03:00"
+      "last_activity": "2026-04-07T23:56:00"
     }
   },
   "sla_violations": [
@@ -57,25 +57,27 @@
     }
   ],
   "drift_warnings": [
-    "94 unaligned/untagged tasks (24% drift)",
-    "SO1 (revenue) is only 13% of active work \u2014 should be >30%"
+    "94 unaligned/untagged tasks (26% drift)",
+    "SO1 (revenue) is only 12% of active work \u2014 should be >30%",
+    "No weekly strategic input detected \u2014 score capped at 50"
   ],
-  "drift_pct": 24.3,
-  "so1_share": 12.7,
+  "drift_pct": 26.3,
+  "so1_share": 12.1,
   "focus_objectives": [
     "SO1",
-    "SO2"
+    "SO2",
+    "SO4"
   ],
   "early_completion": false,
-  "operational_count": 78,
-  "unaligned_count": 92,
-  "untagged_count": 2,
+  "operational_count": 70,
+  "unaligned_count": 79,
+  "untagged_count": 15,
   "cadence": {
-    "strategic_input": true,
-    "project_proposals": true,
-    "ceo_approved": true,
+    "strategic_input": false,
+    "project_proposals": false,
+    "ceo_approved": false,
     "execution_active": true,
-    "execution_completed": false,
-    "cadence_score": 50
+    "execution_completed": true,
+    "cadence_score": 0
   }
 }
