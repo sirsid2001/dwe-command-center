@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 const zlib = require('zlib');
+const { WebSocketServer } = require('ws');
 
 // ── Performance: gzip helper ────────────────────────────────────────────
 const COMPRESSIBLE = new Set(['text/html', 'application/javascript', 'text/css', 'application/json', 'image/svg+xml']);
@@ -658,6 +659,12 @@ const server = http.createServer((req, res) => {
         case '/mc/notion-tasks/create':
             handleCreateTask(req, res);
             break;
+        case '/mc/briefing-tasks':
+            handleBriefingTasks(req, res);
+            break;
+        case '/mc/briefing-tasks/run':
+            handleBriefingTasksRun(req, res, parsedUrl.query);
+            break;
         case '/mc/command-briefing':
             getCommandBriefing(req, res);
             break;
@@ -741,7 +748,7 @@ const server = http.createServer((req, res) => {
             getSwarmStatus(req, res);
             break;
         case '/dwe/status':
-            handleDWEStatus(req, res);
+            cachedResponse(req, res, 120000, handleDWEStatus);  // 2min cache (Notion API ~3.6s)
             break;
         case '/dwe':
         case '/dwe/':
@@ -791,6 +798,12 @@ const server = http.createServer((req, res) => {
         case '/mc/mqt-paper':
             getMqtPaperTrading(req, res);
             break;
+        case '/mc/smi-paper':
+            getSmiPaperTrading(req, res);
+            break;
+        case '/mc/trading-comparison':
+            getTradingComparison(req, res);
+            break;
         case '/mc/prospects':
             getProspects(req, res, parsedUrl.query);
             break;
@@ -830,6 +843,12 @@ const server = http.createServer((req, res) => {
         case '/mc/jarvis-log':
             logJarvisDelegation(req, res);
             break;
+        case '/mc/pipeline-stage-run':
+            runPipelineStage(req, res, parsedUrl.query);
+            break;
+        case '/mc/pipeline-stage-log':
+            servePipelineStageLog(req, res, parsedUrl.query);
+            break;
         case '/mc/outreach-approve':
             approveOutreachEmail(req, res);
             break;
@@ -847,7 +866,7 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/smart-money-intel':
             try {
-                const intelPath = path.join(os.homedir(), 'openclaw/shared/intel/latest_signals.json');
+                const intelPath = path.join(require('os').homedir(), 'openclaw/shared/intel/latest_signals.json');
                 const data = fs.readFileSync(intelPath, 'utf8');
                 res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                 res.end(data);
@@ -872,6 +891,310 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ error: 'No GA4 data cached yet', thisWeek: {}, lastWeek: {}, deltas: {} }));
             }
             break;
+        case '/mc/sheets-writeback':
+            (async () => {
+                try {
+                    let body = '';
+                    req.on('data', d => body += d);
+                    req.on('end', async () => {
+                        try {
+                            const { website, espocrm_id, espocrm_status } = JSON.parse(body);
+                            if (!website || !espocrm_id) {
+                                res.writeHead(400, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Missing website or espocrm_id' }));
+                                return;
+                            }
+
+                            const crypto = require('crypto');
+                            const https = require('https');
+
+                            // Load SA key
+                            const saPath = '/Users/elf-6/.openclaw/credentials/ga4-service-account.json';
+                            const sa = JSON.parse(fs.readFileSync(saPath, 'utf8'));
+
+                            // Generate JWT for Sheets scope
+                            const now = Math.floor(Date.now() / 1000);
+                            const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
+                            const payload = Buffer.from(JSON.stringify({
+                                iss: sa.client_email,
+                                scope: 'https://www.googleapis.com/auth/spreadsheets',
+                                aud: 'https://oauth2.googleapis.com/token',
+                                exp: now + 3600,
+                                iat: now
+                            })).toString('base64url');
+                            const sigInput = `${header}.${payload}`;
+                            const sign = crypto.createSign('RSA-SHA256');
+                            sign.update(sigInput);
+                            const sig = sign.sign(sa.private_key, 'base64url');
+                            const jwt = `${sigInput}.${sig}`;
+
+                            // Exchange for access token
+                            const tokenBody = `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`;
+                            const tokenData = await new Promise((resolve, reject) => {
+                                const tr = https.request({
+                                    hostname: 'oauth2.googleapis.com', path: '/token', method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                                }, r => { let b = ''; r.on('data', d => b += d); r.on('end', () => resolve(JSON.parse(b))); });
+                                tr.on('error', reject);
+                                tr.write(tokenBody);
+                                tr.end();
+                            });
+
+                            if (!tokenData.access_token) {
+                                res.writeHead(500, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Token exchange failed', detail: tokenData.error_description || tokenData.error }));
+                                return;
+                            }
+
+                            const token = tokenData.access_token;
+                            const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+
+                            // Find the row with matching website
+                            const sheetData = await new Promise((resolve, reject) => {
+                                const r = https.request({
+                                    hostname: 'sheets.googleapis.com',
+                                    path: `/v4/spreadsheets/${SHEET_ID}/values/Prospect_DWE_Marketing!A:Z`,
+                                    headers: { Authorization: `Bearer ${token}` }
+                                }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(JSON.parse(b))); });
+                                r.on('error', reject);
+                                r.end();
+                            });
+
+                            if (sheetData.error) {
+                                res.writeHead(403, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Sheet access denied — share sheet with ' + sa.client_email, detail: sheetData.error.message }));
+                                return;
+                            }
+
+                            const rows = sheetData.values || [];
+                            const headers = rows[0] || [];
+                            const websiteCol = headers.findIndex(h => h.toLowerCase().includes('website'));
+                            const espoCrmIdCol = headers.findIndex(h => h.toLowerCase().includes('espocrm_id') || h.toLowerCase().includes('crm_id'));
+                            const statusCol = headers.findIndex(h => h.toLowerCase().includes('crm_status') || h.toLowerCase() === 'status');
+
+                            if (websiteCol === -1) {
+                                res.writeHead(500, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Website column not found', headers }));
+                                return;
+                            }
+
+                            // Find matching row
+                            let rowIdx = -1;
+                            for (let i = 1; i < rows.length; i++) {
+                                if ((rows[i][websiteCol] || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '') ===
+                                    website.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '')) {
+                                    rowIdx = i + 1; // 1-indexed
+                                    break;
+                                }
+                            }
+
+                            if (rowIdx === -1) {
+                                res.writeHead(404, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Row not found for website: ' + website }));
+                                return;
+                            }
+
+                            // Determine the espocrm_id column — use col T (index 19) if not found
+                            const writeCol = espoCrmIdCol !== -1 ? espoCrmIdCol : 19; // Column T
+                            const colLetter = String.fromCharCode(65 + writeCol);
+                            const range = `Prospect_DWE_Marketing!${colLetter}${rowIdx}`;
+
+                            const updateBody = JSON.stringify({ values: [[espocrm_id]] });
+                            await new Promise((resolve, reject) => {
+                                const r = https.request({
+                                    hostname: 'sheets.googleapis.com',
+                                    path: `/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`,
+                                    method: 'PUT',
+                                    headers: {
+                                        Authorization: `Bearer ${token}`,
+                                        'Content-Type': 'application/json',
+                                        'Content-Length': Buffer.byteLength(updateBody)
+                                    }
+                                }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(JSON.parse(b))); });
+                                r.on('error', reject);
+                                r.write(updateBody);
+                                r.end();
+                            });
+
+                            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                            res.end(JSON.stringify({ ok: true, row: rowIdx, col: colLetter, espocrm_id }));
+                        } catch(e) {
+                            res.writeHead(500, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: e.message }));
+                        }
+                    });
+                } catch(e) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Write-back failed' }));
+                }
+            })();
+            return;
+
+        case '/mc/sheets-read-prospects':
+            (async () => {
+                try {
+                    const https = require('https');
+                    const envFile = fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8');
+                    const matonKey = envFile.match(/MATON_API_KEY=["']?([^"'\n]+)/)?.[1]?.trim();
+                    if (!matonKey) throw new Error('MATON_API_KEY not found in .env');
+                    const SHEET_ID = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+                    const range = encodeURIComponent('Prospect_DWE_Marketing!A:Z');
+                    const sheetData = await new Promise((resolve, reject) => {
+                        const r = https.request({
+                            hostname: 'gateway.maton.ai',
+                            path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/${range}`,
+                            headers: { Authorization: `Bearer ${matonKey}` }
+                        }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => { try { resolve(JSON.parse(b)); } catch(e) { reject(e); } }); });
+                        r.on('error', reject); r.end();
+                    });
+                    if (sheetData.error) {
+                        res.writeHead(403, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Sheet access denied', detail: sheetData.error.message }));
+                        return;
+                    }
+                    const rows = sheetData.values || [];
+                    const headers = rows[0] || [];
+                    const records = rows.slice(1).map(row => {
+                        const obj = {};
+                        headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+                        return obj;
+                    });
+                    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify(records));
+                } catch(e) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: e.message }));
+                }
+            })();
+            return;
+
+        case '/mc/seed-crm-lead':
+            (async () => {
+                try {
+                    let body = '';
+                    req.on('data', d => body += d);
+                    req.on('end', () => {
+                        try {
+                            const lead = JSON.parse(body);
+                            const id = (lead.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+                            if (!id) {
+                                res.writeHead(400, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Missing lead id' }));
+                                return;
+                            }
+                            const seedDir = '/Users/elf-6/openclaw/shared/4_Ready_to_Seed';
+                            const seedFile = path.join(seedDir, `crm_lead_${id}.md`);
+                            const content = [
+                                `# CRM Lead: ${lead.accountName || lead.name || 'Unknown'}`,
+                                ``,
+                                `**ID:** ${id}`,
+                                `**Status:** ${lead.status || 'New'}`,
+                                `**Website:** ${lead.website || 'N/A'}`,
+                                `**Score:** ${lead.cScore || 0}`,
+                                `**Email Sent:** ${lead.cEmailSent ? 'Yes' : 'No'}`,
+                                `**Email Replied:** ${lead.cEmailReplied ? 'Yes' : 'No'}`,
+                                ``,
+                                `## SEO Audit`,
+                                lead.cSeoAudit || 'No audit data yet.',
+                                ``,
+                                `## AISO Audit`,
+                                lead.cAisoAudit || 'No AISO data yet.',
+                                ``,
+                                `**CRM URL:** https://crm.tvcpulse.com/#Lead/view/${id}`,
+                                `**Seeded:** ${new Date().toISOString()}`
+                            ].join('\n');
+                            fs.writeFileSync(seedFile, content, 'utf8');
+                            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                            res.end(JSON.stringify({ ok: true, file: seedFile }));
+                        } catch(e) {
+                            res.writeHead(400, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: e.message }));
+                        }
+                    });
+                } catch(e) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Seed failed' }));
+                }
+            })();
+            return;
+
+        case '/mc/crm':
+            (async () => {
+                try {
+                    const crmCacheFile = path.join(__dirname, 'crm_cache.json');
+                    const crmCacheMaxAge = 5 * 60 * 1000; // 5 minutes
+                    let crmData = null;
+                    try {
+                        const stat = fs.statSync(crmCacheFile);
+                        if (Date.now() - stat.mtimeMs < crmCacheMaxAge) {
+                            crmData = JSON.parse(fs.readFileSync(crmCacheFile, 'utf8'));
+                        }
+                    } catch(e) {}
+
+                    if (!crmData) {
+                        const https = require('https');
+                        const fetchEspo = (ePath) => new Promise((resolve, reject) => {
+                            const opts = {
+                                hostname: 'crm.tvcpulse.com',
+                                path: ePath,
+                                method: 'GET',
+                                headers: { 'X-Api-Key': '25ddaa8471b6b4497a559dea4d2f664b' }
+                            };
+                            const req2 = https.request(opts, (r) => {
+                                let body = '';
+                                r.on('data', d => body += d);
+                                r.on('end', () => {
+                                    try { resolve(JSON.parse(body)); }
+                                    catch(e) { resolve({}); }
+                                });
+                            });
+                            req2.on('error', () => resolve({}));
+                            req2.end();
+                        });
+
+                        const today = new Date().toISOString().slice(0, 10);
+                        const allLeads = await fetchEspo('/api/v1/Lead?select=status,cScore,cEmailSent,cEmailReplied,createdAt&maxSize=1000');
+
+                        const leads = allLeads.list || [];
+                        const counts = { New: 0, 'In Process': 0, Converted: 0, Dead: 0, Recycled: 0 };
+                        let convertedScore = 0, deadScore = 0, convertedCount = 0, deadCount = 0, repliedCount = 0, sentCount = 0, todayNew = 0;
+
+                        for (const l of leads) {
+                            const s = l.status || 'New';
+                            if (counts[s] !== undefined) counts[s]++;
+                            if (l.createdAt && l.createdAt.startsWith(today)) todayNew++;
+                            if (s === 'Converted') { convertedScore += (l.cScore || 0); convertedCount++; }
+                            if (s === 'Dead') { deadScore += (l.cScore || 0); deadCount++; }
+                            if (l.cEmailReplied) repliedCount++;
+                            if (l.cEmailSent) sentCount++;
+                        }
+
+                        const replyRate = sentCount > 0 ? Math.round((repliedCount / sentCount) * 100) : 0;
+                        const avgConverted = convertedCount > 0 ? Math.round(convertedScore / convertedCount) : 0;
+                        const avgDead = deadCount > 0 ? Math.round(deadScore / deadCount) : 0;
+                        const pipelineValue = counts['In Process'] * 149 + counts.Converted * 449;
+
+                        crmData = {
+                            total: allLeads.total || leads.length,
+                            todayNew,
+                            counts,
+                            replyRate,
+                            avgScoreConverted: avgConverted,
+                            avgScoreDead: avgDead,
+                            pipelineValue,
+                            updatedAt: new Date().toISOString()
+                        };
+                        fs.writeFileSync(crmCacheFile, JSON.stringify(crmData));
+                    }
+
+                    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify(crmData));
+                } catch(e) {
+                    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                    res.end(JSON.stringify({ error: 'CRM data unavailable', total: 0, counts: {}, replyRate: 0 }));
+                }
+            })();
+            return;
         case '/mc/night-mode':
             handleNightMode(req, res);
             break;
@@ -939,6 +1262,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/deals/update':
             updateDeal(req, res);
+            break;
+        case '/mc/crm-stats':
+            getCrmStats(req, res);
             break;
         case '/mc/crm':
             getCrmRecord(req, res, parsedUrl.query);
@@ -1613,6 +1939,77 @@ function getMqtPaperTrading(req, res) {
     }));
 }
 
+// ── Trading Comparison ────────────────────────────────────────────────
+function getTradingComparison(req, res) {
+    const snapPath = require('path').join(require('os').homedir(), 'openclaw/shared/trading_comparison_snapshots.json');
+    let snapshots = [];
+    try { snapshots = JSON.parse(require('fs').readFileSync(snapPath, 'utf8')); } catch(e) {}
+    // Current live values from both traders
+    const mqtStatePath = require('path').join(require('os').homedir(), 'openclaw/shared/mqt_paper_trading_state.json');
+    const mqtSigPath   = require('path').join(require('os').homedir(), 'openclaw/shared/mqt_latest_signal.json');
+    const smiStatePath = require('path').join(require('os').homedir(), 'openclaw/shared/smi_paper_trading_state.json');
+    let mqtState = {}, mqtSig = {}, smiState = {};
+    try { mqtState = JSON.parse(require('fs').readFileSync(mqtStatePath, 'utf8')); } catch(e) {}
+    try { mqtSig   = JSON.parse(require('fs').readFileSync(mqtSigPath,   'utf8')); } catch(e) {}
+    try { smiState = JSON.parse(require('fs').readFileSync(smiStatePath, 'utf8')); } catch(e) {}
+    const mqtPrice    = mqtSig.price || 0;
+    const mqtRaw      = (mqtState.usdt_balance || 0) + (mqtState.total_qty || 0) * mqtPrice;
+    const mqtOriginal = (mqtState.total_cost || 500) + 500;
+    const mqtNorm     = mqtOriginal > 0 ? (mqtRaw / mqtOriginal) * 1000 : mqtRaw;
+    const smiTotal    = smiState.portfolio_value || smiState.balance || 1000;
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.end(JSON.stringify({
+        ok: true,
+        snapshots: snapshots.slice(-30),
+        current: {
+            mqt: { value: Math.round(mqtNorm * 100) / 100, pnlPct: Math.round(((mqtNorm - 1000) / 1000) * 10000) / 100 },
+            smi: { value: Math.round(smiTotal * 100) / 100, pnlPct: Math.round(((smiTotal - 1000) / 1000) * 10000) / 100 },
+        },
+    }));
+}
+
+// ── SMI Paper Trading ─────────────────────────────────────────────────
+function getSmiPaperTrading(req, res) {
+    const homeDir = require('os').homedir();
+    const statePath = path.join(homeDir, 'openclaw/shared/smi_paper_trading_state.json');
+    const logPath   = path.join(homeDir, 'openclaw/shared/smi_trade_log.json');
+    let state = {}, trades = [];
+    try { state  = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch(e) {
+        state = { balance: 1000, positions: {}, total_trades: 0, total_pnl: 0, portfolio_value: 1000, start_date: null, end_date: null };
+    }
+    try { trades = JSON.parse(fs.readFileSync(logPath,   'utf8')); } catch(e) {}
+    const startVal   = 1000;
+    const totalVal   = state.portfolio_value || state.balance || startVal;
+    const pnlPct     = ((totalVal - startVal) / startVal) * 100;
+    const startDate  = state.start_date ? new Date(state.start_date) : null;
+    const endDate    = state.end_date   ? new Date(state.end_date)   : null;
+    const now        = new Date();
+    const daysIn     = startDate ? Math.floor((now - startDate) / 86400000) : 0;
+    const daysLeft   = endDate   ? Math.max(0, Math.ceil((endDate - now) / 86400000)) : 30;
+    const positions  = Object.entries(state.positions || {}).map(([ticker, p]) => ({
+        ticker, shares: p.shares, entryPrice: p.entry_price, costBasis: p.cost_basis,
+        entryDate: p.entry_date, signalScore: p.signal_score, signalSource: p.signal_source,
+    }));
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' });
+    res.end(JSON.stringify({
+        ok: true,
+        balance: state.balance || 0,
+        totalValue: totalVal,
+        totalPnl: state.total_pnl || 0,
+        pnlPct: Math.round(pnlPct * 100) / 100,
+        peakValue: state.peak_value || totalVal,
+        totalTrades: state.total_trades || 0,
+        buys:  state.trade_count_buys  || 0,
+        sells: state.trade_count_sells || 0,
+        positions,
+        daysIn, daysLeft,
+        startDate: state.start_date,
+        endDate:   state.end_date,
+        lastRun:   state.last_run,
+        recentTrades: (trades || []).slice(-10).reverse(),
+    }));
+}
+
 // ── Prospect Pipeline — replicable funnel system ──────────────────────
 
 const PIPELINES_DIR = path.join(require('os').homedir(), 'openclaw/shared/config/pipelines');
@@ -1854,6 +2251,56 @@ function getOutreachQueue(req, res, query) {
         queue.sort((a, b) => (b.queued_at || '').localeCompare(a.queued_at || ''));
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true, queue, total: queue.length }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
+
+// ── Pipeline Stage Run / Log ──────────────────────────────────────────────────
+const PIPELINE_STAGE_MAP = {
+    'lead-gen':   { service: 'ai.dwe.hvac-lead-scraper',       log: 'hvac_lead_scraper.log',    label: 'Lead Scraper' },
+    'audit':      { service: 'ai.dwe.audit-runner',            log: 'audit_runner.log',          label: 'Audit Runner' },
+    'outreach':   { service: 'ai.dwe.outreach-sender',         log: 'outreach_sender.log',       label: 'Outreach Sender' },
+    'queue':      { service: 'ai.dwe.populate-outreach-queue', log: 'populate_outreach_queue.log', label: 'Outreach Queue' },
+    'reply':      { service: 'ai.dwe.reply-tracker',           log: 'reply_tracker.log',         label: 'Reply Tracker' },
+};
+
+function runPipelineStage(req, res, query) {
+    if (req.method !== 'POST') { res.writeHead(405); res.end('POST only'); return; }
+    const stage = (query && query.stage) || '';
+    const meta = PIPELINE_STAGE_MAP[stage];
+    if (!meta) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Unknown stage: ' + stage }));
+        return;
+    }
+    exec(`launchctl kickstart -k gui/${process.getuid()}/${meta.service}`, { timeout: 10000 }, (err, stdout, stderr) => {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: !err, service: meta.service, label: meta.label, err: err ? err.message : null }));
+    });
+}
+
+function servePipelineStageLog(req, res, query) {
+    const stage = (query && query.stage) || '';
+    const meta = PIPELINE_STAGE_MAP[stage];
+    if (!meta) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Unknown stage' }));
+        return;
+    }
+    const logPath = path.join(process.env.HOME, 'openclaw/logs', meta.log);
+    if (!fs.existsSync(logPath)) {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true, lines: [], label: meta.label, missing: true }));
+        return;
+    }
+    try {
+        // Return last 50 lines
+        const content = fs.readFileSync(logPath, 'utf8');
+        const lines = content.split('\n').filter(l => l.trim()).slice(-50);
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true, lines, label: meta.label }));
     } catch(e) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: e.message }));
@@ -5700,6 +6147,106 @@ function getCrmRecord(req, res, query) {
     }
 }
 
+// ── EspoCRM Stats (Phase 6: CRM Pipeline widget) ─────────────────────
+function getCrmStats(req, res) {
+    // Cache key so EspoCRM API isn't hit on every page load
+    const CACHE_KEY = '/mc/crm-stats';
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
+    const cached = _responseCache.get(CACHE_KEY);
+    if (cached && (Date.now() - cached.ts) < CACHE_TTL_MS) {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'X-Cache': 'HIT' });
+        res.end(cached.data);
+        return;
+    }
+
+    const envFile = (() => {
+        try { return fs.readFileSync(`${process.env.HOME}/.openclaw/.env`, 'utf8'); } catch(e) { return ''; }
+    })();
+    const ESPOCRM_HOST = envFile.match(/ESPOCRM_HOST=([^\n]+)/)?.[1]?.trim() || 'https://crm.tvcpulse.com';
+    const ESPOCRM_API_KEY = envFile.match(/ESPOCRM_API_KEY=([^\n]+)/)?.[1]?.trim() || '';
+
+    if (!ESPOCRM_API_KEY) {
+        const out = JSON.stringify({ error: 'ESPOCRM_API_KEY not configured', configured: false });
+        _responseCache.set(CACHE_KEY, { data: out, ts: Date.now() });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(out);
+        return;
+    }
+
+    // Fetch all leads (status + stage + createdAt) in parallel — max 500
+    const fetchJson = (endpoint) => new Promise((resolve) => {
+        const url = `${ESPOCRM_HOST}/api/v1/${endpoint}`;
+        const reqObj = https.get(url, {
+            headers: { 'X-Api-Key': ESPOCRM_API_KEY, 'Content-Type': 'application/json' },
+            timeout: 10000
+        }, (response) => {
+            let data = '';
+            response.on('data', c => data += c);
+            response.on('end', () => {
+                try { resolve({ status: response.statusCode, body: JSON.parse(data) }); }
+                catch(e) { resolve({ status: 0, body: null }); }
+            });
+        });
+        reqObj.on('error', () => resolve({ status: 0, body: null }));
+        reqObj.setTimeout(10000, () => { reqObj.destroy(); resolve({ status: 0, body: null }); });
+    });
+
+    (async () => {
+        try {
+            // Fetch leads + today's new count in parallel
+            const [leadResult, todayResult] = await Promise.all([
+                fetchJson('Lead?select=status,stage,dateEntered&maxSize=500'),
+                fetchJson('Lead?select=status,stage,dateEntered&maxSize=1&sort=dateEntered&order=desc'),
+            ]);
+
+            const leads = (leadResult.status === 200 && Array.isArray(leadResult.body?.list)) ? leadResult.body.list : [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Counts by status
+            const byStatus = {};
+            let newToday = 0;
+            let replied = 0;
+            let totalScore = 0;
+            let scoredLeads = 0;
+
+            leads.forEach(l => {
+                const s = l.status || 'Unknown';
+                byStatus[s] = (byStatus[s] || 0) + 1;
+                const entered = l.dateEntered ? new Date(l.dateEntered) : null;
+                if (entered && entered >= today) newToday++;
+                // Track replied via a 'Converted' or 'Dead' proxy — real implementation needs cEmailReplied field
+                if (l.stage === 'Closed - Won') replied++;
+            });
+
+            const totalLeads = leads.length;
+            const replyRate = totalLeads > 0 ? Math.round((replied / totalLeads) * 100) : 0;
+
+            const out = JSON.stringify({
+                configured: true,
+                total_leads: totalLeads,
+                new_leads_today: newToday,
+                leads_by_status: byStatus,
+                reply_rate_pct: replyRate,
+                converted_count: byStatus['Closed - Won'] || 0,
+                in_process_count: (byStatus['In Process'] || 0) + (byStatus['New'] || 0),
+                avg_score: scoredLeads > 0 ? Math.round(totalScore / scoredLeads) : 0,
+                crm_url: ESPOCRM_HOST,
+                timestamp: new Date().toISOString(),
+            });
+
+            _responseCache.set(CACHE_KEY, { data: out, ts: Date.now() });
+            res.writeHead(200, { 'Content-Type': 'application/json', 'X-Cache': 'MISS' });
+            res.end(out);
+        } catch(e) {
+            const out = JSON.stringify({ error: e.message, configured: true });
+            _responseCache.set(CACHE_KEY, { data: out, ts: Date.now() });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(out);
+        }
+    })();
+}
+
 function getPipelineSummary(req, res) {
     try {
         // Aggregate across all pipeline stages
@@ -5760,6 +6307,144 @@ server.listen(PORT, HOST, () => {
     console.log('[Newsletter Cache] Pre-warming on boot...');
     refreshNewsletterCache();
 });
+
+// ── WebSocket Server ──────────────────────────────────────────────────────────
+// Attached to the same HTTP server — no extra port needed.
+// Pushes live data to all connected dashboard clients instead of polling.
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+// Broadcast a typed message to all open clients
+function wsBroadcast(type, data) {
+    const msg = JSON.stringify({ type, data, ts: Date.now() });
+    wss.clients.forEach(client => {
+        if (client.readyState === 1 /* OPEN */) {
+            client.send(msg, err => { if (err) { /* client gone */ } });
+        }
+    });
+}
+
+// Helper: fetch an mc/* endpoint from the local server and return parsed JSON
+function localFetch(endpoint) {
+    return new Promise(resolve => {
+        const req = http.get(`http://127.0.0.1:${PORT}${endpoint}`, res => {
+            let raw = '';
+            res.on('data', c => raw += c);
+            res.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { resolve(null); } });
+        });
+        req.on('error', () => resolve(null));
+        req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+    });
+}
+
+const WS_BATCH_ENDPOINTS = [
+    '/mc/status', '/mc/agents', '/mc/heartbeat',
+    '/mc/launchd', '/mc/delegation-stats', '/mc/brain',
+    '/mc/system', '/mc/internet', '/mc/sprint', '/mc/cso',
+    '/mc/financial', '/mc/n8n-workflows',
+    '/mc/jarvis-stats', '/mc/ga4', '/mc/tailscale', '/mc/pipeline',
+    '/mc/daemon-health', '/mc/migration',
+    '/mc/recurring-tasks', '/mc/openrouter-credits', '/mc/autoresearch',
+    '/mc/content-intel', '/mc/openclaw-version', '/mc/sidney-devices',
+];
+
+async function wsPushBatch() {
+    if (wss.clients.size === 0) return; // no one listening
+    const results = await Promise.all(WS_BATCH_ENDPOINTS.map(ep =>
+        localFetch(ep).then(v => ({ k: ep, v }))
+    ));
+    const batch = {};
+    results.forEach(r => { batch[r.k] = r.v; });
+    wsBroadcast('batch', batch);
+}
+
+function wsPushTraffic() {
+    if (wss.clients.size === 0) return;
+    wsBroadcast('traffic', { ...trafficCache, activity: activityLog });
+    wsBroadcast('local-traffic', { ...localTrafficCache });
+}
+
+// ── Additional push helpers for endpoints previously client-polled ────────────
+
+async function wsPushSingle(type, endpoint, timeout = 8000) {
+    if (wss.clients.size === 0) return;
+    const data = await localFetch(endpoint);
+    if (data !== null) wsBroadcast(type, data);
+}
+
+function wsPushMQT()        { return wsPushSingle('mqt',              '/mc/mqt-paper'); }
+function wsPushSMI()        { return wsPushSingle('smi',              '/mc/smi-paper'); }
+function wsPushComparison() { return wsPushSingle('trading-comparison','/mc/trading-comparison'); }
+function wsPushTunnels()    { return wsPushSingle('tunnels',           '/mc/tunnel-status'); }
+function wsPushOldVps()     { return wsPushSingle('old-vps',          '/mc/contabo-vps-status'); }
+function wsPushSiteHealth() { return wsPushSingle('site-health',      '/mc/site-health'); }
+function wsPushJakeInbox()  { return wsPushSingle('jake-inbox',       '/mc/jake-inbox'); }
+function wsPushPipeline()   { return wsPushSingle('pipeline-push',    '/mc/pipeline'); }
+function wsPushYtIntel()    { return wsPushSingle('yt-intel',         '/mc/content-intel'); }
+function wsPushMeeting()    { return wsPushSingle('meeting-status',   '/mc/meeting-status'); }
+
+async function wsPushVisionScore() {
+    if (wss.clients.size === 0) return;
+    // vision-pulse reads a local JSON file — use localFetch against the api route
+    const data = await new Promise(resolve => {
+        const req = http.get(`http://127.0.0.1:${PORT}/api/vision-pulse`, res => {
+            let raw = '';
+            res.on('data', c => raw += c);
+            res.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { resolve(null); } });
+        });
+        req.on('error', () => resolve(null));
+        req.setTimeout(5000, () => { req.destroy(); resolve(null); });
+    });
+    if (data !== null) wsBroadcast('vision-score', data);
+}
+
+wss.on('connection', (ws, req) => {
+    console.log(`[WS] Client connected from ${req.socket.remoteAddress}`);
+    // Send initial data immediately so client paints on connect
+    wsPushBatch();
+    wsPushTraffic();
+    wsPushMQT();
+    wsPushSMI();
+    wsPushComparison();
+    wsPushTunnels();
+    wsPushOldVps();
+    wsPushSiteHealth();
+    wsPushJakeInbox();
+    wsPushPipeline();
+    wsPushYtIntel();
+    wsPushMeeting();
+    wsPushVisionScore();
+    ws.on('error', () => {});
+    ws.on('close', () => console.log('[WS] Client disconnected'));
+});
+
+// Push batch every 90s
+setInterval(wsPushBatch, 90000);
+// Push traffic every 15s
+setInterval(wsPushTraffic, 15000);
+// Push pipeline every 30s (high-value, fast)
+setInterval(wsPushPipeline, 30000);
+// Push meeting status every 30s
+setInterval(wsPushMeeting, 30000);
+// Push MQT every 60s
+setInterval(wsPushMQT, 60000);
+// Push tunnels every 120s
+setInterval(wsPushTunnels, 120000);
+// Push YT intel every 120s
+setInterval(wsPushYtIntel, 120000);
+// Push old VPS every 180s
+setInterval(wsPushOldVps, 180000);
+// Push SMI every 240s
+setInterval(wsPushSMI, 240000);
+// Push site health every 300s
+setInterval(wsPushSiteHealth, 300000);
+// Push trading comparison every 300s
+setInterval(wsPushComparison, 300000);
+// Push Jake inbox every 300s
+setInterval(wsPushJakeInbox, 300000);
+// Push vision score every 300s
+setInterval(wsPushVisionScore, 300000);
+
+console.log('[WS] WebSocket server ready at ws://localhost:' + PORT + '/ws');
 
 // ── Google Drive File Browser ────────────────────────────────────────────────
 const DRIVE_PATH = '/Users/elf-6/Library/CloudStorage/GoogleDrive-sirsid2001@gmail.com/My Drive/';
@@ -6220,6 +6905,66 @@ function handleCreateTask(req, res) {
     });
 }
 
+function handleBriefingTasksRun(req, res, query) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    (async () => {
+        try {
+            const raw = query && query.data ? Buffer.from(query.data, 'base64').toString('utf8') : null;
+            if (!raw) { res.writeHead(400, {'Content-Type': 'text/plain'}); res.end('Missing data param'); return; }
+            const { tasks } = JSON.parse(raw);
+            const results = await Promise.all(tasks.map(t =>
+                createNotionTask({
+                    name: t.name,
+                    priority: t.priority || 'Medium',
+                    role: 'CEO',
+                    url: t.url || '',
+                    globalTags: ['02 – Priority'],
+                }).then(r => ({ ok: true, name: t.name, id: r.id }))
+                  .catch(e => ({ ok: false, name: t.name, error: e.message }))
+            ));
+            const ok = results.filter(r => r.ok);
+            const fail = results.filter(r => !r.ok);
+            const html = `<!DOCTYPE html><html><head><meta charset=utf-8><title>CEO Tasks</title>
+<style>body{font-family:system-ui;background:#111;color:#eee;max-width:520px;margin:60px auto;padding:20px}
+h2{color:${fail.length===0?'#4ade80':'#facc15'}}.ok{color:#4ade80}.fail{color:#f87171}li{margin:6px 0}
+.done{margin-top:24px;color:#888;font-size:14px}</style></head><body>
+<h2>${fail.length===0?'✅':'⚠️'} ${ok.length} task${ok.length!==1?'s':''} created in Notion${fail.length>0?' ('+fail.length+' failed)':''}</h2>
+<ul>${ok.map(r=>'<li class=ok>✓ '+r.name+'</li>').join('')}${fail.map(r=>'<li class=fail>✗ '+r.name+': '+r.error+'</li>').join('')}</ul>
+<p class=done>You can close this tab.</p></body></html>`;
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.end(html);
+        } catch(e) {
+            res.writeHead(500, {'Content-Type': 'text/plain'});
+            res.end('Error: ' + e.message);
+        }
+    })();
+}
+function handleBriefingTasks(req, res) {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        try {
+            const data = JSON.parse(body);
+            const tasks = Array.isArray(data.tasks) ? data.tasks : [data];
+            const results = await Promise.all(tasks.map(t =>
+                createNotionTask({
+                    name: t.name,
+                    priority: t.priority || 'Medium',
+                    role: 'CEO',
+                    url: t.url || '',
+                    globalTags: ['02 – Priority'],
+                }).then(r => ({ ok: true, name: t.name, id: r.id }))
+                  .catch(e => ({ ok: false, name: t.name, error: e.message }))
+            ));
+            const failed = results.filter(r => !r.ok);
+            res.end(JSON.stringify({ ok: failed.length === 0, results }));
+        } catch(e) {
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+        }
+    });
+}
 function archiveGmailMessage(req, res, query) {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');

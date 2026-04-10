@@ -1061,6 +1061,10 @@
                     <div style="text-align:right;margin-top:1.25rem;">
                         <div class="date" id="date">Loading...</div>
                         <div class="clock" id="clock" style="margin-top:0.15rem;">00:00</div>
+                        <div style="display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.4rem;font-size:0.62rem;color:rgba(255,255,255,0.35);font-family:Inter,sans-serif;">
+                            <span id="ws-indicator" title="Connecting…" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#888;transition:background 0.4s;"></span>
+                            <span id="ws-indicator-label" style="font-size:0.6rem;color:rgba(255,255,255,0.25);">WS</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1185,40 +1189,6 @@
                     <div class="stat-icon" style="background:linear-gradient(135deg,rgba(184,41,221,0.2),rgba(0,245,255,0.1)); align-self:flex-start;">🧬</div>
                 </div>
 
-                <!-- Smart Money Intel — Signals Table -->
-                <div class="stat-card" style="border-left-color:#ffd700; grid-column: span 3;">
-                    <div class="stat-content" style="width:100%;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;">
-                            <div style="display:flex;align-items:center;gap:0.5rem;">
-                                <span style="font-size:1rem;">📡</span>
-                                <div class="stat-label" style="margin-bottom:0;">Smart Money Intel</div>
-                                <span id="intel-signal-count" style="font-size:0.62rem;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:#ffd700;padding:2px 8px;border-radius:10px;font-weight:600;">—</span>
-                            </div>
-                            <div style="display:flex;gap:0.5rem;align-items:center;">
-                                <span style="font-size:0.62rem;color:rgba(255,255,255,0.3);" id="intel-last-updated">Live</span>
-                                <button onclick="loadSmartMoneyIntel()" style="font-size:0.65rem;padding:5px 10px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:4px;color:#ffd700;cursor:pointer;">↻ Refresh</button>
-                            </div>
-                        </div>
-                        <div style="overflow-x:auto;">
-                            <table style="width:100%;border-collapse:collapse;font-size:0.68rem;">
-                                <thead>
-                                    <tr style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">
-                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Source</th>
-                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Asset</th>
-                                        <th style="text-align:center;padding:4px 8px 6px;font-weight:500;">Action</th>
-                                        <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Amount</th>
-                                        <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Score</th>
-                                        <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="intel-signals-body">
-                                    <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">Loading smart money signals…</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="intel-error" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:#ff6b6b;padding:6px 10px;background:rgba(255,0,0,0.08);border-radius:5px;"></div>
-                    </div>
-                </div>
 
                 <!-- System Uptime + Mac mini Health — unified card -->
                 <div class="stat-card" style="border-left-color:#7b61ff; grid-column: span 3;">
@@ -1234,17 +1204,17 @@
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">elf-6</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
+                                    <span title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:inherit; cursor:help;">100.78.240.29</span>
                                     <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);" id="mac-chip">Apple M4 · 10 cores</span>
                                     <span id="macmini-uptime-ts-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
                                 </div>
-                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#a78bff; letter-spacing:0.02em;"><span class="heartbeat">💓</span> <span id="mac-uptime-counter">—</span></div>
+                                <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:#a78bff; letter-spacing:0.02em;"><span class="heartbeat">💓</span> <span id="mac-uptime-counter">—</span></div>
                                 <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem; margin-bottom:0.45rem;" id="mac-boot-time">—</div>
                                 <!-- Ollama -->
                                 <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="mac-ollama-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Ollama GPU</span>
-                                    <span id="mac-ollama-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="mac-ollama-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                 </div>
                                 <!-- CPU / RAM / Disk bars -->
                                 <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:auto; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
@@ -1274,7 +1244,7 @@
                                     </div>
                                     <div style="display:flex; justify-content:space-between; font-size:0.6rem; margin-top:0.1rem;">
                                         <span style="color:rgba(255,255,255,0.5);">LOAD</span>
-                                        <span id="mac-load" style="font-family:monospace; font-weight:600; color:#00ff88;">—</span>
+                                        <span id="mac-load" style="font-family:inherit; font-weight:600; color:#00ff88;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
@@ -1288,22 +1258,22 @@
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.45rem;">
                                     <span style="font-size:0.75rem;">⚡</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">OpenClaw</span>
-                                    <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:monospace;font-weight:500;">v...</span>
+                                    <span id="oc-version-badge" style="margin-left:auto;font-size:0.68rem;padding:2px 8px;border-radius:4px;background:rgba(0,255,136,0.1);color:rgba(0,255,136,0.6);font-family:inherit;font-weight:500;">v...</span>
                                 </div>
-                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
+                                <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:#00ff88; letter-spacing:0.02em;" id="gateway-uptime-counter">—</div>
                                 <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.25rem;" id="gateway-start-time">—</div>
                                 <!-- OpenRouter credit balance -->
                                 <div id="oc-openrouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.5rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="oc-openrouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenRouter</span>
-                                    <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="oc-openrouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     <a href="https://openrouter.ai/settings/credits" target="_blank" style="font-size:0.62rem; padding:1px 5px; background:rgba(255,200,80,0.15); border:1px solid rgba(255,200,80,0.35); border-radius:3px; color:rgba(255,200,80,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">+ Credits</a>
                                 </div>
                                 <!-- TeamoRouter credit balance -->
                                 <div id="oc-teamorouter-row" style="display:flex; align-items:center; gap:0.35rem; margin-top:0.3rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px;">
                                     <span id="oc-teamorouter-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">TeamoRouter</span>
-                                    <span id="oc-teamorouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="oc-teamorouter-credit" style="margin-left:auto; font-size:0.6rem; font-weight:700; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     <a href="https://router.teamolab.com/dashboard?user_id=u-ec2d70bcecab42039cb09599136e567f" target="_blank" style="font-size:0.62rem; padding:1px 5px; background:rgba(100,200,255,0.15); border:1px solid rgba(100,200,255,0.35); border-radius:3px; color:rgba(100,200,255,0.8); text-decoration:none; cursor:pointer; margin-left:0.3rem;">Dashboard</a>
                                 </div>
                                 <!-- Daemon statuses -->
@@ -1311,27 +1281,27 @@
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-gateway-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Gateway</span>
-                                        <span id="oc-gateway-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-gateway-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-relay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
-                                        <span id="oc-relay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-relay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-backup-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Backup</span>
-                                        <span id="oc-backup-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-backup-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-clawhub-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">ClawHub Check</span>
-                                        <span id="oc-clawhub-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-clawhub-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="oc-constitution-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Constitution Monitor</span>
-                                        <span id="oc-constitution-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="oc-constitution-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
@@ -1346,16 +1316,16 @@
                                     <span style="font-size:0.75rem;">🖥️</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">elf-6</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span id="macmini-host-ip" title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">100.78.240.29</span>
+                                    <span id="macmini-host-ip" title="Local: 192.168.1.146" style="font-size:0.65rem; color:#00ff88; font-family:inherit; cursor:help;">100.78.240.29</span>
                                     <span id="macmini-ts-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:auto;"></span>
                                 </div>
                                 <div style="display:flex; justify-content:space-between;">
                                     <div>
-                                        <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-ip-line">—</div>
+                                        <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-ip-line">—</div>
                                         <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="sh-ip-label">Mac mini · en0</div>
                                     </div>
                                     <div style="text-align:right;">
-                                        <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-gw-line">—</div>
+                                        <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:rgba(255,255,255,0.35); letter-spacing:0.02em;" id="sh-gw-line">—</div>
                                         <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">Gateway</div>
                                     </div>
                                 </div>
@@ -1363,32 +1333,32 @@
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-gateway" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Internet</span>
-                                        <span class="health-status" id="health-gateway" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-gateway" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-relay" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Relay Daemon</span>
-                                        <span class="health-status" id="health-relay" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-relay" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-n8n" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Webhook</span>
-                                        <span class="health-status" id="health-n8n" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-n8n" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-notion" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion API</span>
-                                        <span class="health-status" id="health-notion" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Checking...</span>
+                                        <span class="health-status" id="health-notion" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Checking...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">GitHub Backup</span>
-                                        <span class="health-status" id="backupTime" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Loading...</span>
+                                        <span class="health-status" id="backupTime" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Loading...</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span class="pulse-dot" id="dot-oc-backup" style="width:6px;height:6px;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">OpenClaw Backup</span>
-                                        <span class="health-status" id="ocBackupTime" style="margin-left:auto; font-size:0.65rem; font-family:monospace;">Loading...</span>
+                                        <span class="health-status" id="ocBackupTime" style="margin-left:auto; font-size:0.65rem; font-family:inherit;">Loading...</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; padding-top:0.5rem;">
@@ -1404,17 +1374,17 @@
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">DO VPS</span>
                                     <span style="font-size:0.45rem; color:rgba(255,200,0,0.6); padding:1px 5px; background:rgba(255,200,0,0.1); border-radius:3px; margin-left:0.2rem;">FALLBACK</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span id="n8n-host-ip" title="DigitalOcean Droplet · Decommission Apr 4" style="font-size:0.65rem; color:#ff8c42; font-family:monospace; cursor:help;">64.23.238.56</span>
+                                    <span id="n8n-host-ip" title="DigitalOcean Droplet · Decommission Apr 4" style="font-size:0.65rem; color:#ff8c42; font-family:inherit; cursor:help;">64.23.238.56</span>
                                     <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);" id="n8n-spec">Ubuntu · 1 vCPU · 2GB</span>
                                     <span id="n8n-status-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
                                 </div>
-                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#ff8c42; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="n8n-uptime-counter">—</span></div>
+                                <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:#ff8c42; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="n8n-uptime-counter">—</span></div>
                                 <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-bottom:0.35rem;" id="n8n-boot-time">—</div>
                                 <!-- Docker / n8n container status -->
                                 <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
                                     <span id="n8n-docker-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Docker</span>
-                                    <span id="n8n-docker-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="n8n-docker-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                 </div>
                                 <!-- VPS Metrics -->
                                 <div id="do-metrics-panel" style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
@@ -1435,17 +1405,17 @@
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">CONTABO VPS</span>
                                     <span style="font-size:0.45rem; color:rgba(0,255,136,0.6); padding:1px 5px; background:rgba(0,255,136,0.12); border-radius:3px; margin-left:0.2rem;">PRIMARY</span>
                                     <span style="font-size:0.65rem; color:rgba(255,255,255,0.3); margin:0 2px;">/</span>
-                                    <span id="contabo-host-ip" title="Contabo Cloud VPS 20 · US-East · $10.75/mo" style="font-size:0.65rem; color:#00ff88; font-family:monospace; cursor:help;">86.48.27.45</span>
+                                    <span id="contabo-host-ip" title="Contabo Cloud VPS 20 · US-East · $10.75/mo" style="font-size:0.65rem; color:#00ff88; font-family:inherit; cursor:help;">86.48.27.45</span>
                                     <span style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35);">Ubuntu · 6 vCPU · 12GB</span>
                                     <span id="old-vps-dot" style="width:7px;height:7px;border-radius:50%;background:#555;margin-left:0.4rem;"></span>
                                 </div>
-                                <div style="font-size:1.05rem; font-family:monospace; font-weight:600; color:#5b9bff; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="old-vps-uptime">—</span></div>
+                                <div style="font-size:1.05rem; font-family:inherit; font-weight:600; color:#5b9bff; letter-spacing:0.02em; margin-bottom:0.1rem;"><span class="heartbeat">💓</span> <span id="old-vps-uptime">—</span></div>
                                 <div style="font-size:0.68rem; color:rgba(255,255,255,0.3); margin-bottom:0.35rem;" id="old-vps-boot-time">—</div>
                                 <!-- Docker / n8n container status -->
                                 <div style="display:flex; align-items:center; gap:0.35rem; padding:0.3rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
                                     <span id="old-vps-n8n-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                     <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">n8n Docker</span>
-                                    <span id="old-vps-n8n" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                    <span id="old-vps-n8n" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                 </div>
                                 <!-- VPS Metrics — same div structure as DO panel -->
                                 <div id="contabo-metrics-panel" style="padding:0.4rem 0.5rem; background:rgba(255,255,255,0.03); border-radius:5px; margin-bottom:0.4rem;">
@@ -1467,7 +1437,7 @@
                                     <span id="notion-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
                                 </div>
                                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
-                                    <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
+                                    <div style="font-size:0.78rem; font-family:inherit; font-weight:500; letter-spacing:0.02em;" id="notion-status-text">Checking...</div>
                                     <div style="font-size:0.65rem; color:rgba(255,255,255,0.3);">api.notion.com</div>
                                 </div>
                                 <!-- Daemon statuses -->
@@ -1475,12 +1445,12 @@
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="notion-triage-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Triage</span>
-                                        <span id="notion-triage-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="notion-triage-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="notion-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Notion Sync</span>
-                                        <span id="notion-sync-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="notion-sync-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                 </div>
                                 <!-- Buttons -->
@@ -1498,7 +1468,7 @@
                                     <span id="pinecone-status-dot" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:#555;"></span>
                                 </div>
                                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
-                                    <div style="font-size:0.78rem; font-family:monospace; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
+                                    <div style="font-size:0.78rem; font-family:inherit; font-weight:500; letter-spacing:0.02em;" id="pinecone-status-text">Checking...</div>
                                     <div style="font-size:0.65rem; color:rgba(255,255,255,0.3);">DWE Brain</div>
                                 </div>
                                 <!-- Brain/Pinecone daemon statuses -->
@@ -1506,22 +1476,22 @@
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-seed-watcher-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Seed Watcher</span>
-                                        <span id="pc-seed-watcher-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-seed-watcher-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-brain-trainer-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Brain Trainer</span>
-                                        <span id="pc-brain-trainer-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-brain-trainer-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-nightly-review-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Nightly Review</span>
-                                        <span id="pc-nightly-review-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-nightly-review-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.35rem;">
                                         <span id="pc-memory-decay-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem; color:rgba(255,255,255,0.5);">Memory Decay</span>
-                                        <span id="pc-memory-decay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:monospace;">—</span>
+                                        <span id="pc-memory-decay-status" style="margin-left:auto; font-size:0.65rem; color:rgba(255,255,255,0.35); font-family:inherit;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem;">
@@ -1539,7 +1509,7 @@
                                     <div style="display:flex; align-items:center; gap:0.35rem; margin-bottom:0.25rem;">
                                         <span style="font-size:0.62rem; color:rgba(255,255,255,0.25); text-transform:uppercase; letter-spacing:0.06em;">Tailscale</span>
                                         <span id="ts-status-dot" style="margin-left:auto;width:6px;height:6px;border-radius:50%;background:#555;"></span>
-                                        <span id="ts-status-text" style="font-size:0.62rem;font-family:monospace;color:#555;">—</span>
+                                        <span id="ts-status-text" style="font-size:0.62rem;font-family:inherit;color:#555;">—</span>
                                     </div>
                                     <div id="ts-devices-panel" style="display:flex; flex-direction:column; gap:0.25rem;">
                                         <div style="font-size:0.6rem; color:rgba(255,255,255,0.4);">Loading...</div>
@@ -1551,27 +1521,27 @@
                                     <div id="ts-tunnel-reverse" style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                                         <span style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">Ollama :11434</span>
-                                        <span id="ts-rev-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                        <span id="ts-rev-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                                         <span id="st-ssh-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">SSH :2222</span>
-                                        <span id="st-ssh-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                        <span id="st-ssh-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                                         <span id="st-mc-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">MC Server :8899</span>
-                                        <span id="st-mc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                        <span id="st-mc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:inherit;">—</span>
                                     </div>
                                     <div style="display:flex;align-items:center;gap:0.35rem;margin-bottom:0.2rem;">
                                         <span id="st-oc-dot" style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">OpenClaw :3100</span>
-                                        <span id="st-oc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                        <span id="st-oc-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:inherit;">—</span>
                                     </div>
                                     <div id="ts-tunnel-forward" style="display:flex;align-items:center;gap:0.35rem;">
                                         <span style="width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0;"></span>
                                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">LiteLLM :4000</span>
-                                        <span id="ts-fwd-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:monospace;">—</span>
+                                        <span id="ts-fwd-status" style="margin-left:auto;font-size:0.62rem;color:#555;font-family:inherit;">—</span>
                                     </div>
                                 </div>
                                 <div style="display:flex; gap:0.3rem; margin-top:auto; padding-top:0.5rem;">
@@ -1588,7 +1558,7 @@
                                 </div>
                                 <!-- Traffic summary — big readable number -->
                                 <div style="text-align:center;margin-bottom:0.5rem;">
-                                    <div id="ga4-sessions" style="color:#00ff88;font-size:1.8rem;font-weight:700;font-family:monospace;">—</div>
+                                    <div id="ga4-sessions" style="color:#00ff88;font-size:1.8rem;font-weight:700;font-family:inherit;">—</div>
                                     <div style="color:rgba(255,255,255,0.4);font-size:0.65rem;">sessions today</div>
                                     <div id="ga4-sessions-delta" style="font-size:0.7rem;font-weight:600;margin-top:0.15rem;">—</div>
                                 </div>
@@ -1608,17 +1578,17 @@
                                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3rem;text-align:center;padding:0.4rem;background:rgba(255,255,255,0.03);border-radius:5px;margin-bottom:0.5rem;">
                                     <div>
                                         <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Users</div>
-                                        <div id="ga4-users" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                        <div id="ga4-users" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:inherit;">—</div>
                                         <div id="ga4-users-delta" style="font-size:0.6rem;">—</div>
                                     </div>
                                     <div>
                                         <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Views</div>
-                                        <div id="ga4-pageviews" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                        <div id="ga4-pageviews" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:inherit;">—</div>
                                         <div id="ga4-pageviews-delta" style="font-size:0.6rem;">—</div>
                                     </div>
                                     <div>
                                         <div style="color:rgba(255,255,255,0.4);font-size:0.55rem;">Bounce</div>
-                                        <div id="ga4-bounce" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:monospace;">—</div>
+                                        <div id="ga4-bounce" style="color:rgba(255,255,255,0.8);font-size:0.85rem;font-weight:700;font-family:inherit;">—</div>
                                     </div>
                                 </div>
                                 <!-- Hidden elements for compatibility -->
@@ -1648,21 +1618,21 @@
                         <!-- Cash Flow sub-card -->
                         <div style="background:rgba(0,255,136,0.08); border:1px solid rgba(0,255,136,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column; position:relative;">
                             <div id="rev-mqt-tag" style="position:absolute;top:8px;right:10px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.2);padding:2px 6px;border-radius:4px;">
-                                <span style="font-size:1.0rem;color:rgba(255,255,255,0.35);">MQT </span><span style="font-size:1.0rem;color:#00d4ff;font-family:monospace;font-weight:600;" id="rev-mqt">—</span>
+                                <span style="font-size:1.0rem;color:rgba(255,255,255,0.35);">MQT </span><span style="font-size:1.0rem;color:#00d4ff;font-family:inherit;font-weight:600;" id="rev-mqt">—</span>
                             </div>
                             <a href="/revenue" style="text-decoration:none;color:inherit;cursor:pointer;">
                                 <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.35rem;">
                                     <span style="font-size:1.2rem;">💰</span>
                                     <span style="font-size:1.1rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Cash Flow</span>
                                 </div>
-                                <div style="font-size:2.2rem; font-family:monospace; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-cashflow">—</div>
+                                <div style="font-size:2.2rem; font-family:inherit; font-weight:700; color:#00ff88; letter-spacing:0.02em;" id="rev-cashflow">—</div>
                                 <div style="font-size:1.1rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-cf-label">monthly</div>
                             </a>
                             <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-cf-daily" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-cf-weekly" style="color:#00c8ff;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-cf-yearly" style="color:#b829dd;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Staked</div><div id="rev-cf-staked" style="color:#ffaa00;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-cf-daily" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-cf-weekly" style="color:#00c8ff;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-cf-yearly" style="color:#b829dd;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Staked</div><div id="rev-cf-staked" style="color:#ffaa00;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;" id="rev-cf-detail">
                                 <div style="font-size:1.0rem; color:rgba(255,255,255,0.3);">Loading...</div>
@@ -1675,14 +1645,14 @@
                                     <span style="font-size:1.2rem;">📈</span>
                                     <span style="font-size:1.1rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Long-Term</span>
                                 </div>
-                                <div style="font-size:2.2rem; font-family:monospace; font-weight:700; color:#00c8ff; letter-spacing:0.02em;" id="rev-longterm">—</div>
+                                <div style="font-size:2.2rem; font-family:inherit; font-weight:700; color:#00c8ff; letter-spacing:0.02em;" id="rev-longterm">—</div>
                                 <div style="font-size:1.1rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="rev-lt-label">monthly</div>
                             </a>
                             <div style="display:flex;justify-content:space-between;text-align:center;gap:0.25rem;margin-top:0.5rem;padding:0.4rem 0;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-lt-daily" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-lt-weekly" style="color:#00c8ff;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-lt-yearly" style="color:#b829dd;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
-                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Profit</div><div id="rev-lt-profit" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:monospace;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Daily</div><div id="rev-lt-daily" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Weekly</div><div id="rev-lt-weekly" style="color:#00c8ff;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Yearly</div><div id="rev-lt-yearly" style="color:#b829dd;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
+                                <div><div style="color:rgba(255,255,255,0.3);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.03em;">Profit</div><div id="rev-lt-profit" style="color:#00ff88;font-size:1.2rem;font-weight:700;font-family:inherit;">—</div></div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:0.4rem; margin-top:0.5rem;" id="rev-lt-detail">
                                 <div style="font-size:1.0rem; color:rgba(255,255,255,0.3);">Loading...</div>
@@ -1694,7 +1664,7 @@
                                 <span style="font-size:1.2rem;">🎯</span>
                                 <span style="font-size:1.1rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Opportunities</span>
                             </div>
-                            <div style="font-size:2.2rem; font-family:monospace; font-weight:700; color:#00d4ff; letter-spacing:0.02em;" id="opp-count">—</div>
+                            <div style="font-size:2.2rem; font-family:inherit; font-weight:700; color:#00d4ff; letter-spacing:0.02em;" id="opp-count">—</div>
                             <div style="font-size:1.1rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="opp-label">active</div>
                             <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:0.5rem;" id="opp-list">
                                 <div style="font-size:1.0rem; color:rgba(255,255,255,0.3);">Loading...</div>
@@ -1706,7 +1676,7 @@
                                 <span style="font-size:1.2rem;">🔄</span>
                                 <span style="font-size:1.1rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">Pipelines</span>
                             </div>
-                            <div style="font-size:2.2rem; font-family:monospace; font-weight:700; color:#ff9500; letter-spacing:0.02em;" id="funnel-value">—</div>
+                            <div style="font-size:2.2rem; font-family:inherit; font-weight:700; color:#ff9500; letter-spacing:0.02em;" id="funnel-value">—</div>
                             <div style="font-size:1.1rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;" id="funnel-label">pipeline value</div>
                             <div style="display:flex; flex-direction:column; gap:0.35rem; margin-top:0.5rem;" id="funnel-stats">
                                 <div style="font-size:1.0rem; color:rgba(255,255,255,0.3);">Loading...</div>
@@ -1715,6 +1685,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- CRM Pipeline (EspoCRM — Phase 6) -->
+            <a href="https://crm.tvcpulse.com" target="_blank" style="text-decoration:none;color:inherit;background:rgba(0,212,255,0.07); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:0.75rem 0.85rem; display:flex; flex-direction:column; cursor:pointer;transition:all 0.2s;min-width:180px;" onmouseover="this.style.background='rgba(0,212,255,0.14)';this.style.borderColor='rgba(0,212,255,0.4)'" onmouseout="this.style.background='rgba(0,212,255,0.07)';this.style.borderColor='rgba(0,212,255,0.2)'">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.35rem;">
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span style="font-size:1.2rem;">🏛️</span>
+                        <span style="font-size:1.1rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.05em;">CRM</span>
+                    </div>
+                    <span id="crm-status-dot" style="font-size:0.6rem; color:rgba(255,255,255,0.25);">●</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.4rem; margin-bottom:0.35rem;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; color:#00d4ff; font-weight:700;" id="crm-new">—</div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.03em;">New</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; color:#00ff88; font-weight:700;" id="crm-inprocess">—</div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.03em;">Active</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem; color:#b829dd; font-weight:700;" id="crm-converted">—</div>
+                        <div style="font-size:0.7rem; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.03em;">Won</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-size:0.85rem; color:rgba(255,255,255,0.3);">
+                        <span id="crm-total">—</span> total
+                    </div>
+                    <div style="font-size:0.85rem; color:rgba(255,255,255,0.3);">
+                        Reply <span id="crm-reply-rate" style="color:#ff9500;">—</span>
+                    </div>
+                </div>
+            </a>
 
             <!-- YouTube Intel -->
             <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(255,200,60,0.25);">
@@ -1747,59 +1750,185 @@
                 </div>
             </div>
 
-            <!-- MQT Paper Trading Dashboard -->
-            <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(63,185,80,0.3);">
+            <!-- Smart Money Intel — Signal Feed -->
+            <div class="service-panel" style="margin-bottom:0.5rem; border:1px solid rgba(255,215,0,0.3);">
                 <div class="panel-header">
                     <div style="display:flex;align-items:center;gap:0.5rem;">
-                        <div class="panel-icon">📈</div>
-                        <div class="panel-title">MQT Paper Trading</div>
+                        <div class="panel-icon">📡</div>
+                        <div class="panel-title">Smart Money Intel</div>
+                        <span id="intel-signal-count" style="font-size:0.62rem;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:#ffd700;padding:2px 8px;border-radius:10px;font-weight:600;">—</span>
                     </div>
-                    <div style="margin-left:auto;display:flex;gap:0.4rem;align-items:center;">
-                        <span style="font-size:0.6rem;color:rgba(63,185,80,0.7);font-weight:600;background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.2);padding:2px 7px;border-radius:10px;">PAPER ONLY</span>
-                        <button onclick="fetchMQT()" style="font-size:0.65rem;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;cursor:pointer;">↻ Refresh</button>
+                    <div style="display:flex;gap:0.4rem;align-items:center;margin-left:auto;">
+                        <button id="intel-tab-buy" onclick="switchIntelTab('buy')" style="font-size:0.65rem;padding:4px 10px;background:rgba(0,255,136,0.18);border:1px solid rgba(0,255,136,0.5);border-radius:4px;color:#00ff88;cursor:pointer;font-weight:700;">↑ BUY</button>
+                        <button id="intel-tab-sell" onclick="switchIntelTab('sell')" style="font-size:0.65rem;padding:4px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:4px;color:rgba(255,255,255,0.4);cursor:pointer;">↓ SELL</button>
+                        <span style="font-size:0.62rem;color:rgba(255,255,255,0.3);" id="intel-last-updated">Live</span>
+                        <button onclick="loadSmartMoneyIntel()" style="font-size:0.65rem;padding:5px 10px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:4px;color:#ffd700;cursor:pointer;">↻</button>
                     </div>
                 </div>
-                <div style="padding:0.75rem 1rem;">
-                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.3);margin-bottom:0.6rem;">Live Avalanche DEX signal feed · MQT/USDT · Paper trading only · No real funds</p>
-                    <div id="mqt-widget" style="background:#0d1117;border:1px solid rgba(63,185,80,0.15);border-radius:8px;padding:1.2rem;">
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
-                            <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:1rem;text-align:center;">
-                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">MQT Price</div>
-                                <div id="mqt-price" style="font-size:2rem;font-family:monospace;font-weight:700;color:#3fb950;">—</div>
-                                <div id="mqt-change" style="font-size:1rem;color:rgba(255,255,255,0.4);margin-top:0.2rem;">—</div>
+                <div style="padding:0 1rem 1rem;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.68rem;">
+                        <thead>
+                            <tr style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">
+                                <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Source</th>
+                                <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Asset</th>
+                                <th style="text-align:center;padding:4px 8px 6px;font-weight:500;">Action</th>
+                                <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Amount</th>
+                                <th style="text-align:right;padding:4px 8px 6px;font-weight:500;">Score</th>
+                                <th style="text-align:left;padding:4px 8px 6px;font-weight:500;">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="intel-signals-body">
+                            <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">Loading smart money signals…</td></tr>
+                        </tbody>
+                    </table>
+                    <div id="intel-error" style="display:none;margin-top:0.5rem;font-size:0.65rem;color:#ff6b6b;padding:6px 10px;background:rgba(255,0,0,0.08);border-radius:5px;"></div>
+                </div>
+            </div>
+
+            <!-- ⚔️ MQT vs SMI — Head-to-Head (unified parent panel) -->
+            <div class="service-panel" style="margin-bottom:1.5rem; border:1px solid rgba(100,180,255,0.3);">
+                <div class="panel-header">
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div class="panel-icon">⚔️</div>
+                        <div class="panel-title">MQT vs SMI — Head-to-Head</div>
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.35);">daily snapshots · normalized to $1,000</span>
+                    </div>
+                    <div style="margin-left:auto;display:flex;gap:0.4rem;align-items:center;">
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);padding:2px 7px;border-radius:10px;">PAPER ONLY</span>
+                        <button onclick="fetchMQT();fetchSMI();fetchComparison();" style="font-size:0.65rem;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:2px 8px;cursor:pointer;">↻ Refresh All</button>
+                    </div>
+                </div>
+
+                <!-- Scoreboard row -->
+                <div style="padding:1rem 1rem 0.5rem;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.75rem;">
+                        <div style="background:rgba(63,185,80,0.07);border:1px solid rgba(63,185,80,0.2);border-radius:8px;padding:0.8rem;text-align:center;">
+                            <div style="font-size:0.6rem;color:rgba(63,185,80,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;">🪙 MQT (Crypto)</div>
+                            <div id="cmp-mqt-value" style="font-size:1.8rem;font-weight:700;color:#3fb950;font-variant-numeric:tabular-nums;">$—</div>
+                            <div id="cmp-mqt-pnl" style="font-size:0.8rem;margin-top:0.2rem;color:rgba(255,255,255,0.4);">—</div>
+                        </div>
+                        <div style="background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:0.8rem;text-align:center;">
+                            <div style="font-size:0.6rem;color:rgba(255,215,0,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;">📡 SMI (Stocks)</div>
+                            <div id="cmp-smi-value" style="font-size:1.8rem;font-weight:700;color:#ffd700;font-variant-numeric:tabular-nums;">$—</div>
+                            <div id="cmp-smi-pnl" style="font-size:0.8rem;margin-top:0.2rem;color:rgba(255,255,255,0.4);">—</div>
+                        </div>
+                    </div>
+                    <div id="cmp-leader-banner" style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.75rem;">Loading…</div>
+                    <div id="cmp-chart-wrap" style="display:none;">
+                        <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">Daily PnL %</div>
+                        <canvas id="cmp-chart" height="70" style="width:100%;display:block;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sub-panes: MQT (left) + SMI (right) -->
+                <div style="padding:0.75rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+                    <!-- MQT sub-pane -->
+                    <div style="background:rgba(63,185,80,0.04);border:1px solid rgba(63,185,80,0.2);border-radius:10px;padding:0.9rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem;">
+                            <div style="font-size:0.62rem;color:rgba(63,185,80,0.8);text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">🪙 MQT Paper Trading</div>
+                            <span id="mqt-updated" style="font-size:0.58rem;color:rgba(255,255,255,0.25);">Loading...</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem;">
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Price</div>
+                                <div id="mqt-price" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#3fb950;">—</div>
+                                <div id="mqt-change" style="font-size:0.6rem;color:rgba(255,255,255,0.35);margin-top:0.1rem;">—</div>
                             </div>
-                            <div style="background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.2);border-radius:8px;padding:1rem;text-align:center;">
-                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">10-Day MA</div>
-                                <div id="mqt-ma" style="font-size:2rem;font-family:monospace;font-weight:700;color:#00c8ff;">—</div>
-                                <div id="mqt-signal" style="font-size:1rem;margin-top:0.2rem;">—</div>
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">10-Day MA</div>
+                                <div id="mqt-ma" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#00c8ff;">—</div>
+                                <div id="mqt-signal" style="font-size:0.6rem;margin-top:0.1rem;">—</div>
                             </div>
-                            <div style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.2);border-radius:8px;padding:1rem;text-align:center;">
-                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.3rem;">Paper Portfolio</div>
-                                <div id="mqt-balance" style="font-size:2rem;font-family:monospace;font-weight:700;color:#ff9500;">—</div>
-                                <div id="mqt-pnl" style="font-size:1rem;color:rgba(255,255,255,0.4);margin-top:0.2rem;">—</div>
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Portfolio</div>
+                                <div id="mqt-balance" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#ff9500;">—</div>
+                                <div id="mqt-pnl" style="font-size:0.6rem;color:rgba(255,255,255,0.35);margin-top:0.1rem;">—</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">24h Vol</div>
+                                <div id="mqt-volume" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:rgba(255,255,255,0.6);">—</div>
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.2);margin-top:0.1rem;">Liq: <span id="mqt-liquidity">—</span></div>
                             </div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:1rem;">
-                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Position</div>
-                                <div id="mqt-position" style="font-size:1rem;color:rgba(255,255,255,0.7);">No open position</div>
+                        <!-- Open Position -->
+                        <div style="margin-bottom:0.5rem;">
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.35rem;">Open Position</div>
+                            <div id="mqt-position" style="font-size:0.68rem;color:rgba(255,255,255,0.6);">No open position</div>
+                        </div>
+                        <!-- Strategy -->
+                        <div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.35rem;">Strategy</div>
+                            <div style="font-size:0.65rem;color:rgba(255,255,255,0.45);line-height:1.5;">Buy: 5% below MA · Sell: 15% up or 8% trailing stop · Max hold: 10 days</div>
+                        </div>
+                    </div>
+
+                    <!-- SMI sub-pane -->
+                    <div style="background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.25);border-radius:10px;padding:0.9rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem;">
+                            <div style="font-size:0.62rem;color:rgba(255,215,0,0.8);text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">📡 SMI Paper Trading</div>
+                            <span id="smi-days-badge" style="font-size:0.58rem;color:rgba(255,215,0,0.7);background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);padding:2px 6px;border-radius:8px;">Day —</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem;">
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Portfolio</div>
+                                <div id="smi-total-value" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#ffd700;">$—</div>
+                                <div id="smi-pnl-pct" style="font-size:0.6rem;margin-top:0.1rem;color:rgba(255,255,255,0.35);">—</div>
                             </div>
-                            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:1rem;">
-                                <div style="font-size:0.9rem;color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Strategy</div>
-                                <div style="font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.6;">
-                                    Buy: 5% below MA · Sell: 15% up or 8% trailing stop · Max hold: 10 days
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Cash</div>
+                                <div id="smi-balance" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#00ff88;">$—</div>
+                                <div style="font-size:0.6rem;color:rgba(255,255,255,0.25);">available</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Realized PnL</div>
+                                <div id="smi-total-pnl" style="font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:#fff;">$—</div>
+                                <div id="smi-trade-counts" style="font-size:0.6rem;color:rgba(255,255,255,0.25);">— trades</div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:0.6rem;text-align:center;">
+                                <div style="font-size:0.55rem;color:rgba(255,255,255,0.35);margin-bottom:0.2rem;">Progress</div>
+                                <div id="smi-progress-bar-wrap" style="background:rgba(255,255,255,0.08);border-radius:3px;height:5px;margin:0.35rem 0;">
+                                    <div id="smi-progress-bar" style="height:5px;border-radius:3px;background:linear-gradient(90deg,#ffd700,#ff9500);width:0%;transition:width 0.5s;"></div>
                                 </div>
+                                <div id="smi-days-left" style="font-size:0.6rem;color:rgba(255,255,255,0.4);">— days left</div>
                             </div>
                         </div>
-                        <div style="margin-top:0.8rem;display:flex;justify-content:space-between;align-items:center;">
-                            <span id="mqt-updated" style="font-size:0.75rem;color:rgba(255,255,255,0.2);">Loading...</span>
-                            <div style="display:flex;gap:0.4rem;">
-                                <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);">24h Vol:</span>
-                                <span id="mqt-volume" style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-family:monospace;">—</span>
-                                <span style="font-size:0.75rem;color:rgba(255,255,255,0.2);margin-left:0.5rem;">Liq:</span>
-                                <span id="mqt-liquidity" style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-family:monospace;">—</span>
+                        <!-- Open Positions -->
+                        <div style="margin-bottom:0.5rem;">
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.35rem;">Open Positions</div>
+                            <div id="smi-positions" style="font-size:0.68rem;">
+                                <div style="color:rgba(255,255,255,0.2);font-style:italic;">Loading…</div>
                             </div>
                         </div>
+                        <!-- Recent Trades -->
+                        <div>
+                            <div style="font-size:0.55rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.35rem;">Recent Trades</div>
+                            <div id="smi-trades" style="font-size:0.65rem;">
+                                <div style="color:rgba(255,255,255,0.2);font-style:italic;">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History table -->
+                <div style="padding:0 1rem 1rem;">
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.07em;font-weight:600;margin-bottom:0.6rem;">Daily Snapshot History</div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                            <thead>
+                                <tr style="color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;font-size:0.7rem;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.08);">
+                                    <th style="text-align:left;padding:8px 10px;">Date</th>
+                                    <th style="text-align:right;padding:8px 10px;">MQT $</th>
+                                    <th style="text-align:right;padding:8px 10px;">MQT %</th>
+                                    <th style="text-align:right;padding:8px 10px;">SMI $</th>
+                                    <th style="text-align:right;padding:8px 10px;">SMI %</th>
+                                    <th style="text-align:center;padding:8px 10px;">Leader</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cmp-history-body">
+                                <tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:16px;font-size:0.8rem;">Loading…</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2501,8 +2630,8 @@
                 <div style="background:#13131f;border:1px solid rgba(255,255,255,0.11);border-radius:14px;width:min(800px,92vw);max-height:82vh;display:flex;flex-direction:column;box-shadow:0 28px 90px rgba(0,0,0,0.85);">
                     <div style="display:flex;align-items:center;gap:8px;padding:0.7rem 0.9rem;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
                         <span style="font-size:0.9rem;">📄</span>
-                        <span id="modal-filename" style="font-weight:700;font-size:0.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;"></span>
-                        <span id="modal-stage-badge" style="font-size:0.68rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-family:monospace;flex-shrink:0;"></span>
+                        <span id="modal-filename" style="font-weight:700;font-size:0.78rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:inherit;"></span>
+                        <span id="modal-stage-badge" style="font-size:0.68rem;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-family:inherit;flex-shrink:0;"></span>
                         <!-- TTS Controls -->
                         <div id="tts-controls" style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
                             <button id="tts-play-btn" onclick="ttsToggle()" title="Read aloud" style="background:rgba(0,200,120,0.12);border:1px solid rgba(0,200,120,0.25);color:#00c878;font-size:0.72rem;padding:3px 10px;border-radius:4px;cursor:pointer;">▶ Read</button>
@@ -4124,7 +4253,7 @@
                         html += `<div style="display:flex;align-items:center;gap:0.4rem;padding:0.25rem 0.4rem;font-size:0.72rem;">`;
                         html += `<span class="pulse-dot ${dotClass}" style="width:6px;height:6px;${dotStyle}"></span>`;
                         html += `<span style="flex:1;color:rgba(255,255,255,0.7);">${shortLabel}</span>`;
-                        html += `<span style="font-size:0.6rem;color:${statusColor};font-family:monospace;">${statusText}</span>`;
+                        html += `<span style="font-size:0.6rem;color:${statusColor};font-family:inherit;">${statusText}</span>`;
                         html += `</div>`;
                     });
                     html += `</div></div>`;
@@ -4297,7 +4426,7 @@
                     const agoText = ago < 1 ? 'just now' : ago + 'h ago';
                     return '<a href="' + (n.url || '#') + '" target="_blank" style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.5rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:8px;text-decoration:none;transition:border-color 0.2s;cursor:pointer;" onmouseover="this.style.borderColor=\'rgba(255,200,60,0.3)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.07)\'">' +
                         '<span style="font-size:0.7rem;font-weight:700;color:' + verdictColor + ';min-width:35px;">' + (n.verdict || '?') + '</span>' +
-                        '<span style="font-size:0.75rem;font-weight:700;color:' + scoreColor + ';font-family:monospace;min-width:22px;">' + n.score + '</span>' +
+                        '<span style="font-size:0.75rem;font-weight:700;color:' + scoreColor + ';font-family:inherit;min-width:22px;">' + n.score + '</span>' +
                         '<span style="font-size:0.72rem;color:rgba(255,255,255,0.75);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (n.title || '?') + '</span>' +
                         '<span style="font-size:0.6rem;color:rgba(255,255,255,0.25);white-space:nowrap;">' + agoText + '</span>' +
                     '</a>';
@@ -4305,9 +4434,8 @@
             } catch(e) {}
         }
 
-        // Load on startup
+        // Load on startup (WS push takes over after connect)
         fetchYtIntelRecent();
-        setInterval(fetchYtIntelRecent, 120000);
 
         // ── Revenue & Pipeline tile ──────────────────────────────────────────
         async function fetchRevenuePipeline() {
@@ -4344,11 +4472,11 @@
                         return `<div style="background:rgba(255,255,255,0.03);border:1px solid ${borderColor};border-radius:6px;padding:0.5rem 0.6rem;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
                                 <span style="font-size:0.65rem;font-weight:600;color:#e0e0e0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;">${name}</span>
-                                <a href="${url}" target="_blank" style="font-size:0.65rem;color:${roiColor};font-family:monospace;font-weight:600;text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">${arrow || '↗'} ${roi !== '—' ? roi : 'Open'}</a>
+                                <a href="${url}" target="_blank" style="font-size:0.65rem;color:${roiColor};font-family:inherit;font-weight:600;text-decoration:none;padding:2px 6px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">${arrow || '↗'} ${roi !== '—' ? roi : 'Open'}</a>
                             </div>
                             <div style="display:flex;justify-content:space-between;font-size:0.65rem;">
-                                <span style="color:rgba(255,255,255,0.35);">Daily <span style="color:#00ff88;font-family:monospace;font-weight:600;">${fmtCur(daily)}</span></span>
-                                <span style="color:rgba(255,255,255,0.35);">Monthly <span style="color:#00c8ff;font-family:monospace;font-weight:600;">${fmtCur(monthly)}</span></span>
+                                <span style="color:rgba(255,255,255,0.35);">Daily <span style="color:#00ff88;font-family:inherit;font-weight:600;">${fmtCur(daily)}</span></span>
+                                <span style="color:rgba(255,255,255,0.35);">Monthly <span style="color:#00c8ff;font-family:inherit;font-weight:600;">${fmtCur(monthly)}</span></span>
                             </div>
                         </div>`;
                     };
@@ -4393,7 +4521,7 @@
                     list.innerHTML = oppList.slice(0, 5).map(o =>
                         `<div style="display:flex;justify-content:space-between;font-size:0.95rem;padding:0.15rem 0;">
                             <span style="color:rgba(255,255,255,0.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%;">${o.name || '?'}</span>
-                            <span style="color:rgba(0,212,255,0.8);font-family:monospace;font-weight:600;flex-shrink:0;">${o.stage || o.estimated_roi_tier || '—'}</span>
+                            <span style="color:rgba(0,212,255,0.8);font-family:inherit;font-weight:600;flex-shrink:0;">${o.stage || o.estimated_roi_tier || '—'}</span>
                         </div>`
                     ).join('');
                 } else {
@@ -4416,7 +4544,7 @@
                         stats.innerHTML = activeStages.map(([name, count]) =>
                             `<div style="display:flex;justify-content:space-between;font-size:0.95rem;padding:0.15rem 0;">
                                 <span style="color:rgba(255,255,255,0.55);">${name}</span>
-                                <span style="color:rgba(255,149,0,0.8);font-family:monospace;font-weight:600;">${count}</span>
+                                <span style="color:rgba(255,149,0,0.8);font-family:inherit;font-weight:600;">${count}</span>
                             </div>`
                         ).join('');
                     } else {
@@ -4426,6 +4554,28 @@
             } catch(e) { failures++;
                 document.getElementById('funnel-value').textContent = '—';
                 document.getElementById('funnel-stats').innerHTML = '<div style="font-size:0.6rem;color:#ff4444;">Failed to load</div>';
+            }
+            // Row 1: EspoCRM Pipeline
+            try {
+                const cr = await fetch('/mc/crm').then(r => r.json());
+                if (cr.error) {
+                    document.getElementById('crm-new').textContent = '!';
+                    document.getElementById('crm-inprocess').textContent = '!';
+                    document.getElementById('crm-converted').textContent = '!';
+                    document.getElementById('crm-total').textContent = 'ERR';
+                    document.getElementById('crm-status-dot').style.color = '#ff4444';
+                } else {
+                    document.getElementById('crm-new').textContent = cr.counts?.New ?? '—';
+                    document.getElementById('crm-inprocess').textContent = cr.counts?.['In Process'] ?? '—';
+                    document.getElementById('crm-converted').textContent = cr.counts?.Converted ?? '—';
+                    document.getElementById('crm-total').textContent = cr.total ?? '—';
+                    document.getElementById('crm-reply-rate').textContent = (cr.replyRate ?? '—') + '%';
+                    document.getElementById('crm-status-dot').style.color = cr.total > 0 ? '#00d4ff' : 'rgba(255,255,255,0.25)';
+                }
+            } catch(e) {
+                document.getElementById('crm-new').textContent = '!';
+                document.getElementById('crm-total').textContent = 'ERR';
+                document.getElementById('crm-status-dot').style.color = '#ff4444';
             }
             // Status-color the Revenue button
             const revBtn = document.getElementById('revenue-btn');
@@ -4774,7 +4924,7 @@
                                 <div class="sp-meta">
                                     <span class="sp-badge ${trig}">${trig}</span>
                                     <span class="sp-status${wf.active?'':' off'}">${wf.active?'Active':'Inactive'}</span>
-                                    ${wfNum ? `<span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.2);font-family:monospace;">${wfNum}</span>` : ''}
+                                    ${wfNum ? `<span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.2);font-family:inherit;">${wfNum}</span>` : ''}
                                 </div>
                             </div>`;
                         }).join('');
@@ -4811,6 +4961,69 @@
 
         // ── Smart Money Intel Widget ──────────────────────────────────────────────
         const INTEL_SIGNALS_URL = '/mc/smart-money-intel';
+        let _intelData = null;  // cached response
+        let _intelTab = 'buy';  // active tab
+
+        function switchIntelTab(tab) {
+            _intelTab = tab;
+            const buyBtn  = document.getElementById('intel-tab-buy');
+            const sellBtn = document.getElementById('intel-tab-sell');
+            if (tab === 'buy') {
+                buyBtn.style.background  = 'rgba(0,255,136,0.18)';
+                buyBtn.style.border      = '1px solid rgba(0,255,136,0.5)';
+                buyBtn.style.color       = '#00ff88';
+                sellBtn.style.background = 'rgba(255,255,255,0.05)';
+                sellBtn.style.border     = '1px solid rgba(255,255,255,0.12)';
+                sellBtn.style.color      = 'rgba(255,255,255,0.4)';
+            } else {
+                sellBtn.style.background = 'rgba(255,77,109,0.18)';
+                sellBtn.style.border     = '1px solid rgba(255,77,109,0.5)';
+                sellBtn.style.color      = '#ff4d6d';
+                buyBtn.style.background  = 'rgba(255,255,255,0.05)';
+                buyBtn.style.border      = '1px solid rgba(255,255,255,0.12)';
+                buyBtn.style.color       = 'rgba(255,255,255,0.4)';
+            }
+            if (_intelData) renderIntelSignals(_intelData);
+        }
+
+        function renderIntelSignals(d) {
+            const tbody = document.getElementById('intel-signals-body');
+            const count = document.getElementById('intel-signal-count');
+            const signals = _intelTab === 'sell'
+                ? (d.top_sells || []).slice(0, 10)
+                : (d.top_signals || []).slice(0, 10);
+            if (!signals.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">No signals available.</td></tr>';
+                count.textContent = '0';
+                return;
+            }
+            const label = _intelTab === 'sell' ? `${signals.length} exits` : `${signals.length} signals`;
+            count.textContent = label;
+            tbody.innerHTML = signals.map(s => {
+                const action = s.action || '—';
+                const ticker = s.ticker || '—';
+                const amount = s.amount_usd || 0;
+                const score  = s.score  || 0;
+                const date   = s.date   || '—';
+                const meta   = s.meta   || {};
+                const sector = meta.sector || s.sector || '';
+                const sectorTag = sector
+                    ? `<span style="font-size:0.58rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);margin-left:4px;">${sector}</span>`
+                    : '';
+                // For sells: show who is selling in meta
+                const metaNote = _intelTab === 'sell' && (meta.owner || meta.rep)
+                    ? `<div style="font-size:0.58rem;color:rgba(255,255,255,0.3);margin-top:1px;">${meta.owner || meta.rep}</div>`
+                    : '';
+                return `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                    <td style="padding:6px 8px;">${sourceTag(s.source || 'unknown')}</td>
+                    <td style="padding:6px 8px;font-weight:700;color:#fff;letter-spacing:0.03em;">${ticker}${sectorTag}${metaNote}</td>
+                    <td style="padding:6px 8px;text-align:center;">${actionStyle(action)}</td>
+                    <td style="padding:6px 8px;text-align:right;color:rgba(255,255,255,0.75);">${fmtAmount(amount)}</td>
+                    <td style="padding:6px 8px;text-align:right;font-weight:700;color:${scoreColor(score)};">${score.toFixed(2)}</td>
+                    <td style="padding:6px 8px;color:rgba(255,255,255,0.3);font-size:0.62rem;">${date}</td>
+                </tr>`;
+            }).join('');
+        }
 
         function actionStyle(action) {
             if (action === 'BUY') return '<span style="color:#00ff88;font-weight:700;">BUY</span>';
@@ -4847,47 +5060,18 @@
         }
 
         async function loadSmartMoneyIntel() {
-            const tbody  = document.getElementById('intel-signals-body');
             const errBox = document.getElementById('intel-error');
-            const count  = document.getElementById('intel-signal-count');
             const stamp  = document.getElementById('intel-last-updated');
+            const tbody  = document.getElementById('intel-signals-body');
             if (!tbody) return;
             errBox.style.display = 'none';
             try {
                 const r = await fetch(INTEL_SIGNALS_URL);
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                const d = await r.json();
-                const signals = (d.top_signals || []).slice(0, 10);
-                if (!signals.length) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:20px 0;">No signals available.</td></tr>';
-                    count.textContent = '0';
-                    return;
-                }
-                count.textContent = `${signals.length} signals`;
+                _intelData = await r.json();
                 const now = new Date();
                 stamp.textContent = `Updated ${now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
-                tbody.innerHTML = signals.map(s => {
-                    const action = s.action || '—';
-                    const source = s.source || 'unknown';
-                    const ticker = s.ticker || '—';
-                    const amount = s.amount_usd || 0;
-                    const score  = s.score  || 0;
-                    const date   = s.date   || '—';
-                    const meta   = s.meta   || {};
-                    // Sector badge
-                    const sector = meta.sector || '';
-                    const sectorTag = sector
-                        ? `<span style="font-size:0.58rem;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);margin-left:4px;">${sector}</span>`
-                        : '';
-                    return `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:6px 8px;">${sourceTag(source)}</td>
-                        <td style="padding:6px 8px;font-weight:700;color:#fff;letter-spacing:0.03em;">${ticker}${sectorTag}</td>
-                        <td style="padding:6px 8px;text-align:center;">${actionStyle(action)}</td>
-                        <td style="padding:6px 8px;text-align:right;color:rgba(255,255,255,0.75);">${fmtAmount(amount)}</td>
-                        <td style="padding:6px 8px;text-align:right;font-weight:700;color:${scoreColor(score)};">${score.toFixed(2)}</td>
-                        <td style="padding:6px 8px;color:rgba(255,255,255,0.3);font-size:0.62rem;">${date}</td>
-                    </tr>`;
-                }).join('');
+                renderIntelSignals(_intelData);
             } catch(e) {
                 errBox.style.display = 'block';
                 errBox.textContent = '⚠️ Could not load signals: ' + e.message;
@@ -5369,7 +5553,7 @@
                         const modelFull = s?.model || agentModelConfig[agent.id] || 'ollama/minimax-m2.7:cloud';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
-                            <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
+                            <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:inherit;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
                         </div>`;
                     } else {
                         // Sidney: show main agent's model with same color logic
@@ -5377,7 +5561,7 @@
                         const mainFull = mainSess?.model || agentModelConfig['main'] || 'ollama/minimax-m2.7:cloud';
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,215,0,0.35);text-transform:uppercase;letter-spacing:0.05em;">Main</span>
-                            <span style="font-size:0.68rem;color:${modelColorFor(mainFull)};font-family:monospace;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
+                            <span style="font-size:0.68rem;color:${modelColorFor(mainFull)};font-family:inherit;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${mainFull}">${modelDisplayFor(mainFull)}</span>
                         </div>`;
                     }
 
@@ -5398,7 +5582,7 @@
                             return `<div style="display:flex;align-items:center;gap:4px;">
                                 <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
                                 <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);">${dv.icon} ${dv.label}</span>
-                                <span style="margin-left:auto;font-size:0.62rem;color:${stColor};font-family:monospace;">${st}</span>
+                                <span style="margin-left:auto;font-size:0.62rem;color:${stColor};font-family:inherit;">${st}</span>
                             </div>`;
                         }).join('');
                         daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,215,0,0.1);display:flex;flex-direction:column;gap:2px;">
@@ -5413,7 +5597,7 @@
                             return `<div style="display:flex;align-items:center;gap:4px;">
                                 <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
                                 <span style="font-size:0.65rem;color:rgba(255,255,255,0.45);">${dm.short}</span>
-                                <span style="margin-left:auto;font-size:0.62rem;color:${ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.6)'};font-family:monospace;">${st}</span>
+                                <span style="margin-left:auto;font-size:0.62rem;color:${ok ? 'rgba(0,255,136,0.5)' : 'rgba(255,68,68,0.6)'};font-family:inherit;">${st}</span>
                             </div>`;
                         }).join('');
                         daemonHtml = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:2px;">
@@ -5485,7 +5669,7 @@
                                     const pIcon = tk.isOverdue ? '<span style="color:#ff6b6b;">❗</span>' : tk.priority === 'Critical' ? '<span style="color:#f87171;">!!</span>' : '<span style="color:#fb923c;">!</span>';
                                     const nameShort = tk.name.length > 22 ? tk.name.slice(0,20) + '…' : tk.name;
                                     const notionUrl = tk.pageId ? `https://www.notion.so/${tk.pageId.replace(/-/g, '')}` : '';
-                                    const taskIdTag = tk.id ? (notionUrl ? `<a href="${notionUrl}" target="_blank" style="color:#555;font-size:0.7rem;font-family:monospace;text-decoration:none;" onmouseover="this.style.color='#00b4d8'" onmouseout="this.style.color='#555'">TASK-${tk.id}</a>` : `<code style="color:#555;font-size:0.7rem;">TASK-${tk.id}</code>`) : '';
+                                    const taskIdTag = tk.id ? (notionUrl ? `<a href="${notionUrl}" target="_blank" style="color:#555;font-size:0.7rem;font-family:inherit;text-decoration:none;" onmouseover="this.style.color='#00b4d8'" onmouseout="this.style.color='#555'">TASK-${tk.id}</a>` : `<code style="color:#555;font-size:0.7rem;">TASK-${tk.id}</code>`) : '';
                                     const dueTag = tk.dueDate ? `<code style="color:#555;font-size:0.7rem;">${tk.dueDate}</code>` : '';
                                     return `<li style="margin-bottom:8px;" title="${tk.name}">
                                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px;">
@@ -6046,7 +6230,7 @@
 
                     // Title bar
                     col += `<div style="padding:5px 7px;background:${meta.accent};border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                        <span style="font-size:0.62rem;font-weight:700;color:${meta.color};font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${stage}">${stage}</span>
+                        <span style="font-size:0.62rem;font-weight:700;color:${meta.color};font-family:inherit;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${stage}">${stage}</span>
                         <button onclick="fetch('/mc/pipeline/open-finder?stage=${encodeURIComponent(stage)}')" title="Open in Finder" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.65rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">🔍</button>
                         ${next && files.length > 0 ? `<button onclick="(async()=>{for(const f of ${JSON.stringify(files)})await movePipelineFile(f,${JSON.stringify(stage)},${JSON.stringify(next)});fetchPipeline();})()" title="Move all to next" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);font-size:0.65rem;padding:1px 5px;border-radius:3px;cursor:pointer;flex-shrink:0;">→ all</button>` : ''}
                     </div>`;
@@ -6200,11 +6384,7 @@
             }
         }
 
-        // Auto-refresh pipeline every 30s
-        setInterval(fetchPipeline, 30000);
-
-        // Auto-refresh Jake inbox every 5 minutes
-        setInterval(fetchJakeInbox, 300000);
+        // pipeline + jake-inbox refresh managed by WS push / fallback timers
 
         // ── /mc/digitalocean-status → droplet health metrics ──────────────
         async function fetchDOMetrics(forceRefresh) {
@@ -6240,7 +6420,7 @@
                     const width = Math.min(100, Math.max(0, pct));
                     return `<div style="margin-bottom:0.3rem;">
                         <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.5);margin-bottom:3px;">
-                            <span>${label}</span><span style="color:rgba(255,255,255,0.7);font-family:monospace;">${rightLabel}</span>
+                            <span>${label}</span><span style="color:rgba(255,255,255,0.7);font-family:inherit;">${rightLabel}</span>
                         </div>
                         <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
                             <div style="width:${width}%;height:100%;background:${color};border-radius:3px;transition:width 0.5s;"></div>
@@ -6263,7 +6443,7 @@
                     const loadColor = d.load1 >= 2 ? '#ff4444' : d.load1 >= 1 ? '#f5a623' : '#00ff88';
                     html += `<div style="display:flex;justify-content:space-between;font-size:0.6rem;margin-top:0.1rem;">
                         <span style="color:rgba(255,255,255,0.5);">LOAD</span>
-                        <span style="font-family:monospace;color:${loadColor};font-weight:600;">${d.load1}${d.dropletName ? ` · ${d.dropletName}` : ''}</span>
+                        <span style="font-family:inherit;color:${loadColor};font-weight:600;">${d.load1}${d.dropletName ? ` · ${d.dropletName}` : ''}</span>
                     </div>`;
                 }
                 panel.innerHTML = html;
@@ -6297,8 +6477,8 @@
                     return `<div style="display:flex;align-items:center;gap:0.35rem;">
                         <span style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;"></span>
                         <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);">${dev.name}</span>
-                        <span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.3);font-family:monospace;">${dev.ip || ''}</span>
-                        <span style="font-size:0.62rem;color:${color};font-family:monospace;">${label}</span>
+                        <span style="margin-left:auto;font-size:0.62rem;color:rgba(255,255,255,0.3);font-family:inherit;">${dev.ip || ''}</span>
+                        <span style="font-size:0.62rem;color:${color};font-family:inherit;">${label}</span>
                     </div>`;
                 }).join('');
                 // Drive n8n tile dot from Tailscale status of n8n-TVC
@@ -6340,8 +6520,8 @@
                     html += `<div style="display:flex;align-items:center;gap:0.35rem;">
                         <span style="width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;box-shadow:0 0 4px ${dot};"></span>
                         <a href="${url}" target="_blank" style="font-size:0.62rem;color:rgba(255,255,255,0.7);flex:1;text-decoration:none;cursor:pointer;" onmouseover="this.style.color='#00ff88'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">${s.label}</a>
-                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);font-family:monospace;">${s.time}</span>
-                        <span style="font-size:0.6rem;color:${sslColor};font-family:monospace;">${sslText}</span>
+                        <span style="font-size:0.6rem;color:rgba(255,255,255,0.5);font-family:inherit;">${s.time}</span>
+                        <span style="font-size:0.6rem;color:${sslColor};font-family:inherit;">${sslText}</span>
                     </div>`;
                 });
                 list.innerHTML = html;
@@ -6392,7 +6572,7 @@
                     const width = Math.min(100, Math.max(0, pct));
                     return `<div style="margin-bottom:0.3rem;">
                         <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:rgba(255,255,255,0.5);margin-bottom:3px;">
-                            <span>${label}</span><span style="color:rgba(255,255,255,0.7);font-family:monospace;">${rightLabel}</span>
+                            <span>${label}</span><span style="color:rgba(255,255,255,0.7);font-family:inherit;">${rightLabel}</span>
                         </div>
                         <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
                             <div style="width:${width}%;height:100%;background:${color};border-radius:3px;transition:width 0.5s;"></div>
@@ -6426,7 +6606,7 @@
                 const loadColor = loadVal >= 2 ? '#ff4444' : loadVal >= 1 ? '#f5a623' : '#00ff88';
                 html += `<div style="display:flex;justify-content:space-between;font-size:0.6rem;margin-top:0.1rem;">
                     <span style="color:rgba(255,255,255,0.5);">LOAD</span>
-                    <span style="font-family:monospace;color:${loadColor};font-weight:600;">${d.load} · Contabo</span>
+                    <span style="font-family:inherit;color:${loadColor};font-weight:600;">${d.load} · Contabo</span>
                 </div>`;
                 panel.innerHTML = html;
             } catch(e) {
@@ -6683,8 +6863,8 @@
                         const ts = r.timestamp ? new Date(r.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
                         const stratShort = (r.strategy || '').length > 55 ? r.strategy.substring(0, 52) + '...' : (r.strategy || '');
                         return `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.68rem;padding:0.25rem 0.4rem;background:rgba(255,255,255,0.02);border-radius:5px;">
-                            <span style="color:${statusColor};font-weight:700;font-family:monospace;width:12px;text-align:center;">${statusIcon}</span>
-                            <span style="color:rgba(255,255,255,0.5);font-family:monospace;min-width:52px;">${r.exp_id}</span>
+                            <span style="color:${statusColor};font-weight:700;font-family:inherit;width:12px;text-align:center;">${statusIcon}</span>
+                            <span style="color:rgba(255,255,255,0.5);font-family:inherit;min-width:52px;">${r.exp_id}</span>
                             <span style="color:${scoreColor};font-weight:600;min-width:32px;">${r.score ? r.score.toFixed(1) : '0'}</span>
                             <span style="color:rgba(255,255,255,0.35);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.strategy || ''}">${stratShort}</span>
                             <span style="color:rgba(255,255,255,0.2);font-size:0.6rem;">${ts}</span>
@@ -6773,23 +6953,18 @@
                 _mcBatch = {};
             }
 
+            // Fast group: all use batch cache — paints the page immediately
             await Promise.all([
                 fetchStatus(),
-                fetchDWEStats(),
                 fetchNotionMetrics(),
                 fetchSprintStatus(),
-                fetchServices(),
                 fetchLaunchd(),
                 fetchDaemonHealth(),
-                fetchCrons(),
                 fetchAgents(),
                 fetchBrain(),
                 fetchMigration(),
                 fetchSystem(),
-                fetchTeamOverview(),
                 fetchHeartbeats(),
-                fetchAgentTasks(),
-                fetchAgentSessions(),
                 fetchCSoPipeline(),
                 fetchFinancialPulse(),
                 fetchPipeline(),
@@ -6797,17 +6972,28 @@
                 updateOCBackupTime(),
                 fetchInternet(),
                 fetchOpenclawVersion(),
-                fetchRevenuePipeline(),
                 fetchN8nWorkflows(),
                 fetchTailscale(),
-                fetchN8nUptime(),
-                fetchEmailOptimizer(),
                 fetchGA4(),
                 fetchJarvisStats()
             ]);
 
-            // Clear cache after cycle so next manual clicks go to network
+            // Clear batch cache — fast group is done, slow group hits server cache
             _mcBatch = {};
+
+            // Slow group: fire-and-forget after initial paint
+            // These hit server-side cache so repeat loads are fast
+            Promise.all([
+                fetchDWEStats(),         // /dwe/status ~3.6s
+                fetchTeamOverview(),     // /mc/agent-tasks ~19s cold, /mc/acp ~9s cold
+                fetchAgentTasks(),       // agent task panel (separate from team overview)
+                fetchAgentSessions(),
+                fetchRevenuePipeline(),  // /mc/income-ops ~1s
+                fetchN8nUptime(),        // /mc/n8n-uptime ~5s
+                fetchServices(),         // /mc/services ~3s
+                fetchCrons(),            // /mc/crons ~5s
+                fetchEmailOptimizer(),
+            ]).catch(() => {});
         }
 
         async function fetchJarvisStats() {
@@ -8023,8 +8209,7 @@
                 }
             } catch(e) {}
         }
-        fetchVisionScore();
-        setInterval(fetchVisionScore, 300000);
+        fetchVisionScore(); // WS push takes over after connect
 
         // ── Meeting Mute status ────────────────────────────────────────
         async function refreshMeetingStatus() {
@@ -8055,27 +8240,193 @@
                 refreshMeetingStatus();
             } catch(e) {}
         }
-        refreshMeetingStatus();
-        setInterval(refreshMeetingStatus, 30000);
+        refreshMeetingStatus(); // WS push takes over after connect
 
-        // ── Initial load + auto-refresh (optimized) ──────────────────────────
-        // refreshAll uses /mc/batch (1 request) — no need for duplicate timers
-        refreshAll();
-        updateCeoCornerStatus();
-        setInterval(refreshAll, 90000);           // was 60s; batch is fast so 90s is plenty
-        setInterval(updateCeoCornerStatus, 90000);
-        // Slow-poll: these are NOT in the batch (external/heavy checks)
-        fetchTunnels();
-        setInterval(fetchTunnels, 120000);        // SSH tunnel check — slow, 2min
-        fetchOldVps();
-        setInterval(fetchOldVps, 180000);         // old VPS — low priority, 3min
-        fetchSiteHealth();
-        setInterval(fetchSiteHealth, 300000);     // site health — 5min
-        // Fast pollers: not in batch (need sub-60s freshness)
-        fetchTraffic();
-        setInterval(fetchTraffic, 15000);         // live traffic — 15s
-        fetchLocalTraffic();
-        setInterval(fetchLocalTraffic, 15000);    // live local traffic — 15s
+        // ── WebSocket client — server-push replaces most polling ─────────────
+        // Falls back to HTTP polling automatically on disconnect / error.
+        (function initWebSocket() {
+            const WS_URL = `ws://${location.host}/ws`;
+            let _ws = null;
+            let _wsConnected = false;
+            let _reconnectDelay = 2000; // exponential backoff, capped at 30s
+
+            // All timer handles — WS push replaces these when connected
+            const _timers = {};
+
+            function startPollingFallback() {
+                function arm(key, fn, ms) { if (!_timers[key]) _timers[key] = setInterval(fn, ms); }
+                arm('refreshAll',       refreshAll,           90000);
+                arm('traffic',          fetchTraffic,         15000);
+                arm('localTraffic',     fetchLocalTraffic,    15000);
+                arm('pipeline',         fetchPipeline,        30000);
+                arm('meetingStatus',    refreshMeetingStatus, 30000);
+                arm('mqt',              fetchMQT,             60000);
+                arm('tunnels',          fetchTunnels,         120000);
+                arm('ytIntel',          fetchYtIntelRecent,   120000);
+                arm('oldVps',           fetchOldVps,          180000);
+                arm('smi',              fetchSMI,             240000);
+                arm('siteHealth',       fetchSiteHealth,      300000);
+                arm('comparison',       fetchComparison,      300000);
+                arm('jakeInbox',        fetchJakeInbox,       300000);
+                arm('visionScore',      fetchVisionScore,     300000);
+            }
+
+            function stopPollingFallback() {
+                Object.keys(_timers).forEach(k => { clearInterval(_timers[k]); delete _timers[k]; });
+            }
+
+            function setWsIndicator(connected) {
+                const ind = document.getElementById('ws-indicator');
+                const lbl = document.getElementById('ws-indicator-label');
+                if (ind) {
+                    ind.title = connected ? 'Live (WebSocket)' : 'Polling fallback (WS disconnected)';
+                    ind.style.background = connected ? '#3fb950' : '#f85149';
+                }
+                if (lbl) lbl.textContent = connected ? 'Live' : 'Polling';
+            }
+
+            function connect() {
+                try { _ws = new WebSocket(WS_URL); } catch(e) { startPollingFallback(); return; }
+
+                _ws.onopen = () => {
+                    _wsConnected = true;
+                    _reconnectDelay = 2000; // reset backoff on successful connect
+                    console.log('[WS] Connected — server-push active');
+                    stopPollingFallback();
+                    setWsIndicator(true);
+                };
+
+                _ws.onmessage = (evt) => {
+                    let msg;
+                    try { msg = JSON.parse(evt.data); } catch(e) { return; }
+                    const { type, data } = msg;
+
+                    if (type === 'batch') {
+                        _mcBatch = {
+                            '/mc/status':             data['/mc/status'],
+                            '/mc/agents':             data['/mc/agents'],
+                            '/mc/heartbeat':          data['/mc/heartbeat'],
+                            '/mc/launchd':            data['/mc/launchd'],
+                            '/mc/delegation-stats':   data['/mc/delegation-stats'],
+                            '/mc/brain':              data['/mc/brain'],
+                            '/mc/system':             data['/mc/system'],
+                            '/mc/internet':           data['/mc/internet'],
+                            '/mc/sprint':             data['/mc/sprint'],
+                            '/mc/cso':                data['/mc/cso'],
+                            '/mc/financial':          data['/mc/financial'],
+                            '/mc/n8n-workflows':      data['/mc/n8n-workflows'],
+                            '/mc/jarvis-stats':       data['/mc/jarvis-stats'],
+                            '/mc/ga4':                data['/mc/ga4'],
+                            '/mc/tailscale':          data['/mc/tailscale'],
+                            '/mc/pipeline':           data['/mc/pipeline'],
+                            '/mc/daemon-health':      data['/mc/daemon-health'],
+                            '/mc/migration':          data['/mc/migration'],
+                            '/mc/recurring-tasks':    data['/mc/recurring-tasks'],
+                            '/mc/openrouter-credits': data['/mc/openrouter-credits'],
+                            '/mc/autoresearch':       data['/mc/autoresearch'],
+                            '/mc/content-intel':      data['/mc/content-intel'],
+                            '/mc/openclaw-version':   data['/mc/openclaw-version'],
+                            '/mc/sidney-devices':     data['/mc/sidney-devices'],
+                        };
+                        Promise.all([
+                            fetchStatus(), fetchNotionMetrics(), fetchSprintStatus(),
+                            fetchLaunchd(), fetchDaemonHealth(), fetchAgents(), fetchBrain(),
+                            fetchMigration(), fetchSystem(), fetchHeartbeats(), fetchCSoPipeline(),
+                            fetchFinancialPulse(), fetchPipeline(), updateBackupTime(),
+                            updateOCBackupTime(), fetchInternet(), fetchOpenclawVersion(),
+                            fetchN8nWorkflows(), fetchTailscale(), fetchGA4(), fetchJarvisStats()
+                        ]).then(() => { _mcBatch = {}; });
+                        updateCeoCornerStatus();
+
+                    } else if (type === 'traffic') {
+                        _mcBatch['/mc/traffic'] = data;
+                        fetchTraffic().then(() => { delete _mcBatch['/mc/traffic']; });
+
+                    } else if (type === 'local-traffic') {
+                        _mcBatch['/mc/local-traffic'] = data;
+                        fetchLocalTraffic().then(() => { delete _mcBatch['/mc/local-traffic']; });
+
+                    } else if (type === 'pipeline-push') {
+                        _mcBatch['/mc/pipeline'] = data;
+                        fetchPipeline().then(() => { delete _mcBatch['/mc/pipeline']; });
+
+                    } else if (type === 'meeting-status') {
+                        // refreshMeetingStatus reads /mc/meeting-status — inject and re-render
+                        _mcBatch['/mc/meeting-status'] = data;
+                        refreshMeetingStatus().then(() => { delete _mcBatch['/mc/meeting-status']; }).catch(() => {});
+
+                    } else if (type === 'mqt') {
+                        _mcBatch['/mc/mqt-paper'] = data;
+                        fetchMQT().then(() => { delete _mcBatch['/mc/mqt-paper']; });
+
+                    } else if (type === 'smi') {
+                        _mcBatch['/mc/smi-paper'] = data;
+                        fetchSMI().then(() => { delete _mcBatch['/mc/smi-paper']; });
+
+                    } else if (type === 'trading-comparison') {
+                        _mcBatch['/mc/trading-comparison'] = data;
+                        fetchComparison().then(() => { delete _mcBatch['/mc/trading-comparison']; });
+
+                    } else if (type === 'tunnels') {
+                        _mcBatch['/mc/tunnel-status'] = data;
+                        fetchTunnels().then(() => { delete _mcBatch['/mc/tunnel-status']; });
+
+                    } else if (type === 'old-vps') {
+                        _mcBatch['/mc/contabo-vps-status'] = data;
+                        fetchOldVps().then(() => { delete _mcBatch['/mc/contabo-vps-status']; });
+
+                    } else if (type === 'site-health') {
+                        _mcBatch['/mc/site-health'] = data;
+                        fetchSiteHealth().then(() => { delete _mcBatch['/mc/site-health']; });
+
+                    } else if (type === 'jake-inbox') {
+                        _mcBatch['/mc/jake-inbox'] = data;
+                        fetchJakeInbox().then(() => { delete _mcBatch['/mc/jake-inbox']; });
+
+                    } else if (type === 'yt-intel') {
+                        _mcBatch['/mc/content-intel'] = data;
+                        fetchYtIntelRecent().then(() => { delete _mcBatch['/mc/content-intel']; });
+
+                    } else if (type === 'vision-score') {
+                        // /api/vision-pulse is not an /mc/ path — render directly
+                        const badge = document.getElementById('vision-score-badge');
+                        if (badge && data && data.score != null) {
+                            const s = data.score;
+                            badge.textContent = s + '/100';
+                            badge.style.color = s > 70 ? '#00ff88' : s > 40 ? '#ffaa00' : '#ff4444';
+                        }
+                    }
+                };
+
+                _ws.onerror = () => {};
+
+                _ws.onclose = () => {
+                    _wsConnected = false;
+                    console.warn('[WS] Disconnected — falling back to HTTP polling (retry in ' + _reconnectDelay / 1000 + 's)');
+                    setWsIndicator(false);
+                    startPollingFallback();
+                    setTimeout(connect, _reconnectDelay);
+                    _reconnectDelay = Math.min(_reconnectDelay * 2, 30000); // exponential backoff, cap 30s
+                };
+            }
+
+            // Initial HTTP load fires immediately (before WS handshake)
+            refreshAll();
+            updateCeoCornerStatus();
+            fetchTunnels();
+            fetchOldVps();
+            fetchSiteHealth();
+            fetchTraffic();
+            fetchLocalTraffic();
+            // WS opens and clears polling timers once connected
+            connect();
+        })();
+
+        // ── Non-WS pollers (local-only, no network) ──────────────────────────
+        // refreshAll / traffic / pipeline / tunnels / oldVps / siteHealth / MQT /
+        // SMI / comparison / jakeInbox / ytIntel / visionScore / meetingStatus
+        // are all managed by initWebSocket (WS push or fallback timers).
+        setInterval(updateCeoCornerStatus, 90000); // localStorage only — not a network call
 
         // ── MQT Paper Trading Widget ─────────────────────────────────
         async function fetchMQT() {
@@ -8119,8 +8470,178 @@
                 if (el('mqt-updated')) el('mqt-updated').textContent = d.timestamp ? 'Updated: ' + new Date(d.timestamp).toLocaleTimeString() : '';
             } catch(e) { console.log('[MQT] fetch error:', e); }
         }
-        fetchMQT();
-        setInterval(fetchMQT, 60000);
+        fetchMQT(); // WS push takes over after connect
+
+        // ── SMI Paper Trading Widget ──────────────────────────────────────────
+        async function fetchSMI() {
+            try {
+                const d = await fetch('/mc/smi-paper').then(r => r.json());
+                if (!d.ok) return;
+                const el = id => document.getElementById(id);
+                const fmt = (v) => v !== undefined ? '$' + Math.abs(v).toFixed(2) : '—';
+                // Portfolio value + PnL %
+                if (el('smi-total-value')) el('smi-total-value').textContent = '$' + (d.totalValue || 0).toFixed(2);
+                if (el('smi-pnl-pct')) {
+                    const p = d.pnlPct || 0;
+                    el('smi-pnl-pct').textContent = (p >= 0 ? '+' : '') + p.toFixed(2) + '%';
+                    el('smi-pnl-pct').style.color = p >= 0 ? '#00ff88' : '#ff4d6d';
+                }
+                // Cash
+                if (el('smi-balance')) el('smi-balance').textContent = '$' + (d.balance || 0).toFixed(2);
+                // Realized PnL
+                if (el('smi-total-pnl')) {
+                    const pnl = d.totalPnl || 0;
+                    el('smi-total-pnl').textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+                    el('smi-total-pnl').style.color = pnl >= 0 ? '#00ff88' : '#ff4d6d';
+                }
+                if (el('smi-trade-counts')) el('smi-trade-counts').textContent = `${d.totalTrades||0} trades (${d.buys||0}B / ${d.sells||0}S)`;
+                // Progress bar
+                const daysIn   = d.daysIn || 0;
+                const daysLeft = d.daysLeft || 30;
+                const pct      = Math.min(100, Math.round((daysIn / 30) * 100));
+                if (el('smi-progress-bar')) el('smi-progress-bar').style.width = pct + '%';
+                if (el('smi-days-left')) el('smi-days-left').textContent = `Day ${daysIn} of 30 · ${daysLeft} left`;
+                if (el('smi-days-badge')) el('smi-days-badge').textContent = `Day ${daysIn}`;
+                // Open positions
+                const posEl = el('smi-positions');
+                if (posEl) {
+                    const positions = d.positions || [];
+                    if (!positions.length) {
+                        posEl.innerHTML = '<div style="color:rgba(255,255,255,0.2);">No open positions</div>';
+                    } else {
+                        posEl.innerHTML = positions.map(p => {
+                            const entryDate = p.entryDate ? new Date(p.entryDate).toLocaleDateString() : '—';
+                            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <div>
+                                    <span style="font-weight:700;color:#ffd700;">${p.ticker}</span>
+                                    <span style="font-size:0.6rem;color:rgba(255,255,255,0.35);margin-left:6px;">${p.signalSource||''}</span>
+                                </div>
+                                <div style="text-align:right;">
+                                    <span style="color:rgba(255,255,255,0.6);">${(p.shares||0).toFixed(4)} shares @ $${(p.entryPrice||0).toFixed(2)}</span>
+                                    <span style="color:rgba(255,255,255,0.3);font-size:0.6rem;margin-left:8px;">cost $${(p.costBasis||0).toFixed(0)} · ${entryDate}</span>
+                                </div>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+                // Recent trades
+                const tradesEl = el('smi-trades');
+                if (tradesEl) {
+                    const recent = (d.recentTrades || []).slice(0, 6);
+                    if (!recent.length) {
+                        tradesEl.innerHTML = '<div style="color:rgba(255,255,255,0.2);">No trades yet</div>';
+                    } else {
+                        tradesEl.innerHTML = recent.map(t => {
+                            const isBuy  = t.type === 'BUY';
+                            const color  = isBuy ? '#00ff88' : '#ff4d6d';
+                            const pnlStr = t.pnl !== undefined ? ` · PnL ${t.pnl >= 0 ? '+' : ''}$${t.pnl.toFixed(2)}` : '';
+                            const dt     = t.timestamp ? new Date(t.timestamp).toLocaleDateString() : '—';
+                            return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                                <span><span style="color:${color};font-weight:700;">${t.type}</span> <span style="color:#fff;">${t.ticker}</span> <span style="color:rgba(255,255,255,0.4);">${(t.shares||0).toFixed(3)} @ $${(t.price||0).toFixed(2)}</span></span>
+                                <span style="color:rgba(255,255,255,0.3);font-size:0.62rem;">${pnlStr} ${dt}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+            } catch(e) { console.warn('[SMI] fetch error', e); }
+        }
+        fetchSMI(); // WS push takes over after connect
+
+        // ── MQT vs SMI Comparison Widget ─────────────────────────────────────
+        async function fetchComparison() {
+            try {
+                const d = await fetch('/mc/trading-comparison').then(r => r.json());
+                if (!d.ok) return;
+                const el = id => document.getElementById(id);
+                const cur = d.current || {};
+                const mqt = cur.mqt || {};
+                const smi = cur.smi || {};
+
+                // Scoreboard
+                if (el('cmp-mqt-value')) el('cmp-mqt-value').textContent = '$' + (mqt.value || 0).toFixed(2);
+                if (el('cmp-mqt-pnl')) {
+                    const p = mqt.pnlPct || 0;
+                    el('cmp-mqt-pnl').textContent = (p >= 0 ? '+' : '') + p.toFixed(2) + '%';
+                    el('cmp-mqt-pnl').style.color = p >= 0 ? '#3fb950' : '#f85149';
+                }
+                if (el('cmp-smi-value')) el('cmp-smi-value').textContent = '$' + (smi.value || 0).toFixed(2);
+                if (el('cmp-smi-pnl')) {
+                    const p = smi.pnlPct || 0;
+                    el('cmp-smi-pnl').textContent = (p >= 0 ? '+' : '') + p.toFixed(2) + '%';
+                    el('cmp-smi-pnl').style.color = p >= 0 ? '#ffd700' : '#ff4d6d';
+                }
+
+                // Leader banner
+                const bannerEl = el('cmp-leader-banner');
+                if (bannerEl) {
+                    const mqtP = mqt.pnlPct || 0, smiP = smi.pnlPct || 0;
+                    const diff = Math.abs(mqtP - smiP).toFixed(2);
+                    if (mqtP > smiP) {
+                        bannerEl.innerHTML = `<span style="color:#3fb950;font-weight:700;">🏆 MQT leading</span> <span style="color:rgba(255,255,255,0.35);">by ${diff}% over SMI</span>`;
+                    } else if (smiP > mqtP) {
+                        bannerEl.innerHTML = `<span style="color:#ffd700;font-weight:700;">🏆 SMI leading</span> <span style="color:rgba(255,255,255,0.35);">by ${diff}% over MQT</span>`;
+                    } else {
+                        bannerEl.innerHTML = `<span style="color:rgba(255,255,255,0.5);">⚡ Tied</span>`;
+                    }
+                }
+
+                // History table
+                const snaps = (d.snapshots || []).slice().reverse();
+                const tbody = el('cmp-history-body');
+                if (tbody && snaps.length) {
+                    tbody.innerHTML = snaps.map(s => {
+                        const mqtP = s.mqt?.pnl_pct || 0;
+                        const smiP = s.smi?.pnl_pct || 0;
+                        const leader = s.leader || '—';
+                        const lColor = leader === 'MQT' ? '#3fb950' : leader === 'SMI' ? '#ffd700' : 'rgba(255,255,255,0.3)';
+                        return `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:10px 10px;color:rgba(255,255,255,0.55);font-weight:500;">${s.date}</td>
+                            <td style="padding:10px 10px;text-align:right;font-weight:600;color:#3fb950;">$${(s.mqt?.value||0).toFixed(2)}</td>
+                            <td style="padding:10px 10px;text-align:right;font-weight:600;color:${mqtP>=0?'#3fb950':'#f85149'}">${(mqtP>=0?'+':'')}${mqtP.toFixed(2)}%</td>
+                            <td style="padding:10px 10px;text-align:right;font-weight:600;color:#ffd700;">$${(s.smi?.value||0).toFixed(2)}</td>
+                            <td style="padding:10px 10px;text-align:right;font-weight:600;color:${smiP>=0?'#ffd700':'#ff4d6d'}">${(smiP>=0?'+':'')}${smiP.toFixed(2)}%</td>
+                            <td style="padding:10px 10px;text-align:center;font-weight:700;font-size:0.9rem;color:${lColor};">${leader}</td>
+                        </tr>`;
+                    }).join('');
+                } else if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.2);padding:12px;">First snapshot taken today — check back tomorrow.</td></tr>';
+                }
+
+                // Sparkline chart
+                const canvas = el('cmp-chart');
+                const chartWrap = el('cmp-chart-wrap');
+                if (canvas && snaps.length > 1) {
+                    if (chartWrap) chartWrap.style.display = 'block';
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = canvas.offsetWidth || 600;
+                    const W = canvas.width, H = canvas.height || 80;
+                    ctx.clearRect(0, 0, W, H);
+                    const allPnl = snaps.flatMap(s => [s.mqt?.pnl_pct||0, s.smi?.pnl_pct||0]);
+                    const minV = Math.min(...allPnl, -1), maxV = Math.max(...allPnl, 1);
+                    const range = maxV - minV || 1;
+                    const toY = (v) => H - ((v - minV) / range) * (H - 10) - 5;
+                    const toX = (i) => (i / (snaps.length - 1)) * W;
+                    // Zero line
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3,3]);
+                    const zeroY = toY(0);
+                    ctx.beginPath(); ctx.moveTo(0, zeroY); ctx.lineTo(W, zeroY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    // MQT line (green)
+                    ctx.strokeStyle = '#3fb950'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    snaps.forEach((s, i) => { const x=toX(i), y=toY(s.mqt?.pnl_pct||0); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+                    ctx.stroke();
+                    // SMI line (gold)
+                    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    snaps.forEach((s, i) => { const x=toX(i), y=toY(s.smi?.pnl_pct||0); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+                    ctx.stroke();
+                }
+            } catch(e) { console.warn('[Comparison] fetch error', e); }
+        }
+        fetchComparison(); // WS push takes over after connect
 
         // ── 5-minute idle → full page reload ─────────────────────────────────
         const IDLE_RELOAD_MS = 5 * 60 * 1000;

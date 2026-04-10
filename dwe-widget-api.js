@@ -222,9 +222,9 @@ async function getDWEStats() {
     }
 }
 
-async function createNotionTask({ name, priority = 'Medium', role = 'CEO', url = '' }) {
+async function createNotionTask({ name, priority = 'Medium', role = 'CEO', url = '', globalTags = null }) {
     return new Promise((resolve, reject) => {
-        const tags = role === 'CEO' ? [] : [{ name: '12-Agent Task' }];
+        const tags = globalTags ? globalTags.map(t => ({ name: t })) : (role === 'CEO' ? [] : [{ name: '12-Agent Task' }]);
         const payload = {
             parent: { database_id: NOTION_DB_ID },
             properties: {

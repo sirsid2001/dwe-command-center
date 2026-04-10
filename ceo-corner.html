@@ -1313,6 +1313,47 @@
         }
 
         // ── CEO Productivity ──
+        // ── Pipeline Stage Run / Log ──────────────────────────────────────────
+        async function pipelineRun(stageKey, btn) {
+            const orig = btn.textContent;
+            btn.textContent = '...';
+            btn.disabled = true;
+            try {
+                const r = await fetch('/mc/pipeline-stage-run?stage=' + stageKey, { method: 'POST' });
+                const d = await r.json();
+                btn.textContent = d.ok ? '✓ OK' : '✗ Err';
+                btn.style.color = d.ok ? '#00ff88' : '#ff6b6b';
+                setTimeout(() => { btn.textContent = orig; btn.style.color = ''; btn.disabled = false; }, 3000);
+            } catch(e) {
+                btn.textContent = '✗';
+                setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+            }
+        }
+
+        async function pipelineLog(stageKey, label) {
+            const modal = document.getElementById('pipeline-log-modal');
+            const title = document.getElementById('pipeline-log-title');
+            const body = document.getElementById('pipeline-log-body');
+            title.textContent = label + ' — Recent Log';
+            body.textContent = 'Loading...';
+            modal.style.display = 'flex';
+            try {
+                const r = await fetch('/mc/pipeline-stage-log?stage=' + stageKey);
+                const d = await r.json();
+                if (d.missing) {
+                    body.textContent = 'No log file found yet.';
+                } else if (!d.lines || !d.lines.length) {
+                    body.textContent = 'Log is empty.';
+                } else {
+                    body.textContent = d.lines.join('\n');
+                    // Scroll to bottom
+                    body.scrollTop = body.scrollHeight;
+                }
+            } catch(e) {
+                body.textContent = 'Failed to load log: ' + e.message;
+            }
+        }
+
         function resetCeoProductivity() {
             localStorage.removeItem('dwe_ceo_pipeline');
             loadCeoPipeline();
@@ -1320,6 +1361,15 @@
         const CEO_PIPELINE_KEY = 'dwe_ceo_pipeline';
         const funnelStageOrder = ['Lead Generation', 'New', 'Audited', 'Outreach Sent', 'Responded', 'Cash Flow', 'Proposal', 'Client', 'Upsell', 'Daily YWYC'];
         const funnelStageClasses = { 'Lead Generation': 'leadgen', 'New': 'new', 'Audited': 'audited', 'Outreach Sent': 'outreach', 'Responded': 'responded', 'Cash Flow': 'cashflow', 'YouTube Intel': 'youtube-intel', 'Proposal': 'proposal', 'Client': 'client', 'Upsell': 'upsell', 'Daily YWYC': 'ywyc' };
+
+        // Per-stage process metadata: script key, log link, run button
+        const STAGE_PROCESS = {
+            'Lead Generation': { key: 'lead-gen',  label: 'Lead Scraper',      icon: '🔍' },
+            'New':             { key: 'audit',     label: 'Audit Runner',       icon: '🔬' },
+            'Audited':         { key: 'queue',     label: 'Outreach Queue',     icon: '📋' },
+            'Outreach Sent':   { key: 'outreach',  label: 'Outreach Sender',    icon: '📤' },
+            'Responded':       { key: 'reply',     label: 'Reply Tracker',      icon: '💬' },
+        };
 
         // Checkable items override specific stages (position 0 = first stage)
         const CEO_CHECKABLE = [
@@ -1462,11 +1512,18 @@
                         <div class="f-step">Step ${i + 1}</div>
                     </div>`;
                 } else {
+                    const proc = STAGE_PROCESS[stage];
+                    const procHtml = proc ? `
+                        <div style="display:flex;gap:0.25rem;margin-top:0.3rem;justify-content:center;">
+                            <button onclick="event.stopPropagation();pipelineRun('${proc.key}',this)" title="Run ${proc.label}" style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.3);color:#ffaa00;border-radius:0.3rem;padding:0.1rem 0.35rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">▶ Run</button>
+                            <button onclick="event.stopPropagation();pipelineLog('${proc.key}','${proc.label}')" title="View ${proc.label} log" style="background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.2);color:#00c8ff;border-radius:0.3rem;padding:0.1rem 0.35rem;cursor:pointer;font-family:Inter,sans-serif;font-size:0.5rem;font-weight:600;">📋 Log</button>
+                        </div>` : '';
                     html += `<div class="funnel-stage stage-${cls}">
                         <div class="funnel-top">
                             <div class="f-count">${count}</div>
                             <div class="f-name">${stage}</div>
                         </div>
+                        ${procHtml}
                         <div class="f-bar"></div>
                         <div class="f-step">Step ${i + 1}</div>
                     </div>`;
@@ -3037,5 +3094,16 @@
         fetchCashflow();
         setInterval(fetchCashflow, 120000);
     </script>
+
+<!-- Pipeline Log Modal -->
+<div id="pipeline-log-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#0d1030;border:1px solid rgba(0,200,255,0.25);border-radius:1rem;width:min(860px,95vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span id="pipeline-log-title" style="font-size:0.85rem;font-weight:700;color:#00c8ff;"></span>
+            <button onclick="document.getElementById('pipeline-log-modal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.1rem;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <pre id="pipeline-log-body" style="margin:0;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace,monospace;font-size:0.7rem;color:rgba(255,255,255,0.75);overflow-y:auto;white-space:pre-wrap;word-break:break-all;line-height:1.5;background:#080c22;border-radius:0 0 1rem 1rem;"></pre>
+    </div>
+</div>
 </body>
 </html>
