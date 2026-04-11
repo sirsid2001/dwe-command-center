@@ -1,6 +1,6 @@
 #!/bin/bash
 # VPS Optimize — called by MC server dashboard button
-ssh -i "$HOME/.ssh/remote_access_key" -o ConnectTimeout=15 -o StrictHostKeyChecking=no -o BatchMode=yes root@64.23.238.56 \
+ssh -i "$HOME/.ssh/remote_access_key" -o ConnectTimeout=15 -o StrictHostKeyChecking=no -o BatchMode=yes root@86.48.27.45 \
   'apt-get clean 2>/dev/null
    journalctl --vacuum-time=7d 2>/dev/null
    docker system prune -f 2>/dev/null

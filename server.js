@@ -609,6 +609,9 @@ const server = http.createServer((req, res) => {
         case '/mc/ssh-tunnels':
             getSshTunnels(req, res);
             break;
+        case '/mc/mesh-status':
+            cachedResponse(req, res, 30000, getMeshStatus);  // 30s cache
+            break;
         case '/mc/system-optimize':
             if (req.method === 'POST') {
                 const { exec: execOpt } = require('child_process');
@@ -3360,7 +3363,7 @@ function getCrons(req, res) {
     });
 
     // VPS crons (ssh with 5s timeout)
-    exec('ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 "crontab -l 2>/dev/null | grep -v \'^#\' | grep -v \'^$\' | head -20"', { timeout: 10000 }, (error, stdout) => {
+    exec('ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/remote_access_key root@86.48.27.45 "crontab -l 2>/dev/null | grep -v \'^#\' | grep -v \'^$\' | head -20"', { timeout: 10000 }, (error, stdout) => {
         if (!error && stdout) {
             allCrons.push(...parseCronLines(stdout, 'VPS', 'VPS'));
         }
@@ -4365,11 +4368,15 @@ function pollTailscale() {
         }
         try {
             const data = JSON.parse(stdout);
+            // Friendly name overrides for Tailscale hostnames
+            const tsNameMap = { 'vmi3199495': 'dwe-ops', 'n8n-tvc': 'dwe-ops', 'localhost': 'iPhone' };
+            function tsDisplayName(raw) { return tsNameMap[raw] || raw; }
             const devices = [];
             // Self
             if (data.Self) {
+                const rawName = data.Self.HostName || 'self';
                 devices.push({
-                    name: data.Self.HostName || 'self',
+                    name: tsDisplayName(rawName),
                     ip: data.Self.TailscaleIPs ? data.Self.TailscaleIPs[0] : '',
                     os: data.Self.OS || '',
                     online: true
@@ -4377,8 +4384,9 @@ function pollTailscale() {
             }
             // Peers
             for (const [key, peer] of Object.entries(data.Peer || {})) {
+                const rawName = peer.HostName || key;
                 devices.push({
-                    name: peer.HostName || key,
+                    name: tsDisplayName(rawName),
                     ip: peer.TailscaleIPs ? peer.TailscaleIPs[0] : '',
                     os: peer.OS || '',
                     online: peer.Online || false,
@@ -4402,7 +4410,7 @@ function getTailscaleStatus(req, res) {
 
 function getN8nUptime(req, res) {
     const { exec: execSsh } = require('child_process');
-    const cmd = 'ssh -o ConnectTimeout=5 -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 "uptime -s && docker inspect -f \'{{.State.Running}}\' n8n-docker-caddy-n8n-1 2>/dev/null || echo false"';
+    const cmd = 'ssh -o ConnectTimeout=5 -i /Users/elf-6/.ssh/remote_access_key root@86.48.27.45 "uptime -s && docker inspect -f \'{{.State.Running}}\' n8n-docker-caddy-n8n-1 2>/dev/null || echo false"';
     execSsh(cmd, { timeout: 10000 }, (err, stdout) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         if (err || !stdout.trim()) {
@@ -4416,22 +4424,109 @@ function getN8nUptime(req, res) {
     });
 }
 
+// ── Mesh & Access Status ──────────────────────────────────────────────────
+// Checks SSH reachability, Tailscale ping, and Cloudflare proxy for each host.
+function getMeshStatus(req, res) {
+    const { exec: execMesh } = require('child_process');
+    const https = require('https');
+
+    // Helper: run a shell command, resolve true/false
+    function shellCheck(cmd, timeoutMs) {
+        return new Promise(resolve => {
+            execMesh(cmd, { timeout: timeoutMs || 6000 }, (err) => resolve(!err));
+        });
+    }
+
+    // Helper: HTTP GET check (resolve true if response received regardless of status)
+    function httpCheck(url, timeoutMs) {
+        return new Promise(resolve => {
+            try {
+                const req2 = https.get(url, { timeout: timeoutMs || 3000 }, (r) => {
+                    r.resume(); // drain
+                    resolve(true);
+                });
+                req2.on('error', () => resolve(false));
+                req2.on('timeout', () => { req2.destroy(); resolve(false); });
+                req2.setTimeout(timeoutMs || 3000);
+            } catch(e) { resolve(false); }
+        });
+    }
+
+    // Run all checks in parallel
+    Promise.all([
+        // elf-6 (Mac Mini)
+        shellCheck('ssh -o ConnectTimeout=3 -o BatchMode=yes -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/id_ed25519 macmini exit 0 2>/dev/null', 6000),
+        shellCheck('ssh -o ConnectTimeout=3 -o BatchMode=yes -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/id_ed25519 elf-6@100.78.240.29 exit 2>/dev/null', 6000),
+        httpCheck('https://brain.tvcpulse.com', 3000),
+        // dwe-ops (Contabo VPS)
+        shellCheck('ssh -o ConnectTimeout=3 -o BatchMode=yes -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/remote_access_key root@86.48.27.45 exit 0 2>/dev/null', 7000),
+        shellCheck('ssh -o ConnectTimeout=3 -o BatchMode=yes -o StrictHostKeyChecking=no -i /Users/elf-6/.ssh/remote_access_key root@100.99.34.109 exit 2>/dev/null', 6000),
+        // overlord (iPhone) — no SSH, use ping
+        shellCheck('ping -c 1 -t 2 100.88.99.61 > /dev/null 2>&1', 5000),
+    ]).then(([elfSshDirect, elfTailscalePing, elfCloudflare, opsSshDirect, opsTailscalePing, overlordPing]) => {
+        const hosts = [
+            {
+                name: 'elf-6',
+                role: 'Mac Mini · AI Hub',
+                access: [
+                    { method: 'SSH Direct',   address: 'ssh macmini',              ok: elfSshDirect      },
+                    { method: 'SSH Tailscale', address: 'ssh elf-6@100.78.240.29',  ok: elfTailscalePing  },
+                    { method: 'Cloudflare',    address: 'brain.tvcpulse.com',       ok: elfCloudflare     },
+                ]
+            },
+            {
+                name: 'dwe-ops',
+                role: 'Contabo VPS · n8n + Mailcow + EspoCRM',
+                access: [
+                    { method: 'SSH Direct',    address: 'ssh dwe-ops (86.48.27.45)',      ok: opsSshDirect    },
+                    { method: 'SSH Tailscale', address: 'ssh dwe-ops-ts (100.99.34.109)', ok: opsTailscalePing },
+                ]
+            },
+            {
+                name: 'overlord',
+                role: 'iPhone · Mobile',
+                access: [
+                    { method: 'Tailscale', address: '100.88.99.61', ok: overlordPing },
+                ]
+            }
+        ];
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ hosts, timestamp: new Date().toISOString() }));
+    }).catch(err => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+    });
+}
+
 function getSshTunnels(req, res) {
     const { exec: execLocal } = require('child_process');
-    // Check reverse SSH tunnel via launchctl PID
-    execLocal('launchctl list ai.dwe.ollama-tunnel 2>/dev/null', (err, launchOut) => {
-        const pidMatch = (launchOut || '').match(/"PID"\s*=\s*(\d+)/);
-        const reverseUp = !!(pidMatch && pidMatch[1]);
-        const reversePid = pidMatch ? pidMatch[1] : null;
-        // Check forward SSH reachability (BatchMode=yes = no password prompt, fast fail)
-        execLocal('ssh -o ConnectTimeout=5 -o BatchMode=yes -i /Users/elf-6/.ssh/remote_access_key root@64.23.238.56 exit 0 2>/dev/null', { timeout: 8000 }, (err2) => {
-            const forwardUp = !err2;
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                reverse: { up: reverseUp, pid: reversePid, note: 'Ollama · SSH · Dashboard → VPS' },
-                forward: { up: forwardUp, note: '86.48.27.45' }
-            }));
-        });
+    // Check actual port reachability on dwe-ops via SSH
+    // This is reliable — launchctl PID check was unreliable (shows DOWN even when ports are UP)
+    const cmd = 'ssh -o ConnectTimeout=5 -o BatchMode=yes -i /Users/elf-6/.ssh/remote_access_key root@86.48.27.45 "ss -tlnp | grep -E \':11434|:2222|:8899|:3100|:4000\'" 2>/dev/null';
+    execLocal(cmd, { timeout: 12000 }, (err, stdout) => {
+        const sshOk = !err;
+        const output = stdout || '';
+        // Parse which ports are bound
+        const ports = {
+            '11434': /[:\s]11434[\s\b]/.test(output) || output.includes(':11434'),
+            '2222':  /[:\s]2222[\s\b]/.test(output)  || output.includes(':2222'),
+            '8899':  /[:\s]8899[\s\b]/.test(output)  || output.includes(':8899'),
+            '3100':  /[:\s]3100[\s\b]/.test(output)  || output.includes(':3100'),
+            '4000':  /[:\s]4000[\s\b]/.test(output)  || output.includes(':4000'),
+        };
+        const tunnelUp = sshOk && Object.values(ports).some(Boolean);
+        // Legacy fields for backward compat with old fetchTunnels() caller path
+        const reverseUp = sshOk && ports['11434'];
+        const forwardUp = sshOk;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            tunnelUp,
+            ports,
+            sshOk,
+            // legacy fields
+            reverse: { up: reverseUp, note: 'Ollama · SSH · Dashboard → VPS' },
+            forward: { up: forwardUp, note: '86.48.27.45' }
+        }));
     });
 }
 
