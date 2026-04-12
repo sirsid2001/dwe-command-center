@@ -903,6 +903,16 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ error: 'No GA4 data cached yet', thisWeek: {}, lastWeek: {}, deltas: {} }));
             }
             break;
+        case '/mc/gbp':
+            try {
+                const gbpData = JSON.parse(fs.readFileSync(path.join(__dirname, 'gbp_cache.json'), 'utf8'));
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify(gbpData));
+            } catch(e) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'No GBP data cached yet', status: 'unknown' }));
+            }
+            break;
         case '/mc/sheets-writeback':
             (async () => {
                 try {
@@ -1295,6 +1305,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/click-stats':
             getClickStats(req, res);
+            break;
+        case '/mc/intel-signals':
+            getIntelSignals(req, res);
             break;
         case '/mc/batch': {
             // Batch endpoint: runs multiple mc/* calls in parallel, returns one JSON blob.
@@ -3196,6 +3209,334 @@ function getModels(req, res) {
 
 const { exec } = require('child_process');
 
+// ── Daemon Taxonomy ─────────────────────────────────────────────────────────
+// tier 1 = critical (kickstart -k immediately, escalate after 2 attempts)
+// tier 2 = operational (graceful stop+start, escalate after 2 attempts)
+// tier 0 / alwaysOn: false = scheduled, NEVER auto-restart
+const KEY_DAEMONS = [
+    { label: 'ai.dwe.audit-runner',          id: 'PL-01', name: 'Audit Runner',       tier: 2, alwaysOn: true  },
+    { label: 'ai.dwe.outreach-sender',        id: 'PL-02', name: 'Outreach Sender',    tier: 2, alwaysOn: true  },
+    { label: 'ai.dwe.daily-ops-log',          id: 'PL-03', name: 'Daily Ops Log',      tier: 0, alwaysOn: false },
+    { label: 'ai.dwe.ops-log-task-creator',   id: 'PL-04', name: 'Ops Task Creator',   tier: 0, alwaysOn: false },
+    { label: 'ai.openclaw.gateway',            id: 'OC-01', name: 'OpenClaw Gateway',   tier: 1, alwaysOn: true  },
+    { label: 'ai.dwe.notion-sync',             id: 'BR-01', name: 'Notion Sync',        tier: 2, alwaysOn: true  },
+    { label: 'ai.dwe.seed-watcher',            id: 'BR-02', name: 'Brain Seed Watcher', tier: 1, alwaysOn: true  },
+    { label: 'ai.dwe.anomaly-check',           id: 'MN-01', name: 'Anomaly Check',      tier: 0, alwaysOn: false },
+    { label: 'ai.dwe.ralphy-monitor',          id: 'MN-02', name: 'Ralphy Monitor',     tier: 2, alwaysOn: true  },
+    { label: 'ai.dwe.anita-notion-triage',     id: 'PM-01', name: 'Anita PM Triage',   tier: 0, alwaysOn: false },
+];
+
+// ── Self-Healer State (in-memory, resets on server restart) ────────────────
+const healingState = {};
+KEY_DAEMONS.forEach(d => {
+    healingState[d.label] = { status: 'ok', restartCount: 0, firstRestartAt: null };
+});
+
+const CRASH_WINDOW_MS   = 5 * 60 * 1000;  // 5 minutes
+const MAX_RESTARTS      = 2;               // >= MAX in window = crash loop
+const TIER2_GRACE_MS    = 30 * 1000;      // 30s grace before start for Tier 2
+const BACKUP_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours — auto-trigger backup if overdue
+let   backupInProgress  = false;           // guard: prevent stacked backup runs
+
+// ── RAM Self-Healer State ───────────────────────────────────────────────────
+const RAM_OPTIMIZE_COOLDOWN_MS = 10 * 60 * 1000; // 10 min between optimize runs
+let   ramOptimizeInProgress    = false;
+let   ramOptimizeAttempts      = 0;       // resets when pressure returns to normal
+let   ramLastOptimizeAt        = 0;
+let   ramState                 = 'ok';    // 'ok' | 'warn' | 'critical' | 'escalated'
+let   ramLastPageouts          = null;    // baseline for Pageouts delta detection
+
+// Read memory_pressure level + Pageouts from vm_stat in one exec
+function getRamPressure(cb) {
+    exec(
+        'memory_pressure 2>/dev/null | head -1 ; ' +
+        'vm_stat 2>/dev/null | awk \'/Pageouts/ {gsub(/\\./,""); print $2}\'',
+        { timeout: 5000 },
+        (err, stdout) => {
+            if (err) return cb(null);
+            const lines = stdout.trim().split('\n');
+            // memory_pressure output: "System-wide memory free percentage: 14%  System Memory Pressure: WARN"
+            const pressureLine = lines.find(l => /pressure/i.test(l)) || '';
+            let level = 'normal';
+            if (/CRITICAL/i.test(pressureLine))    level = 'critical';
+            else if (/WARN/i.test(pressureLine))   level = 'warn';
+            const pageouts = parseInt(lines.find(l => /^\d+$/.test(l.trim())) || '0', 10) || 0;
+            cb({ level, pageouts });
+        }
+    );
+}
+
+// Get top 5 memory hogs for Alert Hub payload
+function getTopMemHogs(cb) {
+    exec(
+        "ps aux | sort -k4 -rn | awk 'NR>1 && NR<=6 {printf \"%s %.1f%% %s\\n\", $1, $4, $11}'",
+        { timeout: 5000 },
+        (err, stdout) => cb(err ? 'unavailable' : stdout.trim())
+    );
+}
+
+// Check if Ollama is actively running inference (has established connections)
+function isOllamaBusy(cb) {
+    exec("lsof -i :11434 -n -P 2>/dev/null | grep -c ESTABLISHED", { timeout: 4000 }, (err, stdout) => {
+        cb(!err && parseInt(stdout.trim(), 10) > 0);
+    });
+}
+
+// ── Alert Hub Escalation ────────────────────────────────────────────────────
+function postAlertHub(daemon, action, attempts) {
+    const body = JSON.stringify({
+        service:   daemon.label,
+        name:      daemon.name,
+        id:        daemon.id,
+        tier:      daemon.tier,
+        attempts,
+        action,
+        timestamp: new Date().toISOString(),
+        source:    'mc-server-self-healer'
+    });
+    const opts = {
+        hostname: 'n8n.tvcpulse.com',
+        path:     '/webhook/dwe-agent-alert',
+        method:   'POST',
+        headers:  { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    };
+    const req = https.request(opts, res => { res.resume(); }); // fire-and-forget
+    req.on('error', e => console.error('[Healer] Alert Hub POST failed:', e.message));
+    req.write(body);
+    req.end();
+}
+
+// ── Self-Healer Loop ────────────────────────────────────────────────────────
+// Polls launchctl every 20s. Restarts always-on daemons on error.
+// Crash-loop guard: 2 restarts within 5 min → escalate, stop retrying.
+function runHealerTick() {
+    const uid = process.getuid();
+    exec('launchctl list 2>/dev/null | grep "ai\\."', { timeout: 5000 }, (error, stdout) => {
+        if (error) return;
+
+        const liveMap = {};
+        if (stdout) {
+            stdout.trim().split('\n').forEach(line => {
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 3) {
+                    const pid      = parts[0] !== '-' ? parts[0] : null;
+                    const exitCode = parts[1] !== '-' ? parseInt(parts[1], 10) : null;
+                    liveMap[parts[2]] = { pid, exitCode };
+                }
+            });
+        }
+
+        const now = Date.now();
+
+        KEY_DAEMONS.forEach(daemon => {
+            if (!daemon.alwaysOn) return;
+
+            const info  = liveMap[daemon.label];
+            const state = healingState[daemon.label];
+
+            // Running normally
+            if (info && info.pid) {
+                if (state.status === 'recovering') {
+                    console.log(`[Healer] ${daemon.label} recovered (PID ${info.pid})`);
+                    state.status = 'ok';
+                    state.restartCount = 0;
+                    state.firstRestartAt = null;
+                    wsPushOpsBoard();
+                }
+                return;
+            }
+
+            // Not loaded = plist unloaded, not our concern
+            if (!info) return;
+            // Clean exit — skip
+            if (info.exitCode === 0 || info.exitCode === null) return;
+
+            // Daemon is DOWN with nonzero exit
+            if (state.status === 'escalated') return;
+
+            // Reset window if outside 5-min crash window
+            if (state.firstRestartAt && (now - state.firstRestartAt) > CRASH_WINDOW_MS) {
+                state.restartCount = 0;
+                state.firstRestartAt = null;
+            }
+
+            // Crash-loop check
+            if (state.restartCount >= MAX_RESTARTS) {
+                if (state.status !== 'escalated') {
+                    state.status = 'escalated';
+                    console.error(`[Healer] CRASH LOOP: ${daemon.label} — escalating`);
+                    postAlertHub(daemon, 'crash-loop-detected', state.restartCount);
+                    wsPushOpsBoard();
+                }
+                return;
+            }
+
+            // Attempt restart
+            state.status = 'recovering';
+            state.restartCount += 1;
+            if (!state.firstRestartAt) state.firstRestartAt = now;
+
+            console.log(`[Healer] Restart #${state.restartCount} for ${daemon.label} (tier ${daemon.tier}, exit ${info.exitCode})`);
+            wsPushOpsBoard();
+
+            if (daemon.tier === 1) {
+                exec(`launchctl kickstart -k gui/${uid}/${daemon.label}`, { timeout: 15000 }, (err) => {
+                    if (err) console.error(`[Healer] kickstart failed for ${daemon.label}: ${err.message}`);
+                    else console.log(`[Healer] kickstart issued for ${daemon.label}`);
+                    if (state.restartCount >= MAX_RESTARTS) {
+                        postAlertHub(daemon, 'restarted-kickstart-attempt-' + state.restartCount, state.restartCount);
+                    }
+                });
+            } else {
+                exec(`launchctl stop gui/${uid}/${daemon.label}`, { timeout: 10000 }, (stopErr) => {
+                    if (stopErr) console.warn(`[Healer] stop warning for ${daemon.label}: ${stopErr.message}`);
+                    setTimeout(() => {
+                        exec(`launchctl start gui/${uid}/${daemon.label}`, { timeout: 10000 }, (startErr) => {
+                            if (startErr) {
+                                console.error(`[Healer] start failed for ${daemon.label}: ${startErr.message}`);
+                                exec(`launchctl kickstart -k gui/${uid}/${daemon.label}`, { timeout: 15000 }, () => {});
+                            } else {
+                                console.log(`[Healer] graceful restart issued for ${daemon.label}`);
+                            }
+                            if (state.restartCount >= MAX_RESTARTS) {
+                                postAlertHub(daemon, 'restarted-graceful-attempt-' + state.restartCount, state.restartCount);
+                            }
+                        });
+                    }, TIER2_GRACE_MS);
+                });
+            }
+        });
+
+        // ── Auto-backup check ──────────────────────────────────────────────
+        // If no backup in 24h and none in progress, fire one silently
+        if (!backupInProgress) {
+            const ocBackupMs = lastOpenclawBackupTime ? lastOpenclawBackupTime.getTime() : 0;
+            if ((now - ocBackupMs) > BACKUP_MAX_AGE_MS) {
+                backupInProgress = true;
+                console.log('[Healer] Backup overdue — auto-triggering OpenClaw backup');
+                wsPushOpsBoard(); // board will show 'recovering' for BK-01 (set below)
+                const SCRIPT = '/Users/elf-6/openclaw/agents/cto/skills/backup/backup.sh';
+                exec(SCRIPT, {
+                    timeout: 180000,
+                    env: { ...process.env, PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin', HOME: '/Users/elf-6' }
+                }, (err, stdout) => {
+                    backupInProgress = false;
+                    if (err) {
+                        console.error('[Healer] Auto-backup failed:', err.message);
+                        postAlertHub({ label: 'openclaw-backup', name: 'OpenClaw Backup', id: 'BK-01', tier: 1 }, 'auto-backup-failed', 1);
+                    } else {
+                        try {
+                            const lines = stdout.trim().split('\n');
+                            const result = JSON.parse(lines[lines.length - 1]);
+                            if (result.success) lastOpenclawBackupTime = new Date();
+                        } catch(e) {
+                            lastOpenclawBackupTime = new Date(); // fallback: assume success if exit 0
+                        }
+                        console.log('[Healer] Auto-backup completed — last backup:', lastOpenclawBackupTime.toISOString());
+                    }
+                    wsPushOpsBoard();
+                });
+            }
+        }
+
+        // ── RAM pressure check ────────────────────────────────────────────
+        if (!ramOptimizeInProgress) {
+            getRamPressure(pressure => {
+                if (!pressure) return;
+
+                const { level, pageouts } = pressure;
+                const pageoutsDelta = ramLastPageouts !== null ? pageouts - ramLastPageouts : 0;
+                ramLastPageouts = pageouts;
+                const swapGrowing = pageoutsDelta > 50; // >50 new pageouts since last tick = real pressure
+
+                if (level === 'normal' && !swapGrowing) {
+                    // Pressure cleared — reset state
+                    if (ramState !== 'ok') {
+                        console.log('[Healer] RAM pressure cleared');
+                        ramState = 'ok';
+                        ramOptimizeAttempts = 0;
+                    }
+                    return;
+                }
+
+                if (level === 'warn' && !swapGrowing) {
+                    // Warn only — log hogs, no action
+                    if (ramState === 'ok') {
+                        ramState = 'warn';
+                        getTopMemHogs(hogs => {
+                            console.warn(`[Healer] RAM pressure WARN — top hogs:\n${hogs}`);
+                        });
+                    }
+                    return;
+                }
+
+                // Critical or swap growing — attempt optimize
+                if (ramState === 'escalated') return;
+
+                const cooldownOk = (Date.now() - ramLastOptimizeAt) > RAM_OPTIMIZE_COOLDOWN_MS;
+                if (!cooldownOk) return;
+
+                if (ramOptimizeAttempts >= 2) {
+                    // Two attempts, still critical — escalate
+                    if (ramState !== 'escalated') {
+                        ramState = 'escalated';
+                        getTopMemHogs(hogs => {
+                            console.error(`[Healer] RAM still critical after ${ramOptimizeAttempts} attempts — escalating`);
+                            postAlertHub(
+                                { label: 'mac-mini-ram', name: 'Mac Mini RAM', id: 'SY-RAM', tier: 1 },
+                                `ram-critical-after-${ramOptimizeAttempts}-attempts`,
+                                ramOptimizeAttempts
+                            );
+                        });
+                    }
+                    return;
+                }
+
+                // Fire optimize — but check Ollama first
+                ramOptimizeInProgress = true;
+                ramOptimizeAttempts += 1;
+                ramLastOptimizeAt = Date.now();
+                ramState = 'critical';
+
+                isOllamaBusy(busy => {
+                    const SCRIPT = '/Users/elf-6/openclaw/bin/system_optimize.sh';
+                    // If Ollama is mid-inference, pass flag to skip the purge step
+                    const env = {
+                        ...process.env,
+                        PATH: '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+                        HOME: '/Users/elf-6',
+                        SKIP_PURGE: busy ? '1' : '0'
+                    };
+                    if (busy) console.log(`[Healer] RAM optimize attempt #${ramOptimizeAttempts} — Ollama busy, skipping purge`);
+                    else      console.log(`[Healer] RAM optimize attempt #${ramOptimizeAttempts} — running full optimize`);
+
+                    exec(SCRIPT, { timeout: 120000, env }, (err, stdout) => {
+                        ramOptimizeInProgress = false;
+                        if (err) {
+                            console.error('[Healer] RAM optimize failed:', err.message);
+                        } else {
+                            console.log('[Healer] RAM optimize completed');
+                        }
+                        // Re-check pressure after 15s to see if it helped
+                        setTimeout(() => {
+                            getRamPressure(after => {
+                                if (!after) return;
+                                if (after.level === 'normal') {
+                                    console.log('[Healer] RAM pressure resolved after optimize');
+                                    ramState = 'ok';
+                                    ramOptimizeAttempts = 0;
+                                } else {
+                                    console.warn(`[Healer] RAM still at ${after.level} after optimize attempt #${ramOptimizeAttempts}`);
+                                }
+                            });
+                        }, 15000);
+                    });
+                });
+            });
+        }
+    });
+}
+
 function getServices(req, res) {
     const services = [
         { name: 'OpenClaw Gateway', port: 3000, check: 'http://127.0.0.1:3000/status' },
@@ -3647,19 +3988,8 @@ async function getOpsBoardData() {
         rows.push({ id: 'ML-01', label: 'Ollama (Local LLM)', detail: 'Not responding', status: 'error' });
     }
 
-    // 3. Key daemons
-    const keyDaemons = [
-        { label: 'ai.dwe.audit-runner',          id: 'PL-01', name: 'Audit Runner' },
-        { label: 'ai.dwe.outreach-sender',        id: 'PL-02', name: 'Outreach Sender' },
-        { label: 'ai.dwe.daily-ops-log',          id: 'PL-03', name: 'Daily Ops Log' },
-        { label: 'ai.dwe.ops-log-task-creator',   id: 'PL-04', name: 'Ops Task Creator' },
-        { label: 'ai.openclaw.gateway',            id: 'OC-01', name: 'OpenClaw Gateway' },
-        { label: 'ai.dwe.notion-sync',             id: 'BR-01', name: 'Notion Sync' },
-        { label: 'ai.dwe.seed-watcher',            id: 'BR-02', name: 'Brain Seed Watcher' },
-        { label: 'ai.dwe.anomaly-check',           id: 'MN-01', name: 'Anomaly Check' },
-        { label: 'ai.dwe.ralphy-monitor',          id: 'MN-02', name: 'Ralphy Monitor' },
-        { label: 'ai.dwe.anita-notion-triage',     id: 'PM-01', name: 'Anita PM Triage' },
-    ];
+    // 3. Key daemons (taxonomy defined at module level as KEY_DAEMONS)
+    const keyDaemons = KEY_DAEMONS;
 
     await new Promise(resolve => {
         exec('launchctl list 2>/dev/null | grep "ai\\."', { timeout: 5000 }, (error, stdout) => {
@@ -3676,12 +4006,17 @@ async function getOpsBoardData() {
             }
             keyDaemons.forEach(d => {
                 const info = daemonMap[d.label];
+                const hs   = healingState[d.label];
                 if (!info) {
                     rows.push({ id: d.id, label: d.name, detail: 'Not loaded', status: 'idle' });
                 } else if (info.pid) {
                     rows.push({ id: d.id, label: d.name, detail: `PID ${info.pid} · running`, status: 'ok' });
                 } else if (info.exitCode === 0 || info.exitCode === null) {
                     rows.push({ id: d.id, label: d.name, detail: 'Scheduled · last exit 0', status: 'ok' });
+                } else if (hs && hs.status === 'recovering') {
+                    rows.push({ id: d.id, label: d.name, detail: `Auto-recovering… (attempt ${hs.restartCount})`, status: 'recovering' });
+                } else if (hs && hs.status === 'escalated') {
+                    rows.push({ id: d.id, label: d.name, detail: `Escalated · ${hs.restartCount} attempts failed`, status: 'escalated' });
                 } else {
                     rows.push({ id: d.id, label: d.name, detail: `Exit ${info.exitCode} · check logs`, status: 'error' });
                 }
@@ -3696,8 +4031,12 @@ async function getOpsBoardData() {
     rows.push({
         id: 'BK-01',
         label: 'OpenClaw Backup',
-        detail: ocBackupMs ? `Last: ${ago(ocBackupMs)}` : 'No backup found',
-        status: backupAge < 86400000 ? 'ok' : backupAge < 172800000 ? 'warn' : 'error'
+        detail: backupInProgress
+            ? 'Auto-backup running…'
+            : ocBackupMs ? `Last: ${ago(ocBackupMs)}` : 'No backup found',
+        status: backupInProgress
+            ? 'recovering'
+            : backupAge < 86400000 ? 'ok' : backupAge < 172800000 ? 'warn' : 'error'
     });
 
     // 5. Pipeline leads count (from pipeline endpoint cache if available)
@@ -4684,11 +5023,12 @@ async function getDigitalOceanStatus(req, res) {
 // Internet connectivity — ping 1.1.1.1 every 60s, track last success
 let lastPingSuccess = null;
 function runInternetPing() {
-    exec('ping -c 1 -W 3 1.1.1.1 > /dev/null 2>&1 && echo ok || echo fail', { timeout: 8000 }, (err, stdout) => {
+    exec('/sbin/ping -c 1 -W 2000 1.1.1.1 > /dev/null 2>&1 && echo ok || echo fail', { timeout: 5000 }, (err, stdout) => {
         if ((stdout || '').trim() === 'ok') lastPingSuccess = Date.now();
     });
 }
-runInternetPing();
+runInternetPing(); // immediate on boot
+setTimeout(runInternetPing, 3000); // second check 3s later in case first races with startup
 setInterval(runInternetPing, 60000);
 
 function getInternetStatus(req, res) {
@@ -4940,16 +5280,16 @@ async function getSystemHealth(req, res) {
 
     try {
         const [cpuOut, vmstatOut, memsizeOut, diskOut, chipOut, bootOut, gatewayPidOut, ipOut, gwOut, loadOut] = await Promise.all([
-            run("ps -A -o %cpu | awk '{s+=$1} END {printf \"%.1f\", s}'"),
-            run("vm_stat"),
-            run("sysctl -n hw.memsize"),
-            run("df -k / | tail -1"),
-            run("sysctl -n machdep.cpu.brand_string 2>/dev/null || sysctl -n hw.model"),
-            run("sysctl -n kern.boottime | grep -oE 'sec = [0-9]+' | grep -oE '[0-9]+'"),
-            run("launchctl list ai.openclaw.gateway 2>/dev/null | grep '\"PID\"' | tr -dc '0-9'"),
-            run("IP=$(ipconfig getifaddr en0 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en1 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en2 2>/dev/null); [ -z \"$IP\" ] && IP=$(ipconfig getifaddr en8 2>/dev/null); echo \"$IP\""),
-            run("route -n get default 2>/dev/null | awk '/gateway:/{print $2}'"),
-            run("sysctl -n vm.loadavg | awk '{print $2}'")
+            run("/bin/ps -A -o %cpu | /usr/bin/awk '{s+=$1} END {printf \"%.1f\", s}'"),
+            run("/usr/bin/vm_stat"),
+            run("/usr/sbin/sysctl -n hw.memsize"),
+            run("/bin/df -k / | /usr/bin/tail -1"),
+            run("/usr/sbin/sysctl -n machdep.cpu.brand_string 2>/dev/null || /usr/sbin/sysctl -n hw.model"),
+            run("/usr/sbin/sysctl -n kern.boottime | /usr/bin/grep -oE 'sec = [0-9]+' | /usr/bin/grep -oE '[0-9]+'"),
+            run("launchctl list ai.openclaw.gateway 2>/dev/null | /usr/bin/grep '\"PID\"' | /usr/bin/tr -dc '0-9'"),
+            run("IP=$(/usr/sbin/ipconfig getifaddr en0 2>/dev/null); [ -z \"$IP\" ] && IP=$(/usr/sbin/ipconfig getifaddr en1 2>/dev/null); [ -z \"$IP\" ] && IP=$(/usr/sbin/ipconfig getifaddr en2 2>/dev/null); [ -z \"$IP\" ] && IP=$(/usr/sbin/ipconfig getifaddr en8 2>/dev/null); echo \"$IP\""),
+            run("/sbin/route -n get default 2>/dev/null | /usr/bin/awk '/gateway:/{print $2}'"),
+            run("/usr/sbin/sysctl -n vm.loadavg | /usr/bin/awk '{print $2}'")
         ]);
 
         // CPU — sum of all process %cpu (can exceed 100% on multi-core; normalize to logical CPUs)
@@ -6537,6 +6877,11 @@ server.listen(PORT, HOST, () => {
     // Pre-warm newsletter cache on boot so results are instant at 7 AM
     console.log('[Newsletter Cache] Pre-warming on boot...');
     refreshNewsletterCache();
+
+    // Self-healing daemon watchdog — detects errors, auto-restarts, escalates on crash loops
+    console.log('[Healer] Self-healing loop started (20s interval)');
+    setInterval(runHealerTick, 20000);
+    setTimeout(runHealerTick, 2000); // first check after WS server initializes
 });
 
 // ── WebSocket Server ──────────────────────────────────────────────────────────
@@ -7648,4 +7993,50 @@ process.on('SIGTERM', () => {
     console.log('Shutting down...');
     server.close(() => process.exit(0));
 });
+
+// ── Intel Signals Dashboard Widget ──────────────────────────────────────────
+function getIntelSignals(req, res) {
+    const parsedUrl = url.parse(req.url, true);
+    const INTEL_FILE = path.join(process.env.HOME, 'openclaw/shared/intel/latest_signals.json');
+    try {
+        const raw = fs.readFileSync(INTEL_FILE, 'utf8');
+        const data = JSON.parse(raw);
+        const allSignals = data.all_signals || [];
+        const topSignals = data.top_signals || [];
+        // Return top 20 by score, with filter params from query
+        const feed = parsedUrl.query.feed || '';
+        const limit = Math.min(parseInt(parsedUrl.query.limit) || 20, 100);
+        let filtered = feed
+            ? allSignals.filter(s => s.source === feed)
+            : allSignals;
+        filtered = filtered
+            .sort((a, b) => (b.score || 0) - (a.score || 0))
+            .slice(0, limit)
+            .map(s => ({
+                ticker:    s.ticker    || '',
+                action:    s.action    || '',
+                amount_usd: s.amount_usd || 0,
+                score:     s.score     || 0,
+                date:      s.date      || '',
+                sector:    s.sector    || '',
+                source:    s.source    || ''
+            }));
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({
+            ok: true,
+            count: filtered.length,
+            total: allSignals.length,
+            generated: data.generated_at,
+            feeds: Object.keys(data.by_source || {}),
+            signals: filtered
+        }));
+    } catch(e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
+    }
+}
 

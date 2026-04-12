@@ -1,19 +1,30 @@
 {
-  "updated": "2026-04-11T21:41:54.881207",
+  "updated": "2026-04-12T01:41:58.724572",
   "property": "theveteransconsultant.com",
-  "thisWeek": {},
-  "lastWeek": {
-    "sessions": 21,
+  "thisWeek": {
+    "sessions": 22,
     "users": 12,
+    "newUsers": 10,
     "pageviews": 40,
-    "avgDuration": 471,
-    "bounceRate": 42.9,
-    "engaged": 12
+    "avgDuration": 450,
+    "bounceRate": 45.5,
+    "engaged": 12,
+    "engagementRate": 54.5
+  },
+  "lastWeek": {
+    "sessions": 22,
+    "users": 11,
+    "newUsers": 10,
+    "pageviews": 47,
+    "avgDuration": 391,
+    "bounceRate": 31.8,
+    "engaged": 15,
+    "engagementRate": 68.2
   },
   "deltas": {
-    "sessions": -100.0,
-    "users": -100.0,
-    "pageviews": -100.0
+    "sessions": 0.0,
+    "users": 9.1,
+    "pageviews": -14.9
   },
   "topPages": [
     {
@@ -44,11 +55,23 @@
     },
     {
       "channel": "Unassigned",
-      "sessions": 8
+      "sessions": 9
     },
     {
       "channel": "Organic Social",
       "sessions": 2
+    }
+  ],
+  "devices": [
+    {
+      "device": "desktop",
+      "sessions": 21,
+      "pct": 95
+    },
+    {
+      "device": "mobile",
+      "sessions": 1,
+      "pct": 5
     }
   ],
   "daily": [
@@ -87,6 +110,12 @@
       "sessions": 8,
       "pageviews": 30,
       "users": 4
+    },
+    {
+      "date": "2026-04-11",
+      "sessions": 1,
+      "pageviews": 0,
+      "users": 1
     }
   ]
 }

@@ -1,0 +1,8 @@
+{
+  "updated": "2026-04-12T03:41:26.631728+00:00",
+  "status": "error",
+  "error": "HTTP 429: {\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"Quota exceeded for quota metric 'Requests' and limit 'Requests per minute' of service 'mybusinessaccountmanagement.googleapis.com' for consumer 'project",
+  "avgRating": null,
+  "totalReviews": 0,
+  "recentReviews": []
+}

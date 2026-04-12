@@ -39,6 +39,7 @@ def pull():
     api = build('analyticsdata', 'v1beta', credentials=creds)
 
     # This week vs last week
+    # NOTE: GA4 returns the date range 'name' value in dimensionValues, not 'date_range_0'
     compare = api.properties().runReport(property=PROPERTY, body={
         'dateRanges': [
             {'startDate': '7daysAgo', 'endDate': 'today', 'name': 'thisWeek'},
@@ -47,25 +48,31 @@ def pull():
         'metrics': [
             {'name': 'sessions'},
             {'name': 'totalUsers'},
+            {'name': 'newUsers'},
             {'name': 'screenPageViews'},
             {'name': 'averageSessionDuration'},
             {'name': 'bounceRate'},
-            {'name': 'engagedSessions'}
+            {'name': 'engagedSessions'},
+            {'name': 'engagementRate'}
         ]
     }).execute()
 
     periods = {}
     for row in compare.get('rows', []):
-        idx = row['dimensionValues'][0]['value']
-        name = 'thisWeek' if idx == 'date_range_0' else 'lastWeek'
+        # GA4 returns the name we gave the date range directly
+        name = row['dimensionValues'][0]['value']  # 'thisWeek' or 'lastWeek'
+        if name not in ('thisWeek', 'lastWeek'):
+            continue
         m = row['metricValues']
         periods[name] = {
             'sessions': int(m[0]['value']),
             'users': int(m[1]['value']),
-            'pageviews': int(m[2]['value']),
-            'avgDuration': round(float(m[3]['value'])),
-            'bounceRate': round(float(m[4]['value']) * 100, 1),
-            'engaged': int(m[5]['value'])
+            'newUsers': int(m[2]['value']),
+            'pageviews': int(m[3]['value']),
+            'avgDuration': round(float(m[4]['value'])),
+            'bounceRate': round(float(m[5]['value']) * 100, 1),
+            'engaged': int(m[6]['value']),
+            'engagementRate': round(float(m[7]['value']) * 100, 1)
         }
 
     # Calculate deltas
@@ -115,6 +122,24 @@ def pull():
             'sessions': int(row['metricValues'][0]['value'])
         })
 
+    # Device breakdown (mobile/desktop/tablet)
+    device_resp = api.properties().runReport(property=PROPERTY, body={
+        'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
+        'dimensions': [{'name': 'deviceCategory'}],
+        'metrics': [{'name': 'sessions'}],
+        'orderBys': [{'metric': {'metricName': 'sessions'}, 'desc': True}]
+    }).execute()
+
+    devices = []
+    total_device_sessions = 0
+    for row in device_resp.get('rows', []):
+        s = int(row['metricValues'][0]['value'])
+        total_device_sessions += s
+        devices.append({'device': row['dimensionValues'][0]['value'], 'sessions': s})
+    # Add percentage
+    for d in devices:
+        d['pct'] = round(d['sessions'] / total_device_sessions * 100) if total_device_sessions > 0 else 0
+
     # Daily trend (last 7 days)
     daily_resp = api.properties().runReport(property=PROPERTY, body={
         'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],
@@ -142,6 +167,7 @@ def pull():
         'deltas': deltas,
         'topPages': top_pages,
         'sources': sources,
+        'devices': devices,
         'daily': daily
     }
 
