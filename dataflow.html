@@ -11,8 +11,13 @@
     background: #0a0e1a;
     color: #e0e6f0;
     padding: 32px;
+    padding-top: calc(32px + 56px);
     min-height: 100vh;
   }
+  .dwe-header { position:fixed; top:0; left:0; right:0; padding:0.85rem 1.5rem; background:rgba(10,14,39,0.95); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,0.08); z-index:1000; display:flex; justify-content:space-between; align-items:center; }
+  .back-btn { padding:0.4rem 0.875rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#fff; text-decoration:none; font-size:0.8125rem; transition:all 0.2s; }
+  .back-btn:hover { background:rgba(255,255,255,0.2); }
+  .page-title { font-size:1rem; font-weight:700; color:#fff; }
   h1 { font-size: 28px; font-weight: 300; letter-spacing: 1px; margin-bottom: 4px; color: #fff; }
   h1 span { color: #00d4aa; font-weight: 600; }
   .subtitle { font-size: 13px; color: #6b7a99; margin-bottom: 28px; letter-spacing: 0.5px; }
@@ -161,6 +166,11 @@
 </style>
 </head>
 <body>
+<div class="dwe-header">
+  <a href="/" class="back-btn">← Dashboard</a>
+  <span class="page-title">Data Flow Diagram</span>
+  <div></div>
+</div>
 
 <h1><span>DWE</span> — Data Flow Diagram</h1>
 <p class="subtitle">How data moves through the Digital Workforce Ecosystem &bull; 7 Core Pipelines</p>

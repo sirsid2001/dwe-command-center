@@ -229,6 +229,12 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Daily Briefing page
+    if (pathname === '/daily-briefing' || pathname === '/daily-briefing.html') {
+        serveFile(res, path.join(__dirname, 'daily-briefing.html'), 'text/html', req);
+        return;
+    }
+
     // Vision Pulse API — serves vision-pulse-data.json
     if (pathname === '/api/vision-pulse') {
         const vpFile = path.join(__dirname, 'vision-pulse-data.json');
@@ -412,6 +418,9 @@ const server = http.createServer((req, res) => {
             break;
         case '/mc/daemon-health':
             getDaemonHealth(req, res);
+            break;
+        case '/mc/ops-board':
+            getOpsBoard(req, res);
             break;
         case '/mc/night-mode':
             if (req.method === 'POST' || req.method === 'GET') {
@@ -3601,6 +3610,133 @@ function getDaemonHealth(req, res) {
     });
 }
 
+// ── Live Ops Board ─────────────────────────────────────────────────────────────
+// Assembles a flat list of status rows from multiple sources.
+// Each row: { id, label, detail, status }   status: 'ok' | 'warn' | 'error' | 'idle'
+async function getOpsBoardData() {
+    const rows = [];
+    const now = Date.now();
+
+    // Helper: ms → "Xm ago" / "Xh ago"
+    function ago(ms) {
+        if (!ms || ms <= 0) return 'never';
+        const diff = now - ms;
+        if (diff < 0) return 'just now';
+        if (diff < 60000) return `${Math.round(diff / 1000)}s ago`;
+        if (diff < 3600000) return `${Math.round(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.round(diff / 3600000)}h ago`;
+        return `${Math.round(diff / 86400000)}d ago`;
+    }
+
+    // 1. Mission Control Server (self-check)
+    rows.push({ id: 'MC-01', label: 'Mission Control', detail: `Port ${PORT} · online`, status: 'ok' });
+
+    // 2. Ollama
+    try {
+        const ollamaRes = await new Promise(resolve => {
+            const r = http.get('http://127.0.0.1:11434/api/tags', res => {
+                let d = ''; res.on('data', c => d += c);
+                res.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { resolve(null); } });
+            });
+            r.on('error', () => resolve(null));
+            r.setTimeout(4000, () => { r.destroy(); resolve(null); });
+        });
+        const modelCount = ollamaRes && ollamaRes.models ? ollamaRes.models.length : 0;
+        rows.push({ id: 'ML-01', label: 'Ollama (Local LLM)', detail: ollamaRes ? `${modelCount} model${modelCount !== 1 ? 's' : ''} loaded` : 'Not responding', status: ollamaRes ? 'ok' : 'error' });
+    } catch(e) {
+        rows.push({ id: 'ML-01', label: 'Ollama (Local LLM)', detail: 'Not responding', status: 'error' });
+    }
+
+    // 3. Key daemons
+    const keyDaemons = [
+        { label: 'ai.dwe.audit-runner',          id: 'PL-01', name: 'Audit Runner' },
+        { label: 'ai.dwe.outreach-sender',        id: 'PL-02', name: 'Outreach Sender' },
+        { label: 'ai.dwe.daily-ops-log',          id: 'PL-03', name: 'Daily Ops Log' },
+        { label: 'ai.dwe.ops-log-task-creator',   id: 'PL-04', name: 'Ops Task Creator' },
+        { label: 'ai.openclaw.gateway',            id: 'OC-01', name: 'OpenClaw Gateway' },
+        { label: 'ai.dwe.notion-sync',             id: 'BR-01', name: 'Notion Sync' },
+        { label: 'ai.dwe.seed-watcher',            id: 'BR-02', name: 'Brain Seed Watcher' },
+        { label: 'ai.dwe.anomaly-check',           id: 'MN-01', name: 'Anomaly Check' },
+        { label: 'ai.dwe.ralphy-monitor',          id: 'MN-02', name: 'Ralphy Monitor' },
+        { label: 'ai.dwe.anita-notion-triage',     id: 'PM-01', name: 'Anita PM Triage' },
+    ];
+
+    await new Promise(resolve => {
+        exec('launchctl list 2>/dev/null | grep "ai\\."', { timeout: 5000 }, (error, stdout) => {
+            const daemonMap = {};
+            if (!error && stdout) {
+                stdout.trim().split('\n').forEach(line => {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 3) {
+                        const pid = parts[0] !== '-' ? parts[0] : null;
+                        const exitCode = parts[1] !== '-' ? parseInt(parts[1], 10) : null;
+                        daemonMap[parts[2]] = { pid, exitCode };
+                    }
+                });
+            }
+            keyDaemons.forEach(d => {
+                const info = daemonMap[d.label];
+                if (!info) {
+                    rows.push({ id: d.id, label: d.name, detail: 'Not loaded', status: 'idle' });
+                } else if (info.pid) {
+                    rows.push({ id: d.id, label: d.name, detail: `PID ${info.pid} · running`, status: 'ok' });
+                } else if (info.exitCode === 0 || info.exitCode === null) {
+                    rows.push({ id: d.id, label: d.name, detail: 'Scheduled · last exit 0', status: 'ok' });
+                } else {
+                    rows.push({ id: d.id, label: d.name, detail: `Exit ${info.exitCode} · check logs`, status: 'error' });
+                }
+            });
+            resolve();
+        });
+    });
+
+    // 4. Last backup time
+    const ocBackupMs = lastOpenclawBackupTime ? lastOpenclawBackupTime.getTime() : 0;
+    const backupAge = now - ocBackupMs;
+    rows.push({
+        id: 'BK-01',
+        label: 'OpenClaw Backup',
+        detail: ocBackupMs ? `Last: ${ago(ocBackupMs)}` : 'No backup found',
+        status: backupAge < 86400000 ? 'ok' : backupAge < 172800000 ? 'warn' : 'error'
+    });
+
+    // 5. Pipeline leads count (from pipeline endpoint cache if available)
+    try {
+        const pipeline = await localFetch('/mc/pipeline');
+        if (pipeline) {
+            const total = pipeline.totalLeads || pipeline.total || 0;
+            const responded = pipeline.responded || pipeline.responded_count || 0;
+            rows.push({ id: 'PL-05', label: 'Pipeline Leads', detail: `${total} total · ${responded} responded`, status: total > 0 ? 'ok' : 'idle' });
+        }
+    } catch(e) {}
+
+    // 6. n8n (check if webhook host reachable — we just check the mc/n8n-workflows cache)
+    try {
+        const n8n = await localFetch('/mc/n8n-workflows');
+        if (n8n && Array.isArray(n8n.workflows)) {
+            const active = n8n.workflows.filter(w => w.active).length;
+            const total = n8n.workflows.length;
+            rows.push({ id: 'N8-01', label: 'n8n Workflows', detail: `${active} active / ${total} total`, status: active > 0 ? 'ok' : 'warn' });
+        } else {
+            rows.push({ id: 'N8-01', label: 'n8n Workflows', detail: n8n ? 'Data unavailable' : 'Not reachable', status: 'warn' });
+        }
+    } catch(e) {
+        rows.push({ id: 'N8-01', label: 'n8n Workflows', detail: 'Not reachable', status: 'error' });
+    }
+
+    return { rows, ts: new Date().toISOString() };
+}
+
+function getOpsBoard(req, res) {
+    getOpsBoardData().then(data => {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify(data));
+    }).catch(e => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ rows: [], ts: new Date().toISOString(), error: e.message }));
+    });
+}
+
 function getAgentRouting(req, res) {
     const agents = [
         { id: 'cto',            name: 'Steve',          emoji: '💻', role: 'Technical & infrastructure',     channel: 'Telegram @DWE_CTO_Bot' },
@@ -6476,6 +6612,7 @@ function wsPushJakeInbox()  { return wsPushSingle('jake-inbox',       '/mc/jake-
 function wsPushPipeline()   { return wsPushSingle('pipeline-push',    '/mc/pipeline'); }
 function wsPushYtIntel()    { return wsPushSingle('yt-intel',         '/mc/content-intel'); }
 function wsPushMeeting()    { return wsPushSingle('meeting-status',   '/mc/meeting-status'); }
+function wsPushOpsBoard()   { return wsPushSingle('ops-board',         '/mc/ops-board'); }
 
 async function wsPushVisionScore() {
     if (wss.clients.size === 0) return;
@@ -6508,6 +6645,7 @@ wss.on('connection', (ws, req) => {
     wsPushYtIntel();
     wsPushMeeting();
     wsPushVisionScore();
+    wsPushOpsBoard();
     ws.on('error', () => {});
     ws.on('close', () => console.log('[WS] Client disconnected'));
 });
@@ -6538,6 +6676,8 @@ setInterval(wsPushComparison, 300000);
 setInterval(wsPushJakeInbox, 300000);
 // Push vision score every 300s
 setInterval(wsPushVisionScore, 300000);
+// Push ops board every 30s (real-time status board)
+setInterval(wsPushOpsBoard, 30000);
 
 console.log('[WS] WebSocket server ready at ws://localhost:' + PORT + '/ws');
 

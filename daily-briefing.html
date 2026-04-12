@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DWE | Daily Briefing</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Inter', sans-serif; }
+body { background: #030712; }
+
+.header {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 0.85rem 1.5rem;
+    background: rgba(10, 14, 39, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-left { display: flex; align-items: center; gap: 0.75rem; }
+.header-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+.header-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 0.75rem; }
+.back-btn { padding: 0.4rem 0.875rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; text-decoration: none; font-size: 0.8125rem; transition: all 0.2s; font-family: Inter, sans-serif; }
+.back-btn:hover { background: rgba(255,255,255,0.2); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 2s infinite; flex-shrink: 0; }
+.content { padding-top: 72px; }
+
+.tab-btn { transition: all 0.15s; }
+.tab-btn.active { background: #1f2937; color: #fff; border: 1px solid #374151; }
+.tab-btn:not(.active) { color: #4b5563; }
+.tab-btn:not(.active):hover { color: #9ca3af; }
+.check-row { transition: all 0.15s; cursor: pointer; }
+.check-row:hover .check-box { border-color: #6b7280; }
+.flow-step { transition: all 0.15s; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-200">
+
+<!-- Fixed Header (matches site standard) -->
+<div class="header">
+  <div class="header-left">
+    <div class="live-dot"></div>
+    <div>
+      <div class="header-title">🗓️ Daily Briefing</div>
+      <div class="header-sub">Thursday, April 9, 2026 · General Overview + DWE/Business</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="text-align:right;">
+      <div style="font-size:1rem;font-weight:700;color:#fff;">$7,203<span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:400;margin-left:4px;">/ mo</span></div>
+      <div style="font-size:0.65rem;color:#4ade80;font-family:monospace;">Cash Flow: $1,659</div>
+    </div>
+    <a href="/" class="back-btn">← Dashboard</a>
+  </div>
+</div>
+
+<div class="content">
+<div class="max-w-3xl mx-auto px-4 py-4">
+
+  <!-- Mindset Strip -->
+  <div id="mindset-strip" class="mb-4 p-3 bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-purple-500/20 rounded-xl cursor-pointer" onclick="toggleMindset()">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span>💭</span>
+        <span class="text-xs font-semibold text-purple-300 uppercase tracking-widest">Chief Aim · Daily YWYC</span>
+      </div>
+      <span id="mindset-caret" class="text-xs text-gray-500">▼ expand</span>
+    </div>
+    <div id="mindset-body" class="hidden mt-3 space-y-3">
+      <p class="text-sm text-purple-200 italic leading-relaxed">"I am earning $100,000 per month in passive income through my Digital Wealth Ecosystem. It flows automatically, without trading time for money. This income fuels my freedom, pays off all debt, allows me to leave the rat race, and gives me time to travel, mentor others, and build legacy with my family."</p>
+      <div class="space-y-1">
+        <p class="text-xs text-gray-400 font-mono">→ I was born to win. I am winning.</p>
+        <p class="text-xs text-gray-400 font-mono">→ Good things always happen to me.</p>
+        <p class="text-xs text-gray-400 font-mono">→ I'm living free. The system works for me.</p>
+        <p class="text-xs text-gray-400 font-mono">→ $100K/month is already done — I'm just catching up to it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat Bar -->
+  <div class="grid grid-cols-4 gap-2 mb-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
+      <div class="text-base font-bold text-green-400">$1,659</div>
+      <div class="text-xs text-gray-500 mt-0.5">Cash Flow</div>
+      <div class="text-xs text-gray-600">this month</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
+      <div class="text-base font-bold text-blue-400">394</div>
+      <div class="text-xs text-gray-500 mt-0.5">Pipeline</div>
+      <div class="text-xs text-gray-600">total leads</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center" id="stat-daemons">
+      <div class="text-base font-bold text-red-400" id="stat-daemons-val">— OK</div>
+      <div class="text-xs text-gray-500 mt-0.5">Daemons</div>
+      <div class="text-xs text-gray-600" id="stat-daemons-sub">— errors</div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
+      <div class="text-base font-bold text-gray-400">Clear</div>
+      <div class="text-xs text-gray-500 mt-0.5">Calendar</div>
+      <div class="text-xs text-gray-600">no meetings</div>
+    </div>
+  </div>
+
+  <!-- CEO Flow Strip -->
+  <div class="mb-4 bg-gray-900 border border-gray-800 rounded-xl p-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-bold text-yellow-400 uppercase tracking-widest">⚡ CEO Productivity</span>
+      <span id="flow-progress-label" class="text-xs text-gray-500 font-mono">0/7 · 0% complete</span>
+    </div>
+    <div class="mb-3">
+      <div class="bg-gray-800 rounded-full h-1">
+        <div id="flow-progress-bar" class="bg-yellow-400 h-1 rounded-full transition-all" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="flex gap-1" id="flow-steps"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-0.5 mb-4 overflow-x-auto pb-1" id="tab-bar"></div>
+
+  <!-- Tab Content -->
+  <div id="tab-content"></div>
+
+  <!-- Footer -->
+  <div class="mt-6 flex items-center justify-between text-xs text-gray-700 font-mono border-t border-gray-800 pt-3">
+    <span>ANTIGRAVITY × DWE — Daily Briefing</span>
+    <span>Gmail · Notion · iMessage · GCal</span>
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const data = {
+  criticalFlags: [
+    { item: "Affirm AutoPay failed — $20.15 due today", source: "Gmail + NFCU SMS", priority: "urgent" },
+    { item: "5 daemon errors: cloudflared-bridge, proposal-generator, intel-dexscreener-whales, outreach-sender, reply-tracker", source: "Ops Log [TASK-2633]", priority: "critical" },
+    { item: "Super Agent Mode retro pending — run /sprint-retro in Jarvis", source: "iMessage", priority: "action" },
+    { item: "20 overdue tasks across all agents", source: "Ops Log [TASK-2634]", priority: "warning" },
+  ],
+  actionItems: [
+    { text: "Fix Affirm AutoPay", detail: "Log in and pay $20.15 manually before EOD", tag: "Finance", urgent: true },
+    { text: "Run /sprint-retro in Jarvis", detail: "Review Super Agent Mode results (1 cycle vs 92 morning run)", tag: "DWE Ops", urgent: true },
+    { text: "Approve Nicole's first opportunity pick", detail: "Target: April 10 deadline per Phase 2 plan", tag: "Strategy", urgent: true },
+    { text: "Review AWeber sender auth", detail: "Confirm TVC domain SPF/DKIM is valid post-update", tag: "TVC", urgent: false },
+    { text: "Check GA4 custom insight", detail: "Verify 'Test 2' trigger on theveteransconsultant.com", tag: "TVC", urgent: false },
+    { text: "Review Credit One docs", detail: "New paperless document posted on Visa ••••3708", tag: "Finance", urgent: false },
+    { text: "Re-sync CoinTracker wallets", detail: "Last synced Feb 9 — portfolio stale at $16.78", tag: "Finance", urgent: false },
+  ],
+  top3: [
+    { rank: 1, title: "Business Funding Brokerage as TVC Revenue Stream", score: 8.5, momentum: "rising", objectives: [1,2], why: "CEO-approved for pipeline scoring. Solves verified pain point for veteran-owned businesses. Agent-runnable with existing infrastructure. Nicole currently in POC phase.", nextStep: "CEO approval for first test — deadline April 10", tag: "CEO ACTION", tagColor: "red" },
+    { rank: 2, title: "Content Flywheel as Reusable DWE Pipeline IP", score: 7.8, momentum: "stalled", objectives: [1,2], why: "Platform IP — keyword-learning daemon dead, 0 new posts in 4+ days. CEO directive: treat as Pipeline #2. High multiplier if restored.", nextStep: "Reactivate keyword-learning daemon; assign CE", tag: "STALLED", tagColor: "orange" },
+    { rank: 3, title: "Reddit Scraper + Daily Top 3 Workflow (WF2 + WF12)", score: 7.2, momentum: "new", objectives: [2,3], why: "Both workflows show 'never run' — blocking Nicole's daily opportunity intel pipeline. Core infrastructure for Phase 2 execution.", nextStep: "Steve/CE to investigate why WF2 and WF12 never ran", tag: "BLOCKED", tagColor: "yellow" },
+  ],
+  strategicObjectives: [
+    { id: 1, title: "Financial Independence", current: "$7,203/mo", target: "$10,000/mo", progress: 72, status: "active", notes: "BYTNEX streams leading. 8 active income streams." },
+    { id: 2, title: "DWE Ecosystem Development", current: "Phase 2", target: "First handoff by June 1", progress: 45, status: "active", notes: "Nicole approved for first opportunity pick. 5 agents operational." },
+    { id: 3, title: "Eliminate High-Interest Debt", current: "Affirm autopay failed", target: "Zero high-interest debt", progress: 20, status: "at-risk", notes: "Affirm payment failed today. Credit One balance monitoring needed." },
+    { id: 4, title: "Maintain & Deploy Reserves", current: "$1,659 cash flow", target: "Reserve deployed strategically", progress: 35, status: "active", notes: "CoinTracker sync overdue since Feb 9. Crypto portfolio stale." },
+    { id: 5, title: "Family Trust & Governance", current: "Documenting", target: "All streams as family assets", progress: 15, status: "pending", notes: "Income streams documented in Notion. Formal trust structure TBD." },
+  ],
+  pipeline: {
+    stages: [
+      { label: "New", count: 74, trend: "-13", dir: "down" },
+      { label: "Audited", count: 276, trend: "+31", dir: "up" },
+      { label: "Emailed", count: 6, trend: "0", dir: "flat" },
+      { label: "Responded", count: 9, trend: "0", dir: "flat" },
+      { label: "Outreach Sent", count: 2, trend: "new", dir: "new" },
+    ],
+    outreach: ["Howard Air & Plumbing", "Family owned HVAC — San Antonio, TX", "HVAC Company — San Antonio, TX", "Best-Rated HVAC — Austin, TX"],
+  },
+  financeAlerts: [
+    { msg: "Affirm AutoPay failed — $20.15 due today", sub: "Navy Federal card 1156 declined. Pay manually.", level: "red" },
+    { msg: "CoinTracker wallet sync overdue since Feb 9", sub: "Portfolio showing $16.78 — reconnect wallets.", level: "yellow" },
+    { msg: "Credit One — New document on Visa ••••3708", sub: "Paperless document posted. Sign in to view.", level: "yellow" },
+  ],
+  financeStreams: [
+    { name: "BYTNEX Hybrid DeFi 60+84", daily: "$121.06", monthly: "$3,632", tier: "high" },
+    { name: "BYTNEX Hybrid DeFi 24", daily: "$32.42", monthly: "$973", tier: "high" },
+    { name: "Crypto: MQT Golden Hatchery", daily: "$22.90", monthly: "$709", tier: "medium" },
+    { name: "BitLoop 2204", daily: "$18.89", monthly: "$529", tier: "high" },
+    { name: "BitLoop 1200", daily: "$10.74", monthly: "$301", tier: "high" },
+    { name: "BitLoop 1261", daily: "$8.56", monthly: "$120", tier: "medium" },
+  ],
+  email: [
+    { from: "Affirm", subject: "AutoPay failed — action required", tag: "URGENT", color: "red" },
+    { from: "Navy Federal", subject: "$20.15 at Affirm declined on card 1156", tag: "ALERT", color: "red" },
+    { from: "AWeber", subject: "Your deliverability protection just got stronger", tag: "TVC", color: "blue" },
+    { from: "Google Analytics", subject: "New Insight: Test 2 — theveteransconsultant.com", tag: "TVC", color: "blue" },
+    { from: "Credit One Bank", subject: "New Document Ready — Visa ••••3708", tag: "Finance", color: "yellow" },
+    { from: "CoinTracker", subject: "Crypto portfolio update — sync overdue since Feb 9", tag: "Finance", color: "yellow" },
+  ],
+  agents: [
+    { name: "Steve (CTO)", status: "1 overdue, 0 in progress", state: "warning" },
+    { name: "CE (Chief Eng)", status: "2 overdue, 0 in progress", state: "warning" },
+    { name: "Nicole (CIO)", status: "4 overdue, 9 responded leads — top 3 ready", state: "action" },
+    { name: "Anita (COO)", status: "20 overdue across system", state: "critical" },
+    { name: "Fran (CFO)", status: "5 overdue tasks", state: "warning" },
+    { name: "Jarvis", status: "Sprint retro ready — run /sprint-retro", state: "action" },
+  ],
+  daemonErrors: ["cloudflared-bridge", "proposal-generator", "intel-dexscreener-whales", "outreach-sender", "reply-tracker"],
+  n8nWorkflows: [
+    { name: "WF2: Reddit Scraper", category: "Gate 1" },
+    { name: "WF12: Daily Top 3", category: "Gate 3" },
+    { name: "WF8: Tri-Factor", category: "Gate 2" },
+  ],
+  tomorrow: { ceo: "7 overdue tasks", engineering: "Steve: 1 overdue · CE: 2 overdue", revenue: "6 awaiting reply · 9 responded", finance: "5 overdue tasks", pm: "0 overdue tasks" },
+  superAgent: {
+    morning: { time: "11:33 AM", cycles: 92, tasks: 386 },
+    evening: { time: "6:27 PM", cycles: 1, tasks: 342 },
+  },
+  flywheel: { status: "stalled", keywordLearned: "why is my website not getting traffic", daemonStatus: "Dead — 0 new posts in 4+ days" },
+  stats: { monthly: "$7,203", cashFlow: "$1,659", longTerm: "$5,544", pipeline: 394, daemonsOk: 17, daemonsScheduled: 93, daemonsError: 5 },
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+const state = {
+  activeTab: "overview",
+  flowChecked: {},
+  flagsChecked: {},
+  actionsChecked: {},
+  top3Checked: {},
+  objChecked: {},
+  outreachChecked: {},
+  wfChecked: {},
+  financeAlertsChecked: {},
+  agentsChecked: {},
+  daemonsChecked: {},
+  emailChecked: {},
+  rolesChecked: {},
+  // filter toggles
+  filterFlags: false, filterActions: false, filterTop3: false,
+  filterObj: false, filterOutreach: false, filterWf: false,
+  filterFinAlerts: false, filterAgents: false, filterDaemons: false,
+  filterEmail: false, filterRoles: false,
+  // task panel
+  taskPanel: null, // 'overview'|'top3'|etc
+  taskLaunched: {},
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function h(id, html) { const el = document.getElementById(id); if(el) el.innerHTML = html; }
+function el(id) { return document.getElementById(id); }
+function openLink(url) {
+  if (!url) return;
+  const a = document.createElement('a');
+  a.href = url;
+  if (url.startsWith('http://') || url.startsWith('https://')) { a.target='_blank'; a.rel='noreferrer'; }
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+const TAG_COLORS = {
+  red:    "bg-red-500/20 text-red-400 border-red-500/30",
+  blue:   "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  yellow: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  green:  "bg-green-500/20 text-green-400 border-green-500/30",
+  orange: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  purple: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  gray:   "bg-gray-500/20 text-gray-400 border-gray-500/30",
+};
+function tag(label, color) {
+  return `<span class="text-xs px-2 py-0.5 rounded border font-mono font-semibold tracking-wide ${TAG_COLORS[color]||TAG_COLORS.gray}">${label}</span>`;
+}
+
+const PRIORITY_BAR = { urgent:"bg-red-500", critical:"bg-red-700", action:"bg-yellow-500", warning:"bg-orange-500" };
+const PRIORITY_BADGE = {
+  urgent:   "bg-red-500/20 text-red-400 border-red-500/30",
+  critical: "bg-red-700/20 text-red-300 border-red-700/30",
+  action:   "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  warning:  "bg-orange-500/20 text-orange-400 border-orange-500/30",
+};
+
+function notionPriority(isFlag, flagPriority, isUrgent) {
+  if (isFlag) {
+    if (flagPriority === "critical") return { label: "Critical", cls: "bg-red-500/20 text-red-400 border-red-500/30" };
+    if (flagPriority === "urgent" || flagPriority === "action") return { label: "High", cls: "bg-orange-500/20 text-orange-400 border-orange-500/30" };
+    return { label: "Medium", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" };
+  }
+  return isUrgent
+    ? { label: "High", cls: "bg-orange-500/20 text-orange-400 border-orange-500/30" }
+    : { label: "Medium", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" };
+}
+
+function checkBox(isDone, isFlag, isUrgent) {
+  const cls = isDone
+    ? "bg-green-500/30 border-green-500"
+    : isFlag ? "border-gray-600" : isUrgent ? "border-red-500" : "border-gray-600";
+  return `<div class="check-box w-4 h-4 mt-0.5 rounded border flex-shrink-0 flex items-center justify-center ${cls}">${isDone?'<span style="color:#4ade80;font-size:10px;line-height:1">✓</span>':''}</div>`;
+}
+
+function progressBar(pct, color="bg-blue-500") {
+  return `<div class="flex-1 bg-gray-800 rounded-full h-1.5"><div class="${color} h-1.5 rounded-full transition-all" style="width:${pct}%"></div></div>`;
+}
+
+function checklistHeader(icon, title, done, total, filterKey, filterLabel, activeLabel, progColor, remColor) {
+  const filterActive = state[filterKey];
+  const filterBtn = `<button onclick="toggleFilter('${filterKey}')" class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${filterActive ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-gray-200'}">
+    ${filterActive ? `⚡ ${activeLabel}` : `⚡ ${filterLabel}`}
+  </button>`;
+  const rem = done>0 ? `<span class="ml-2 font-mono ${remColor||'text-green-400'}">· ${total-done} remaining</span>` : '';
+  return `<div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">${icon}</span>
+      <div>
+        <h2 class="text-sm font-bold text-white uppercase tracking-widest">${title}</h2>
+        <p class="text-xs text-gray-500">${done}/${total} reviewed${rem}</p>
+      </div>
+    </div>
+    ${filterBtn}
+  </div>
+  <div class="mb-3"><div class="bg-gray-800 rounded-full h-1.5"><div class="${progColor||'bg-green-500'} h-1.5 rounded-full transition-all" style="width:${total>0?(done/total*100):0}%"></div></div></div>`;
+}
+
+function card(inner, extra="") {
+  return `<div class="bg-gray-900 border border-gray-800 rounded-xl p-4 ${extra}">${inner}</div>`;
+}
+
+// ── Create Tasks Panel ────────────────────────────────────────────────────────
+function buildPendingTasks(tabId) {
+  const tasks = [];
+  if (tabId === "overview") {
+    data.criticalFlags.forEach((f,i) => { if(!state.flagsChecked[i]) tasks.push({text:f.item,detail:f.source,isFlag:true,isUrgent:false,flagPriority:f.priority,_i:i,_sec:"flag"}); });
+    data.actionItems.forEach((a,i) => { if(!state.actionsChecked[i]) tasks.push({text:a.text,detail:a.detail,isFlag:false,isUrgent:a.urgent,flagPriority:null,_i:i,_sec:"action"}); });
+  } else if (tabId === "top3") {
+    data.top3.forEach((o,i) => { if(!state.top3Checked[i]) tasks.push({text:o.nextStep,detail:o.title,isFlag:false,isUrgent:o.tagColor==="red",flagPriority:null,_i:i,_sec:"top3"}); });
+  } else if (tabId === "objectives") {
+    data.strategicObjectives.forEach((so,i) => { if(!state.objChecked[i]) tasks.push({text:`Review SO${so.id}: ${so.title}`,detail:so.notes,isFlag:so.status==="at-risk",isUrgent:so.status==="at-risk",flagPriority:"warning",_i:i,_sec:"obj"}); });
+  } else if (tabId === "pipeline") {
+    data.n8nWorkflows.forEach((wf,i) => { if(!state.wfChecked[i]) tasks.push({text:`Fix ${wf.name}`,detail:`${wf.category} — never run`,isFlag:true,isUrgent:true,flagPriority:"urgent",_i:i,_sec:"wf"}); });
+    data.pipeline.outreach.forEach((b,i) => { if(!state.outreachChecked[i]) tasks.push({text:`Follow up: ${b}`,detail:"Awaiting reply",isFlag:false,isUrgent:false,flagPriority:null,_i:i,_sec:"out"}); });
+  } else if (tabId === "finance") {
+    data.financeAlerts.forEach((a,i) => { if(!state.financeAlertsChecked[i]) tasks.push({text:a.msg,detail:a.sub,isFlag:a.level==="red",isUrgent:a.level==="red",flagPriority:a.level==="red"?"urgent":"warning",_i:i,_sec:"fa"}); });
+  } else if (tabId === "agents") {
+    data.agents.forEach((a,i) => { if(!state.agentsChecked[i]) tasks.push({text:`${a.name}: ${a.status}`,detail:"Review agent health",isFlag:a.state==="critical",isUrgent:a.state==="critical"||a.state==="action",flagPriority:a.state==="critical"?"critical":"action",_i:i,_sec:"agent"}); });
+    data.daemonErrors.forEach((d,i) => { if(!state.daemonsChecked[i]) tasks.push({text:`Fix daemon: ${d}`,detail:"Daemon error — investigate and restart",isFlag:true,isUrgent:true,flagPriority:"critical",_i:i,_sec:"daemon"}); });
+  } else if (tabId === "tomorrow") {
+    data.email.forEach((e,i) => { if(!state.emailChecked[i]) tasks.push({text:e.subject,detail:`From: ${e.from}`,isFlag:e.color==="red",isUrgent:e.color==="red",flagPriority:e.color==="red"?"urgent":"action",_i:i,_sec:"email"}); });
+    [["CEO",data.tomorrow.ceo],["Engineering",data.tomorrow.engineering],["Revenue (Nicole)",data.tomorrow.revenue],["Finance (Fran)",data.tomorrow.finance],["PM (Anita)",data.tomorrow.pm]].forEach(([l,v],i) => {
+      if(!state.rolesChecked[i]) tasks.push({text:`Prep ${l} queue for tomorrow`,detail:v,isFlag:false,isUrgent:false,flagPriority:null,_i:i,_sec:"role"});
+    });
+  }
+  return tasks;
+}
+
+function renderTaskPanel(tabId) {
+  const tasks = buildPendingTasks(tabId);
+  if (state.taskLaunched[tabId]) {
+    return `<div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+      <p class="text-sm font-bold text-green-400 mb-1">🚀 Sent to Notion</p>
+      <p class="text-xs text-gray-500">A browser tab opened to create your tasks. Check Notion in a moment.</p>
+      <button onclick="resetTaskLaunched('${tabId}')" class="mt-3 w-full text-xs text-gray-600 hover:text-gray-400 underline">Reset</button>
+    </div>`;
+  }
+  if (state.taskPanel === tabId) {
+    const rows = tasks.map(t => {
+      const np = notionPriority(t.isFlag, t.flagPriority, t.isUrgent);
+      return `<div class="flex items-start gap-2 p-2 rounded-lg ${t.isFlag?'bg-red-500/10 border border-red-500/20':'bg-gray-800/50'}">
+        <span class="text-xs mt-0.5 flex-shrink-0">${t.isFlag?'🚨':'✅'}</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-white font-medium leading-snug">${t.text}</p>
+          <p class="text-xs text-gray-500 mt-0.5 truncate">${t.detail}</p>
+        </div>
+        <span class="text-xs px-1.5 py-0.5 rounded border font-mono flex-shrink-0 ${np.cls}">${np.label}</span>
+      </div>`;
+    }).join('');
+    return card(`<div class="flex items-center justify-between mb-4">
+        <div><h3 class="text-sm font-bold text-white">🎫 CEO Task Queue</h3>
+        <p class="text-xs text-gray-500 mt-0.5">${tasks.length} tasks → Notion</p></div>
+        <button onclick="closeTaskPanel()" class="text-xs text-gray-600 hover:text-gray-400">✕ cancel</button>
+      </div>
+      <div class="flex gap-2 mb-3">
+        <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <span class="text-xs text-gray-500 font-mono">Role:</span><span class="text-xs text-blue-300 font-mono font-bold">CEO</span>
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+          <span class="text-xs text-gray-500 font-mono">Tag:</span><span class="text-xs text-purple-300 font-mono font-bold">02 – Priority</span>
+        </div>
+      </div>
+      <p class="text-xs text-gray-600 font-mono mb-2">↳ Opens a browser tab → creates directly in Notion</p>
+      <div class="space-y-1.5 mb-4 max-h-64 overflow-y-auto">${rows}</div>
+      <button onclick="launchTasks('${tabId}')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-colors">
+        Create ${tasks.length} Tasks → Notion
+      </button>`, "border-blue-500/30");
+  }
+  const disabled = tasks.length === 0;
+  return `<button onclick="openTaskPanel('${tabId}')" ${disabled?"disabled":""} class="w-full py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${disabled?'bg-gray-800/30 text-gray-600 border-gray-700/30 cursor-not-allowed':'bg-blue-500/10 text-blue-300 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'}">
+    🎫 Create CEO Tasks
+    ${!disabled?`<span class="bg-blue-500/30 text-blue-200 text-xs px-2 py-0.5 rounded-full font-mono">${tasks.length} pending</span>`:''}
+  </button>`;
+}
+
+// ── Tab Renderers ─────────────────────────────────────────────────────────────
+function renderOverview() {
+  const flagsDone = Object.values(state.flagsChecked).filter(Boolean).length;
+  const visFlags = data.criticalFlags.map((f,i)=>({...f,i})).filter(({i})=>!state.filterFlags||!state.flagsChecked[i]);
+  const flagRows = visFlags.length === 0
+    ? `<div class="p-4 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All flags addressed!</div>`
+    : visFlags.map(({i,item,source,priority}) => {
+        const done = !!state.flagsChecked[i];
+        const bar = done ? "bg-gray-700" : (PRIORITY_BAR[priority]||"bg-gray-500");
+        const badge = done ? "bg-gray-700/20 text-gray-600 border-gray-700/30" : (PRIORITY_BADGE[priority]||"");
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${done?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60'}" onclick="toggle('flagsChecked',${i})">
+          ${checkBox(done,true,false)}
+          <div class="w-1 self-stretch rounded-full flex-shrink-0 ${bar}"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm ${done?'line-through text-gray-600':'text-white'}">${item}</p>
+            <p class="text-xs text-gray-500 mt-0.5 font-mono">${source}</p>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded border font-mono font-semibold tracking-wide flex-shrink-0 ${badge}">${priority.toUpperCase()}</span>
+        </div>`;
+      }).join('');
+
+  const actionsDone = Object.values(state.actionsChecked).filter(Boolean).length;
+  const visActions = data.actionItems.map((a,i)=>({...a,i})).filter(({i})=>!state.filterActions||!state.actionsChecked[i]);
+  const actionRows = visActions.length === 0
+    ? `<div class="p-4 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All items reviewed!</div>`
+    : visActions.map(({i,text,detail,tag:t,urgent}) => {
+        const done = !!state.actionsChecked[i];
+        const tagColor = done?"gray":urgent?"red":t==="TVC"?"blue":t==="Strategy"?"purple":"yellow";
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${done?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('actionsChecked',${i})">
+          ${checkBox(done,false,urgent)}
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-medium ${done?'line-through text-gray-600':urgent?'text-white':'text-gray-300'}">${text}</span>
+            <p class="text-xs text-gray-500 mt-0.5">${detail}</p>
+          </div>
+          ${tag(t,tagColor)}
+        </div>`;
+      }).join('');
+
+  return `<div class="space-y-4">
+    ${card(checklistHeader('🚨','Critical Flags',flagsDone,data.criticalFlags.length,'filterFlags','Show Unaddressed','Unaddressed Only','bg-orange-500','text-orange-400')+`<div class="space-y-2">${flagRows}</div>`)}
+    ${card(checklistHeader('✅','Action Items',actionsDone,data.actionItems.length,'filterActions','Show Unfinished','Unfinished Only','bg-green-500','text-green-400')+`<div class="space-y-2">${actionRows}</div>`)}
+    ${renderTaskPanel('overview')}
+  </div>`;
+}
+
+function renderTop3() {
+  const done = Object.values(state.top3Checked).filter(Boolean).length;
+  const vis = data.top3.map((o,i)=>({...o,i})).filter(({i})=>!state.filterTop3||!state.top3Checked[i]);
+  const momentumIcon = m => m==="rising"?"🔼":m==="stalled"?"⏸️":m==="new"?"🔵":"➡️";
+  const momentumColor = m => m==="rising"?"text-green-400":m==="stalled"?"text-orange-400":m==="new"?"text-blue-400":"text-gray-400";
+  const rows = vis.length===0
+    ? `<div class="p-4 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All opportunities reviewed!</div>`
+    : vis.map(({i,rank,title,score,momentum,objectives,why,nextStep,tag:t,tagColor})=>{
+        const isDone = !!state.top3Checked[i];
+        const soTags = objectives.map(o=>`<span class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded font-mono">SO${o}</span>`).join('');
+        return `<div class="p-3 rounded-lg border cursor-pointer transition-all ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-gray-700/30 hover:border-gray-600/50'}" onclick="toggle('top3Checked',${i})">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex items-center gap-2">
+              ${checkBox(isDone,false,false)}
+              <span class="text-xl font-black text-gray-700">#${rank}</span>
+              <div>
+                <p class="text-sm font-bold ${isDone?'line-through text-gray-600':'text-white'}">${title}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="text-xs text-gray-500 font-mono">Score: <span class="text-white font-bold">${score}</span></span>
+                  <span class="text-xs font-mono ${momentumColor(momentum)}">${momentumIcon(momentum)} ${momentum}</span>
+                </div>
+              </div>
+            </div>
+            ${tag(t, isDone?"gray":tagColor)}
+          </div>
+          ${!isDone?`<div class="flex gap-1 mb-2 ml-6">${soTags}</div>
+          <p class="text-xs text-gray-400 mb-2 ml-6 leading-relaxed">${why}</p>
+          <div class="p-2 bg-gray-700/30 rounded-lg ml-6"><p class="text-xs text-white font-medium">→ Next: <span class="text-gray-400 font-normal">${nextStep}</span></p></div>`:''}
+        </div>`;
+      }).join('');
+  return `<div class="space-y-4">
+    <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg"><p class="text-xs text-purple-300 font-mono">📊 NICOLE (CIO) — Daily Opportunity Brief · April 09, 2026 · Brain-scored + Objective-aligned</p></div>
+    ${card(checklistHeader('📊','Opportunities',done,data.top3.length,'filterTop3','Show Unreviewed','Unreviewed Only')+`<div class="space-y-3">${rows}</div>`)}
+    ${renderTaskPanel('top3')}
+  </div>`;
+}
+
+function renderObjectives() {
+  const done = Object.values(state.objChecked).filter(Boolean).length;
+  const vis = data.strategicObjectives.map((so,i)=>({...so,i})).filter(({i})=>!state.filterObj||!state.objChecked[i]);
+  const statusDot = s => s==="active"?"bg-green-500":s==="at-risk"?"bg-red-500":"bg-gray-500";
+  const barColor = s => s==="active"?"bg-green-500":s==="at-risk"?"bg-red-500":"bg-gray-600";
+  const rows = vis.length===0
+    ? `<div class="p-4 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All objectives reviewed!</div>`
+    : vis.map(({i,id,title,current,target,progress,status,notes})=>{
+        const isDone = !!state.objChecked[i];
+        return `<div class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('objChecked',${i})">
+          ${checkBox(isDone,false,false)}
+          <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${statusDot(status)}"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-gray-500">SO${id}</span>
+                <p class="text-sm font-bold ${isDone?'line-through text-gray-600':'text-white'}">${title}</p>
+              </div>
+              <span class="text-xs text-gray-500 font-mono flex-shrink-0">${progress}%</span>
+            </div>
+            <div class="flex items-center gap-2 mb-2">${progressBar(progress,barColor(status))}</div>
+            ${!isDone?`<div class="flex gap-4 mb-1">
+              <div><p class="text-xs text-gray-500">Current</p><p class="text-xs text-white font-medium">${current}</p></div>
+              <div><p class="text-xs text-gray-500">Target</p><p class="text-xs text-white font-medium">${target}</p></div>
+            </div><p class="text-xs text-gray-500">${notes}</p>`:''}
+          </div>
+        </div>`;
+      }).join('');
+  return `<div class="space-y-4">
+    <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg"><p class="text-xs text-blue-300 font-mono">Chief Aim: $100K/month passive income via DWE · Current: $7,203/mo · Gap: $92,797/mo</p></div>
+    ${card(checklistHeader('🎯','Strategic Objectives',done,data.strategicObjectives.length,'filterObj','Show Unreviewed','Unreviewed Only','bg-blue-500','text-blue-400')+`<div class="space-y-2">${rows}</div>`)}
+    ${renderTaskPanel('objectives')}
+  </div>`;
+}
+
+function renderPipeline() {
+  // Stage bars
+  const stageBars = data.pipeline.stages.map((s,i)=>{
+    const dir = s.dir==="up"?"▲ text-green-400":s.dir==="down"?"▼ text-red-400":"— text-gray-500";
+    const [arrow,cls] = dir.split(' ');
+    return `<div class="flex items-center gap-3">
+      <div class="w-28 text-xs text-gray-400 font-mono">${s.label}</div>
+      <div class="flex-1 bg-gray-800 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width:${Math.min((s.count/394)*100,100)}%"></div></div>
+      <div class="w-10 text-right text-sm font-bold text-white">${s.count}</div>
+      <div class="w-12 text-right text-xs font-mono ${cls}">${arrow} ${s.trend}</div>
+    </div>`;
+  }).join('');
+
+  const outDone = Object.values(state.outreachChecked).filter(Boolean).length;
+  const visOut = data.pipeline.outreach.map((b,i)=>({b,i})).filter(({i})=>!state.filterOutreach||!state.outreachChecked[i]);
+  const outRows = visOut.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All outreach reviewed!</div>`
+    : visOut.map(({b,i})=>{
+        const isDone=!!state.outreachChecked[i];
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('outreachChecked',${i})">
+          ${checkBox(isDone,false,false)}
+          <span class="text-sm flex-1 ${isDone?'line-through text-gray-600':'text-gray-300'}">${b}</span>
+          ${tag(isDone?"Reviewed":"Awaiting Reply","gray")}
+        </div>`;
+      }).join('');
+
+  const wfDone = Object.values(state.wfChecked).filter(Boolean).length;
+  const visWf = data.n8nWorkflows.map((wf,i)=>({...wf,i})).filter(({i})=>!state.filterWf||!state.wfChecked[i]);
+  const wfRows = visWf.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All workflows reviewed!</div>`
+    : visWf.map(({i,name,category})=>{
+        const isDone=!!state.wfChecked[i];
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60'}" onclick="toggle('wfChecked',${i})">
+          ${checkBox(isDone,!isDone,true)}
+          <div class="flex-1">
+            <p class="text-sm ${isDone?'line-through text-gray-600':'text-white'}">${name}</p>
+            <p class="text-xs text-gray-500 font-mono">${category}</p>
+          </div>
+          ${tag(isDone?"Reviewed":"NEVER RUN",isDone?"gray":"red")}
+        </div>`;
+      }).join('');
+
+  return `<div class="space-y-4">
+    ${card(`<div class="flex items-center gap-2 mb-3"><span class="text-lg">📊</span><div><h2 class="text-sm font-bold text-white uppercase tracking-widest">Pipeline Status</h2><p class="text-xs text-gray-500">DWE Marketing — Pipeline #1</p></div></div>
+      <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg"><span class="text-2xl font-bold text-white">394</span><span class="text-gray-500 ml-2 text-sm">Total Leads</span></div>
+      <div class="space-y-2">${stageBars}</div>`)}
+    ${card(checklistHeader('📤','Outreach Queue',outDone,data.pipeline.outreach.length,'filterOutreach','Show Pending','Pending Only','bg-blue-500','text-blue-400')+`<div class="space-y-2">${outRows}</div>`)}
+    ${card(`<div class="p-2 bg-red-500/10 border border-red-500/20 rounded-lg mb-3"><p class="text-xs text-red-300">⚠️ All 3 workflows show "never run" — blocking Nicole's daily intel pipeline</p></div>`+checklistHeader('⚙️','n8n Workflow KPIs',wfDone,data.n8nWorkflows.length,'filterWf','Show Blocked','Blocked Only','bg-red-500','text-red-400')+`<div class="space-y-2">${wfRows}</div>`)}
+    ${renderTaskPanel('pipeline')}
+  </div>`;
+}
+
+function renderFinance() {
+  const metrics = `<div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center"><div class="text-xl font-bold text-green-400">$7,203</div><div class="text-xs text-gray-500 mt-1">Monthly Income</div></div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center"><div class="text-xl font-bold text-blue-400">$1,659</div><div class="text-xs text-gray-500 mt-1">Cash Flow</div></div>
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center"><div class="text-xl font-bold text-purple-400">$5,544</div><div class="text-xs text-gray-500 mt-1">Long-Term</div></div>
+  </div>`;
+
+  const streams = data.financeStreams.map(s=>`<div class="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg">
+    <div class="flex-1"><p class="text-sm text-white">${s.name}</p><p class="text-xs text-gray-500">${s.daily}/day</p></div>
+    <p class="text-sm font-bold text-green-400">${s.monthly}/mo</p>
+    ${tag(s.tier.toUpperCase(),s.tier==="high"?"green":"yellow")}
+  </div>`).join('');
+
+  const alertsDone = Object.values(state.financeAlertsChecked).filter(Boolean).length;
+  const visAlerts = data.financeAlerts.map((a,i)=>({...a,i})).filter(({i})=>!state.filterFinAlerts||!state.financeAlertsChecked[i]);
+  const alertRows = visAlerts.length===0
+    ? `<div class="p-4 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All alerts addressed!</div>`
+    : visAlerts.map(({i,msg,sub,level})=>{
+        const isDone=!!state.financeAlertsChecked[i];
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':level==='red'?'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('financeAlertsChecked',${i})">
+          ${checkBox(isDone,level==="red",level==="red")}
+          <div class="flex-1">
+            <p class="text-sm font-medium ${isDone?'line-through text-gray-600':level==='red'?'text-red-300':'text-yellow-300'}">${msg}</p>
+            <p class="text-xs text-gray-500 mt-0.5">${sub}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+  // Cashflow overview widget (inline)
+  const cashflowWidget = buildCashflowWidget();
+
+  return `<div class="space-y-4">
+    ${metrics}
+    ${cashflowWidget}
+    ${card(`<div class="flex items-center gap-2 mb-3"><span class="text-lg">💰</span><div><h2 class="text-sm font-bold text-white uppercase tracking-widest">Income Streams</h2><p class="text-xs text-gray-500">6 active streams</p></div></div><div class="space-y-2">${streams}</div>`)}
+    ${card(checklistHeader('⚠️','Finance Alerts',alertsDone,data.financeAlerts.length,'filterFinAlerts','Show Open','Open Only','bg-orange-500','text-orange-400')+`<div class="space-y-2">${alertRows}</div>`)}
+    ${renderTaskPanel('finance')}
+  </div>`;
+}
+
+function buildCashflowWidget() {
+  const income = [
+    {l:"Earned #1",a:"$3,200.00"},{l:"Earned #2",a:"$3,200.00"},{l:"Real Estate (NET)",a:"$500.00"},
+    {l:"Passive Portfolio - L3 ICFI",a:"$1,882.52"},{l:"VA Benefits",a:"$552.00"},
+  ];
+  const expenses = [
+    {l:"CC-Rflx-8711 (14th) $46",a:"$73.00"},{l:"CC-Pros-1620 (15th)",a:"$59.00"},{l:"CC Indigo 8183 (21st) ($40)",a:"$40.00"},
+    {l:"CC-CRED1-3708 (8th) $30",a:"$32.00"},{l:"CC-CRED1-1227 (22th)",a:"$41.00"},{l:"Fingerhut Fetti ($30)",a:"$26.00"},
+    {l:"CC-CRED1-1859 (28h)",a:"$44.00"},{l:"CC-WAL-5652 (10th)",a:"$46.00"},{l:"CC-CAP1-2235 (11th) $59",a:"$59.00"},
+    {l:"CC-Chase-3092 (20th) ($38)",a:"$38.00"},{l:"CC-Navy-0509 (19th & $73)",a:"$73.00"},{l:"CC-Fortiva-3528 (19th) ($65)",a:"$75.00"},
+    {l:"CC-Merr-9467 (9th) $83",a:"$83.00"},{l:"Citi",a:"$41.00"},{l:"CC-Merc-3951 $74",a:"$161.00"},
+    {l:"Affirm - Mower ($45.38) (15th)",a:"$46.00"},{l:"Affirm - General ($33.98) (15th)",a:"$34.00"},
+    {l:"Rent 1/2",a:"$1,300.00"},{l:"Rent 2/2",a:"$1,300.00"},{l:"D - Auto Loan ($268.70/2)",a:"$135.00"},
+    {l:"D - Auto Loan ($268.70/2)",a:"$136.00"},{l:"Food",a:"$100.00"},{l:"Gas 15",a:"$60.00"},
+    {l:"Gas 31",a:"$60.00"},{l:"Kids Insurance ($40.28)",a:"$40.28"},{l:"Apple Premier (Auto Renewal)",a:"$27.00"},
+    {l:"Food",a:"$100.00"},{l:"Lafayette Life Insurance",a:"$1,000.00"},{l:"AGIA - Hospital Income Protect",a:"$14.80"},
+    {l:"TVC Expenses",a:"$355.00"},
+  ];
+  const liabilities = [
+    {l:"2016 BMW X1 Loan - 1855",a:"$7,500.00"},{l:"CC-Merc-3951 $74",a:"$3,820.09"},{l:"Citi",a:"$3,211.56"},
+    {l:"CC-Navy-0509 (19th & $73)",a:"$2,875.15"},{l:"CC-Merr-9467 (9th) $83",a:"$2,412.85"},
+    {l:"CC-Chase-3092 (20th) ($38)",a:"$1,496.00"},{l:"CC-CAP1-2235 (11th) $59",a:"$1,391.92"},
+    {l:"CC-Fortiva-3528 (19th) ($65)",a:"$1,266.71"},{l:"CC-CRED1-1227 (22th)",a:"$1,121.00"},
+    {l:"CC-Rflx-8711 (14th) $46",a:"$994.58"},{l:"Affirm - Mower ($45.38) (15th)",a:"$951.68"},
+    {l:"CC-WAL-5652 (10th)",a:"$850.00"},{l:"CC-CRED1-1859 (28h)",a:"$760.00"},
+    {l:"Bread Financial Member Portal",a:"$615.58"},{l:"CC-CRED1-3708 (8th) $30",a:"$588.06"},
+    {l:"Affirm - General ($33.98) (15th)",a:"$569.80"},{l:"CC Indigo 8183 (21st) ($40)",a:"$285.60"},
+    {l:"Fingerhut Fetti ($30)",a:"$184.36"},
+  ];
+  const passivePct = Math.round((2934.52/9334.52)*100);
+  const incomeRows = income.map(x=>`<div class="flex items-center justify-between px-3 py-1.5" style="border-bottom:1px solid rgba(120,90,0,0.1)"><span class="text-xs" style="color:#2d2d2d">${x.l}</span><span class="text-xs font-mono font-semibold" style="color:#1a1a1a">${x.a}</span></div>`).join('');
+  const expRows = expenses.map(x=>`<div class="flex items-center justify-between px-3 py-1.5" style="border-bottom:1px solid rgba(120,90,0,0.1)"><span class="text-xs" style="color:#2d2d2d">${x.l}</span><span class="text-xs font-mono font-semibold" style="color:#1a1a1a">${x.a}</span></div>`).join('');
+  const liabRows = liabilities.map(x=>`<div class="flex items-center justify-between px-2 py-1.5" style="border-bottom:1px solid rgba(120,90,0,0.1)"><span class="text-xs truncate mr-2" style="color:#2d2d2d">${x.l}</span><span class="text-xs font-mono font-semibold whitespace-nowrap" style="color:#b91c1c">${x.a}</span></div>`).join('');
+  return `<div class="rounded-xl overflow-hidden border border-yellow-800/40" style="background:#e8d9a0">
+    <div class="flex items-center justify-between px-3 py-2" style="border-bottom:1px solid rgba(120,90,0,0.2)">
+      <span class="text-xs font-semibold" style="color:#555">Sidney Garcia</span>
+      <a href="https://docs.google.com/spreadsheets/d/1vTShVS1jhDi_laZYc6tZFLP9tLH1s0FFNcqEtG4WtxU/edit" target="_blank" rel="noreferrer" class="text-xs font-semibold hover:underline" style="color:#4f46e5">2025 Cashflow Overview ↗</a>
+    </div>
+    <div class="flex" style="max-height:480px">
+      <div class="flex-1 overflow-y-auto" style="border-right:1px solid rgba(120,90,0,0.15)">
+        <div class="flex justify-end px-3 pt-1 pb-0.5"><span class="text-xs font-medium" style="color:#0d9488">Cash Flow</span></div>
+        <div class="px-3 py-1.5" style="background:#9b7eca"><span class="text-xs font-bold tracking-widest text-white uppercase">INCOME</span></div>
+        ${incomeRows}
+        <div class="px-3 py-1.5 mt-0.5" style="background:#9b7eca"><span class="text-xs font-bold tracking-widest text-white uppercase">EXPENSES</span></div>
+        ${expRows}
+      </div>
+      <div class="overflow-y-auto flex flex-col gap-3 p-4" style="width:240px;flex-shrink:0">
+        <div class="text-center">
+          <p class="text-xs font-bold uppercase leading-snug" style="color:#333">INCREASE PASSIVE INCOME TO ESCAPE THE RAT RACE.</p>
+          <p class="text-xs font-semibold mt-1" style="color:#c2410c">TOTAL EXPENSES: $5,599.08</p>
+          <div class="mt-1.5 h-2 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.15)"><div class="h-full rounded-full" style="width:${passivePct}%;background:#9b7eca"></div></div>
+        </div>
+        <div class="text-center">
+          <p class="text-xs font-semibold uppercase tracking-wide" style="color:#555">PASSIVE INCOME:</p>
+          <p class="text-2xl font-bold" style="color:#111">$2,934.52</p>
+        </div>
+        <div class="rounded-lg p-3" style="border:2px solid #c9a227;background:rgba(255,255,255,0.45)">
+          <div class="flex items-center justify-between mb-2"><span class="text-sm font-bold" style="color:#222">CASH:</span><span class="text-lg font-bold" style="color:#111">$3,735.44</span></div>
+          <div style="border-top:1px solid rgba(201,162,39,0.4);padding-top:8px" class="space-y-1">
+            <div class="flex justify-between"><span class="text-xs font-semibold" style="color:#555">TOTAL INCOME:</span><span class="text-xs font-mono font-bold" style="color:#111">$9,334.52</span></div>
+            <div class="flex justify-between"><span class="text-xs font-semibold" style="color:#555">TOTAL EXPENSES:</span><span class="text-xs font-mono font-bold" style="color:#c2410c">$-5,599.08</span></div>
+            <div class="flex justify-between"><span class="text-xs font-semibold" style="color:#555">PAYDAY</span><span class="text-xs font-mono font-bold" style="color:#111">$3,200.00</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="px-3 py-1.5 rounded-t" style="background:#9b7eca"><span class="text-xs font-bold tracking-widest text-white uppercase">LIABILITIES</span></div>
+          ${liabRows}
+          <div class="flex items-center justify-between px-2 py-1.5 rounded-b" style="background:rgba(185,28,28,0.1);border-top:1px solid rgba(185,28,28,0.2)">
+            <span class="text-xs font-bold" style="color:#7f1d1d">TOTAL DEBT</span>
+            <span class="text-xs font-mono font-bold" style="color:#b91c1c">$28,757.88</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAgents() {
+  const stateStyle = { warning:{dot:"bg-yellow-500",text:"text-yellow-400"}, critical:{dot:"bg-red-500",text:"text-red-400"}, action:{dot:"bg-blue-400",text:"text-blue-400"}, ok:{dot:"bg-green-500",text:"text-green-400"} };
+  const agDone = Object.values(state.agentsChecked).filter(Boolean).length;
+  const visAg = data.agents.map((a,i)=>({...a,i})).filter(({i})=>!state.filterAgents||!state.agentsChecked[i]);
+  const agRows = visAg.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All agents reviewed!</div>`
+    : visAg.map(({i,name,status,state:s})=>{
+        const isDone=!!state.agentsChecked[i];
+        const ss=stateStyle[s]||stateStyle.ok;
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':s==='critical'?'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('agentsChecked',${i})">
+          ${checkBox(isDone,s==="critical",s==="critical"||s==="action")}
+          <div class="w-2 h-2 rounded-full flex-shrink-0 mt-1 ${isDone?'bg-gray-600':ss.dot}"></div>
+          <div class="flex-1">
+            <p class="text-sm font-medium ${isDone?'line-through text-gray-600':'text-white'}">${name}</p>
+            <p class="text-xs font-mono ${isDone?'text-gray-600':ss.text}">${status}</p>
+          </div>
+        </div>`;
+      }).join('');
+
+  const dmDone = Object.values(state.daemonsChecked).filter(Boolean).length;
+  const visDm = data.daemonErrors.map((d,i)=>({d,i})).filter(({i})=>!state.filterDaemons||!state.daemonsChecked[i]);
+  const dmRows = visDm.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All daemons reviewed!</div>`
+    : visDm.map(({d,i})=>{
+        const isDone=!!state.daemonsChecked[i];
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60'}" onclick="toggle('daemonsChecked',${i})">
+          ${checkBox(isDone,!isDone,true)}
+          <span class="text-sm font-mono flex-1 ${isDone?'line-through text-gray-600':'text-red-300'}">🔴 ${d}</span>
+          ${tag(isDone?"Reviewed":"ERROR",isDone?"gray":"red")}
+        </div>`;
+      }).join('');
+
+  return `<div class="space-y-4">
+    ${card(checklistHeader('🤖','Command Staff',agDone,data.agents.length,'filterAgents','Show Issues','Issues Only','bg-blue-500','text-blue-400')+`<div class="space-y-2">${agRows}</div>`)}
+    ${card(`<div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="p-3 rounded-lg border text-center bg-green-500/10 border-green-500/20"><div class="text-xl font-bold text-green-400">17</div><div class="text-xs text-gray-500">Running</div></div>
+      <div class="p-3 rounded-lg border text-center bg-blue-500/10 border-blue-500/20"><div class="text-xl font-bold text-blue-400">93</div><div class="text-xs text-gray-500">Scheduled</div></div>
+      <div class="p-3 rounded-lg border text-center bg-red-500/10 border-red-500/20"><div class="text-xl font-bold text-red-400">5</div><div class="text-xs text-gray-500">Errors</div></div>
+    </div>`+checklistHeader('🔧','Daemon Errors',dmDone,data.daemonErrors.length,'filterDaemons','Show Errors','Errors Only','bg-red-500','text-red-400')+`<div class="space-y-2">${dmRows}</div>`)}
+    ${card(`<div class="flex items-center gap-2 mb-3"><span class="text-lg">⚡</span><div><h2 class="text-sm font-bold text-white uppercase tracking-widest">Super Agent Mode</h2><p class="text-xs text-gray-500">Last run: April 8, 2026</p></div></div>
+      <div class="space-y-2">
+        <div class="p-3 bg-gray-800/50 rounded-lg flex justify-between items-center">
+          <div><p class="text-sm text-white">Morning Run (11:33 AM)</p><p class="text-xs text-gray-500">386 tasks in queue</p></div>
+          <div class="text-right"><p class="font-bold text-sm text-green-400">92 cycles</p><p class="text-xs text-gray-500">Complete</p></div>
+        </div>
+        <div class="p-3 bg-gray-800/50 rounded-lg flex justify-between items-center">
+          <div><p class="text-sm text-white">Evening Run (6:27 PM)</p><p class="text-xs text-gray-500">342 tasks in queue</p></div>
+          <div class="text-right"><p class="font-bold text-sm text-yellow-400">1 cycle</p><p class="text-xs text-gray-500">Investigate</p></div>
+        </div>
+        <div class="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+          <p class="text-sm text-blue-300">→ Sprint retro ready. Run <span class="font-mono bg-gray-800 px-1 rounded text-xs">/sprint-retro</span> in Jarvis.</p>
+        </div>
+      </div>`)}
+    ${renderTaskPanel('agents')}
+  </div>`;
+}
+
+function renderTomorrow() {
+  const roles = [
+    {icon:"👑",label:"CEO",val:data.tomorrow.ceo,color:"yellow"},
+    {icon:"🔧",label:"Engineering",val:data.tomorrow.engineering,color:"blue"},
+    {icon:"💰",label:"Revenue (Nicole)",val:data.tomorrow.revenue,color:"green"},
+    {icon:"📊",label:"Finance (Fran)",val:data.tomorrow.finance,color:"purple"},
+    {icon:"📋",label:"PM (Anita)",val:data.tomorrow.pm,color:"gray"},
+  ];
+  const colorMap = {yellow:"border-yellow-500/30 bg-yellow-500/10",blue:"border-blue-500/30 bg-blue-500/10",green:"border-green-500/30 bg-green-500/10",purple:"border-purple-500/30 bg-purple-500/10",gray:"border-gray-600/30 bg-gray-800/30"};
+  const textMap = {yellow:"text-yellow-400",blue:"text-blue-400",green:"text-green-400",purple:"text-purple-400",gray:"text-gray-400"};
+  const rolesDone = Object.values(state.rolesChecked).filter(Boolean).length;
+  const visRoles = roles.map((r,i)=>({...r,i})).filter(({i})=>!state.filterRoles||!state.rolesChecked[i]);
+  const roleRows = visRoles.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All queues reviewed!</div>`
+    : visRoles.map(({i,icon,label,val,color})=>{
+        const isDone=!!state.rolesChecked[i];
+        return `<div class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isDone?'opacity-50 border-gray-700/20 bg-gray-800/20':`${colorMap[color]} hover:opacity-80`}" onclick="toggle('rolesChecked',${i})">
+          ${checkBox(isDone,false,false)}
+          <span class="text-sm font-medium flex-1 ${isDone?'line-through text-gray-600':'text-white'}">${icon} ${label}</span>
+          <span class="text-xs font-mono ${isDone?'text-gray-600':textMap[color]}">${val}</span>
+        </div>`;
+      }).join('');
+
+  const emailDone = Object.values(state.emailChecked).filter(Boolean).length;
+  const visEmails = data.email.map((e,i)=>({...e,i})).filter(({i})=>!state.filterEmail||!state.emailChecked[i]);
+  const emailRows = visEmails.length===0
+    ? `<div class="p-3 text-center text-sm text-green-400 font-mono bg-green-500/10 border border-green-500/20 rounded-lg">✅ All emails reviewed!</div>`
+    : visEmails.map(({i,from,subject,tag:t,color})=>{
+        const isDone=!!state.emailChecked[i];
+        const dotCls = color==="red"?"bg-red-500":color==="blue"?"bg-blue-500":"bg-yellow-500";
+        return `<div class="check-row flex items-start gap-3 p-3 rounded-lg border ${isDone?'bg-gray-800/20 border-gray-700/20 opacity-50':color==='red'?'bg-gray-800/50 border-gray-700/50 hover:border-gray-600/60':'bg-gray-800/50 border-transparent hover:border-gray-700/50'}" onclick="toggle('emailChecked',${i})">
+          ${checkBox(isDone,color==="red",color==="red")}
+          <div class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${dotCls}"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm ${isDone?'line-through text-gray-600':'text-white'} truncate">${subject}</p>
+            <p class="text-xs text-gray-500 font-mono">${from}</p>
+          </div>
+          ${tag(t,isDone?"gray":color)}
+        </div>`;
+      }).join('');
+
+  return `<div class="space-y-4">
+    ${card(`<div class="flex items-center gap-2 mb-3"><span class="text-lg">🎯</span><div><h2 class="text-sm font-bold text-white uppercase tracking-widest">Key Deadline: April 10</h2><p class="text-xs text-gray-500">Tomorrow</p></div></div>
+      <div class="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+        <p class="text-sm text-purple-300 font-medium">Nicole selects first opportunity — CEO approval required</p>
+        <p class="text-xs text-gray-500 mt-0.5">Per Phase 2 plan. Nicole's top pick: Business Funding Brokerage (SO1+SO2).</p>
+      </div>`)}
+    ${card(checklistHeader("🗓️","Tomorrow's Queue",rolesDone,roles.length,'filterRoles','Show Pending','Pending Only','bg-purple-500','text-purple-400')+`<div class="space-y-2">${roleRows}</div>`)}
+    ${card(checklistHeader('📬','Email Signal',emailDone,data.email.length,'filterEmail','Show Unread','Unread Only','bg-blue-500','text-blue-400')+`<div class="space-y-2">${emailRows}</div>
+      <div class="mt-3 p-2 bg-gray-800/30 rounded-lg border border-gray-700/30"><p class="text-xs text-gray-600">📭 15+ promotional emails filtered — not shown</p></div>`)}
+    ${renderTaskPanel('tomorrow')}
+  </div>`;
+}
+
+// ── CEO Flow Strip ─────────────────────────────────────────────────────────────
+const ceoFlowSteps = [
+  {id:1,label:"Daily Praxus",icon:"🧠",tab:null,url:"https://www.notion.so/Daily-YWYC-2df97f899129801da045e28c47126c70",barCls:"bg-rose-600",textCls:"text-rose-300",borderCls:"border-rose-500/50",desc:"Morning belief calibration + intention set",detail:"Open Chief Aim · review affirmations · set daily intention"},
+  {id:2,label:"Check Email",icon:"📬",tab:"tomorrow",url:"https://mail.google.com/",barCls:"bg-orange-600",textCls:"text-orange-300",borderCls:"border-orange-500/50",desc:"Review inbox signals and prioritize",detail:"Scan for urgent flags · process finance alerts · check TVC signals"},
+  {id:3,label:"Work My Tasks",icon:"✅",tab:"overview",url:"https://www.notion.so/2f797f8991298068b8aec4321d1c72b7?v=2f897f899129807f95a1000c3c232c0c",barCls:"bg-yellow-600",textCls:"text-yellow-300",borderCls:"border-yellow-500/50",desc:"Clear action items and critical flags",detail:"Check off urgent items · create CEO tasks · review sprint retro"},
+  {id:4,label:"Process Interests",icon:"📊",tab:"top3",url:null,barCls:"bg-emerald-600",textCls:"text-emerald-300",borderCls:"border-emerald-500/50",desc:"Review Nicole's top 3 opportunities",detail:"Score opportunities · approve or defer · advance Phase 2 picks"},
+  {id:5,label:"Pipeline & Outreach",icon:"🔁",tab:"pipeline",url:"http://elf-6:8899/funnel",barCls:"bg-teal-600",textCls:"text-teal-300",borderCls:"border-teal-500/50",desc:"Pipeline stats + outreach queue",detail:"Check stage movement · review outreach replies · unblock n8n workflows"},
+  {id:6,label:"Cash Flow",icon:"💰",tab:"finance",url:"https://docs.google.com/spreadsheets/d/1vTShVS1jhDi_laZYc6tZFLP9tLH1s0FFNcqEtG4WtxU/edit",barCls:"bg-amber-600",textCls:"text-amber-300",borderCls:"border-amber-500/50",desc:"Income streams and finance alerts",detail:"Verify income stream activity · address payment failures · sync CoinTracker"},
+  {id:7,label:"YouTube Intel",icon:"🎬",tab:"flow",url:null,barCls:"bg-indigo-600",textCls:"text-indigo-300",borderCls:"border-indigo-500/50",desc:"Content intel + strategy review",detail:"Review content flywheel status · check keyword pipeline · assign CE"},
+];
+
+function renderFlowStrip() {
+  const done = Object.values(state.flowChecked).filter(Boolean).length;
+  const pct = Math.round(done/7*100);
+  el('flow-progress-label').textContent = `${done}/7 · ${pct}% complete`;
+  el('flow-progress-bar').style.width = pct+'%';
+  el('flow-steps').innerHTML = ceoFlowSteps.map((step,i)=>{
+    const isDone = !!state.flowChecked[i];
+    return `<button class="flow-step flex-1 relative flex flex-col items-center gap-1 py-2 px-1 rounded-lg border ${isDone?'bg-green-500/15 border-green-500/40':`${step.barCls}/20 ${step.borderCls} hover:opacity-90`}" onclick="flowStepClick(${i})" title="${step.label}${step.url?' — click to open':step.tab?' — click to navigate':''}">
+      <div class="absolute top-0 left-0 right-0 h-1 rounded-t-lg ${isDone?'bg-green-500':step.barCls}"></div>
+      <span class="text-sm mt-1">${isDone?'✓':step.icon}</span>
+      <span class="font-mono font-bold text-center leading-tight ${isDone?'text-green-400':step.textCls}" style="font-size:8px;letter-spacing:0.05em">${step.label.toUpperCase()}</span>
+      <span class="font-mono ${isDone?'text-green-500/60':'text-gray-600'}" style="font-size:8px">S${step.id}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderCEOFlow() {
+  const flowDone = ceoFlowSteps.filter((_,i)=>state.flowChecked[i]).length;
+  const pendingTasks = ceoFlowSteps
+    .map((s,i)=>({text:s.label,detail:s.detail,isFlag:false,isUrgent:s.id<=3,flagPriority:null,_i:i,_sec:"flow"}))
+    .filter(t=>!state.flowChecked[t._i]);
+  const steps = ceoFlowSteps.map((step,i)=>{
+    const isDone=!!state.flowChecked[i];
+    // Build nav button using data attributes to avoid quote-escaping issues
+    const navBtn = !isDone&&(step.tab||step.url)
+      ? `<button data-step="${i}" onclick="flowStepNav(this)" class="flex-shrink-0 px-2 py-1 text-xs rounded border font-mono transition-colors ${step.barCls}/10 ${step.borderCls} ${step.textCls} hover:opacity-80">${step.url&&!step.tab?'Read ↗':'Open →'}</button>`
+      : '';
+    return `<div class="rounded-xl border overflow-hidden transition-all ${isDone?'opacity-60':''}">
+      <div class="h-1 ${isDone?'bg-green-500':step.barCls}"></div>
+      <div class="bg-gray-900 p-4">
+        <div class="flex items-start gap-3">
+          <button data-step="${i}" onclick="flowStepCheck(this)" class="w-6 h-6 rounded border flex-shrink-0 flex items-center justify-center mt-0.5 transition-colors ${isDone?`bg-green-500/30 border-green-500`:`${step.barCls}/30 ${step.borderCls}`}">
+            ${isDone?'<span class="text-green-400 text-sm">✓</span>':`<span class="text-white text-xs font-bold">${step.id}</span>`}
+          </button>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-base">${step.icon}</span>
+              <p class="text-sm font-bold ${isDone?'line-through text-gray-600':'text-white'}">${step.label}</p>
+              <span class="text-xs px-1.5 py-0.5 rounded font-mono ${isDone?'bg-green-500/20 text-green-400':`${step.barCls}/20 ${step.textCls}`}">${isDone?'DONE':'OPEN'}</span>
+            </div>
+            <p class="text-xs mb-2 ${isDone?'text-gray-600':'text-gray-400'}">${step.desc}</p>
+            ${!isDone?`<p class="text-xs text-gray-500 font-mono border-t border-gray-800 pt-2">→ ${step.detail}</p>`:''}
+          </div>
+          ${navBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // task panel for flow — inline
+  let taskPanelHtml = '';
+  if (state.taskLaunched['flow']) {
+    taskPanelHtml = `<div class="p-4 bg-green-500/10 border border-green-500/20 rounded-xl"><p class="text-sm font-bold text-green-400 mb-1">🚀 Sent to Notion</p><p class="text-xs text-gray-500">Check Notion in a moment.</p><button onclick="resetTaskLaunched('flow')" class="mt-3 w-full text-xs text-gray-600 hover:text-gray-400 underline">Reset</button></div>`;
+  } else if (state.taskPanel === 'flow') {
+    const rows = pendingTasks.map(t=>{const np=notionPriority(t.isFlag,t.flagPriority,t.isUrgent);return `<div class="flex items-start gap-2 p-2 rounded-lg bg-gray-800/50"><span class="text-xs mt-0.5 flex-shrink-0">✅</span><div class="flex-1 min-w-0"><p class="text-xs text-white font-medium">${t.text}</p><p class="text-xs text-gray-500 mt-0.5">${t.detail}</p></div><span class="text-xs px-1.5 py-0.5 rounded border font-mono flex-shrink-0 ${np.cls}">${np.label}</span></div>`;}).join('');
+    taskPanelHtml = card(`<div class="flex items-center justify-between mb-4"><div><h3 class="text-sm font-bold text-white">🎫 CEO Task Queue</h3><p class="text-xs text-gray-500 mt-0.5">${pendingTasks.length} tasks → Notion</p></div><button onclick="closeTaskPanel()" class="text-xs text-gray-600 hover:text-gray-400">✕ cancel</button></div><div class="space-y-1.5 mb-4 max-h-64 overflow-y-auto">${rows}</div><button onclick="launchTasks('flow')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg">Create ${pendingTasks.length} Tasks → Notion</button>`,"border-blue-500/30");
+  } else {
+    const disabled = pendingTasks.length === 0;
+    taskPanelHtml = `<button onclick="openTaskPanel('flow')" ${disabled?"disabled":""} class="w-full py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${disabled?'bg-gray-800/30 text-gray-600 border-gray-700/30 cursor-not-allowed':'bg-blue-500/10 text-blue-300 border-blue-500/30 hover:bg-blue-500/20'}">🎫 Create CEO Tasks${!disabled?`<span class="bg-blue-500/30 text-blue-200 text-xs px-2 py-0.5 rounded-full font-mono">${pendingTasks.length} pending</span>`:''}</button>`;
+  }
+
+  return `<div class="space-y-4">
+    <div class="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg"><p class="text-xs text-yellow-300 font-mono">⚡ CEO PRODUCTIVITY PIPELINE · 7-Step Daily Workflow · ${flowDone}/7 complete today</p></div>
+    <div class="space-y-2">${steps}</div>
+    ${card(`<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2"><span class="text-lg">🎬</span><div><h2 class="text-sm font-bold text-white uppercase tracking-widest">YouTube Intel</h2><p class="text-xs text-gray-500">Step 7 — Content strategy + pipeline</p></div></div>
+      <a href="netnewswire://" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/15 border border-indigo-500/40 text-indigo-300 text-xs font-mono rounded-lg hover:bg-indigo-500/25 no-underline">📡 Launch NetNewsWire</a></div>
+      <div class="space-y-2">
+        <div class="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg"><p class="text-sm text-orange-300 font-medium">⏸️ Content Flywheel Stalled</p><p class="text-xs text-gray-500 mt-0.5">Keyword-learning daemon dead · 0 new posts in 4+ days · Assign CE to reactivate</p></div>
+        <div class="p-3 bg-gray-800/50 rounded-lg"><p class="text-xs text-gray-400">Last keyword: <span class="text-white font-mono">"why is my website not getting traffic"</span></p><p class="text-xs text-gray-500 mt-1">Source: seo.com · Format: common reasons + solutions · Status: ✅ Learned</p></div>
+        <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg"><p class="text-xs text-blue-300 font-mono">🎯 CEO Directive: Restore Content Flywheel as Pipeline #2 before June 1</p></div>
+      </div>`)}
+    ${taskPanelHtml}
+  </div>`;
+}
+
+// ── Tab System ─────────────────────────────────────────────────────────────────
+const tabs = [
+  {id:"overview",label:"Overview",icon:"🏠",step:3},
+  {id:"top3",label:"Top 3",icon:"📊",step:4},
+  {id:"objectives",label:"Objectives",icon:"🎯",step:null},
+  {id:"pipeline",label:"Pipeline",icon:"🔁",step:5},
+  {id:"finance",label:"Finance",icon:"💰",step:6},
+  {id:"agents",label:"Agents",icon:"🤖",step:null},
+  {id:"tomorrow",label:"Tomorrow",icon:"🗓️",step:2},
+  {id:"flow",label:"CEO Flow",icon:"⚡",step:null},
+];
+
+function renderTabs() {
+  el('tab-bar').innerHTML = tabs.map(t=>{
+    const stepDone = t.step ? !!state.flowChecked[t.step-1] : false;
+    const isActive = state.activeTab === t.id;
+    const stepLabel = t.step ? `<span class="ml-1 text-xs font-mono ${stepDone?'text-green-400':'text-gray-600'}">${stepDone?'✓':`S${t.step}`}</span>` : '';
+    return `<button class="tab-btn relative px-3 py-1.5 text-xs font-semibold whitespace-nowrap rounded-lg transition-colors ${isActive?'active':''}" onclick="setTab('${t.id}')">${t.icon} ${t.label}${stepLabel}</button>`;
+  }).join('');
+}
+
+function setTab(id) {
+  state.activeTab = id;
+  state.taskPanel = null;
+  renderTabs();
+  renderContent();
+}
+
+function renderContent() {
+  const map = {
+    overview: renderOverview,
+    top3: renderTop3,
+    objectives: renderObjectives,
+    pipeline: renderPipeline,
+    finance: renderFinance,
+    agents: renderAgents,
+    tomorrow: renderTomorrow,
+    flow: renderCEOFlow,
+  };
+  el('tab-content').innerHTML = (map[state.activeTab] || renderOverview)();
+}
+
+// ── Event Handlers ─────────────────────────────────────────────────────────────
+function toggle(stateKey, idx) {
+  state[stateKey][idx] = !state[stateKey][idx];
+  renderContent();
+}
+function toggleFlow(i) {
+  state.flowChecked[i] = !state.flowChecked[i];
+  renderFlowStrip();
+  renderContent();
+}
+function toggleFilter(key) {
+  state[key] = !state[key];
+  renderContent();
+}
+function toggleMindset() {
+  const body = el('mindset-body');
+  const caret = el('mindset-caret');
+  body.classList.toggle('hidden');
+  caret.textContent = body.classList.contains('hidden') ? '▼ expand' : '▲ collapse';
+}
+function openTaskPanel(tabId) {
+  state.taskPanel = tabId;
+  renderContent();
+}
+function closeTaskPanel() {
+  state.taskPanel = null;
+  renderContent();
+}
+function launchTasks(tabId) {
+  const tasks = buildPendingTasks(tabId);
+  const payload = tasks.map(t=>({name:t.text,priority:notionPriority(t.isFlag,t.flagPriority,t.isUrgent).label}));
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify({tasks:payload}))));
+  window.open(`http://elf-6:8899/mc/briefing-tasks/run?data=${encoded}`, "_blank");
+  // Mark all as checked
+  tasks.forEach(t=>{
+    const secMap = {flag:'flagsChecked',action:'actionsChecked',top3:'top3Checked',obj:'objChecked',wf:'wfChecked',out:'outreachChecked',fa:'financeAlertsChecked',agent:'agentsChecked',daemon:'daemonsChecked',email:'emailChecked',role:'rolesChecked',flow:'flowChecked'};
+    if(t._sec&&secMap[t._sec]) state[secMap[t._sec]][t._i]=true;
+  });
+  state.taskLaunched[tabId] = true;
+  state.taskPanel = null;
+  renderContent();
+}
+function resetTaskLaunched(tabId) {
+  state.taskLaunched[tabId] = false;
+  renderContent();
+}
+
+// ── CEO Flow click handlers (avoid inline string-interpolation issues) ─────────
+// Strip button: toggle check + open URL if present, navigate to tab if present
+function flowStepClick(i) {
+  const step = ceoFlowSteps[i];
+  toggleFlow(i);
+  if (step.tab) setTab(step.tab);
+  if (step.url) openLink(step.url);
+}
+// Expanded card checkbox: just toggle (don't auto-navigate)
+function flowStepCheck(btn) {
+  const i = parseInt(btn.dataset.step);
+  toggleFlow(i);
+}
+// Expanded card "Open →" / "Read ↗" button
+function flowStepNav(btn) {
+  const i = parseInt(btn.dataset.step);
+  const step = ceoFlowSteps[i];
+  if (step.tab) setTab(step.tab);
+  if (step.url) openLink(step.url);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+// Populate daemon stat bar from data
+(function initStatBar() {
+  const dv = document.getElementById('stat-daemons-val');
+  const ds = document.getElementById('stat-daemons-sub');
+  if (dv) dv.textContent = data.stats.daemonsOk + ' OK';
+  if (ds) ds.textContent = data.stats.daemonsError + ' errors';
+})();
+renderFlowStrip();
+renderTabs();
+renderContent();
+</script>
+</div><!-- /max-w-3xl -->
+</div><!-- /content -->
+</body>
+</html>

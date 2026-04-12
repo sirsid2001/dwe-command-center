@@ -435,6 +435,38 @@
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+        /* ── Live Ops Board ── */
+        .obs-row {
+            display: grid;
+            grid-template-columns: 72px 1fr 1fr 100px;
+            gap: 0.5rem 1rem;
+            align-items: center;
+            padding: 0.42rem 0.6rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.4s, border-color 0.4s;
+        }
+        .obs-row:hover { background: rgba(255,255,255,0.045); }
+        .obs-row.obs-ok    { border-left: 2px solid rgba(0,255,136,0.55); }
+        .obs-row.obs-warn  { border-left: 2px solid rgba(255,170,0,0.65); background: rgba(255,170,0,0.04); }
+        .obs-row.obs-error { border-left: 2px solid rgba(255,50,80,0.7);  background: rgba(255,50,80,0.06); }
+        .obs-row.obs-idle  { border-left: 2px solid rgba(120,120,140,0.4); }
+        .obs-id   { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; color: rgba(255,255,255,0.35); }
+        .obs-label{ font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.82); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .obs-detail{ font-size: 0.65rem; color: rgba(255,255,255,0.42); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .obs-status-cell { display: flex; align-items: center; justify-content: flex-end; gap: 0.45rem; }
+        .obs-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .obs-dot.ok    { background: #00ff88; box-shadow: 0 0 7px rgba(0,255,136,0.7); animation: pulse 2.5s infinite; }
+        .obs-dot.warn  { background: #ffaa00; box-shadow: 0 0 7px rgba(255,170,0,0.65); animation: pulse 1.5s infinite; }
+        .obs-dot.error { background: #ff3250; box-shadow: 0 0 7px rgba(255,50,80,0.7);  animation: pulse 0.9s infinite; }
+        .obs-dot.idle  { background: #555; box-shadow: none; animation: none; }
+        .obs-status-label { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+        .obs-status-label.ok    { color: #00ff88; }
+        .obs-status-label.warn  { color: #ffaa00; }
+        .obs-status-label.error { color: #ff3250; }
+        .obs-status-label.idle  { color: rgba(150,150,170,0.6); }
+
         .brain-bar {
             width: 100%;
             background: rgba(255,255,255,0.1);
@@ -1057,6 +1089,7 @@
                         </select>
                         <a id="vision-pill" href="/vision" style="text-decoration:none;background:rgba(184,41,221,0.15);border:1px solid rgba(184,41,221,0.35);color:#d580ff;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.35rem;" onmouseover="this.style.background='rgba(184,41,221,0.28)'" onmouseout="this.style.background='rgba(184,41,221,0.15)'"><span id="vision-score-badge" style="font-weight:700;"></span>Vision &rarr;</a>
                         <a id="ceo-corner-pill" href="/ceo-corner" style="text-decoration:none;background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.35);color:#ffaa00;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;">CEO Productivity &rarr;</a>
+                        <a href="/daily-briefing" style="text-decoration:none;background:rgba(100,200,255,0.15);border:1px solid rgba(100,200,255,0.35);color:#64c8ff;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;" onmouseover="this.style.background='rgba(100,200,255,0.28)'" onmouseout="this.style.background='rgba(100,200,255,0.15)'">🗓️ Daily Briefing &rarr;</a>
                     </div>
                     <div style="text-align:right;margin-top:1.25rem;">
                         <div class="date" id="date">Loading...</div>
@@ -1621,6 +1654,30 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ── Live Ops Board ── -->
+            <div id="live-ops-board" style="grid-column:span 3; background:rgba(10,14,26,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.1rem 1.4rem; backdrop-filter:blur(20px); position:relative; overflow:hidden;">
+                <!-- subtle grid texture -->
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.015) 39px,rgba(255,255,255,0.015) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.015) 39px,rgba(255,255,255,0.015) 40px);pointer-events:none;border-radius:16px;"></div>
+                <!-- Header row -->
+                <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.85rem;position:relative;z-index:1;">
+                    <div style="width:8px;height:8px;border-radius:50%;background:#00f5ff;box-shadow:0 0 8px #00f5ff;flex-shrink:0;" id="ops-board-live-dot"></div>
+                    <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.85);">Live Ops Board</span>
+                    <span style="font-size:0.6rem;color:rgba(255,255,255,0.28);margin-left:auto;" id="ops-board-ts">—</span>
+                    <span style="font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.25);color:#00f5ff;letter-spacing:0.06em;">LIVE</span>
+                </div>
+                <!-- Column headers -->
+                <div style="display:grid;grid-template-columns:72px 1fr 1fr 100px;gap:0.5rem 1rem;padding:0.25rem 0.6rem;margin-bottom:0.35rem;position:relative;z-index:1;">
+                    <span style="font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);">ID</span>
+                    <span style="font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);">Service</span>
+                    <span style="font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);">Detail</span>
+                    <span style="font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);text-align:right;">Status</span>
+                </div>
+                <!-- Board rows container -->
+                <div id="ops-board-rows" style="display:flex;flex-direction:column;gap:0.3rem;position:relative;z-index:1;">
+                    <div style="grid-column:1/-1;color:rgba(255,255,255,0.25);font-size:0.7rem;padding:0.6rem;text-align:center;">Connecting to ops board…</div>
                 </div>
             </div>
 
@@ -4192,6 +4249,59 @@
                 }
             } catch(e) {
                 document.getElementById('launchd-list').innerHTML = '<div class="service-item"><span class="pulse-dot error"></span><span>Failed to load</span></div>';
+            }
+        }
+
+        // ── Live Ops Board ────────────────────────────────────────────────────
+        function renderOpsBoard(data) {
+            const container = document.getElementById('ops-board-rows');
+            const tsEl      = document.getElementById('ops-board-ts');
+            const liveDot   = document.getElementById('ops-board-live-dot');
+            if (!container) return;
+
+            if (data && data.ts) {
+                const d = new Date(data.ts);
+                tsEl.textContent = 'Updated ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            // Animate live dot
+            if (liveDot) {
+                liveDot.style.background = '#00f5ff';
+                liveDot.style.boxShadow  = '0 0 10px #00f5ff';
+                setTimeout(() => { liveDot.style.background = 'rgba(0,245,255,0.4)'; liveDot.style.boxShadow = 'none'; }, 600);
+            }
+
+            const rows = data && data.rows ? data.rows : [];
+            if (!rows.length) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:0.7rem;padding:0.6rem;text-align:center;">No data</div>';
+                return;
+            }
+
+            const statusLabel = { ok: 'ON TIME', warn: 'DELAYED', error: 'FAULT', idle: 'OFFLINE' };
+            container.innerHTML = rows.map(row => {
+                const s = row.status || 'idle';
+                return `
+                <div class="obs-row obs-${s}">
+                    <span class="obs-id">${row.id}</span>
+                    <span class="obs-label" title="${row.label}">${row.label}</span>
+                    <span class="obs-detail" title="${row.detail}">${row.detail}</span>
+                    <div class="obs-status-cell">
+                        <span class="obs-status-label ${s}">${statusLabel[s] || s.toUpperCase()}</span>
+                        <span class="obs-dot ${s}"></span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function fetchOpsBoard() {
+            try {
+                const data = _mcBatch['/mc/ops-board']
+                    ? _mcBatch['/mc/ops-board']
+                    : await fetch('/mc/ops-board').then(r => r.json());
+                renderOpsBoard(data);
+            } catch(e) {
+                const c = document.getElementById('ops-board-rows');
+                if (c) c.innerHTML = '<div style="color:#ff4444;font-size:0.7rem;padding:0.4rem;">Failed to load ops board</div>';
             }
         }
 
@@ -7026,7 +7136,8 @@
                 fetchN8nWorkflows(),
                 fetchTailscale(),
                 fetchGA4(),
-                fetchJarvisStats()
+                fetchJarvisStats(),
+                fetchOpsBoard()
             ]);
 
             // Clear batch cache — fast group is done, slow group hits server cache
@@ -8386,7 +8497,7 @@
                             fetchMigration(), fetchSystem(), fetchHeartbeats(), fetchCSoPipeline(),
                             fetchFinancialPulse(), fetchPipeline(), updateBackupTime(),
                             updateOCBackupTime(), fetchInternet(), fetchOpenclawVersion(),
-                            fetchN8nWorkflows(), fetchTailscale(), fetchGA4(), fetchJarvisStats()
+                            fetchN8nWorkflows(), fetchTailscale(), fetchGA4(), fetchJarvisStats(), fetchOpsBoard()
                         ]).then(() => { _mcBatch = {}; });
                         updateCeoCornerStatus();
 
@@ -8447,6 +8558,9 @@
                             badge.textContent = s + '/100';
                             badge.style.color = s > 70 ? '#00ff88' : s > 40 ? '#ffaa00' : '#ff4444';
                         }
+
+                    } else if (type === 'ops-board') {
+                        renderOpsBoard(data);
                     }
                 };
 

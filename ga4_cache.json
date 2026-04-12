@@ -1,14 +1,14 @@
 {
-  "updated": "2026-04-11T02:42:33.060314",
+  "updated": "2026-04-11T21:41:54.881207",
   "property": "theveteransconsultant.com",
   "thisWeek": {},
   "lastWeek": {
-    "sessions": 19,
+    "sessions": 21,
     "users": 12,
-    "pageviews": 24,
-    "avgDuration": 117,
-    "bounceRate": 42.1,
-    "engaged": 11
+    "pageviews": 40,
+    "avgDuration": 471,
+    "bounceRate": 42.9,
+    "engaged": 12
   },
   "deltas": {
     "sessions": -100.0,
@@ -18,12 +18,12 @@
   "topPages": [
     {
       "path": "/",
-      "views": 13,
+      "views": 21,
       "users": 10
     },
     {
       "path": "/contact/",
-      "views": 10,
+      "views": 18,
       "users": 3
     },
     {
@@ -40,11 +40,11 @@
   "sources": [
     {
       "channel": "Direct",
-      "sessions": 10
+      "sessions": 11
     },
     {
       "channel": "Unassigned",
-      "sessions": 7
+      "sessions": 8
     },
     {
       "channel": "Organic Social",
@@ -84,8 +84,8 @@
     },
     {
       "date": "2026-04-10",
-      "sessions": 6,
-      "pageviews": 14,
+      "sessions": 8,
+      "pageviews": 30,
       "users": 4
     }
   ]

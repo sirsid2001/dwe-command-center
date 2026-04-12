@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-10T08:00:36.895171",
+  "timestamp": "2026-04-11T08:00:33.242052",
   "score": 50,
   "objectives": {
     "SO1: Financial Independence": {
@@ -7,18 +7,18 @@
       "not_started": 28,
       "blocked": 0,
       "done_week": 2,
-      "total": 31,
+      "total": 30,
       "status": "ON TRACK",
-      "last_activity": "2026-04-10T07:45:00"
+      "last_activity": "2026-04-11T06:35:00"
     },
     "SO2: DWE Ecosystem": {
-      "active": 4,
-      "not_started": 47,
+      "active": 3,
+      "not_started": 58,
       "blocked": 0,
-      "done_week": 16,
-      "total": 56,
+      "done_week": 15,
+      "total": 66,
       "status": "ON TRACK",
-      "last_activity": "2026-04-10T05:12:00"
+      "last_activity": "2026-04-11T06:36:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
@@ -31,12 +31,12 @@
     },
     "SO4: Reserves": {
       "active": 0,
-      "not_started": 5,
+      "not_started": 4,
       "blocked": 0,
       "done_week": 1,
-      "total": 5,
+      "total": 4,
       "status": "SLOW",
-      "last_activity": "2026-04-09T22:10:00"
+      "last_activity": "2026-04-11T06:35:00"
     },
     "SO5: Family Trust": {
       "active": 0,
@@ -45,24 +45,24 @@
       "done_week": 0,
       "total": 3,
       "status": "STALE",
-      "last_activity": "2026-04-07T23:54:00"
+      "last_activity": "2026-04-10T22:37:00"
     }
   },
   "sla_violations": [],
   "drift_warnings": [
-    "62 unaligned/untagged tasks (30% drift)",
-    "SO1 (revenue) is only 20% of active work \u2014 should be >30%",
+    "63 unaligned/untagged tasks (29% drift)",
+    "SO1 (revenue) is only 22% of active work \u2014 should be >30%",
     "No weekly strategic input detected \u2014 score capped at 50"
   ],
-  "drift_pct": 30.2,
-  "so1_share": 20.0,
+  "drift_pct": 29.4,
+  "so1_share": 22.2,
   "focus_objectives": [
     "SO1",
-    "SO3"
+    "SO2"
   ],
   "early_completion": false,
-  "operational_count": 33,
-  "unaligned_count": 62,
+  "operational_count": 34,
+  "unaligned_count": 63,
   "untagged_count": 0,
   "cadence": {
     "strategic_input": false,

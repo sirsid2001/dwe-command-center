@@ -18,13 +18,12 @@
             color: #fff;
             min-height: 100vh;
             padding: 2rem;
+            padding-top: calc(2rem + 56px);
         }
-        .back-link {
-            display: inline-flex; align-items: center; gap: 6px;
-            color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.75rem;
-            margin-bottom: 1.5rem;
-        }
-        .back-link:hover { color: #00f5ff; }
+        .header { position:fixed; top:0; left:0; right:0; padding:0.85rem 1.5rem; background:rgba(10,14,39,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,0.08); z-index:1000; display:flex; justify-content:space-between; align-items:center; }
+        .back-btn { padding:0.4rem 0.875rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:#fff; text-decoration:none; font-size:0.8125rem; transition:all 0.2s; }
+        .back-btn:hover { background:rgba(255,255,255,0.2); }
+        .page-title { font-size:1rem; font-weight:700; background:linear-gradient(90deg,#fff,rgba(255,255,255,0.7)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
         h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.3rem; }
         .subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-bottom: 1.5rem; }
         .panel {
@@ -124,7 +123,11 @@
     </style>
 </head>
 <body>
-    <a href="/" class="back-link">← Back to Command Center</a>
+    <div class="header">
+        <a href="/" class="back-btn">← Dashboard</a>
+        <span class="page-title">Operations Log</span>
+        <div></div>
+    </div>
     <h1>Operations Log</h1>
     <div class="subtitle">Delegations and Sprint session history</div>
 
