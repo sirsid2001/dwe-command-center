@@ -1,36 +1,36 @@
 {
-  "updated": "2026-04-12T01:41:58.724572",
+  "updated": "2026-04-13T01:42:19.558898",
   "property": "theveteransconsultant.com",
   "thisWeek": {
-    "sessions": 22,
-    "users": 12,
-    "newUsers": 10,
-    "pageviews": 40,
-    "avgDuration": 450,
-    "bounceRate": 45.5,
-    "engaged": 12,
-    "engagementRate": 54.5
+    "sessions": 23,
+    "users": 11,
+    "newUsers": 9,
+    "pageviews": 43,
+    "avgDuration": 437,
+    "bounceRate": 43.5,
+    "engaged": 13,
+    "engagementRate": 56.5
   },
   "lastWeek": {
-    "sessions": 22,
+    "sessions": 20,
     "users": 11,
     "newUsers": 10,
-    "pageviews": 47,
-    "avgDuration": 391,
-    "bounceRate": 31.8,
-    "engaged": 15,
-    "engagementRate": 68.2
+    "pageviews": 45,
+    "avgDuration": 405,
+    "bounceRate": 35.0,
+    "engaged": 13,
+    "engagementRate": 65.0
   },
   "deltas": {
-    "sessions": 0.0,
-    "users": 9.1,
-    "pageviews": -14.9
+    "sessions": 15.0,
+    "users": 0.0,
+    "pageviews": -4.4
   },
   "topPages": [
     {
       "path": "/",
-      "views": 21,
-      "users": 10
+      "views": 22,
+      "users": 9
     },
     {
       "path": "/contact/",
@@ -39,8 +39,8 @@
     },
     {
       "path": "/health-report/",
-      "views": 1,
-      "users": 1
+      "views": 3,
+      "users": 2
     },
     {
       "path": "/get-started/",
@@ -51,11 +51,15 @@
   "sources": [
     {
       "channel": "Direct",
-      "sessions": 11
+      "sessions": 10
     },
     {
       "channel": "Unassigned",
       "sessions": 9
+    },
+    {
+      "channel": "Organic Search",
+      "sessions": 2
     },
     {
       "channel": "Organic Social",
@@ -65,22 +69,16 @@
   "devices": [
     {
       "device": "desktop",
-      "sessions": 21,
-      "pct": 95
+      "sessions": 22,
+      "pct": 96
     },
     {
       "device": "mobile",
       "sessions": 1,
-      "pct": 5
+      "pct": 4
     }
   ],
   "daily": [
-    {
-      "date": "2026-04-04",
-      "sessions": 1,
-      "pageviews": 1,
-      "users": 1
-    },
     {
       "date": "2026-04-06",
       "sessions": 4,
@@ -113,8 +111,14 @@
     },
     {
       "date": "2026-04-11",
+      "sessions": 2,
+      "pageviews": 2,
+      "users": 1
+    },
+    {
+      "date": "2026-04-12",
       "sessions": 1,
-      "pageviews": 0,
+      "pageviews": 2,
       "users": 1
     }
   ]

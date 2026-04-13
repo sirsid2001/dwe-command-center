@@ -1,42 +1,42 @@
 {
-  "timestamp": "2026-04-11T08:00:33.242052",
+  "timestamp": "2026-04-12T08:00:33.782160",
   "score": 50,
   "objectives": {
     "SO1: Financial Independence": {
-      "active": 2,
-      "not_started": 28,
+      "active": 1,
+      "not_started": 22,
       "blocked": 0,
-      "done_week": 2,
-      "total": 30,
+      "done_week": 4,
+      "total": 23,
       "status": "ON TRACK",
-      "last_activity": "2026-04-11T06:35:00"
+      "last_activity": "2026-04-12T03:21:00"
     },
     "SO2: DWE Ecosystem": {
       "active": 3,
-      "not_started": 58,
+      "not_started": 57,
       "blocked": 0,
       "done_week": 15,
-      "total": 66,
+      "total": 65,
       "status": "ON TRACK",
-      "last_activity": "2026-04-11T06:36:00"
+      "last_activity": "2026-04-12T05:48:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
-      "not_started": 2,
+      "not_started": 0,
       "blocked": 0,
       "done_week": 1,
-      "total": 2,
-      "status": "SLOW",
-      "last_activity": "2026-04-09T22:10:00"
+      "total": 0,
+      "status": "NO TASKS",
+      "last_activity": null
     },
     "SO4: Reserves": {
       "active": 0,
-      "not_started": 4,
+      "not_started": 3,
       "blocked": 0,
       "done_week": 1,
       "total": 4,
       "status": "SLOW",
-      "last_activity": "2026-04-11T06:35:00"
+      "last_activity": "2026-04-12T04:47:00"
     },
     "SO5: Family Trust": {
       "active": 0,
@@ -45,24 +45,31 @@
       "done_week": 0,
       "total": 3,
       "status": "STALE",
-      "last_activity": "2026-04-10T22:37:00"
+      "last_activity": "2026-04-12T01:55:00"
     }
   },
-  "sla_violations": [],
+  "sla_violations": [
+    {
+      "objective": "SO3: Eliminate Debt",
+      "days": 999,
+      "threshold": 14,
+      "owner": "Fran + Sidney"
+    }
+  ],
   "drift_warnings": [
-    "63 unaligned/untagged tasks (29% drift)",
-    "SO1 (revenue) is only 22% of active work \u2014 should be >30%",
+    "40 unaligned/untagged tasks (24% drift)",
+    "SO1 (revenue) is only 12% of active work \u2014 should be >30%",
     "No weekly strategic input detected \u2014 score capped at 50"
   ],
-  "drift_pct": 29.4,
-  "so1_share": 22.2,
+  "drift_pct": 24.1,
+  "so1_share": 12.5,
   "focus_objectives": [
     "SO1",
     "SO2"
   ],
   "early_completion": false,
-  "operational_count": 34,
-  "unaligned_count": 63,
+  "operational_count": 20,
+  "unaligned_count": 40,
   "untagged_count": 0,
   "cadence": {
     "strategic_input": false,

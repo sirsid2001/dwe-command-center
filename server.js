@@ -704,6 +704,9 @@ const server = http.createServer((req, res) => {
         case '/mc/cso':
             getCSoPipeline(req, res);
             break;
+        case '/mc/opp33-funnel':
+            getOpp33Funnel(req, res);
+            break;
         case '/mc/opp-pipeline':
             getOppPipeline(req, res);
             break;
@@ -5775,6 +5778,106 @@ function getCSoPipeline(req, res) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: e.message }));
     }
+}
+
+function getOpp33Funnel(req, res) {
+    // OPP-33 Revenue Funnel: 5-stage pipeline for health-report landing page
+    // Sources: GA4 (visitors), EspoCRM (leads/qualified), Stripe (proposals/closed)
+    const https = require('https');
+
+    const now = new Date().toISOString();
+    const result = {
+        stages: [
+            { stage: 'Visitors',   count: 0, source: 'GA4',           drilldown: '', note: 'GA4 service account auth broken — fix pending' },
+            { stage: 'Leads',      count: 0, source: 'EspoCRM',        drilldown: '?filter=website_populated', note: '' },
+            { stage: 'Qualified',  count: 0, source: 'EspoCRM',        drilldown: '?filter=email_ready',       note: '' },
+            { stage: 'Proposals',  count: 0, source: 'Stripe',         drilldown: '', note: 'Webhook not wired — pending' },
+            { stage: 'Closed',     count: 0, source: 'Stripe $15',     drilldown: '', note: 'Webhook not wired — pending' }
+        ],
+        lastUpdated: now
+    };
+
+    // Helper: fetch EspoCRM with API key header
+    function fetchEspoCRM(path) {
+        return new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'crm.tvcpulse.com',
+                path: path,
+                method: 'GET',
+                headers: { 'X-Api-Key': '6add7bd35487e5d0e1b6b1fc54644863' }
+            };
+            const req2 = https.request(options, (r) => {
+                let data = '';
+                r.on('data', chunk => data += chunk);
+                r.on('end', () => {
+                    try { resolve(JSON.parse(data)); }
+                    catch(e) { reject(new Error('EspoCRM parse error: ' + data.slice(0,100))); }
+                });
+            });
+            req2.on('error', reject);
+            req2.setTimeout(10000, () => { req2.destroy(); reject(new Error('EspoCRM timeout')); });
+            req2.end();
+        });
+    }
+
+    // Helper: fetch GA4 Data API with service account
+    function fetchGA4(report) {
+        return new Promise((resolve, reject) => {
+            const { oauth2client } = require('./oauth2-google');
+            oauth2client.fetchAccessTokenForClient('<not-needed>', (err, token) => {
+                if (err || !token) { resolve({ visitors: 0, note: 'GA4 auth failed' }); return; }
+                const postData = JSON.stringify(report);
+                const options = {
+                    hostname: 'analyticsdata.googleapis.com',
+                    path: '/v1beta/properties/349790229:runReport',
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token.access_token, 'Content-Type': 'application/json' }
+                };
+                const req2 = https.request(options, (r) => {
+                    let data = '';
+                    r.on('data', chunk => data += chunk);
+                    r.on('end', () => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            const rows = parsed.rows || [];
+                            let visitors = 0;
+                            rows.forEach(r => { visitors += parseInt(r.metricValues[0].value, 10); });
+                            resolve({ visitors });
+                        } catch(e) { resolve({ visitors: 0, note: 'GA4 parse error' }); }
+                    });
+                });
+                req2.on('error', reject);
+                req2.write(postData);
+                req2.end();
+            });
+        });
+    }
+
+    // Step 1: GA4 visitors for /health-report page (30-day)
+    fetchGA4({
+        dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'pagePath' }],
+        metrics: [{ name: 'sessions' }],
+        dimensionFilter: { filter: { fieldName: 'pagePath', stringFilter: { value: '/health-report', filterType: 'CONTAINS' } } }
+    }).then(ga4 => {
+        if (ga4.visitors > 0) result.stages[0].count = ga4.visitors;
+        delete result.stages[0].note;
+    }).catch(() => {}).then(() => {
+        // Step 2: EspoCRM leads with website (filter: has website, not deleted)
+        return fetchEspoCRM('/api/v1/Lead?maxResults=200&offset=0&deleted=false');
+    }).then(data => {
+        const leads = data.list || [];
+        const total = data.total || leads.length;
+        const withWebsite = leads.filter(l => l.website && l.website !== 'null' && l.website !== '');
+        result.stages[1].count = withWebsite.length;
+        result.stages[2].count = withWebsite.filter(l => l.emailAddress).length;
+    }).catch(e => {
+        result.stages[1].note = 'EspoCRM error: ' + e.message;
+        result.stages[2].note = 'EspoCRM error: ' + e.message;
+    }).then(() => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result, null, 2));
+    });
 }
 
 function getOppPipeline(req, res) {

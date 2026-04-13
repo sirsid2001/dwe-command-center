@@ -49,13 +49,13 @@ body { background: #030712; }
     <div class="live-dot"></div>
     <div>
       <div class="header-title">🗓️ Daily Briefing</div>
-      <div class="header-sub">Thursday, April 9, 2026 · General Overview + DWE/Business</div>
+      <div class="header-sub" id="briefing-date-sub">General Overview + DWE/Business</div>
     </div>
   </div>
   <div class="header-right">
     <div style="text-align:right;">
-      <div style="font-size:1rem;font-weight:700;color:#fff;">$7,203<span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:400;margin-left:4px;">/ mo</span></div>
-      <div style="font-size:0.65rem;color:#4ade80;font-family:monospace;">Cash Flow: $1,659</div>
+      <div style="font-size:1rem;font-weight:700;color:#fff;" id="hdr-monthly">…<span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:400;margin-left:4px;">/ mo</span></div>
+      <div style="font-size:0.65rem;color:#4ade80;font-family:monospace;" id="hdr-cashflow">Cash Flow: …</div>
     </div>
     <a href="/" class="back-btn">← Dashboard</a>
   </div>
@@ -87,12 +87,12 @@ body { background: #030712; }
   <!-- Stat Bar -->
   <div class="grid grid-cols-4 gap-2 mb-4">
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-      <div class="text-base font-bold text-green-400">$1,659</div>
+      <div class="text-base font-bold text-green-400" id="stat-cashflow-val">…</div>
       <div class="text-xs text-gray-500 mt-0.5">Cash Flow</div>
       <div class="text-xs text-gray-600">this month</div>
     </div>
     <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-      <div class="text-base font-bold text-blue-400">394</div>
+      <div class="text-base font-bold text-blue-400" id="stat-pipeline-val">…</div>
       <div class="text-xs text-gray-500 mt-0.5">Pipeline</div>
       <div class="text-xs text-gray-600">total leads</div>
     </div>
@@ -136,88 +136,206 @@ body { background: #030712; }
 </div>
 
 <script>
-// ── Data ─────────────────────────────────────────────────────────────────────
-const data = {
-  criticalFlags: [
-    { item: "Affirm AutoPay failed — $20.15 due today", source: "Gmail + NFCU SMS", priority: "urgent" },
-    { item: "5 daemon errors: cloudflared-bridge, proposal-generator, intel-dexscreener-whales, outreach-sender, reply-tracker", source: "Ops Log [TASK-2633]", priority: "critical" },
-    { item: "Super Agent Mode retro pending — run /sprint-retro in Jarvis", source: "iMessage", priority: "action" },
-    { item: "20 overdue tasks across all agents", source: "Ops Log [TASK-2634]", priority: "warning" },
-  ],
+// ── Live Data Loader ──────────────────────────────────────────────────────────────
+let data = {
+  criticalFlags: [],
   actionItems: [
-    { text: "Fix Affirm AutoPay", detail: "Log in and pay $20.15 manually before EOD", tag: "Finance", urgent: true },
-    { text: "Run /sprint-retro in Jarvis", detail: "Review Super Agent Mode results (1 cycle vs 92 morning run)", tag: "DWE Ops", urgent: true },
-    { text: "Approve Nicole's first opportunity pick", detail: "Target: April 10 deadline per Phase 2 plan", tag: "Strategy", urgent: true },
-    { text: "Review AWeber sender auth", detail: "Confirm TVC domain SPF/DKIM is valid post-update", tag: "TVC", urgent: false },
-    { text: "Check GA4 custom insight", detail: "Verify 'Test 2' trigger on theveteransconsultant.com", tag: "TVC", urgent: false },
-    { text: "Review Credit One docs", detail: "New paperless document posted on Visa ••••3708", tag: "Finance", urgent: false },
-    { text: "Re-sync CoinTracker wallets", detail: "Last synced Feb 9 — portfolio stale at $16.78", tag: "Finance", urgent: false },
+    { text: "Run /sprint-retro in Jarvis", detail: "Review Super Agent Mode results", tag: "DWE Ops", urgent: true },
+    { text: "Approve Nicole's opportunity pick", detail: "Phase 2 revenue pipeline", tag: "Strategy", urgent: true },
   ],
   top3: [
-    { rank: 1, title: "Business Funding Brokerage as TVC Revenue Stream", score: 8.5, momentum: "rising", objectives: [1,2], why: "CEO-approved for pipeline scoring. Solves verified pain point for veteran-owned businesses. Agent-runnable with existing infrastructure. Nicole currently in POC phase.", nextStep: "CEO approval for first test — deadline April 10", tag: "CEO ACTION", tagColor: "red" },
-    { rank: 2, title: "Content Flywheel as Reusable DWE Pipeline IP", score: 7.8, momentum: "stalled", objectives: [1,2], why: "Platform IP — keyword-learning daemon dead, 0 new posts in 4+ days. CEO directive: treat as Pipeline #2. High multiplier if restored.", nextStep: "Reactivate keyword-learning daemon; assign CE", tag: "STALLED", tagColor: "orange" },
-    { rank: 3, title: "Reddit Scraper + Daily Top 3 Workflow (WF2 + WF12)", score: 7.2, momentum: "new", objectives: [2,3], why: "Both workflows show 'never run' — blocking Nicole's daily opportunity intel pipeline. Core infrastructure for Phase 2 execution.", nextStep: "Steve/CE to investigate why WF2 and WF12 never ran", tag: "BLOCKED", tagColor: "yellow" },
+    { rank:1, title:"Business Funding Brokerage as TVC Revenue Stream", score:8.5, momentum:"rising", objectives:[1,2], why:"CEO-approved for pipeline scoring. Solves verified pain point for veteran-owned businesses.", nextStep:"Nicole in POC phase — review progress", tag:"CEO ACTION", tagColor:"red" },
+    { rank:2, title:"Content Flywheel as Reusable DWE Pipeline IP", score:7.8, momentum:"stalled", objectives:[1,2], why:"Platform IP — keyword-learning daemon status unknown.", nextStep:"Check daemon status; assign CE if dead", tag:"STALLED", tagColor:"orange" },
+    { rank:3, title:"Reddit Scraper + Daily Top 3 Workflow", score:7.2, momentum:"new", objectives:[2,3], why:"Core infrastructure for Nicole's daily opportunity intel pipeline.", nextStep:"Steve/CE to verify WF2 and WF12 status", tag:"BLOCKED", tagColor:"yellow" },
   ],
   strategicObjectives: [
-    { id: 1, title: "Financial Independence", current: "$7,203/mo", target: "$10,000/mo", progress: 72, status: "active", notes: "BYTNEX streams leading. 8 active income streams." },
-    { id: 2, title: "DWE Ecosystem Development", current: "Phase 2", target: "First handoff by June 1", progress: 45, status: "active", notes: "Nicole approved for first opportunity pick. 5 agents operational." },
-    { id: 3, title: "Eliminate High-Interest Debt", current: "Affirm autopay failed", target: "Zero high-interest debt", progress: 20, status: "at-risk", notes: "Affirm payment failed today. Credit One balance monitoring needed." },
-    { id: 4, title: "Maintain & Deploy Reserves", current: "$1,659 cash flow", target: "Reserve deployed strategically", progress: 35, status: "active", notes: "CoinTracker sync overdue since Feb 9. Crypto portfolio stale." },
-    { id: 5, title: "Family Trust & Governance", current: "Documenting", target: "All streams as family assets", progress: 15, status: "pending", notes: "Income streams documented in Notion. Formal trust structure TBD." },
+    { id:1, title:"Financial Independence", current:"Loading…", target:"$10,000/mo", progress:72, status:"active", notes:"Live data loading…" },
+    { id:2, title:"DWE Ecosystem Development", current:"Phase 2", target:"First handoff by June 1", progress:45, status:"active", notes:"5 agents operational." },
+    { id:3, title:"Eliminate High-Interest Debt", current:"Loading…", target:"Zero high-interest debt", progress:20, status:"active", notes:"Live data loading…" },
+    { id:4, title:"Maintain & Deploy Reserves", current:"Loading…", target:"Reserve deployed strategically", progress:35, status:"active", notes:"Live data loading…" },
+    { id:5, title:"Family Trust & Governance", current:"Documenting", target:"All streams as family assets", progress:15, status:"pending", notes:"Formal trust structure TBD." },
   ],
-  pipeline: {
-    stages: [
-      { label: "New", count: 74, trend: "-13", dir: "down" },
-      { label: "Audited", count: 276, trend: "+31", dir: "up" },
-      { label: "Emailed", count: 6, trend: "0", dir: "flat" },
-      { label: "Responded", count: 9, trend: "0", dir: "flat" },
-      { label: "Outreach Sent", count: 2, trend: "new", dir: "new" },
-    ],
-    outreach: ["Howard Air & Plumbing", "Family owned HVAC — San Antonio, TX", "HVAC Company — San Antonio, TX", "Best-Rated HVAC — Austin, TX"],
-  },
-  financeAlerts: [
-    { msg: "Affirm AutoPay failed — $20.15 due today", sub: "Navy Federal card 1156 declined. Pay manually.", level: "red" },
-    { msg: "CoinTracker wallet sync overdue since Feb 9", sub: "Portfolio showing $16.78 — reconnect wallets.", level: "yellow" },
-    { msg: "Credit One — New document on Visa ••••3708", sub: "Paperless document posted. Sign in to view.", level: "yellow" },
-  ],
-  financeStreams: [
-    { name: "BYTNEX Hybrid DeFi 60+84", daily: "$121.06", monthly: "$3,632", tier: "high" },
-    { name: "BYTNEX Hybrid DeFi 24", daily: "$32.42", monthly: "$973", tier: "high" },
-    { name: "Crypto: MQT Golden Hatchery", daily: "$22.90", monthly: "$709", tier: "medium" },
-    { name: "BitLoop 2204", daily: "$18.89", monthly: "$529", tier: "high" },
-    { name: "BitLoop 1200", daily: "$10.74", monthly: "$301", tier: "high" },
-    { name: "BitLoop 1261", daily: "$8.56", monthly: "$120", tier: "medium" },
-  ],
-  email: [
-    { from: "Affirm", subject: "AutoPay failed — action required", tag: "URGENT", color: "red" },
-    { from: "Navy Federal", subject: "$20.15 at Affirm declined on card 1156", tag: "ALERT", color: "red" },
-    { from: "AWeber", subject: "Your deliverability protection just got stronger", tag: "TVC", color: "blue" },
-    { from: "Google Analytics", subject: "New Insight: Test 2 — theveteransconsultant.com", tag: "TVC", color: "blue" },
-    { from: "Credit One Bank", subject: "New Document Ready — Visa ••••3708", tag: "Finance", color: "yellow" },
-    { from: "CoinTracker", subject: "Crypto portfolio update — sync overdue since Feb 9", tag: "Finance", color: "yellow" },
-  ],
-  agents: [
-    { name: "Steve (CTO)", status: "1 overdue, 0 in progress", state: "warning" },
-    { name: "CE (Chief Eng)", status: "2 overdue, 0 in progress", state: "warning" },
-    { name: "Nicole (CIO)", status: "4 overdue, 9 responded leads — top 3 ready", state: "action" },
-    { name: "Anita (COO)", status: "20 overdue across system", state: "critical" },
-    { name: "Fran (CFO)", status: "5 overdue tasks", state: "warning" },
-    { name: "Jarvis", status: "Sprint retro ready — run /sprint-retro", state: "action" },
-  ],
-  daemonErrors: ["cloudflared-bridge", "proposal-generator", "intel-dexscreener-whales", "outreach-sender", "reply-tracker"],
+  pipeline: { stages:[], outreach:[] },
+  financeAlerts: [],
+  financeStreams: [],
+  email: [],
+  agents: [],
+  daemonErrors: [],
   n8nWorkflows: [
-    { name: "WF2: Reddit Scraper", category: "Gate 1" },
-    { name: "WF12: Daily Top 3", category: "Gate 3" },
-    { name: "WF8: Tri-Factor", category: "Gate 2" },
+    { name:"WF2: Reddit Scraper", category:"Gate 1" },
+    { name:"WF12: Daily Top 3", category:"Gate 3" },
+    { name:"WF8: Tri-Factor", category:"Gate 2" },
   ],
-  tomorrow: { ceo: "7 overdue tasks", engineering: "Steve: 1 overdue · CE: 2 overdue", revenue: "6 awaiting reply · 9 responded", finance: "5 overdue tasks", pm: "0 overdue tasks" },
-  superAgent: {
-    morning: { time: "11:33 AM", cycles: 92, tasks: 386 },
-    evening: { time: "6:27 PM", cycles: 1, tasks: 342 },
-  },
-  flywheel: { status: "stalled", keywordLearned: "why is my website not getting traffic", daemonStatus: "Dead — 0 new posts in 4+ days" },
-  stats: { monthly: "$7,203", cashFlow: "$1,659", longTerm: "$5,544", pipeline: 394, daemonsOk: 17, daemonsScheduled: 93, daemonsError: 5 },
+  tomorrow: { ceo:"Loading…", engineering:"Loading…", revenue:"Loading…", finance:"Loading…", pm:"Loading…" },
+  superAgent: { morning:{time:"—",cycles:0,tasks:0}, evening:{time:"—",cycles:0,tasks:0} },
+  flywheel: { status:"unknown", keywordLearned:"—", daemonStatus:"Loading…" },
+  stats: { monthly:"…", cashFlow:"…", longTerm:"…", pipeline:0, daemonsOk:0, daemonsScheduled:0, daemonsError:0 },
 };
+let _liveDataLoaded = false;
+
+async function loadLiveData() {
+  if (_liveDataLoaded) return;
+  try {
+    const [dhRes, psRes, olRes, jiRes, cfRes] = await Promise.all([
+      fetch('/mc/daemon-health').then(r=>r.json()).catch(()=>({})),
+      fetch('/mc/prospects/stats').then(r=>r.json()).catch(()=>({})),
+      fetch('/mc/ops-log').then(r=>r.json()).catch(()=>({events:[]})),
+      fetch('/mc/jake-inbox').then(r=>r.json()).catch(()=>({})),
+      fetch('/mc/cashflow').then(r=>r.json()).catch(()=>({})),
+    ]);
+
+    // Daemon health
+    const allDaemons = Array.isArray(dhRes) ? dhRes : [];
+    const errorDaemons = allDaemons.filter(d => d.status === 'error');
+    const runningCount  = allDaemons.filter(d => d.status === 'running').length;
+    const scheduledCount = allDaemons.filter(d => d.status === 'ok').length;
+    const errorCount = errorDaemons.length;
+
+    // Pipeline stages
+    const stages = psRes.stages || {};
+    const stageOrder = [
+      {key:'New',          label:'New'},
+      {key:'Audited',      label:'Audited'},
+      {key:'Emailed',      label:'Emailed'},
+      {key:'Responded',    label:'Responded'},
+      {key:'Outreach Sent', label:'Outreach Sent'},
+      {key:'Followed_Up',  label:'Followed Up'},
+      {key:'skipped',      label:'Skipped'},
+    ];
+    const liveStages = stageOrder.map(({key, label}) => ({
+      label,
+      count: stages[key] || 0,
+      trend: 'live',
+      dir:   'live',
+    }));
+
+    // Agent health from daemon-heartbeat entries
+    const agentMap = {
+      'ai.dwe.agent-heartbeat-ce':    {name:'CE (Chief Eng)',   key:'ce'},
+      'ai.dwe.agent-heartbeat-cto':   {name:'Steve (CTO)',     key:'cto'},
+      'ai.dwe.agent-heartbeat-anita': {name:'Anita (COO)',     key:'anita'},
+      'ai.dwe.agent-heartbeat-nicole':{name:'Nicole (CIO)',   key:'nicole'},
+      'ai.dwe.agent-heartbeat-cfo':   {name:'Fran (CFO)',      key:'cfo'},
+    };
+    const heartbeats = allDaemons.filter(d => agentMap[d.label]);
+    const liveAgents = Object.entries(agentMap).map(([label, info]) => {
+      const daemon = heartbeats.find(d => d.label === label);
+      const state  = daemon ? (daemon.status === 'error' ? 'warning' : 'ok') : 'ok';
+      const status = state === 'ok' ? 'All clear' : 'Error — ' + (daemon?.exitCode ?? '?');
+      return {name: info.name, status, state};
+    });
+
+    // Critical flags from daemon errors + ops-log + mail queue
+    const criticalFlags = [];
+    if (errorCount > 0) {
+      criticalFlags.push({
+        item:   errorCount + ' daemon error' + (errorCount>1?'s':'') + ': ' +
+                errorDaemons.map(d => d.label.replace('ai.dwe.','')).join(', '),
+        source: 'MC /mc/daemon-health',
+        priority: 'critical',
+      });
+    }
+    const events = Array.isArray(olRes.events) ? olRes.events : [];
+    const retros = events.filter(e => e.type === 'retro');
+    if (retros.length > 0) {
+      const last = retros[retros.length - 1];
+      const meta  = last.meta || {};
+      criticalFlags.push({
+        item:     'Sprint retro — ' + (meta.tab || 'Sprint Log') + ' #' + (meta.sprintNumber || '?') + ': ' + (last.detail || ''),
+        source:   'Ops Log · ' + (last.timestamp ? new Date(last.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'recent'),
+        priority: meta.retroStatus === 'Complete' ? 'warning' : 'action',
+      });
+    }
+    const jake   = jiRes && jiRes.ok ? jiRes : {};
+    const unanswered = jake.unanswered?.count ?? 0;
+    if (unanswered > 0) {
+      criticalFlags.push({
+        item:     unanswered + ' unanswered email' + (unanswered>1?'s':''),
+        source:   'mailcow — Jake inbox',
+        priority: 'warning',
+      });
+    }
+    if (criticalFlags.length === 0) {
+      criticalFlags.push({item:'No critical flags — system clear', source:'MC health', priority:'action'});
+    }
+
+    // Email from jake-inbox
+    const emailTags = {
+      'nicole@tvcpulse.com':{tag:'DWE',    color:'blue'},
+      'affirm':              {tag:'URGENT', color:'red'},
+      'navy federal':        {tag:'ALERT',  color:'red'},
+      'aweber':              {tag:'TVC',     color:'blue'},
+      'google analytics':   {tag:'TVC',    color:'blue'},
+      'credit one':          {tag:'Finance',color:'yellow'},
+      'cointracker':         {tag:'Finance',color:'yellow'},
+    };
+    const liveEmail = ((jake.inbound?.recent || []).length > 0 ? jake.inbound.recent : []).map(e => {
+      const from     = e.from || '';
+      const fromKey  = Object.keys(emailTags).find(k => from.toLowerCase().includes(k));
+      const ei       = fromKey ? emailTags[fromKey] : {tag:'Inbox', color:'gray'};
+      return {from, subject: e.subject || '(no subject)', tag: ei.tag, color: ei.color};
+    });
+
+    // Build data object
+    data.criticalFlags = criticalFlags;
+    data.daemonErrors  = errorDaemons.map(d => d.label.replace('ai.dwe.',''));
+    data.agents         = liveAgents;
+    data.pipeline      = {stages: liveStages, outreach: []};
+    data.stats         = {
+      monthly:       '$7,203',
+      cashFlow:      '$1,659',
+      longTerm:      '$5,544',
+      pipeline:      psRes.total || 0,
+      daemonsOk:     runningCount + scheduledCount,
+      daemonsScheduled: scheduledCount,
+      daemonsError:  errorCount,
+    };
+    data.email         = liveEmail;
+
+    // ── Cash Flow ──
+    if (cfRes && cfRes.income) {
+      const total = cfRes.income.total || 0;
+      const cf    = cfRes.netCashFlow || cfRes.cash || 0;
+      const fmt$  = n => '$' + Math.round(n).toLocaleString();
+      data.stats.monthly  = fmt$(total);
+      data.stats.cashFlow = fmt$(cf);
+      data.strategicObjectives[0].current = fmt$(total) + '/mo';
+      data.strategicObjectives[0].notes   = (cfRes.income.items ? cfRes.income.items.length : '?') + ' active income streams.';
+      data.strategicObjectives[3].current = fmt$(cf) + ' cash flow';
+      // Finance streams
+      if (cfRes.income.items) {
+        data.financeStreams = cfRes.income.items.map(item => ({
+          name:    item.name,
+          daily:   fmt$(item.amount / 30),
+          monthly: fmt$(item.amount),
+          tier:    item.amount >= 1000 ? 'high' : item.amount >= 300 ? 'medium' : 'low',
+        }));
+      }
+      // Header badges
+      const hm = document.getElementById('hdr-monthly');
+      const hc = document.getElementById('hdr-cashflow');
+      const sc = document.getElementById('stat-cashflow-val');
+      if (hm) hm.innerHTML = data.stats.monthly + '<span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:400;margin-left:4px;">/ mo</span>';
+      if (hc) hc.textContent = 'Cash Flow: ' + data.stats.cashFlow;
+      if (sc) sc.textContent = data.stats.cashFlow;
+    }
+
+    // ── Pipeline stat badge ──
+    const pl = document.getElementById('stat-pipeline-val');
+    if (pl) pl.textContent = psRes.total || 0;
+
+    // Update daemon stat bar
+    const dv = document.getElementById('stat-daemons-val');
+    const ds = document.getElementById('stat-daemons-sub');
+    if (dv) { dv.textContent = (runningCount + scheduledCount) + ' OK'; dv.style.color = errorCount > 0 ? '#f87171' : '#4ade80'; }
+    if (ds) ds.textContent = errorCount + ' error' + (errorCount !== 1 ? 's' : '');
+
+    _liveDataLoaded = true;
+  } catch(e) {
+    console.error('[daily-briefing] loadLiveData failed:', e);
+  }
+}
+
 
 // ── State ────────────────────────────────────────────────────────────────────
 const state = {
@@ -936,18 +1054,19 @@ function toggleFilter(key) {
 }
 function toggleMindset() {
   const body = el('mindset-body');
-  const caret = el('mindset-caret');
+  if (!body) return;
   body.classList.toggle('hidden');
+  const caret = el('mindset-caret');
+  if (!caret) return;
   caret.textContent = body.classList.contains('hidden') ? '▼ expand' : '▲ collapse';
 }
-function openTaskPanel(tabId) {
-  state.taskPanel = tabId;
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadLiveData().then(() => {
+  renderFlowStrip();
+  renderTabs();
   renderContent();
-}
-function closeTaskPanel() {
-  state.taskPanel = null;
-  renderContent();
-}
+});
 function launchTasks(tabId) {
   const tasks = buildPendingTasks(tabId);
   const payload = tasks.map(t=>({name:t.text,priority:notionPriority(t.isFlag,t.flagPriority,t.isUrgent).label}));
@@ -988,17 +1107,16 @@ function flowStepNav(btn) {
   if (step.url) openLink(step.url);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-// Populate daemon stat bar from data
-(function initStatBar() {
-  const dv = document.getElementById('stat-daemons-val');
-  const ds = document.getElementById('stat-daemons-sub');
-  if (dv) dv.textContent = data.stats.daemonsOk + ' OK';
-  if (ds) ds.textContent = data.stats.daemonsError + ' errors';
+
+// Dynamic date in header
+(function() {
+  const el = document.getElementById('briefing-date-sub');
+  if (!el) return;
+  const now = new Date();
+  const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const monthDay = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  el.textContent = `${dayName}, ${monthDay} · General Overview + DWE/Business`;
 })();
-renderFlowStrip();
-renderTabs();
-renderContent();
 </script>
 </div><!-- /max-w-3xl -->
 </div><!-- /content -->

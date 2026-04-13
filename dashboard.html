@@ -2723,7 +2723,8 @@
                     <div class="panel-title">Document Pipeline</div>
                     <div style="margin-left:auto;display:flex;align-items:center;gap:0.5rem;">
                         <span style="font-size:0.68rem;color:rgba(255,255,255,0.25);">double-click to read · drag to move</span>
-                        <button onclick="fetchPipeline()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:0.6rem;padding:2px 8px;border-radius:4px;cursor:pointer;">↻</button>
+                        <span id="pipeline-last-updated" style="font-size:0.6rem;color:rgba(255,255,255,0.2);font-family:monospace;">—</span>
+                        <button onclick="fetchPipeline()" title="Refresh now" style="background:rgba(255,149,0,0.12);border:1px solid rgba(255,149,0,0.3);color:rgba(255,149,0,0.8);font-size:0.7rem;padding:2px 10px;border-radius:4px;cursor:pointer;font-weight:600;">↻ Refresh</button>
                     </div>
                 </div>
                 <div id="pipeline-board" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;min-height:180px;max-height:320px;">
@@ -5702,16 +5703,16 @@
                         return '#f59e0b';
                     }
                     function modelDisplayFor(m) {
-                        if (!m) return 'M2.7 Cloud';
-                        if (m === 'ollama/minimax-m2.7:cloud') return 'M2.7 Cloud';
-                        if (m === 'ollama/glm-5:cloud') return 'GLM-5 Cloud';
-                        if (m === 'ollama/kimi-k2.5:cloud') return 'Kimi K2.5';
-                        if (m === 'ollama/qwen2.5:7b') return 'Qwen 2.5 Local';
+                        if (!m) return '01-TeamoRouter-Free';
+                        if (m === 'ollama/minimax-m2.7:cloud') return '01-TeamoRouter-Free';
+                        if (m === 'ollama/glm-5:cloud') return '02-Ollama GLM-5';
+                        if (m === 'ollama/kimi-k2.5:cloud') return '02-Ollama Kimi K2.5';
+                        if (m === 'ollama/qwen2.5:7b') return '04-Ollama Local';
                         if (m === 'ollama/llava:7b') return 'LLaVA Local';
                         if (m === 'openrouter/anthropic/claude-sonnet-4') return 'claude/sonnet-4';
-                        if (m === 'openrouter/minimax/minimax-m2.7') return 'minimax/m2.7';
-                        if (m === 'ollama/qwen2.5:7b') return 'ollama/qwen2.5';
-                        return m.replace('ollama/', '').replace('ollama/', 'local/').replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
+                        if (m === 'openrouter/minimax/minimax-m2.7') return '03-OpenRouter';
+                        if (m === 'openrouter/auto') return '03-OpenRouter/auto';
+                        return m.replace('ollama/', '').replace('openrouter/', 'or/').replace('anthropic/', 'claude/').replace('openai/', 'oai/').replace('openclaw/', 'claw/');
                     }
                     // Config-based model lookup per agent
                     const agentModelConfig = {
@@ -5728,9 +5729,12 @@
                     };
                     if (!agent.isHuman) {
                         const modelFull = s?.model || agentModelConfig[agent.id] || 'ollama/minimax-m2.7:cloud';
+                        const cascadeTitle = modelFull === 'ollama/minimax-m2.7:cloud'
+                            ? '01-TeamoRouter-Free → 02-Ollama Cloud → 03-OpenRouter/auto → 04-Ollama Local'
+                            : modelFull;
                         modelHtml = `<div style="margin-top:2px;display:flex;align-items:center;gap:4px;">
                             <span style="font-size:0.52rem;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.05em;">Model</span>
-                            <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:inherit;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${modelFull}">${modelDisplayFor(modelFull)}</span>
+                            <span style="font-size:0.68rem;color:${modelColorFor(modelFull)};font-family:inherit;margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;" title="${cascadeTitle}">${modelDisplayFor(modelFull)}</span>
                         </div>`;
                     } else {
                         // Sidney: show main agent's model with same color logic
@@ -6396,6 +6400,9 @@
                 const board = document.getElementById('pipeline-board');
                 if (!board) return;
                 const ext2icon = e => e==='md'?'📝':e==='json'?'{}':e==='txt'?'📄':'📎';
+                // Update last-refreshed timestamp
+                const tsEl = document.getElementById('pipeline-last-updated');
+                if (tsEl) { const now = new Date(); tsEl.textContent = `updated ${now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`; }
 
                 board.innerHTML = PIPELINE_ORDER.map(stage => {
                     const files = d.stages[stage] || [];
