@@ -13,6 +13,20 @@ const url = require('url');
 const zlib = require('zlib');
 const { WebSocketServer } = require('ws');
 
+// Load ~/.openclaw/.env into process.env
+try {
+    const envFile = fs.readFileSync(path.join(process.env.HOME, '.openclaw', '.env'), 'utf8');
+    for (const line of envFile.split('\n')) {
+        const clean = line.replace(/^export\s+/, '').trim();
+        if (!clean || clean.startsWith('#')) continue;
+        const idx = clean.indexOf('=');
+        if (idx < 0) continue;
+        const k = clean.slice(0, idx).trim();
+        const v = clean.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+        if (k && !process.env[k]) process.env[k] = v;
+    }
+} catch(e) { /* .env not found, continue */ }
+
 // ── Performance: gzip helper ────────────────────────────────────────────
 const COMPRESSIBLE = new Set(['text/html', 'application/javascript', 'text/css', 'application/json', 'image/svg+xml']);
 function sendCompressed(req, res, statusCode, headers, body) {
@@ -554,35 +568,53 @@ const server = http.createServer((req, res) => {
             if (req.method === 'POST') {
                 let body = '';
                 req.on('data', chunk => body += chunk);
-                req.on('end', () => {
+                req.on('end', async () => {
                     try {
-                        const { question } = JSON.parse(body);
-                        if (!question) { res.writeHead(400); res.end(JSON.stringify({ error: 'No question' })); return; }
-                        // Apply same DWE expansion as brain_query.sh
-                        const expanded = question
+                        const { question, query } = JSON.parse(body);
+                        const q = question || query;
+                        if (!q) { res.writeHead(400); res.end(JSON.stringify({ error: 'No question' })); return; }
+
+                        const expanded = q
                             .replace(/\bDWE\b/g, 'DWE (Digital Wealth Ecosystem)')
                             .replace(/currently working on/gi, 'currently working on Phase 4 agent autonomy active projects')
                             .replace(/4_Ready_to_Seed/g, 'Ready to Seed folder seed-watcher auto-ingest DWE Brain Pinecone');
-                        const https = require('https');
-                        const payload = JSON.stringify({ question: expanded, botId: 'main' });
-                        const opts = {
-                            hostname: 'n8n.tvcpulse.com',
-                            path: '/webhook/openclaw-query',
+
+                        // Step 1: Embed via local Ollama
+                        const embedResp = await fetch('http://127.0.0.1:11434/api/embeddings', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
-                        };
-                        const preq = https.request(opts, pres => {
-                            let data = '';
-                            pres.on('data', c => data += c);
-                            pres.on('end', () => {
-                                res.setHeader('Content-Type', 'application/json');
-                                try { res.end(data); } catch(e) { res.end(JSON.stringify({ error: 'Parse error' })); }
-                            });
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ model: 'nomic-embed-text', prompt: expanded })
                         });
-                        preq.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
-                        preq.write(payload);
-                        preq.end();
-                    } catch(e) { res.writeHead(400); res.end(JSON.stringify({ error: e.message })); }
+                        const embedData = await embedResp.json();
+                        const vector = embedData.embedding;
+                        if (!vector) throw new Error('Embedding failed');
+
+                        // Step 2: Query Pinecone dwe-v3 dwe-docs namespace directly
+                        const PINECONE_KEY = process.env.PINECONE_API_KEY || '';
+                        const pcResp = await fetch('https://dwe-v3-lm4owoj.svc.aped-4627-b74a.pinecone.io/query', {
+                            method: 'POST',
+                            headers: { 'Api-Key': PINECONE_KEY, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ namespace: 'dwe-docs', topK: 5, includeMetadata: true, vector })
+                        });
+                        const pcData = await pcResp.json();
+                        const matches = (pcData.matches || []).map(m => m.metadata?.text || '').filter(Boolean).join('\n\n');
+
+                        // Step 3: Answer via Ollama qwen2.5:3b
+                        const answerResp = await fetch('http://127.0.0.1:11434/api/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'qwen2.5:3b',
+                                prompt: `Context:\n${matches}\n\nQuestion: ${q}\n\nAnswer concisely based on the context above:`,
+                                stream: false
+                            })
+                        });
+                        const answerData = await answerResp.json();
+                        const answer = answerData.response || 'No answer generated';
+
+                        res.setHeader('Content-Type', 'application/json');
+                        res.end(JSON.stringify({ answer, sources: (pcData.matches || []).map(m => m.metadata?.source).filter(Boolean) }));
+                    } catch(e) { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); }
                 });
             } else {
                 res.writeHead(405); res.end(JSON.stringify({ error: 'POST only' }));

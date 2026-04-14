@@ -7,30 +7,25 @@ Saves to ~/mission-control-server/ga4_cache.json
 import json, os, sys
 from datetime import datetime
 
-SKILL_DIR = os.path.expanduser('~/.openclaw/skills/gmail-api')
-TOKEN_PATH = os.path.join(SKILL_DIR, 'token_analytics.json')
+SA_JSON = os.path.expanduser('~/.openclaw/credentials/ga4-service-account.json')
 CACHE_PATH = os.path.join(os.path.expanduser('~/mission-control-server'), 'ga4_cache.json')
 PROPERTY = 'properties/349790229'
 LOG = os.path.expanduser('~/openclaw/logs/ga4-pull.log')
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
 
 def log(msg):
     with open(LOG, 'a') as f:
         f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\n")
 
 try:
-    from google.oauth2.credentials import Credentials
-    from google.auth.transport.requests import Request
+    from google.oauth2 import service_account
     from googleapiclient.discovery import build
 except ImportError:
     log("ERROR: google-auth or google-api-python-client not installed")
     sys.exit(1)
 
 def get_creds():
-    creds = Credentials.from_authorized_user_file(TOKEN_PATH)
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        with open(TOKEN_PATH, 'w') as f:
-            f.write(creds.to_json())
+    creds = service_account.Credentials.from_service_account_file(SA_JSON, scopes=SCOPES)
     return creds
 
 def pull():

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-04-13T01:42:19.558898",
+  "updated": "2026-04-14T01:42:38.842496",
   "property": "theveteransconsultant.com",
   "thisWeek": {
     "sessions": 23,
@@ -12,19 +12,19 @@
     "engagementRate": 56.5
   },
   "lastWeek": {
-    "sessions": 20,
-    "users": 11,
-    "newUsers": 10,
-    "pageviews": 45,
-    "avgDuration": 405,
-    "bounceRate": 35.0,
-    "engaged": 13,
-    "engagementRate": 65.0
+    "sessions": 16,
+    "users": 10,
+    "newUsers": 9,
+    "pageviews": 36,
+    "avgDuration": 306,
+    "bounceRate": 43.8,
+    "engaged": 9,
+    "engagementRate": 56.2
   },
   "deltas": {
-    "sessions": 15.0,
-    "users": 0.0,
-    "pageviews": -4.4
+    "sessions": 43.8,
+    "users": 10.0,
+    "pageviews": 19.4
   },
   "topPages": [
     {
@@ -51,19 +51,19 @@
   "sources": [
     {
       "channel": "Direct",
-      "sessions": 10
+      "sessions": 6
     },
     {
       "channel": "Unassigned",
-      "sessions": 9
-    },
-    {
-      "channel": "Organic Search",
-      "sessions": 2
+      "sessions": 4
     },
     {
       "channel": "Organic Social",
       "sessions": 2
+    },
+    {
+      "channel": "Organic Search",
+      "sessions": 1
     }
   ],
   "devices": [

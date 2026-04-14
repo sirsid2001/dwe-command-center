@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-04-12T08:00:33.782160",
-  "score": 50,
+  "timestamp": "2026-04-13T08:00:36.871667",
+  "score": 85,
   "objectives": {
     "SO1: Financial Independence": {
       "active": 1,
-      "not_started": 22,
+      "not_started": 6,
       "blocked": 0,
-      "done_week": 4,
-      "total": 23,
+      "done_week": 5,
+      "total": 7,
       "status": "ON TRACK",
-      "last_activity": "2026-04-12T03:21:00"
+      "last_activity": "2026-04-13T03:05:00"
     },
     "SO2: DWE Ecosystem": {
-      "active": 3,
-      "not_started": 57,
+      "active": 5,
+      "not_started": 5,
       "blocked": 0,
       "done_week": 15,
-      "total": 65,
+      "total": 13,
       "status": "ON TRACK",
-      "last_activity": "2026-04-12T05:48:00"
+      "last_activity": "2026-04-13T12:27:00"
     },
     "SO3: Eliminate Debt": {
       "active": 0,
@@ -30,22 +30,22 @@
       "last_activity": null
     },
     "SO4: Reserves": {
-      "active": 0,
-      "not_started": 3,
+      "active": 1,
+      "not_started": 0,
       "blocked": 0,
       "done_week": 1,
-      "total": 4,
-      "status": "SLOW",
-      "last_activity": "2026-04-12T04:47:00"
+      "total": 3,
+      "status": "ON TRACK",
+      "last_activity": "2026-04-13T06:41:00"
     },
     "SO5: Family Trust": {
       "active": 0,
-      "not_started": 3,
+      "not_started": 1,
       "blocked": 0,
-      "done_week": 0,
-      "total": 3,
-      "status": "STALE",
-      "last_activity": "2026-04-12T01:55:00"
+      "done_week": 1,
+      "total": 1,
+      "status": "SLOW",
+      "last_activity": "2026-03-31T01:51:00"
     }
   },
   "sla_violations": [
@@ -57,26 +57,24 @@
     }
   ],
   "drift_warnings": [
-    "40 unaligned/untagged tasks (24% drift)",
-    "SO1 (revenue) is only 12% of active work \u2014 should be >30%",
-    "No weekly strategic input detected \u2014 score capped at 50"
+    "SO1 (revenue) is only 10% of active work \u2014 should be >30%"
   ],
-  "drift_pct": 24.1,
-  "so1_share": 12.5,
+  "drift_pct": 4.8,
+  "so1_share": 10.0,
   "focus_objectives": [
-    "SO1",
-    "SO2"
+    "SO2",
+    "SO3"
   ],
   "early_completion": false,
-  "operational_count": 20,
-  "unaligned_count": 40,
+  "operational_count": 7,
+  "unaligned_count": 2,
   "untagged_count": 0,
   "cadence": {
-    "strategic_input": false,
+    "strategic_input": true,
     "project_proposals": false,
-    "ceo_approved": false,
+    "ceo_approved": true,
     "execution_active": true,
     "execution_completed": true,
-    "cadence_score": 0
+    "cadence_score": 35
   }
 }
