@@ -1014,6 +1014,62 @@
     <!-- CSS6 WebGL plasma shader background -->
     <canvas id="css6-bg" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none;"></canvas>
 
+    <!-- Hamburger nav menu -->
+    <div id="nav-hamburger" onclick="toggleNavMenu()" title="Navigate" style="position:fixed;top:14px;left:14px;z-index:9999;width:34px;height:34px;background:rgba(20,25,70,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s,border-color 0.2s;" onmouseover="this.style.background='rgba(30,36,100,0.95)';this.style.borderColor='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(20,25,70,0.85)';this.style.borderColor='rgba(255,255,255,0.12)'">
+        <svg id="nav-ham-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" style="pointer-events:none;">
+            <rect y="2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+            <rect y="7.1" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+            <rect y="12.2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+        </svg>
+    </div>
+    <div id="nav-menu" style="display:none;position:fixed;top:54px;left:14px;z-index:9998;background:rgba(16,20,60,0.97);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:6px 4px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45);font-family:Inter,sans-serif;">
+        <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;padding:4px 10px 6px;">Navigate</div>
+        <a href="/" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">⚡</span> Command Center</a>
+        <a href="/revenue" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">💰</span> Revenue</a>
+        <a href="/pipelines" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔁</span> Pipelines</a>
+        <a href="/ai-team" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🤖</span> AI Team</a>
+        <a href="/ecosystem" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🌐</span> Ecosystem</a>
+        <a href="/n8n-workflows" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔧</span> n8n Workflows</a>
+        <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+        <a href="/vision" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔮</span> Vision</a>
+        <a href="/ceo-corner" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">👔</span> CEO Productivity</a>
+        <a href="/daily-briefing" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗓️</span> Daily Briefing</a>
+        <a href="/delegations" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📋</span> Delegations</a>
+        <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+        <a href="/architecture" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Architecture</a>
+        <a href="/dataflow" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📊</span> Data Flow</a>
+        <a href="/n8n-map" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗺️</span> n8n Map</a>
+    </div>
+    <script>
+        function toggleNavMenu() {
+            var m = document.getElementById('nav-menu');
+            m.style.display = m.style.display === 'none' ? 'block' : 'none';
+        }
+        function closeNavMenu() {
+            document.getElementById('nav-menu').style.display = 'none';
+        }
+        document.addEventListener('click', function(e) {
+            var ham = document.getElementById('nav-hamburger');
+            var menu = document.getElementById('nav-menu');
+            if (menu.style.display !== 'none' && !ham.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+        // Highlight current page in menu
+        (function() {
+            var path = window.location.pathname.replace(/\/$/, '') || '/';
+            var links = document.querySelectorAll('#nav-menu a');
+            links.forEach(function(a) {
+                var href = a.getAttribute('href').replace(/\/$/, '') || '/';
+                if (href === path) {
+                    a.style.background = 'rgba(255,255,255,0.1)';
+                    a.style.color = '#fff';
+                    a.style.fontWeight = '600';
+                }
+            });
+        })();
+    </script>
+
     <div class="container" id="main-container">
         <main class="main">
             <div class="bg-blob bg-blob-1"></div>

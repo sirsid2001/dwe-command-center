@@ -33,7 +33,7 @@
     letter-spacing: 0.5px;
   }
   .diagram {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -87,6 +87,49 @@
   .actor-icon.agent { background: #3b82f622; border: 1.5px solid #3b82f6; }
   .actor-icon.service { background: #f59e0b22; border: 1.5px solid #f59e0b; }
   .actor-icon.ext { background: #a855f722; border: 1.5px solid #a855f7; }
+  .actor span { font-size: 10px; color: #8899bb; font-weight: 500; }
+
+  /* --- Interface Layer --- */
+  .l-interface { background: #0f1629; border: 1px solid #1e2a4a; }
+  .l-interface .box { background: #162040; border: 1px solid #2a3a66; }
+
+  /* --- Gateway Layer --- */
+  .l-gateway {
+    background: linear-gradient(90deg, #00d4aa15, #00d4aa08);
+    border: 1px solid #00d4aa44;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #00d4aa;
+    letter-spacing: 1px;
+    border-radius: 8px;
+  }
+  .l-gateway small { font-weight: 400; color: #6b9a8a; font-size: 11px; margin-left: 8px; }
+
+  /* --- Agent Layer --- */
+  .l-agents { background: #101a30; border: 1px solid #1a2d55; }
+  .l-agents .box { background: #142040; border: 1px solid #2244aa55; color: #7eb8ff; }
+
+  /* --- Services Layer --- */
+  .l-services { background: #111827; border: 1px solid #1f2937; }
+  .l-services .box { background: #1a2332; border: 1px solid #2a3a55; }
+
+  /* --- Daemon Layer --- */
+  .l-daemons { background: #0d1520; border: 1px solid #1a2540; }
+  .l-daemons .box { background: #121e30; border: 1px solid #1e3050; font-size: 11px; }
+
+  /* --- Data Layer --- */
+  .l-data { background: #0c1018; border: 1px solid #182030; }
+  .l-data .box {
+    background: #101828;
+    border: 1px solid #1a2a44;
+    border-bottom: 3px solid #3b82f6;
+  }
+
+  /* --- External Layer --- */
+  .l-external { background: #10081c; border: 1px solid #2a1a44; }
+  .l-external .box { background: #1a1030; border: 1px solid #3a2a55; }
 
   /* --- Box Base --- */
   .box {
@@ -110,70 +153,6 @@
     margin-top: 3px;
     font-weight: 400;
   }
-  .box.new {
-    border: 1px solid #a855f7 !important;
-    background: #1a0f2e !important;
-    box-shadow: 0 0 12px #a855f722;
-  }
-  .box.new .detail { color: #c084fc; }
-
-  /* --- Layer Colors --- */
-  .l-interface { background: #0f1629; border: 1px solid #1e2a4a; }
-  .l-interface .box { background: #162040; border: 1px solid #2a3a66; }
-  .l-gateway { background: linear-gradient(90deg, #00d4aa15, #00d4aa08); border: 1px solid #00d4aa44; padding: 10px 20px; text-align: center; font-size: 14px; font-weight: 600; color: #00d4aa; letter-spacing: 1px; border-radius: 8px; }
-  .l-gateway small { font-weight: 400; color: #6b9a8a; font-size: 11px; margin-left: 8px; }
-  .l-agents { background: #101a30; border: 1px solid #1a2d55; }
-  .l-agents .box { background: #142040; border: 1px solid #2244aa55; color: #7eb8ff; }
-  .l-services { background: #111827; border: 1px solid #1f2937; }
-  .l-services .box { background: #1a2332; border: 1px solid #2a3a55; }
-  .l-daemons { background: #0d1520; border: 1px solid #1a2540; }
-  .l-daemons .box { background: #121e30; border: 1px solid #1e3050; font-size: 11px; }
-  .l-data { background: #0c1018; border: 1px solid #182030; }
-  .l-data .box { background: #101828; border: 1px solid #1a2a44; border-bottom: 3px solid #3b82f6; }
-  .l-external { background: #10081c; border: 1px solid #2a1a44; }
-  .l-external .box { background: #1a1030; border: 1px solid #3a2a55; }
-
-  /* --- WorldMonitor Layer (NEW) --- */
-  .l-worldmonitor {
-    background: #0a1020;
-    border: 1px solid #1a3a6a;
-    position: relative;
-  }
-  .l-worldmonitor .layer-label { color: #60a5fa; }
-  .l-worldmonitor .box {
-    background: #0d1e3a;
-    border: 1px solid #1a4080;
-  }
-  .l-worldmonitor .box.highlight {
-    border: 1px solid #60a5fa88;
-    background: #0f2040;
-  }
-  .l-worldmonitor .box .detail { color: #60a5fa; }
-
-  /* --- Brain Layer (NEW) --- */
-  .l-brain {
-    background: linear-gradient(135deg, #0a0520 0%, #100a2a 100%);
-    border: 1px solid #4a1a8a;
-  }
-  .l-brain .layer-label { color: #c084fc; }
-  .l-brain .box {
-    background: #12082a;
-    border: 1px solid #3a1a70;
-  }
-  .l-brain .box .detail { color: #a855f7; }
-
-  /* --- Memory Layers (NEW) --- */
-  .l-memory {
-    background: #0a1520;
-    border: 1px solid #1a3a5a;
-  }
-  .l-memory .layer-label { color: #38bdf8; }
-  .l-memory .box {
-    background: #0d1e30;
-    border: 1px solid #1a4a70;
-    font-size: 11px;
-  }
-  .l-memory .box .detail { color: #38bdf8; }
 
   /* --- Connector Arrows --- */
   .connector {
@@ -220,9 +199,17 @@
     line-height: 1.8;
   }
   .side-box ul li::before { content: "→ "; color: #3b82f6; }
-  .mesh-box { background: #0d0d1a; border: 1px solid #2a1a55; }
+
+  .mesh-box {
+    background: #0d0d1a;
+    border: 1px solid #2a1a55;
+  }
   .mesh-box h4 { color: #a855f7; }
-  .monitor-box { background: #0d1a18; border: 1px solid #1a4040; }
+
+  .monitor-box {
+    background: #0d1a18;
+    border: 1px solid #1a4040;
+  }
   .monitor-box h4 { color: #00d4aa; }
 
   /* --- Legend --- */
@@ -251,46 +238,14 @@
   .dot-daemon { background: #121e30; border: 1px solid #1e3050; }
   .dot-data { background: #101828; border: 1px solid #3b82f6; }
   .dot-external { background: #1a1030; border: 1px solid #3a2a55; }
-  .dot-worldmonitor { background: #0d1e3a; border: 1px solid #60a5fa; }
-  .dot-brain { background: #12082a; border: 1px solid #a855f7; }
-  .dot-memory { background: #0d1e30; border: 1px solid #38bdf8; }
 
+  /* --- Version Tag --- */
   .version {
     text-align: center;
     font-size: 10px;
     color: #3a4a66;
     margin-top: 20px;
     letter-spacing: 1px;
-  }
-
-  /* --- Data Flow Legend --- */
-  .flow-legend {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 8px;
-    font-size: 10px;
-    color: #6b7a99;
-  }
-  .flow-legend span { padding: 2px 8px; border-radius: 4px; }
-  .flow-ingest { background: #60a5fa22; color: #60a5fa; }
-  .flow-query { background: #a855f722; color: #a855f7; }
-  .flow-write { background: #00d4aa22; color: #00d4aa; }
-  .flow-nightly { background: #f59e0b22; color: #f59e0b; }
-
-  /* --- Highlight ribbon --- */
-  .ribbon {
-    position: absolute;
-    top: -1px;
-    right: 20px;
-    background: #a855f7;
-    color: #fff;
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 2px 8px;
-    border-radius: 0 0 4px 4px;
-    text-transform: uppercase;
   }
 </style>
 </head>
@@ -302,7 +257,7 @@
 </div>
 
 <h1><span>DWE</span> — Core Platform Architecture</h1>
-<p class="subtitle">Digital Workforce Ecosystem &bull; v3.12 &bull; 72 Daemons &bull; 6 AI Agents + Jarvis &bull; WorldMonitor Layer &bull; Active Brain</p>
+<p class="subtitle">Digital Workforce Ecosystem &bull; v3.11 &bull; 72 Daemons &bull; 6 AI Agents + Jarvis</p>
 
 <div class="diagram">
 
@@ -331,7 +286,7 @@
     <div class="layer-label">User Interfaces</div>
     <div class="layer-row">
       <div class="box">Telegram Group<div class="detail">6 Topics / 6 Bots</div></div>
-      <div class="box">Mission Control<div class="detail">Port 8899 / Node.js</div></div>
+      <div class="box">Mission Control Dashboard<div class="detail">Port 8899 / Node.js</div></div>
       <div class="box">CEO Corner<div class="detail">Comms Center / Email</div></div>
       <div class="box">Claude Code CLI<div class="detail">Jarvis / Terminal</div></div>
       <div class="box">iMessage<div class="detail">imsg CLI / Alerts</div></div>
@@ -357,36 +312,10 @@
           <div class="box">Steve<div class="detail">CTO / Tech & Infra</div></div>
           <div class="box">CE<div class="detail">Chief Engineer / Builds</div></div>
           <div class="box">Anita<div class="detail">COO / PM Owner</div></div>
-          <div class="box">Nicole<div class="detail">CIO / Revenue Intel</div></div>
+          <div class="box">Nicole<div class="detail">CIO / Revenue</div></div>
           <div class="box">Fran<div class="detail">CFO / Finance</div></div>
           <div class="box">Main<div class="detail">Coordinator</div></div>
           <div class="box" style="border-color: #f59e0b55; color: #f5c842;">Jarvis<div class="detail">Execution / Claude Code</div></div>
-        </div>
-      </div>
-
-      <!-- WORLDMONITOR LAYER — NEW -->
-      <div class="layer l-worldmonitor">
-        <div class="ribbon">NEW</div>
-        <div class="layer-label">WorldMonitor Intelligence — External Intel Substrate</div>
-        <div class="layer-row">
-          <div class="box">Finviz Insider<div class="detail">~200 signals/day</div></div>
-          <div class="box">Capitol Trades<div class="detail">~96 signals/day</div></div>
-          <div class="box">Quiver Quant<div class="detail">~1000 signals/day</div></div>
-          <div class="box highlight">WorldMonitor Dashboard<div class="detail">worldmonitor.tvcpulse.com</div></div>
-          <div class="box highlight">Ecosystem Dashboard<div class="detail">Memory / Brain / Agent Viz</div></div>
-        </div>
-      </div>
-
-      <!-- BRAIN LAYER — NEW (Active Intelligence) -->
-      <div class="layer l-brain">
-        <div class="ribbon">ACTIVE</div>
-        <div class="layer-label">The Brain — Active Intelligence Layer (Pinecone dwe-v2)</div>
-        <div class="layer-row">
-          <div class="box">Vector Index<div class="detail">1,247 vectors / 768-dim</div></div>
-          <div class="box">Nightly Seed<div class="detail">2am / ai.dwe.nightly-review</div></div>
-          <div class="box">Real-Time Ingest<div class="detail">n8n VPS → Pinecone</div></div>
-          <div class="box">brain_query.sh<div class="detail">All agents query here</div></div>
-          <div class="box">Outcome Loop<div class="detail">Stripe → EspoCRM → Brain</div></div>
         </div>
       </div>
 
@@ -398,30 +327,19 @@
           <div class="box">Notion Sync<div class="detail">10min Polling</div></div>
           <div class="box">Seed Watcher<div class="detail">Pinecone Ingest</div></div>
           <div class="box">Brain Trainer<div class="detail">RAG Expansion</div></div>
-          <div class="box">Alert Hub<div class="detail">n8n / 4 Channels</div></div>
+          <div class="box">Approval Watcher<div class="detail">Vision Brief Intake</div></div>
         </div>
         <div class="layer-row" style="margin-top: 8px;">
-          <div class="box">Gmail Agent<div class="detail">n8n / 8 Tools</div></div>
-          <div class="box">Task Follow-Up<div class="detail">n8n / 2h cycle</div></div>
-          <div class="box">VAB Pipeline<div class="detail">n8n / 4-Phase</div></div>
-          <div class="box">OPP-33 Swarm<div class="detail">9 Role Sales Pipeline</div></div>
+          <div class="box">Alert Hub<div class="detail">n8n / 4 Channels + OpenClaw CTO</div></div>
+          <div class="box">Gmail Agent<div class="detail">n8n / 8 Tools + Agent Routing</div></div>
+          <div class="box">Task Follow-Up<div class="detail">n8n / 2h / All Agents</div></div>
+          <div class="box">Agent Relay Hub<div class="detail">n8n / Webhook / Bot-to-Bot</div></div>
+          <div class="box">VAB Pipeline<div class="detail">n8n / 4-Phase / 37 nodes</div></div>
         </div>
         <div class="layer-row" style="margin-top: 8px;">
-          <div class="box">Outreach Sender<div class="detail">Pipeline / SES / Multi-step</div></div>
-          <div class="box">Stripe Webhook<div class="detail">VPS / EspoCRM Write-Back</div></div>
-          <div class="box">GA4 Events<div class="detail">/contact/ form tracking</div></div>
-          <div class="box">Brain API<div class="detail">Mac Bridge :8878</div></div>
-        </div>
-      </div>
-
-      <!-- MEMORY LAYERS — NEW -->
-      <div class="layer l-memory">
-        <div class="layer-label">DWE Memory Architecture — 3 Layers</div>
-        <div class="layer-row">
-          <div class="box" style="flex: 0 0 180px;">Layer 1<div class="detail">Session Memory</div><div class="detail" style="color:#60a5fa;">Ephemeral / per-session</div></div>
-          <div class="box" style="flex: 0 0 180px;">Layer 2<div class="detail">Persistent Memory Index</div><div class="detail" style="color:#60a5fa;">MEMORY.md / Notion Tasks</div></div>
-          <div class="box" style="flex: 0 0 180px;">Layer 3<div class="detail">Governed Knowledge</div><div class="detail" style="color:#60a5fa;">Brain / AGENTS / Oracle</div></div>
-          <div class="box" style="flex: 0 0 200px; border-color: #38bdf888;">Memory Dashboard<div class="detail" style="color:#38bdf8;">Live: ~/openclaw/shared/</div></div>
+          <div class="box">Audit Runner<div class="detail">Pipeline #1 / Auto</div></div>
+          <div class="box">Outreach Sender<div class="detail">Pipeline #1 / SES / 6hr</div></div>
+          <div class="box">Jake Martinez<div class="detail">jakem@tvcpulse.com / SES+ImprovMX</div></div>
         </div>
       </div>
 
@@ -431,14 +349,14 @@
         <div class="layer-row">
           <div class="box">Agent Heartbeats<div class="detail">8 daemons / Scheduled</div></div>
           <div class="box">Anita PM Suite<div class="detail">8 daemons / Triage+Chase</div></div>
-          <div class="box">OPP-33 Swarm<div class="detail">Pipeline Self-Healing</div></div>
-          <div class="box">Content & Intel<div class="detail">11 daemons / Scrapers</div></div>
+          <div class="box">Task Follow-Up<div class="detail">3 daemons / 2hr cycle</div></div>
+          <div class="box">Swarm Intelligence<div class="detail">5 daemons / Self-Heal</div></div>
         </div>
         <div class="layer-row" style="margin-top: 6px;">
-          <div class="box">Health & Monitor<div class="detail">6 daemons / Anomaly</div></div>
+          <div class="box">Content & Intel<div class="detail">11 daemons / Scrapers+Analysis</div></div>
+          <div class="box">Ops & Insight<div class="detail">10 daemons / Calibration</div></div>
+          <div class="box">Health & Monitor<div class="detail">6 daemons / Anomaly+WP</div></div>
           <div class="box">Recurring Tasks<div class="detail">Auto-seed / Weekly</div></div>
-          <div class="box">Jarvis Bridge<div class="detail">Thread 81 / Engineering</div></div>
-          <div class="box">Nightly Review<div class="detail">2am / Brain Seeding</div></div>
         </div>
       </div>
 
@@ -446,11 +364,11 @@
       <div class="layer l-data">
         <div class="layer-label">Data Stores</div>
         <div class="layer-row">
-          <div class="box">Pinecone dwe-v2<div class="detail">1,247 vectors / Brain</div></div>
+          <div class="box">Pinecone dwe-v3<div class="detail">12,729 vectors / 768-dim</div></div>
           <div class="box">Notion Database<div class="detail">Task Lifecycle / TAS-####</div></div>
           <div class="box">Google Sheets<div class="detail">IncomeOps / Revenue SOT</div></div>
-          <div class="box">EspoCRM<div class="detail">Lead Pipeline / OPP-33</div></div>
-          <div class="box">Local FS<div class="detail">Shared Pipeline / Intel</div></div>
+          <div class="box">Local FS<div class="detail">Shared Pipeline / 6 Stages</div></div>
+          <div class="box">LanceDB<div class="detail">Agent Memory / Embeddings</div></div>
         </div>
       </div>
 
@@ -473,26 +391,20 @@
           <li>Anomaly Check (2x/day)</li>
           <li>Smoke Test</li>
           <li>Log Rotation</li>
+          <li>Soul Calibration</li>
         </ul>
       </div>
       <div class="side-box" style="background: #1a1510; border: 1px solid #4a3a10;">
         <h4 style="color: #f59e0b;">LLM Stack</h4>
         <ul>
-          <li>miniMax M2.7 (primary)</li>
+          <li>OpenRouter /auto</li>
           <li>Ollama qwen2.5:7b</li>
           <li>Ollama qwen2.5:3b</li>
           <li>nomic-embed-text</li>
+          <li>gemini-2.5-flash</li>
         </ul>
       </div>
     </div>
-  </div>
-
-  <!-- Data Flow Legend -->
-  <div class="flow-legend">
-    <span class="flow-ingest">● Ingest (feeds → Brain)</span>
-    <span class="flow-query">● Query (agents → Brain)</span>
-    <span class="flow-write">● Write (sessions → Memory)</span>
-    <span class="flow-nightly">● Nightly (Memory → Brain seed)</span>
   </div>
 
   <!-- External Services -->
@@ -503,16 +415,17 @@
       <div class="box">Telegram API<div class="detail">6 Bot Tokens</div></div>
       <div class="box">Notion API<div class="detail">Task DB / v2022-06-28</div></div>
       <div class="box">Pinecone API<div class="detail">Serverless / us-east-1</div></div>
-      <div class="box">Stripe<div class="detail">Payment / Webhook</div></div>
-      <div class="box">SAM.gov<div class="detail">Federal Contracts</div></div>
+      <div class="box">Gmail API<div class="detail">OAuth2 / 13 Labels</div></div>
+      <div class="box">OpenRouter<div class="detail">LLM Gateway</div></div>
     </div>
     <div class="layer-row" style="margin-top: 8px;">
-      <div class="box">EspoCRM<div class="detail">crm.tvcpulse.com</div></div>
-      <div class="box">WordPress<div class="detail">TVC Website / REST API</div></div>
+      <div class="box">Ollama (Local)<div class="detail">LLM + Embeddings / Free</div></div>
+      <div class="box">Stripe<div class="detail">Payment Processing</div></div>
+      <div class="box">SAM.gov<div class="detail">Federal Contracts</div></div>
+      <div class="box">Skool.com<div class="detail">Community Scraping</div></div>
       <div class="box">Google Sheets<div class="detail">Revenue Tracking</div></div>
-      <div class="box">Pushover<div class="detail">Push Notifications</div></div>
-      <div class="box">WorldMonitor<div class="detail">435 Feeds / Substrate</div></div>
-      <div class="box">AWS SES<div class="detail">jakem@tvcpulse.com</div></div>
+      <div class="box">Pushover API<div class="detail">Push Notifications</div></div>
+      <div class="box">WordPress<div class="detail">TVC Website / REST API</div></div>
     </div>
   </div>
 
@@ -526,12 +439,9 @@
   <div class="legend-item"><div class="legend-dot dot-daemon"></div>Daemon</div>
   <div class="legend-item"><div class="legend-dot dot-data"></div>Data Store</div>
   <div class="legend-item"><div class="legend-dot dot-external"></div>External Service</div>
-  <div class="legend-item"><div class="legend-dot dot-worldmonitor"></div>WorldMonitor Layer</div>
-  <div class="legend-item"><div class="legend-dot dot-brain"></div>Active Brain</div>
-  <div class="legend-item"><div class="legend-dot dot-memory"></div>Memory Architecture</div>
 </div>
 
-<p class="version">DWE Platform v3.12 &bull; WorldMonitor + Active Brain + 3-Layer Memory &bull; OpenClaw 2026.3.13 &bull; Mac Mini M2 &bull; Updated 2026-04-14</p>
+<p class="version">DWE Platform v3.11 &bull; OpenClaw 2026.3.13 &bull; Mac Mini M2 &bull; 72 launchd Daemons &bull; Updated 2026-03-25</p>
 
 </body>
 </html>

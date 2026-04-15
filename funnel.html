@@ -123,6 +123,109 @@
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .empty-msg { text-align: center; padding: 2rem; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
 
+        /* ── Funnel Calculator ── */
+        .fc-card { background: rgba(20,20,40,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; padding: 2rem 2.25rem 2.25rem; backdrop-filter: blur(12px); }
+        .fc-header { display: flex; align-items: center; gap: 1.25rem; padding: 0.75rem 1.25rem; background: rgba(255,170,0,0.05); border: 1px solid rgba(255,170,0,0.15); border-radius: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .fc-title { color: rgba(255,255,255,0.4); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .fc-target-label { font-size: 0.8rem; color: rgba(255,255,255,0.55); flex: 1; white-space: nowrap; }
+        .fc-control-row { display: flex; align-items: center; gap: 0.5rem; }
+        .fc-control-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); white-space: nowrap; }
+        .fc-num-input { width: 54px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-family: Inter, sans-serif; font-size: 0.8rem; padding: 0.3rem 0.5rem; text-align: center; -moz-appearance: textfield; appearance: textfield; }
+        .fc-num-input::-webkit-inner-spin-button, .fc-num-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .fc-num-input:focus { outline: none; border-color: rgba(255,170,0,0.5); }
+        .fc-target-input { width: 72px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,170,0,0.35); border-radius: 6px; color: #ffaa00; font-family: Inter, sans-serif; font-size: 0.95rem; font-weight: 700; padding: 0.3rem 0.5rem; text-align: center; -moz-appearance: textfield; appearance: textfield; }
+        .fc-target-input::-webkit-inner-spin-button, .fc-target-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .fc-target-input:focus { outline: none; border-color: #ffaa00; }
+        /* ── Traffic Sources — side panel left of funnel ── */
+        .fc-funnel-row { display: flex; align-items: center; gap: 0; width: 100%; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .fc-source-pill-name { background: transparent; border: none; color: #fff; font-family: Inter, sans-serif; font-size: 0.72rem; font-weight: 600; padding: 0; width: 100%; cursor: pointer; appearance: none; -webkit-appearance: none; }
+        .fc-source-pill-name:focus { outline: none; }
+        .fc-source-pill-name option { background: #1a1e3c; color: #fff; }
+        .fc-source-pill-meta { display: flex; align-items: center; gap: 0.35rem; }
+        .fc-source-pill-vol { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #ffaa00; font-family: Inter, sans-serif; font-size: 0.68rem; font-weight: 700; text-align: center; padding: 0.1rem 0.3rem; width: 54px; }
+        .fc-source-pill-vol:focus { outline: none; border-color: rgba(255,170,0,0.5); }
+        .fc-daily-input { width: 52px; flex-shrink: 0; background: rgba(0,0,0,0.3); border: 1.5px solid; border-radius: 6px; font-family: Inter, sans-serif; font-size: 0.78rem; font-weight: 700; text-align: center; padding: 0.15rem 0.25rem; color: inherit; -moz-appearance: textfield; appearance: textfield; }
+        .fc-daily-input::-webkit-inner-spin-button, .fc-daily-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        .fc-daily-input:focus { outline: none; }
+        .fc-coverage { display: flex; align-items: center; gap: 0.6rem; font-size: 0.72rem; padding: 0.3rem 0.75rem; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+        .fc-coverage.ok   { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.06); color: #00ff88; }
+        .fc-coverage.warn { border-color: rgba(255,170,0,0.35); background: rgba(255,170,0,0.07); color: #ffaa00; }
+        .fc-coverage.bad  { border-color: rgba(255,60,60,0.35);  background: rgba(255,60,60,0.07);  color: #ff6060; }
+        .fc-source-status { font-size: 0.55rem; font-weight: 600; padding: 0.08rem 0.35rem; border-radius: 3px; white-space: nowrap; }
+        .fc-source-status.live    { background: rgba(0,255,136,0.1);  color: #00ff88; }
+        .fc-source-status.blocked { background: rgba(255,170,0,0.1);  color: #ffaa00; }
+        .fc-source-status.notbuilt { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+        /* Traffic source panel */
+        .fc-sources-panel { display: flex; flex-direction: column; justify-content: stretch; gap: 0.5rem; flex: 0 0 auto; width: 280px; align-self: stretch; }
+        .fc-sources-col-header { display: flex; align-items: center; padding: 0 0.5rem 0 0.65rem; gap: 0.4rem; }
+        .fc-sources-col-header-name { flex: 1; font-size: 0.58rem; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.05em; }
+        .fc-sources-col-header-daily { width: 52px; font-size: 0.58rem; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.05em; text-align: center; flex-shrink: 0; }
+        .fc-sources-total-row { display: flex; align-items: center; padding: 0.3rem 0.5rem 0 0.65rem; gap: 0.4rem; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 0.15rem; }
+        .fc-sources-total-label { flex: 1; font-size: 0.62rem; color: rgba(255,255,255,0.35); }
+        .fc-sources-total-val { width: 52px; text-align: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+        /* Each pill is a ROW: [source name + daily col left] [skill badges right, max 3 per column] */
+        .fc-source-pill { display: flex; flex-direction: row; align-items: flex-start; gap: 0.5rem; padding: 0.5rem 0.65rem; border-radius: 8px; border: 1px solid; flex: 1; min-height: 0; position: relative; }
+        .fc-pill-left { display: flex; flex-direction: row; align-items: center; gap: 0.4rem; flex: 0 0 auto; width: 100%; }
+        .fc-pill-left-inner { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; min-width: 0; }
+        .fc-source-pill-name { background: transparent; border: none; color: #fff; font-family: Inter, sans-serif; font-size: 0.7rem; font-weight: 600; padding: 0; width: 100%; cursor: pointer; appearance: none; -webkit-appearance: none; line-height: 1.3; }
+        .fc-source-pill-name:focus { outline: none; }
+        .fc-source-pill-name option { background: #1a1e3c; color: #fff; }
+        /* Skills column — right side of pill, badges in columns of max 3 */
+        .fc-pill-right { flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; min-width: 0; }
+        .fc-skill-col-wrap { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 3px; align-items: flex-start; }
+        .fc-skill-col { display: flex; flex-direction: column; gap: 2px; }
+        .fc-skill-badge { font-size: 0.47rem; font-weight: 600; padding: 0.1rem 0.32rem; border-radius: 3px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; cursor: pointer; line-height: 1.5; display: block; }
+        .fc-skill-badge:hover { background: rgba(255,68,68,0.15); color: #ff8888; border-color: rgba(255,68,68,0.3); }
+        /* + Skills button */
+        .fc-skill-picker-btn { font-size: 0.5rem; color: rgba(255,255,255,0.2); background: none; border: none; padding: 0.1rem 0; cursor: pointer; font-family: Inter, sans-serif; transition: color 0.15s; white-space: nowrap; }
+        .fc-skill-picker-btn:hover { color: rgba(255,170,0,0.7); }
+        /* Dropdown — opens to the right of the pill */
+        .fc-skill-picker { position: static; }
+        .fc-skill-dropdown { display: none; position: absolute; left: 265px; top: 0; width: 230px; background: #12152e; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 0.4rem; z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.7); max-height: 280px; overflow-y: auto; }
+        .fc-skill-dropdown.open { display: block; }
+        .fc-skill-option { display: flex; align-items: flex-start; gap: 0.4rem; padding: 0.25rem 0.4rem; border-radius: 5px; cursor: pointer; transition: background 0.12s; }
+        .fc-skill-option:hover { background: rgba(255,255,255,0.06); }
+        .fc-skill-option input[type=checkbox] { accent-color: #F5A623; cursor: pointer; flex-shrink: 0; margin-top: 2px; }
+        .fc-skill-option-name { font-size: 0.65rem; color: rgba(255,255,255,0.8); font-family: Inter, sans-serif; font-weight: 600; }
+        .fc-skill-option-desc { font-size: 0.55rem; color: rgba(255,255,255,0.3); font-family: Inter, sans-serif; display: block; margin-top: 1px; line-height: 1.3; }
+        .fc-skill-group-label { font-size: 0.5rem; color: rgba(255,170,0,0.5); text-transform: uppercase; letter-spacing: 0.07em; padding: 0.3rem 0.4rem 0.15rem; font-family: Inter, sans-serif; }
+        /* Arrow SVG connector */
+        .fc-arrows-svg-wrap { flex: 0 0 70px; align-self: stretch; display: flex; align-items: center; }
+        .fc-arrows-svg-wrap svg { width: 70px; height: 100%; overflow: visible; }
+        /* Funnel takes remaining space */
+        .fc-funnel-wrap { flex: 1; min-width: 0; }
+        /* ── Agent team panel (right of funnel) ── */
+        .fc-agents-wrap { flex: 0 0 auto; width: 220px; align-self: stretch; display: flex; flex-direction: column; gap: 0; }
+        .fc-agents-col-header { font-size: 0.58rem; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 0 0.4rem 0.1rem; }
+        .fc-agents-panel { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+        .fc-agent-card { border-radius: 7px; border: 1px solid; padding: 0.45rem 0.6rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0.22; transition: opacity 0.2s; }
+        .fc-agent-card.active { opacity: 1; }
+        .fc-agent-card-header { display: flex; align-items: center; gap: 0.4rem; }
+        .fc-agent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .fc-agent-name { font-size: 0.72rem; font-weight: 700; }
+        .fc-agent-role { font-size: 0.55rem; color: rgba(255,255,255,0.35); }
+        .fc-agent-skills { display: flex; flex-wrap: wrap; gap: 3px; }
+        .fc-agent-skill-tag { font-size: 0.46rem; font-weight: 600; padding: 0.08rem 0.3rem; border-radius: 3px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.08); white-space: nowrap; }
+        .fc-agent-skill-tag.matched { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.2); }
+
+        /* Stage name row + conv row — horizontal, one cell per segment */
+        /* Single combined row: count + conv + name per stage */
+        .fc-stage-row-combined { display: flex; width: 100%; margin-top: 1.75rem; gap: 0.4rem; }
+        .fc-stage-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; min-width: 0; }
+        .fc-result-cell { text-align: center; font-size: 0.85rem; font-weight: 700; }
+        .fc-conv-wrap-inline { display: flex; align-items: center; gap: 3px; }
+        .fc-conv-input { width: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #ffaa00; font-family: Inter, sans-serif; font-size: 0.72rem; padding: 0.22rem 0.3rem; text-align: center; }
+        .fc-conv-input:focus { outline: none; border-color: rgba(255,170,0,0.5); }
+        .fc-conv-pct { font-size: 0.65rem; color: rgba(255,255,255,0.3); }
+        .fc-stage-name { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #fff; font-family: Inter, sans-serif; font-size: 0.72rem; padding: 0.25rem 0.4rem; width: 100%; text-align: center; }
+        .fc-stage-name:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+        /* SVG funnel */
+        .fc-chart-wrap { position: relative; width: 100%; height: 260px; margin-top: 0.5rem; }
+        .fc-chart-wrap svg { width: 100%; height: 100%; overflow: visible; }
+        .fc-pct-pill { font-size: 12px; font-weight: 700; font-family: Inter, sans-serif; fill: #111; text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
+        .fc-count-label { font-size: 13px; font-weight: 700; font-family: Inter, sans-serif; fill: rgba(255,255,255,0.95); text-anchor: middle; pointer-events: none; }
+        .fc-stage-label { font-size: 11px; fill: rgba(255,255,255,0.5); font-family: Inter, sans-serif; text-anchor: middle; pointer-events: none; }
+
         /* Outreach Queue */
         .queue-item { padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; margin-bottom: 0.75rem; }
         .queue-item .qi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
@@ -201,6 +304,55 @@
             <a id="audit-prompt-link" href="/mc/prompt/audit?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">🧠</span> Audit Prompt</a>
             <a id="outreach-prompt-link" href="/mc/prompt/outreach?pipeline=dwe-marketing" target="_blank" class="ops-pill"><span class="pill-icon">✍️</span> Outreach Prompt</a>
             <a href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80" target="_blank" class="ops-pill"><span class="pill-icon">📄</span> Google Sheet</a>
+        </div>
+
+        <!-- Funnel Calculator -->
+        <div class="fc-card">
+            <div class="fc-header">
+                <div class="fc-title">Funnel Calculator</div>
+                <div id="fc-coverage" class="fc-coverage" style="display:none"></div>
+                <div style="flex:1"></div>
+                <span class="fc-target-label" style="flex:unset">Target — how many <strong style="color:#ffaa00" id="fc-target-stage-name">Purchases</strong> do you want?</span>
+                <input type="number" id="fc-target-val" class="fc-target-input" min="1" value="5" oninput="fcCalc()">
+                <div class="fc-control-row">
+                    <span class="fc-control-label">Traffic Sources:</span>
+                    <input type="number" id="fc-source-count" class="fc-num-input" min="1" max="8" value="4" oninput="fcSetSourceCount(+this.value)">
+                </div>
+                <div class="fc-control-row">
+                    <span class="fc-control-label">Pipeline Stages:</span>
+                    <input type="number" id="fc-stage-count" class="fc-num-input" min="2" max="8" value="5" oninput="fcSetStageCount(+this.value)">
+                </div>
+            </div>
+
+            <!-- Sources panel + arrows + funnel in one row -->
+            <div class="fc-funnel-row">
+                <div style="display:flex;flex-direction:column;gap:0;flex:0 0 auto;width:280px;align-self:stretch;">
+                    <div class="fc-sources-col-header">
+                        <span class="fc-sources-col-header-name">Traffic Source</span>
+                        <span class="fc-sources-col-header-daily">Avg / 24h</span>
+                    </div>
+                    <div class="fc-sources-panel" id="fc-sources-panel" style="flex:1;width:100%;"></div>
+                    <div class="fc-sources-total-row" id="fc-sources-total-row">
+                        <span class="fc-sources-total-label">Total leads / day</span>
+                        <span class="fc-sources-total-val" id="fc-sources-total">0</span>
+                    </div>
+                </div>
+                <div class="fc-arrows-svg-wrap">
+                    <svg id="fc-arrows-svg" height="220" viewBox="0 0 80 220" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="fc-funnel-wrap">
+                    <div class="fc-chart-wrap">
+                        <svg id="fc-svg" viewBox="0 0 900 220" preserveAspectRatio="xMidYMid meet"></svg>
+                    </div>
+                </div>
+                <div class="fc-agents-wrap">
+                    <div class="fc-agents-col-header">AI Team <span style="color:rgba(255,255,255,0.15);font-weight:400;">specialists first</span></div>
+                    <div class="fc-agents-panel" id="fc-agents-panel"></div>
+                </div>
+            </div>
+
+            <!-- Edit controls: name + conv per stage, aligned under funnel -->
+            <div class="fc-stage-row-combined" id="fc-stage-combined"></div>
         </div>
 
         <!-- Top Stats -->
@@ -503,8 +655,486 @@
             }
         };
 
+        // ── Funnel Calculator ─────────────────────────────────────────────────────
+        const FC_GRAD_PAIRS = [
+            ['#3b82f6','#06b6d4'],
+            ['#06b6d4','#22c55e'],
+            ['#22c55e','#eab308'],
+            ['#eab308','#f97316'],
+            ['#f97316','#a855f7'],
+            ['#a855f7','#ec4899'],
+            ['#ec4899','#ef4444'],
+            ['#ef4444','#3b82f6'],
+        ];
+        const FC_RESULT_COLORS = [
+            '#3b82f6','#06b6d4','#22c55e','#eab308','#f97316','#a855f7','#ec4899','#ef4444'
+        ];
+        // ── Traffic Sources — pulled from Nicole's inventory ─────────────────────
+        const FC_SOURCE_COLORS = ['#3b82f6','#22c55e','#f97316','#a855f7','#ec4899','#eab308','#06b6d4','#ef4444'];
+
+        // Nicole's inventory — status: 'live' | 'blocked' | 'notbuilt'
+        // vol = estimated monthly visits/leads (editable)
+        let fcSources = [
+            { name: 'Herald Blog (SEO)',     vol: 800,  status: 'live',     desc: 'Blog posts rank in Google → organic traffic. Top of funnel, compounding. Needs quality gate.' },
+            { name: 'Intel Signals',         vol: 1298, status: 'live',     desc: 'Capitol Trades, SnowTrace, Finviz signals → high-intent lead targeting. 1,298 signals live.' },
+            { name: 'Cold Email',            vol: 143,  status: 'live',     desc: '143 leads queued → outreach → Stripe $15 product. Running but 0% conversion — copy is weak.' },
+            { name: 'Contact Form',          vol: 60,   status: 'live',     desc: '/contact/ form → EspoCRM → Jake outreach. High-intent inbound. Needs more volume.' },
+            { name: 'GSC / Organic',         vol: 400,  status: 'blocked',  desc: 'Keyword rankings, impressions, click data from Google Search Console. Blocked — GA4 OAuth needs re-auth.' },
+            { name: 'MoveQuest Referral',    vol: 200,  status: 'blocked',  desc: 'Twitter → MoveQuest referral link → signups. Affiliate revenue. Blocked — xurl OAuth not done.' },
+            { name: 'Lender Referrals',      vol: 0,    status: 'notbuilt', desc: 'Partner links → loan applications → $2K/referral. High-ticket revenue channel. Not built yet.' },
+            { name: 'YouTube / Video',       vol: 0,    status: 'notbuilt', desc: 'Video → YouTube → referral traffic. Referral compounding channel. Video ops not running.' },
+            { name: 'Email Scraping',        vol: 0,    status: 'notbuilt', desc: 'Scrapes business websites for email addresses to build prospect lists for cold outreach.' },
+            { name: 'SBA Denial Signals',    vol: 0,    status: 'notbuilt', desc: 'FPDS/PACER/UCC → companies cut off from funding → outreach. Needs Jarvis scraper.' },
+            { name: 'DexScreener',           vol: 50,   status: 'live',     desc: 'Whale trades, volume spikes → MoveQuest signals. SnowTrace API wired. MQT ecosystem intelligence.' },
+            { name: 'Web Scraping (Forms)',  vol: 0,    status: 'notbuilt', desc: 'Finds contact form URLs on business websites. Alternative lead capture channel. Not built yet.' },
+        ];
+
+        // ── Skill inventory — loaded from /mc/skill-inventory (Google Sheet) ──
+        let FC_SKILLS = [];  // populated on init via fetchFcSkills()
+
+        // ── AI Agent roster — sourced from Steve's full inventory (all 15 agents) ─
+        const FC_AGENTS = [
+            // ── Specialists — subject matter experts, primary doers ──
+            { id: 'herald',    tier: 'specialist', name: 'Herald',  role: 'SEO / Content',    color: '#06b6d4',
+              skills: ['seo-ops','autoresearch','aiso-checker','seo-auditor','content-ops','seo-images','image-gen'] },
+            { id: 'jake',      tier: 'specialist', name: 'Jake',    role: 'Pipeline / Sales',  color: '#22c55e',
+              skills: ['outbound-engine','ironclaw-outreach-sequencer','sales-pipeline','sales-playbook','contact-enrichment','espocrm','dwe-pipeline','dwe-brain','gmail-api','aiso-checker','seo-auditor','jarvis-delegate','google-sheets','image-gen'] },
+            { id: 'nicole',    tier: 'specialist', name: 'Nicole',  role: 'Revenue / Growth',  color: '#a855f7',
+              skills: ['email-sequence','copywriting','conversion-ops','signup-flow-cro','analytics-tracking','ab-test-setup','referral-program','launch-strategy','chunked-writer','revenue-intelligence','growth-engine','yt-competitive-analysis','onboarding-cro','intake_opportunity','marketing-mode','autoresearch','espocrm','google-sheets'] },
+            { id: 'spark',     tier: 'specialist', name: 'Spark',   role: 'Social / Traffic',  color: '#ec4899',
+              skills: ['video-transcriber','x-longform-post','podcast-ops','xactions','image-gen'] },
+            { id: 'validator', tier: 'specialist', name: 'Victor',  role: 'QA',                color: '#ef4444',
+              skills: ['validate-task','smoke-test','file-verify'] },
+            // ── Command Staff — orchestration / backup ──
+            { id: 'jarvis',        tier: 'command', name: 'Jarvis', role: 'Execution',         color: '#f97316',
+              skills: ['scrapling-web-scraper','dwe-brain','jarvis-delegate','local-seo','website-seo','schema-markup','image-optimization','social-proof-collector','validate-task','smoke-test','google-sheets'] },
+            { id: 'cto',           tier: 'command', name: 'Steve',  role: 'CTO',               color: '#3b82f6',
+              skills: ['jarvis-delegate','dwe-brain','n8n_inventory','system-health','google-sheets'] },
+            { id: 'chief-engineer',tier: 'command', name: 'CE',     role: 'Chief Engineer',    color: '#8b5cf6',
+              skills: ['system-health','n8n_inventory','n8n_workflow','google-sheets'] },
+            { id: 'anita',         tier: 'command', name: 'Anita',  role: 'COO / PM',          color: '#eab308',
+              skills: ['swarm-diagnosis','swarm-persistence','swarm-self-healing','swarm-sentinel','gmail-ai','google-sheets'] },
+            { id: 'cfo',           tier: 'command', name: 'Fran',   role: 'CFO',               color: '#10b981',
+              skills: ['finance-ops','financial_summary','expense_alert','google-sheets'] },
+            { id: 'main',          tier: 'command', name: 'Sarah',  role: 'CEO Assistant',     color: '#f59e0b',
+              skills: ['gmail-ai','google-calendar','jarvis-request','deck-generator','espocrm','google-sheets'] },
+            // ── Dormant stubs ──
+            { id: 'sales-outreach',     tier: 'dormant', name: 'Sales Outreach',    role: 'Dormant', color: '#475569', skills: [] },
+            { id: 'pipeline-analyst',   tier: 'dormant', name: 'Pipeline Analyst',  role: 'Dormant', color: '#475569', skills: [] },
+            { id: 'analytics-reporter', tier: 'dormant', name: 'Analytics Reporter',role: 'Dormant', color: '#475569', skills: [] },
+            { id: 'gov-consultant',     tier: 'dormant', name: 'Gov Consultant',    role: 'Dormant', color: '#475569', skills: [] },
+        ];
+
+        // Selected skills per slot: slotIndex → Set of skill indices
+        let fcSlotSkills = {};
+
+        // How many source pills to show (user-controlled)
+        let fcSourceCount = 4;
+        let fcSourceSlots = [0, 1, 2, 3]; // which inventory index each slot displays
+        let fcSlotDaily   = [0, 0, 0, 0]; // daily leads per slot (user-editable)
+
+        function fcToggleSkill(slotIdx, skillIdx, on) {
+            if (!fcSlotSkills[slotIdx]) fcSlotSkills[slotIdx] = new Set();
+            on ? fcSlotSkills[slotIdx].add(skillIdx) : fcSlotSkills[slotIdx].delete(skillIdx);
+            // Rebuild badge columns in place
+            const wrap = document.getElementById(`fc-badges-${slotIdx}`);
+            if (!wrap) return;
+            const arr = [...fcSlotSkills[slotIdx]];
+            if (!arr.length) { wrap.innerHTML = '<span style="font-size:0.48rem;color:rgba(255,255,255,0.18);">no skills</span>'; return; }
+            let cols = '';
+            for (let c = 0; c < arr.length; c += 3) {
+                cols += '<div class="fc-skill-col">';
+                arr.slice(c, c + 3).forEach(idx => {
+                    const sk = FC_SKILLS[idx];
+                    if (sk) cols += `<span class="fc-skill-badge" title="${sk.id ? sk.id+' — ' : ''}${sk.desc}" onclick="fcToggleSkill(${slotIdx},${idx},false);fcRenderSources()">${sk.id ? `<span style="opacity:0.5;font-size:0.42rem;margin-right:2px;">${sk.id}</span>` : ''}${sk.name} ×</span>`;
+                });
+                cols += '</div>';
+            }
+            wrap.innerHTML = cols;
+            fcRenderAgents();
+        }
+
+        function fcToggleSkillDD(id, event) {
+            event.stopPropagation();
+            const dd = document.getElementById(id);
+            if (!dd) return;
+            const wasOpen = dd.classList.contains('open');
+            document.querySelectorAll('.fc-skill-dropdown.open').forEach(el => el.classList.remove('open'));
+            if (!wasOpen) dd.classList.add('open');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.fc-skill-dropdown') && !e.target.closest('.fc-skill-picker-btn')) {
+                document.querySelectorAll('.fc-skill-dropdown.open').forEach(el => el.classList.remove('open'));
+            }
+        });
+
+        function fcSetSourceCount(n) {
+            fcSourceCount = Math.max(1, Math.min(fcSources.length, n || 1));
+            document.getElementById('fc-source-count').value = fcSourceCount;
+            while (fcSourceSlots.length < fcSourceCount) fcSourceSlots.push(fcSourceSlots.length);
+            fcSourceSlots = fcSourceSlots.slice(0, fcSourceCount);
+            while (fcSlotDaily.length < fcSourceCount) fcSlotDaily.push(0);
+            fcSlotDaily = fcSlotDaily.slice(0, fcSourceCount);
+            fcRenderSources();
+        }
+
+        function fcRenderAgents() {
+            const panel = document.getElementById('fc-agents-panel');
+            if (!panel) return;
+            const activeSkillNames = new Set();
+            Object.values(fcSlotSkills).forEach(set => {
+                set.forEach(idx => { if (FC_SKILLS[idx]) activeSkillNames.add(FC_SKILLS[idx].name); });
+            });
+            const anySkillsSelected = activeSkillNames.size > 0;
+
+            function agentCard(agent, commandTier) {
+                if (agent.tier === 'dormant' && anySkillsSelected) return '';
+                const matchedSkills = agent.skills.filter(s => activeSkillNames.has(s));
+                const isActive = matchedSkills.length > 0;
+                const matchCount = matchedSkills.length;
+                // Command staff: always dimmer unless they have a match
+                const baseOpacity = commandTier && !isActive ? 0.12 : (isActive ? 1 : 0.22);
+                const skillSummary = isActive
+                    ? `<span style="font-size:0.5rem;color:${agent.color}99;">${matchCount} skill${matchCount>1?'s':''} matched</span>`
+                    : '';
+                return `<div class="fc-agent-card ${isActive ? 'active' : ''}" style="opacity:${baseOpacity};background:${agent.color}0d;border-color:${agent.color}${isActive ? '55' : '22'};">
+                    <div class="fc-agent-card-header">
+                        <div class="fc-agent-dot" style="background:${agent.color};${isActive ? '' : 'opacity:0.4'}"></div>
+                        <span class="fc-agent-name" style="color:${agent.color}">${agent.name}</span>
+                        <span class="fc-agent-role">${agent.role}</span>
+                    </div>
+                    ${skillSummary}
+                </div>`;
+            }
+
+            const specialists = FC_AGENTS.filter(a => a.tier === 'specialist');
+            const command     = FC_AGENTS.filter(a => a.tier === 'command');
+            const dormant     = FC_AGENTS.filter(a => a.tier === 'dormant');
+
+            const specialistHtml = specialists.map(a => agentCard(a, false)).join('');
+            const commandHtml    = command.map(a => agentCard(a, true)).join('');
+            const dormantHtml    = dormant.map(a => agentCard(a, true)).join('');
+
+            const divider = `<div style="font-size:0.48rem;color:rgba(255,255,255,0.18);text-transform:uppercase;letter-spacing:0.07em;padding:0.4rem 0.1rem 0.2rem;border-top:1px solid rgba(255,255,255,0.06);margin-top:0.3rem;">Command Staff</div>`;
+
+            panel.innerHTML = specialistHtml + divider + commandHtml + dormantHtml;
+        }
+
+        function fcUpdateTotal() {
+            const total = fcSlotDaily.reduce((a, b) => a + (b || 0), 0);
+            const el = document.getElementById('fc-sources-total');
+            if (!el) return;
+            const needed = fcLastAwareness || 0;
+            el.textContent = total;
+            if (total === 0) { el.style.color = 'rgba(255,255,255,0.3)'; }
+            else if (needed > 0 && total >= needed) { el.style.color = '#00ff88'; }
+            else if (needed > 0 && total >= needed * 0.6) { el.style.color = '#ffaa00'; }
+            else { el.style.color = '#ff6060'; }
+        }
+
+        function fcUpdateCoverage() {
+            fcUpdateTotal();
+            const totalDaily = fcSlotDaily.reduce((a, b) => a + (b || 0), 0);
+            const needed = fcLastAwareness || 0;
+            const el = document.getElementById('fc-coverage');
+            if (!el) return;
+            if (totalDaily === 0) { el.style.display = 'none'; return; }
+            el.style.display = 'flex';
+            const pct = needed > 0 ? Math.round((totalDaily / needed) * 100) : 100;
+            if (needed === 0) {
+                el.className = 'fc-coverage';
+                el.textContent = `${totalDaily} leads/day`;
+            } else if (totalDaily >= needed) {
+                el.className = 'fc-coverage ok';
+                el.textContent = `✓ ${totalDaily}/${needed} leads/day (${pct}%)`;
+            } else if (needed > 0 && totalDaily >= needed * 0.6) {
+                el.className = 'fc-coverage warn';
+                el.textContent = `${totalDaily}/${needed} leads/day — need ${needed - totalDaily} more`;
+            } else {
+                el.className = 'fc-coverage bad';
+                el.textContent = `${totalDaily}/${needed} leads/day — gap of ${needed - totalDaily}`;
+            }
+        }
+
+        function fcRenderSources() {
+            const visible = fcSources.slice(0, fcSourceCount);
+            const maxVol  = Math.max(...visible.map(s => s.vol || 0), 1);
+            const H_SVG   = 220; // matches fc-svg viewBox height
+
+            // ── Pills ──
+            const panel = document.getElementById('fc-sources-panel');
+            panel.innerHTML = '';
+            // Build options list from full inventory
+            const optionsHtml = fcSources.map((s, idx) => {
+                const statusTag = s.status === 'live' ? '✓' : s.status === 'blocked' ? '⚠' : '○';
+                return `<option value="${idx}">${statusTag} ${s.name}</option>`;
+            }).join('');
+
+            // Track which inventory index each slot is showing
+            if (!fcSourceSlots || fcSourceSlots.length !== fcSourceCount) {
+                fcSourceSlots = Array.from({length: fcSourceCount}, (_, i) => i);
+            }
+
+            visible.forEach((src, i) => {
+                const inventoryIdx = fcSourceSlots[i] ?? i;
+                const activeSrc = fcSources[inventoryIdx] || src;
+                const col = FC_SOURCE_COLORS[i % FC_SOURCE_COLORS.length];
+                const pill = document.createElement('div');
+                pill.className = 'fc-source-pill';
+                pill.id = `fc-pill-${i}`;
+                pill.style.cssText = `background:${col}12;border-color:${col}44;`;
+                // Skills for this slot
+                if (!fcSlotSkills[i]) fcSlotSkills[i] = new Set();
+                const selectedSkills = fcSlotSkills[i];
+
+                // Suggested skills (mapped to this source) vs all others
+                const suggested = FC_SKILLS.filter(sk => sk.sources.includes(inventoryIdx));
+                const others    = FC_SKILLS.filter(sk => !sk.sources.includes(inventoryIdx));
+
+                function skillOptionHtml(sk, skIdx) {
+                    const checked = selectedSkills.has(skIdx) ? 'checked' : '';
+                    return `<label class="fc-skill-option" onclick="event.stopPropagation()">
+                        <input type="checkbox" ${checked} onchange="fcToggleSkill(${i},${skIdx},this.checked)">
+                        <span><span class="fc-skill-option-name">${sk.id ? `<span style="color:rgba(245,166,35,0.6);font-size:0.52rem;font-weight:500;margin-right:0.3rem;">${sk.id}</span>` : ''}${sk.name}</span><span class="fc-skill-option-desc">${sk.desc}</span></span>
+                    </label>`;
+                }
+
+                const dropdownId = `fc-skill-dd-${i}`;
+                const badgesHtml = [...selectedSkills].map(skIdx => {
+                    const sk = FC_SKILLS[skIdx];
+                    return sk ? `<span class="fc-skill-badge" title="${sk.id ? sk.id+' — ' : ''}${sk.desc}" onclick="fcToggleSkill(${i},${skIdx},false);fcRenderSources()">${sk.id ? `<span style="opacity:0.5;font-size:0.42rem;margin-right:2px;">${sk.id}</span>` : ''}${sk.name} ×</span>` : '';
+                }).join('');
+
+                // Build badge columns — max 3 per column
+                function buildBadgeCols(skillSet) {
+                    const arr = [...skillSet];
+                    if (!arr.length) return '<span style="font-size:0.48rem;color:rgba(255,255,255,0.18);">no skills</span>';
+                    let cols = '';
+                    for (let c = 0; c < arr.length; c += 3) {
+                        cols += '<div class="fc-skill-col">';
+                        arr.slice(c, c + 3).forEach(skIdx => {
+                            const sk = FC_SKILLS[skIdx];
+                            if (sk) cols += `<span class="fc-skill-badge" title="${sk.id ? sk.id+' — ' : ''}${sk.desc}" onclick="fcToggleSkill(${i},${skIdx},false);fcRenderSources()">${sk.id ? `<span style="opacity:0.5;font-size:0.42rem;margin-right:2px;">${sk.id}</span>` : ''}${sk.name} ×</span>`;
+                        });
+                        cols += '</div>';
+                    }
+                    return cols;
+                }
+
+                const dailyVal = fcSlotDaily[i] || 0;
+                pill.innerHTML = `
+                    <div style="display:flex;flex-direction:row;align-items:center;gap:0.4rem;width:100%;">
+                        <div class="fc-pill-left-inner">
+                            <select class="fc-source-pill-name" title="${activeSrc.desc}" onchange="fcSourceSlots[${i}]=+this.value;fcRenderSources()">
+                                ${fcSources.map((s, idx) => `<option value="${idx}" ${idx === inventoryIdx ? 'selected' : ''} title="${s.desc}">${idx + 1}: ${s.name}</option>`).join('')}
+                            </select>
+                            <button class="fc-skill-picker-btn" onclick="fcToggleSkillDD('${dropdownId}',event)">+ skills</button>
+                        </div>
+                        <div class="fc-pill-right" style="flex:1;">
+                            <div class="fc-skill-col-wrap" id="fc-badges-${i}">${buildBadgeCols(selectedSkills)}</div>
+                        </div>
+                        <input type="number" min="0" value="${dailyVal}"
+                            class="fc-daily-input"
+                            style="border-color:${col}88;color:${col};"
+                            title="Avg leads/day from this source"
+                            oninput="fcSlotDaily[${i}]=+this.value||0;fcUpdateCoverage();fcUpdateTotal()"
+                            onclick="event.stopPropagation()">
+                    </div>
+                    <div class="fc-skill-dropdown" id="${dropdownId}">
+                        ${suggested.length ? `<div class="fc-skill-group-label">Suggested</div>${suggested.map(sk => skillOptionHtml(sk, FC_SKILLS.indexOf(sk))).join('')}` : ''}
+                        ${others.length ? `<div class="fc-skill-group-label">All skills</div>${others.map(sk => skillOptionHtml(sk, FC_SKILLS.indexOf(sk))).join('')}` : ''}
+                    </div>`;
+                panel.appendChild(pill);
+            });
+
+            // ── Arrows SVG — measure real panel height, draw converging beziers ──
+            requestAnimationFrame(() => {
+                const svg    = document.getElementById('fc-arrows-svg');
+                const panelEl = document.getElementById('fc-sources-panel');
+                if (!svg || !panelEl) return;
+                const pH = panelEl.getBoundingClientRect().height || 220;
+                const midY = pH / 2;
+                svg.setAttribute('viewBox', `0 0 70 ${pH}`);
+                svg.setAttribute('height', pH);
+
+                let defs = '<defs>';
+                let paths = '';
+                visible.forEach((src, i) => {
+                    const col  = FC_SOURCE_COLORS[i % FC_SOURCE_COLORS.length];
+                    const vol  = src.vol || 0;
+                    const sw   = 0.8 + (vol / maxVol) * 3.2;
+                    // src Y = centre of pill i, evenly distributed across panel height
+                    const srcY = (pH / fcSourceCount) * (i + 0.5);
+                    const markId = `fca${i}`;
+                    defs += `<marker id="${markId}" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="${col}" opacity="0.8"/>
+                    </marker>`;
+                    paths += `<path d="M 0,${srcY} C 45,${srcY} 45,${midY} 70,${midY}"
+                        fill="none" stroke="${col}" stroke-width="${sw.toFixed(1)}" opacity="0.75"
+                        marker-end="url(#${markId})"/>`;
+                });
+                defs += '</defs>';
+                svg.innerHTML = defs + paths;
+            });
+        }
+
+        const FC_DEFAULT_STAGES = [
+            { name: 'Awareness',     conv: 72 },
+            { name: 'Interest',      conv: 36 },
+            { name: 'Consideration', conv: 96 },
+            { name: 'Intent',        conv: 31 },
+            { name: 'Purchase',      conv: 100 },
+        ];
+
+        let fcStages = FC_DEFAULT_STAGES.map(s => ({ ...s }));
+
+        function fcSetStageCount(n) {
+            n = Math.max(2, Math.min(8, n || 2));
+            document.getElementById('fc-stage-count').value = n;
+            // Grow or shrink
+            while (fcStages.length < n) {
+                fcStages.push({ name: `Stage ${fcStages.length + 1}`, conv: 50 });
+            }
+            fcStages = fcStages.slice(0, n);
+            fcRenderRows();
+            fcCalc();
+        }
+
+        function fcRenderRows() {
+            const N = fcStages.length;
+            const combined = document.getElementById('fc-stage-combined');
+            combined.innerHTML = '';
+
+            fcStages.forEach((s, i) => {
+                const isLast = i === N - 1;
+                const col = document.createElement('div');
+                col.className = 'fc-stage-col';
+                const color = FC_RESULT_COLORS[i % FC_RESULT_COLORS.length];
+                const borderColor = FC_GRAD_PAIRS[i % FC_GRAD_PAIRS.length][0];
+                col.innerHTML = `
+                    <input type="text" class="fc-stage-name" value="${s.name}"
+                        oninput="fcStages[${i}].name=this.value;fcCalc()" placeholder="Stage ${i+1}"
+                        style="border-color:${borderColor}55; margin-bottom:0.25rem;">
+                    <div style="display:flex;align-items:center;gap:0.3rem;justify-content:center;">
+                        ${!isLast
+                            ? `<input type="number" class="fc-conv-input" min="1" max="100" value="${s.conv}"
+                                   oninput="fcStages[${i}].conv=+this.value;fcCalc()">
+                               <span class="fc-conv-pct">%</span>`
+                            : `<span style="font-size:0.6rem;color:rgba(255,255,255,0.2);">target</span>`
+                        }
+                    </div>`;
+                combined.appendChild(col);
+            });
+
+            const lastName = fcStages[N - 1]?.name || 'Conversions';
+            document.getElementById('fc-target-stage-name').textContent = lastName + 's';
+        }
+
+        let fcLastAwareness = 0;
+
+        function fcCalc() {
+            // Update last stage name in target label
+            const lastName = fcStages[fcStages.length - 1]?.name || 'Conversions';
+            document.getElementById('fc-target-stage-name').textContent = lastName + 's';
+
+            const target = Math.max(1, +document.getElementById('fc-target-val').value || 1);
+            const N = fcStages.length;
+
+            // Reverse-engineer: start from target at bottom, work up
+            const counts = new Array(N).fill(0);
+            counts[N - 1] = target;
+            for (let i = N - 2; i >= 0; i--) {
+                const conv = Math.max(0.01, Math.min(100, fcStages[i].conv || 50)) / 100;
+                counts[i] = Math.ceil(counts[i + 1] / conv);
+            }
+
+            fcLastAwareness = counts[0];
+            fcUpdateCoverage();
+
+            // Counts are rendered inside the SVG
+            fcRenderSVG(counts);
+        }
+
+        function fcRenderSVG(counts) {
+            const svg = document.getElementById('fc-svg');
+            if (!svg) return;
+            const N = counts.length;
+            const max = Math.max(counts[0] || 1, 1);
+            const norms = counts.map(c => c / max);
+
+            const W = 900, H = 160, labelY = H + 14;
+            const segW = W / N;
+            const LAYERS = 3;
+
+            svg.setAttribute('viewBox', `0 0 ${W} ${labelY + 10}`);
+
+            function hSegPath(ns, ne, sW, sH, scale) {
+                const my = sH / 2;
+                const h0 = ns * sH * 0.44 * scale;
+                const h1 = ne * sH * 0.44 * scale;
+                const cx = sW * 0.55;
+                return `M 0 ${my-h0} C ${cx} ${my-h0}, ${sW-cx} ${my-h1}, ${sW} ${my-h1} L ${sW} ${my+h1} C ${sW-cx} ${my+h1}, ${cx} ${my+h0}, 0 ${my+h0} Z`;
+            }
+
+            let defs = '<defs>';
+            const rings = Array.from({length: LAYERS}, () => '');
+            let labels = '';
+
+            // Fixed Y for all count labels — anchored to the tallest segment (norm=1.0, innermost ring)
+            const fixedCountY = (H / 2) - (1.0 * H * 0.44 * (1 - ((LAYERS-1)/LAYERS)*0.35)) - 8;
+
+            for (let i = 0; i < N; i++) {
+                const ns = norms[i];
+                const ne = norms[Math.min(i + 1, N - 1)];
+                const gid = `fcg${i}`;
+                const [c0, c1] = FC_GRAD_PAIRS[i % FC_GRAD_PAIRS.length];
+                defs += `<linearGradient id="${gid}" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%"   stop-color="${c0}"/>
+                    <stop offset="100%" stop-color="${c1}"/>
+                </linearGradient>`;
+
+                for (let l = 0; l < LAYERS; l++) {
+                    const scale   = 1 - (l / LAYERS) * 0.35;
+                    const opacity = 0.18 + (l / (LAYERS - 1)) * 0.65;
+                    const d = hSegPath(ns, ne, segW, H, scale);
+                    rings[l] += `<g transform="translate(${i*segW},0)"><path d="${d}" fill="url(#${gid})" opacity="${opacity.toFixed(3)}"/></g>`;
+                }
+
+                const cx = i * segW + segW / 2;
+                const my = H / 2;
+
+                // Count above — white, bold, all on one fixed horizontal line
+                labels += `<text x="${cx}" y="${fixedCountY}" class="fc-count-label">${counts[i].toLocaleString()}</text>`;
+
+                // White pill centred in segment
+                const pct = Math.round(norms[i] * 100);
+                const pillW = 50, pillH = 24, pillR = 12;
+                labels += `<rect x="${cx-pillW/2}" y="${my-pillH/2}" width="${pillW}" height="${pillH}" rx="${pillR}"
+                    fill="rgba(255,255,255,0.92)" stroke="none"/>
+                <text x="${cx}" y="${my+1}" class="fc-pct-pill">${pct}%</text>`;
+
+                // Stage name below the funnel
+                const stageName = fcStages[i]?.name || '';
+                labels += `<text x="${cx}" y="${labelY}" class="fc-stage-label">${stageName}</text>`;
+            }
+
+            defs += '</defs>';
+            svg.innerHTML = defs + rings[0] + rings[1] + rings[2] + labels;
+        }
+
+        // Live pipeline data — renders into fc-svg without touching fcStages
+        // Live pipeline funnel — renders into its OWN svg, never touches fc-svg
+        function renderFunnelChart(stages) {
+            // no-op — live pipeline has its own viz in the pipeline card below
+        }
+
         function render() {
             if (!statsData) return;
+
+            // Rainbow funnel chart
+            renderFunnelChart(statsData.stages || {});
 
             // Top stats
             document.getElementById('stat-total').textContent = statsData.total || 0;
@@ -856,7 +1486,32 @@
             } catch(e) {}
         }
 
-        // Init
+        // Init funnel calculator — load skills from sheet first
+        async function fetchFcSkills() {
+            try {
+                const r = await fetch('/mc/skill-inventory');
+                const d = await r.json();
+                FC_SKILLS = (d.skills || []).map(sk => ({
+                    id:      sk.skill_id   || '',
+                    name:    sk.skill_name || '',
+                    desc:    sk.description || '',
+                    sources: sk.traffic_source_indices || [],
+                    status:  sk.status || 'planned',
+                    agent:   sk.agent  || []
+                })).filter(sk => sk.name);
+            } catch(e) {
+                console.warn('Skill inventory fetch failed, using empty list', e);
+                FC_SKILLS = [];
+            }
+            fcRenderSources();
+            fcRenderRows();
+            fcCalc();
+            fcUpdateTotal();
+            fcRenderAgents();
+        }
+        fetchFcSkills();
+
+        // Init pipeline data
         loadPipelines().then(() => fetchData());
         fetchOpportunityPipeline();
         fetchJakeInbox();

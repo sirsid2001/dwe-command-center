@@ -481,6 +481,12 @@ const server = http.createServer((req, res) => {
         case '/mc/brain':
             getBrainStatus(req, res);
             break;
+        case '/mc/agent-registry':
+            getAgentRegistry(req, res);
+            break;
+        case '/mc/skill-inventory':
+            getSkillInventory(req, res);
+            break;
         case '/mc/migration':
             getMigrationStatus(req, res);
             break;
@@ -1584,6 +1590,92 @@ function getCeoCornerDrillsReal(req, res) {
         }));
     } catch (e) {
         res.end(JSON.stringify({ latest: null, real: [], adhoc: [], all: [], error: e.message }));
+    }
+}
+
+// ── Agent Registry — read Agent_Registry tab from DW Control Sheet ──────
+async function getAgentRegistry(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    try {
+        const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+        const SHEET_ID  = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+        const data = await new Promise((resolve, reject) => {
+            const r = https.request({
+                hostname: 'gateway.maton.ai',
+                path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/Agent_Registry!A:J`,
+                method: 'GET',
+                headers: { Authorization: `Bearer ${MATON_KEY}` }
+            }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(JSON.parse(b))); });
+            r.on('error', reject);
+            r.end();
+        });
+        const rows = (data.values || []);
+        if (rows.length < 2) { res.end(JSON.stringify({ agents: [], source: 'sheet_empty' })); return; }
+        const headers = rows[0].map(h => h.toLowerCase().trim());
+        const agents = rows.slice(1).map(row => {
+            const obj = {};
+            headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+            obj.skills = (obj.skills || '').split(',').map(s => s.trim()).filter(Boolean);
+            return obj;
+        });
+        res.end(JSON.stringify({ agents, source: 'sheet' }));
+    } catch(e) {
+        // Fallback — return hardcoded registry if sheet not yet created
+        res.end(JSON.stringify({ agents: AGENT_REGISTRY_FALLBACK, source: 'fallback', error: e.message }));
+    }
+}
+
+// Fallback registry (mirrors what's in the sheet — update sheet to override)
+const AGENT_REGISTRY_FALLBACK = [
+    { name:'Herald',           cli_id:'herald',          role:'SEO Sub-Agent',       model:'minimax-m2.7:cloud', status:'active',  color:'#06b6d4', telegram:'—',                      skills:['seo-ops','autoresearch','aiso-checker','seo-auditor','content-ops','seo-images','image-gen'] },
+    { name:'Jake',             cli_id:'jake',            role:'Pipeline Agent',       model:'minimax-m2.7:cloud', status:'active',  color:'#22c55e', telegram:'jakem@tvcpulse.com',     skills:['outbound-engine','ironclaw-outreach-sequencer','sales-pipeline','sales-playbook','contact-enrichment','espocrm','dwe-pipeline','dwe-brain','gmail-api','aiso-checker','seo-auditor','jarvis-delegate','google-sheets'] },
+    { name:'Nicole',           cli_id:'nicole',          role:'CIO / Revenue',        model:'minimax-m2.7:cloud', status:'active',  color:'#a855f7', telegram:'nicole-cos',             skills:['email-sequence','copywriting','conversion-ops','signup-flow-cro','analytics-tracking','ab-test-setup','referral-program','launch-strategy','chunked-writer','revenue-intelligence','growth-engine','yt-competitive-analysis','onboarding-cro','intake_opportunity','marketing-mode','autoresearch','espocrm','google-sheets'] },
+    { name:'Spark',            cli_id:'spark',           role:'Social / Traffic',     model:'minimax-m2.7:cloud', status:'active',  color:'#ec4899', telegram:'—',                      skills:['video-transcriber','x-longform-post','podcast-ops','xactions','image-gen'] },
+    { name:'Anita',            cli_id:'anita',           role:'COO / PM',             model:'minimax-m2.7:cloud', status:'active',  color:'#eab308', telegram:'anita-coo',              skills:['swarm-diagnosis','swarm-persistence','swarm-self-healing','swarm-sentinel','gmail-ai','google-sheets'] },
+    { name:'Fran',             cli_id:'cfo',             role:'CFO',                  model:'minimax-m2.7:cloud', status:'active',  color:'#10b981', telegram:'@DWE_CFO_Bot',           skills:['finance-ops','financial_summary','expense_alert','google-sheets'] },
+    { name:'Sarah',            cli_id:'main',            role:'CEO Personal Asst',    model:'minimax-m2.7:cloud', status:'active',  color:'#f59e0b', telegram:'main (webchat)',          skills:['gmail-ai','google-calendar','jarvis-request','deck-generator','espocrm','google-sheets'] },
+    { name:'Steve',            cli_id:'cto',             role:'CTO',                  model:'minimax-m2.7:cloud', status:'active',  color:'#3b82f6', telegram:'@DWE_CTO_Bot',           skills:['jarvis-delegate','dwe-brain','n8n_inventory','system-health','google-sheets'] },
+    { name:'CE',               cli_id:'chief-engineer',  role:'Chief Engineer',       model:'minimax-m2.7:cloud', status:'active',  color:'#8b5cf6', telegram:'@DWE_Chief_Engr_Bot',    skills:['system-health','n8n_inventory','n8n_workflow','google-sheets'] },
+    { name:'Jarvis',           cli_id:'jarvis',          role:'Execution Layer',      model:'claude-sonnet-4-6',  status:'active',  color:'#f97316', telegram:'—',                      skills:['scrapling-web-scraper','dwe-brain','jarvis-delegate','local-seo','website-seo','schema-markup','image-optimization','social-proof-collector','validate-task','smoke-test','google-sheets'] },
+    { name:'Victor',           cli_id:'validator',       role:'QA',                   model:'minimax-m2.7:cloud', status:'active',  color:'#ef4444', telegram:'—',                      skills:['validate-task','smoke-test','file-verify'] },
+    { name:'Sales Outreach',   cli_id:'sales-outreach',  role:'Dormant',              model:'—',                  status:'dormant', color:'#475569', telegram:'—',                      skills:[] },
+    { name:'Pipeline Analyst', cli_id:'pipeline-analyst',role:'Dormant',              model:'—',                  status:'dormant', color:'#475569', telegram:'—',                      skills:[] },
+    { name:'Analytics Reporter',cli_id:'analytics-reporter',role:'Dormant',           model:'—',                  status:'dormant', color:'#475569', telegram:'—',                      skills:[] },
+    { name:'Gov Consultant',   cli_id:'gov-consultant',  role:'Dormant',              model:'—',                  status:'dormant', color:'#475569', telegram:'—',                      skills:[] },
+];
+
+async function getSkillInventory(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    try {
+        const MATON_KEY = 'vqV4andwInf-ObTAMv_-QZdq9DUBAhMnU2Gw8g5cP2_I5rAoBM4gwvCl1VHWrKUhzN39AW6nRHBtG8eP7dsVBEbIfBwNWcNAa7E';
+        const SHEET_ID  = '1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80';
+        const data = await new Promise((resolve, reject) => {
+            const r = https.request({
+                hostname: 'gateway.maton.ai',
+                path: `/google-sheets/v4/spreadsheets/${SHEET_ID}/values/Skill_Inventory!A:H`,
+                method: 'GET',
+                headers: { Authorization: `Bearer ${MATON_KEY}` }
+            }, resp => { let b = ''; resp.on('data', d => b += d); resp.on('end', () => resolve(JSON.parse(b))); });
+            r.on('error', reject);
+            r.end();
+        });
+        const rows = (data.values || []);
+        if (rows.length < 2) { res.end(JSON.stringify({ skills: [], source: 'sheet_empty' })); return; }
+        const headers = rows[0].map(h => h.toLowerCase().trim());
+        const skills = rows.slice(1)
+            .filter(row => row[0] && row[1])  // skip blank rows
+            .map(row => {
+                const obj = {};
+                headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+                obj.traffic_source_indices = (obj.traffic_source_indices || '').split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                obj.agent = (obj.agent || '').split(',').map(s => s.trim()).filter(Boolean);
+                return obj;
+            });
+        res.end(JSON.stringify({ skills, source: 'sheet' }));
+    } catch(e) {
+        res.end(JSON.stringify({ skills: [], source: 'error', error: e.message }));
     }
 }
 

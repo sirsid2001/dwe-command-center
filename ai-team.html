@@ -7,398 +7,247 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0e27; background-image: radial-gradient(ellipse at 20% 30%, rgba(0,0,0,0.5) 0%, transparent 50%), linear-gradient(135deg, #0a0e27 0%, #1a1e3c 50%, #0a0e27 100%); color: #fff; min-height: 100vh; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0e27;
-            background-image:
-                radial-gradient(ellipse at 20% 30%, rgba(0,0,0,0.5) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(0,0,0,0.3) 0%, transparent 50%),
-                linear-gradient(135deg, #0a0e27 0%, #1a1e3c 50%, #0a0e27 100%);
-            background-attachment: fixed;
-            color: #fff;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+        .header { position: fixed; top: 0; left: 0; right: 0; padding: 0.85rem 1.5rem; background: rgba(15,20,60,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 1000; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, #00f5ff, #b829dd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-right { display: flex; align-items: center; gap: 0.75rem; }
+        .live-badge { font-size: 0.68rem; color: #00ff88; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 0.2rem 0.6rem; }
+        .back-btn { padding: 0.35rem 0.8rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 7px; color: #fff; text-decoration: none; font-size: 0.78rem; }
+        .back-btn:hover { background: rgba(255,255,255,0.15); }
 
-        .header {
-            position: fixed; top: 0; left: 0; right: 0;
-            padding: 1rem 1.5rem;
-            background: rgba(15, 20, 60, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #00f5ff, #b829dd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header-right { display: flex; align-items: center; gap: 1rem; }
-        .live-badge { font-size: 0.7rem; color: #00ff88; background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 0.2rem 0.6rem; }
-        .back-btn { padding: 0.4rem 0.875rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: #fff; text-decoration: none; font-size: 0.8125rem; transition: all 0.2s; }
-        .back-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        /* ── Grid layout ── */
+        .page-wrap { padding: 80px 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
 
-        .org-container {
-            position: relative; width: 100vw; height: 100vh;
-            padding-top: 70px;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .org-svg { width: 95%; max-width: 1100px; height: auto; max-height: calc(100vh - 90px); }
+        .section-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin-bottom: 0.6rem; }
 
-        .org-card { cursor: pointer; transition: all 0.3s; }
-        .org-card:hover { filter: brightness(1.2); }
+        /* Command staff org strip */
+        .org-strip { display: flex; align-items: center; gap: 0; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 0.25rem; }
+        .org-node { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+        .org-connector { width: 40px; height: 2px; flex-shrink: 0; opacity: 0.3; }
+        .org-card-box { position: relative; padding: 0.6rem 0.9rem; border-radius: 10px; border: 1.5px solid; text-align: center; cursor: pointer; min-width: 110px; transition: all 0.2s; }
+        .org-card-box:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .org-card-box .icon { font-size: 1.1rem; margin-bottom: 0.2rem; }
+        .org-card-box .c-name { font-size: 0.75rem; font-weight: 700; }
+        .org-card-box .c-role { font-size: 0.58rem; color: rgba(255,255,255,0.5); margin-top: 1px; }
+        .org-card-box .c-status { font-size: 0.55rem; font-weight: 600; margin-top: 0.2rem; }
 
-        .org-card-rect { fill: rgba(20, 25, 70, 0.95); stroke-width: 2; rx: 10; filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5)); }
-        .org-card-rect.online  { stroke: #00ff88; filter: drop-shadow(0 0 18px rgba(0, 255, 136, 0.5)); }
-        .org-card-rect.idle    { stroke: #ff9500; filter: drop-shadow(0 0 12px rgba(255, 149, 0, 0.4)); }
-        .org-card-rect.offline { stroke: #555; opacity: 0.7; }
+        /* Agent cards grid */
+        .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+        .agent-card { background: rgba(20,25,60,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.9rem 1rem; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+        .agent-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .agent-card.dormant { opacity: 0.4; }
+        .agent-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+        .agent-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .agent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .agent-name { font-size: 0.85rem; font-weight: 700; }
+        .agent-role { font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-bottom: 0.5rem; }
+        .agent-skills { display: flex; flex-wrap: wrap; gap: 3px; }
+        .skill-tag { font-size: 0.44rem; font-weight: 600; padding: 0.1rem 0.32rem; border-radius: 3px; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+        .skill-count { font-size: 0.5rem; color: rgba(255,255,255,0.25); padding: 0.1rem 0.3rem; }
+        .agent-status-badge { font-size: 0.5rem; font-weight: 600; padding: 0.08rem 0.4rem; border-radius: 10px; display: inline-block; margin-top: 0.4rem; }
+        .agent-status-badge.active  { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.25); }
+        .agent-status-badge.dormant { background: rgba(100,100,100,0.12); color: #666; border: 1px solid rgba(100,100,100,0.2); }
 
-        .status-online { fill: #00ff88; }
-        .status-idle   { fill: #ff9500; }
-        .status-offline{ fill: #666; }
-
-        .org-line { stroke-width: 1.5; fill: none; opacity: 0.7; }
-        .org-line.online  { stroke: #00ff88; animation: pulseLine 2.5s infinite; }
-        .org-line.idle    { stroke: #ff9500; stroke-dasharray: 5,5; }
-        .org-line.offline { stroke: #444; opacity: 0.3; }
-
-        @keyframes pulseLine { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-
-        .legend {
-            position: fixed; bottom: 1rem; left: 1rem;
-            background: rgba(15, 20, 60, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px; padding: 0.75rem; z-index: 1000;
-        }
-        .legend-title { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .legend-item { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.375rem; font-size: 0.6875rem; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .legend-dot.online  { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
-        .legend-dot.idle    { background: #ff9500; box-shadow: 0 0 8px #ff9500; }
-        .legend-dot.offline { background: #555; }
-
-        .gateway-status {
-            position: fixed; bottom: 1rem; right: 1rem;
-            background: rgba(15, 20, 60, 0.95); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px; padding: 0.75rem; z-index: 1000;
-            font-size: 0.75rem;
-        }
-        .gateway-status .title { font-weight: 600; margin-bottom: 0.35rem; }
-
-        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1999; display: none; }
+        /* Detail panel */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1999; display: none; }
         .overlay.show { display: block; }
+        .detail-panel { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(12,16,50,0.99); backdrop-filter: blur(20px); border-radius: 14px; padding: 1.75rem; min-width: 380px; max-width: min(560px, 94vw); z-index: 2000; display: none; box-shadow: 0 24px 64px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.12); }
+        .detail-panel.show { display: block; }
+        .detail-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: rgba(255,255,255,0.5); font-size: 1.25rem; cursor: pointer; line-height: 1; }
+        .detail-close:hover { color: #fff; }
+        .detail-accent { height: 4px; border-radius: 3px; margin-bottom: 1.1rem; }
+        .detail-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.3rem; }
+        .detail-name { font-size: 1.3rem; font-weight: 800; }
+        .detail-role { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 0.9rem; }
+        .detail-section { margin-bottom: 0.9rem; }
+        .detail-section h4 { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: rgba(255,255,255,0.35); margin-bottom: 0.4rem; }
+        .detail-section p { font-size: 0.78rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
+        .detail-skills { display: flex; flex-wrap: wrap; gap: 4px; }
+        .detail-skill-tag { font-size: 0.62rem; font-weight: 600; padding: 0.18rem 0.5rem; border-radius: 5px; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.14); }
+        .detail-meta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .detail-meta-item { display: flex; flex-direction: column; gap: 2px; }
+        .detail-meta-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.3); }
+        .detail-meta-val { font-size: 0.7rem; color: rgba(255,255,255,0.7); font-weight: 600; }
+        .detail-status-pill { font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 12px; display: inline-block; margin-bottom: 1rem; }
+        .detail-status-pill.active  { background: rgba(0,255,136,0.15); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+        .detail-status-pill.dormant { background: rgba(100,100,100,0.15); color: #888; border: 1px solid rgba(100,100,100,0.25); }
 
-        .agent-details {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(15, 20, 60, 0.98); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px; padding: 1.5rem;
-            min-width: 340px; max-width: 90vw; z-index: 2000;
-            display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-        .agent-details.show { display: block; }
-        .agent-details-close { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #fff; font-size: 1.25rem; cursor: pointer; }
-        .agent-details h2 { font-size: 1.25rem; margin-bottom: 0.25rem; }
-        .agent-details-role { color: rgba(255,255,255,0.6); margin-bottom: 0.75rem; font-size: 0.875rem; }
-        .detail-status { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem; }
-        .detail-status.online  { background: rgba(0,255,136,0.2); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
-        .detail-status.idle    { background: rgba(255,149,0,0.2); color: #ff9500; border: 1px solid rgba(255,149,0,0.3); }
-        .detail-status.offline { background: rgba(100,100,100,0.2); color: #aaa; border: 1px solid rgba(100,100,100,0.3); }
-        .agent-details-section { margin-bottom: 0.75rem; }
-        .agent-details-section h4 { font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .agent-details-section p  { font-size: 0.8125rem; line-height: 1.5; }
-        .detail-chip { display: inline-block; background: rgba(0,245,255,0.15); color: #00f5ff; border: 1px solid rgba(0,245,255,0.3); border-radius: 6px; padding: 0.15rem 0.5rem; font-size: 0.7rem; margin: 0.1rem; }
+        /* Bottom bar */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 0.5rem 1.5rem; background: rgba(10,14,39,0.95); border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 1.5rem; font-size: 0.65rem; color: rgba(255,255,255,0.35); z-index: 100; }
+        .bottom-bar span b { color: rgba(255,255,255,0.6); }
+        .sheet-link { color: rgba(0,245,255,0.6); text-decoration: none; font-size: 0.62rem; }
+        .sheet-link:hover { color: #00f5ff; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>👥 DWE AI Team</h1>
-        <div class="header-right">
-            <span class="live-badge" id="live-badge">● Loading...</span>
-            <a href="/" class="back-btn">← Dashboard</a>
-        </div>
+
+<div class="header">
+    <h1>DWE AI Team</h1>
+    <div class="header-right">
+        <span class="live-badge" id="live-badge">● Loading...</span>
+        <a href="/" class="back-btn">← Dashboard</a>
+    </div>
+</div>
+
+<div class="page-wrap">
+    <div class="section-label">Command Staff</div>
+    <div class="org-strip" id="org-strip">
+        <!-- populated by JS -->
     </div>
 
-    <div class="org-container">
-        <svg class="org-svg" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet">
-            <defs>
-                <linearGradient id="grad-ceo" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#00f5ff;stop-opacity:0.3"/>
-                    <stop offset="100%" style="stop-color:#b829dd;stop-opacity:0.3"/>
-                </linearGradient>
-            </defs>
-
-            <!-- ── Connection Lines ── -->
-            <!-- CEO → Steve (CTO) -->
-            <line class="org-line" id="line-ceo-cto" x1="550" y1="80" x2="180" y2="210" />
-            <!-- CEO → Anita (COO) -->
-            <line class="org-line" id="line-ceo-anita" x1="550" y1="80" x2="420" y2="210" />
-            <!-- CEO → Nicole (CIO) -->
-            <line class="org-line" id="line-ceo-nicole" x1="550" y1="80" x2="660" y2="210" />
-            <!-- CEO → Fran (CFO) -->
-            <line class="org-line" id="line-ceo-cfo" x1="550" y1="80" x2="900" y2="210" />
-
-            <!-- CTO → Chief Engineer -->
-            <line class="org-line" id="line-cto-ce" x1="180" y1="270" x2="180" y2="390" />
-            <!-- CTO → Main -->
-            <line class="org-line" id="line-cto-main" x1="180" y1="270" x2="420" y2="390" />
-
-            <!-- ── CEO / Sidney Garcia ── -->
-            <g class="org-card" data-agent="ceo" transform="translate(550,50)">
-                <rect class="org-card-rect online" x="-80" y="-34" width="160" height="68" rx="10"/>
-                <text text-anchor="middle" font-size="18" y="-10">👑</text>
-                <text text-anchor="middle" font-size="11" font-weight="700" fill="#fff" y="8">Sidney Garcia</text>
-                <text text-anchor="middle" font-size="8"  fill="rgba(255,255,255,0.6)" y="20">CEO / Founder</text>
-                <text text-anchor="middle" font-size="7"  class="status-online" font-weight="600" y="30">● Owner</text>
-            </g>
-
-            <!-- ── Steve / CTO ── -->
-            <g class="org-card" data-agent="cto" transform="translate(180,240)">
-                <rect class="org-card-rect" id="rect-cto" x="-65" y="-30" width="130" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">💻</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Steve</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Technology Officer</text>
-                <text text-anchor="middle" font-size="6.5" id="status-cto" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Anita / COO ── -->
-            <g class="org-card" data-agent="anita" transform="translate(420,240)">
-                <rect class="org-card-rect" id="rect-anita" x="-65" y="-30" width="130" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">📋</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Anita</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Operating Officer</text>
-                <text text-anchor="middle" font-size="6.5" id="status-anita" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Nicole / CIO ── -->
-            <g class="org-card" data-agent="nicole" transform="translate(660,240)">
-                <rect class="org-card-rect" id="rect-nicole" x="-65" y="-30" width="130" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">📈</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Nicole</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Intelligence Officer</text>
-                <text text-anchor="middle" font-size="6.5" id="status-nicole" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Fran / CFO ── -->
-            <g class="org-card" data-agent="cfo" transform="translate(900,240)">
-                <rect class="org-card-rect" id="rect-cfo" x="-65" y="-30" width="130" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">💰</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Fran</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Chief Financial Officer</text>
-                <text text-anchor="middle" font-size="6.5" id="status-cfo" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Chief Engineer ── -->
-            <g class="org-card" data-agent="chief-engineer" transform="translate(180,420)">
-                <rect class="org-card-rect" id="rect-ce" x="-65" y="-30" width="130" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">🔧</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Chief Engineer</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Engineering Lead</text>
-                <text text-anchor="middle" font-size="6.5" id="status-ce" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Main ── -->
-            <g class="org-card" data-agent="main" transform="translate(420,420)">
-                <rect class="org-card-rect" id="rect-main" x="-60" y="-30" width="120" height="60" rx="8"/>
-                <text text-anchor="middle" font-size="15" y="-8">🚀</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="#fff" y="7">Main</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.6)" y="17">Primary Assistant</text>
-                <text text-anchor="middle" font-size="6.5" id="status-main" font-weight="600" y="26">● Loading...</text>
-            </g>
-
-            <!-- ── Brain node (system, not agent) ── -->
-            <g transform="translate(660,420)">
-                <rect fill="rgba(20,25,70,0.85)" stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,3"
-                      x="-60" y="-30" width="120" height="60" rx="8" opacity="0.8"/>
-                <text text-anchor="middle" font-size="15" y="-8">🧠</text>
-                <text text-anchor="middle" font-size="10" font-weight="700" fill="rgba(255,255,255,0.8)" y="7">DWE Brain</text>
-                <text text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.5)" y="17">Pinecone RAG</text>
-                <text text-anchor="middle" font-size="6.5" fill="#b829dd" font-weight="600" id="brain-score-label" y="26">● Loading...</text>
-            </g>
-
-            <!-- Brain connector (dashed, purple) -->
-            <line stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"
-                  x1="180" y1="390" x2="600" y2="390"/>
-            <line stroke="#b829dd" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"
-                  x1="660" y1="390" x2="660" y2="390"/>
-
-            <!-- Labels for line annotations -->
-            <text x="390" y="374" text-anchor="middle" font-size="7" fill="rgba(184,41,221,0.6)">All agents query Brain</text>
-        </svg>
+    <div class="section-label">Full Roster — <span id="roster-count">—</span> agents</div>
+    <div class="agents-grid" id="agents-grid">
+        <!-- populated by JS -->
     </div>
+</div>
 
-    <div class="legend">
-        <div class="legend-title">Agent Status</div>
-        <div class="legend-item"><div class="legend-dot online"></div><span>Online (gateway up)</span></div>
-        <div class="legend-item"><div class="legend-dot idle"></div><span>Idle / Degraded</span></div>
-        <div class="legend-item"><div class="legend-dot offline"></div><span>Offline</span></div>
+<div class="bottom-bar">
+    <span>Source: <b>DW Control Sheet</b> → Sheet13 (rename to Agent_Registry)</span>
+    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1nkhSpjxS11rWC2MPP40GLYvA7LYsaFba91hC5mWpi80/edit#gid=0" target="_blank">Open Sheet ↗</a>
+    <span style="margin-left:auto;" id="last-updated">—</span>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="detail-panel" id="detail-panel">
+    <button class="detail-close" onclick="closeDetail()">×</button>
+    <div class="detail-accent" id="detail-accent"></div>
+    <div class="detail-header">
+        <div class="agent-dot" id="detail-dot" style="width:12px;height:12px;"></div>
+        <div class="detail-name" id="detail-name">—</div>
     </div>
-
-    <div class="gateway-status">
-        <div class="title">OpenClaw Gateway</div>
-        <div id="gateway-info" style="color:rgba(255,255,255,0.5);">Checking...</div>
+    <div class="detail-role" id="detail-role">—</div>
+    <div class="detail-status-pill" id="detail-status">—</div>
+    <div class="detail-meta-row" style="margin-bottom:1rem;">
+        <div class="detail-meta-item"><div class="detail-meta-label">CLI ID</div><div class="detail-meta-val" id="detail-cli">—</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">Model</div><div class="detail-meta-val" id="detail-model">—</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">Channel</div><div class="detail-meta-val" id="detail-channel">—</div></div>
+        <div class="detail-meta-item"><div class="detail-meta-label">Reports To</div><div class="detail-meta-val" id="detail-reports">—</div></div>
     </div>
-
-    <div class="overlay" id="overlay"></div>
-    <div class="agent-details" id="agentDetails">
-        <button class="agent-details-close" onclick="closeDetails()">×</button>
-        <h2 id="detailName">—</h2>
-        <div class="agent-details-role" id="detailRole">—</div>
-        <div class="detail-status" id="detailStatus">—</div>
-        <div class="agent-details-section">
-            <h4>Responsibilities</h4>
-            <p id="detailResponsibilities">—</p>
-        </div>
-        <div class="agent-details-section">
-            <h4>Reports To</h4>
-            <p id="detailReports">—</p>
-        </div>
-        <div class="agent-details-section">
-            <h4>Capabilities</h4>
-            <p id="detailCaps">—</p>
-        </div>
-        <div class="agent-details-section">
-            <h4>Channel</h4>
-            <p id="detailChannel">—</p>
-        </div>
+    <div class="detail-section">
+        <h4>Responsibilities</h4>
+        <p id="detail-resp">—</p>
     </div>
+    <div class="detail-section">
+        <h4>Installed Skills (<span id="detail-skill-count">0</span>)</h4>
+        <div class="detail-skills" id="detail-skills"></div>
+    </div>
+</div>
 
-    <script>
-        const AGENT_META = {
-            ceo: {
-                name: 'Sidney Garcia', role: 'CEO / Founder', channel: 'All channels',
-                responsibilities: 'Strategic direction, final decisions, ecosystem architecture, Wealth Architecture vision',
-                reports: 'Self — Founder',
-                caps: ['Wealth Architecture', 'Strategic decisions', 'DWE vision']
-            },
-            cto: {
-                name: 'Steve', role: 'Chief Technology Officer', channel: 'Telegram @DWE_CTO_Bot',
-                responsibilities: 'Technical architecture, AI infrastructure, code review, system design, OpenClaw platform oversight',
-                reports: 'Sidney Garcia (CEO)',
-                caps: ['Brain queries', 'Notion tasks', 'Morning briefings', 'Tech decisions']
-            },
-            anita: {
-                name: 'Anita', role: 'Chief Operating Officer', channel: 'Telegram (anita-coo)',
-                responsibilities: 'Operations management, task coordination, overdue monitoring, cross-agent delegation, PM authority, triage',
-                reports: 'Sidney Garcia (CEO)',
-                caps: ['Overdue alerts', 'Task delegation', 'Notion triage', 'COO decisions']
-            },
-            nicole: {
-                name: 'Nicole', role: 'Chief Intelligence Officer', channel: 'Telegram (nicole-cos)',
-                responsibilities: 'Revenue incubation, strategic intelligence, opportunity scoring, POC-to-Agent pipeline, market analysis',
-                reports: 'Sidney Garcia (CEO)',
-                caps: ['Revenue incubation', 'Opportunity scoring', 'POC pipeline', 'Strategic intel']
-            },
-            cfo: {
-                name: 'Fran', role: 'Chief Financial Officer', channel: 'Telegram @DWE_CFO_Bot',
-                responsibilities: 'Financial oversight, budget tracking, revenue reporting, cost analysis, IncomeOps monitoring',
-                reports: 'Sidney Garcia (CEO)',
-                caps: ['Financial reporting', 'Budget tracking', 'IncomeOps', 'Cost analysis']
-            },
-            'chief-engineer': {
-                name: 'Chief Engineer', role: 'Engineering Lead', channel: 'Telegram @DWE_Chief_Engr_Bot',
-                responsibilities: 'Daemon health checks, infrastructure oversight, code quality, system reliability, Brain maintenance',
-                reports: 'Steve (CTO)',
-                caps: ['Daemon monitoring', 'Health alerts', 'Infrastructure', 'System fixes']
-            },
-            main: {
-                name: 'Main', role: 'Primary Assistant', channel: 'OpenClaw webchat',
-                responsibilities: 'Primary user interface, general assistance, ad-hoc tasks, research, drafting',
-                reports: 'Sidney Garcia (CEO)',
-                caps: ['General tasks', 'Research', 'Drafting', 'Brain queries']
-            }
-        };
+<script>
+    const COMMAND_STAFF = ['sarah','main','Steve','cto','Anita','anita','Nicole','nicole','Fran','cfo'];
+    const COMMAND_IDS   = ['main','cto','anita','nicole','cfo','chief-engineer'];
 
-        // ── Live status from /mc/agents ───────────────────────────────────────
-        async function fetchAgentStatus() {
-            try {
-                const d = await fetch('/mc/agents').then(r => r.json());
-                const gatewayUp = d.gatewayUp;
+    let allAgents = [];
 
-                document.getElementById('gateway-info').textContent = gatewayUp ? '● Online' : '● Offline';
-                document.getElementById('gateway-info').style.color = gatewayUp ? '#00ff88' : '#ff00aa';
-                document.getElementById('live-badge').textContent = gatewayUp ? '● Gateway Online' : '● Gateway Offline';
-                document.getElementById('live-badge').style.color = gatewayUp ? '#00ff88' : '#ff9500';
-
-                const statusClass = gatewayUp ? 'online' : 'idle';
-                const statusColor = gatewayUp ? '#00ff88' : '#ff9500';
-                const statusText  = gatewayUp ? '● Online' : '● Offline';
-                const lineClass   = gatewayUp ? 'online' : 'idle';
-
-                const agents = ['cto', 'anita', 'nicole', 'cfo', 'ce', 'main'];
-                agents.forEach(id => {
-                    const rect = document.getElementById('rect-' + id);
-                    const text = document.getElementById('status-' + id);
-                    if (rect) { rect.className.baseVal = 'org-card-rect ' + statusClass; }
-                    if (text) { text.setAttribute('class', 'status-' + statusClass); text.textContent = statusText; text.setAttribute('fill', statusColor); }
-                });
-
-                // Update connection lines
-                ['line-ceo-cto','line-ceo-anita','line-ceo-nicole','line-ceo-cfo','line-cto-ce','line-cto-main'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.setAttribute('class', 'org-line ' + lineClass);
-                });
-            } catch(e) {
-                document.getElementById('live-badge').textContent = '● Error';
-            }
+    async function loadRegistry() {
+        try {
+            const d = await fetch('/mc/agent-registry').then(r => r.json());
+            allAgents = d.agents || [];
+            document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}) + ' · source: ' + d.source;
+            renderOrgStrip();
+            renderGrid();
+            document.getElementById('roster-count').textContent = allAgents.length;
+        } catch(e) {
+            document.getElementById('live-badge').textContent = '● Registry Error';
         }
+    }
 
-        // ── Brain score ───────────────────────────────────────────────────────
-        async function fetchBrainScore() {
-            try {
-                const d = await fetch('/mc/brain').then(r => r.json());
-                const el = document.getElementById('brain-score-label');
-                if (el) {
-                    el.textContent = `● ${d.score}% (${d.passed}/${d.total})`;
-                    el.setAttribute('fill', d.score >= 90 ? '#00ff88' : '#b829dd');
-                }
-            } catch(e) {}
-        }
+    async function fetchGatewayStatus() {
+        try {
+            const d = await fetch('/mc/agents').then(r => r.json());
+            const up = d.gatewayUp;
+            document.getElementById('live-badge').textContent = up ? '● Gateway Online' : '● Gateway Offline';
+            document.getElementById('live-badge').style.color  = up ? '#00ff88' : '#ff9500';
+        } catch(e) {}
+    }
 
-        // ── Agent card click ──────────────────────────────────────────────────
-        document.querySelectorAll('.org-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const id = this.getAttribute('data-agent');
-                const meta = AGENT_META[id];
-                if (!meta) return;
+    function renderOrgStrip() {
+        const strip = document.getElementById('org-strip');
+        const staff = allAgents.filter(a => COMMAND_IDS.includes(a.cli_id));
+        // Add CEO first (hardcoded — not an agent)
+        const ceoHtml = `<div class="org-node">
+            <div class="org-card-box" style="border-color:#F5A623;background:rgba(245,166,35,0.08);" onclick="">
+                <div class="icon">👑</div>
+                <div class="c-name">Sidney</div>
+                <div class="c-role">CEO / Founder</div>
+                <div class="c-status" style="color:#F5A623;">● Owner</div>
+            </div>
+        </div>`;
+        const agentHtml = staff.map((a, i) => {
+            const col = a.color || '#888';
+            return `${i === 0 ? `<div class="org-connector" style="background:${col}"></div>` : `<div class="org-connector" style="background:${col}"></div>`}
+            <div class="org-node">
+                <div class="org-card-box" style="border-color:${col}66;background:${col}0e;" onclick="openDetail('${a.cli_id}')">
+                    <div class="c-name" style="color:${col}">${a.name}</div>
+                    <div class="c-role">${a.role}</div>
+                    <div class="c-status" style="color:${col}99;">● Active</div>
+                </div>
+            </div>`;
+        }).join('');
+        strip.innerHTML = ceoHtml + agentHtml;
+    }
 
-                document.getElementById('detailName').textContent = meta.name;
-                document.getElementById('detailRole').textContent = meta.role;
-                document.getElementById('detailResponsibilities').textContent = meta.responsibilities;
-                document.getElementById('detailReports').textContent = meta.reports;
-                document.getElementById('detailChannel').textContent = meta.channel;
+    function renderGrid() {
+        const grid = document.getElementById('agents-grid');
+        grid.innerHTML = allAgents.map(a => {
+            const col = a.color || '#888';
+            const isDormant = a.status === 'dormant';
+            const skills = Array.isArray(a.skills) ? a.skills : [];
+            const MAX_SHOWN = 6;
+            const shownSkills = skills.slice(0, MAX_SHOWN);
+            const extra = skills.length - MAX_SHOWN;
+            const skillTags = shownSkills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+            const extraTag = extra > 0 ? `<span class="skill-count">+${extra} more</span>` : '';
+            return `<div class="agent-card ${isDormant ? 'dormant' : ''}" onclick="openDetail('${a.cli_id}')">
+                <div class="agent-card-accent" style="background:linear-gradient(90deg,${col},${col}88)"></div>
+                <div class="agent-card-header">
+                    <div class="agent-dot" style="background:${col};${isDormant?'opacity:0.4':'box-shadow:0 0 6px '+col+'88'}"></div>
+                    <span class="agent-name" style="color:${col}">${a.name}</span>
+                </div>
+                <div class="agent-role">${a.role}</div>
+                <div class="agent-skills">${skillTags}${extraTag}</div>
+                <div><span class="agent-status-badge ${a.status}">${isDormant ? 'Dormant' : '● Active'}</span></div>
+            </div>`;
+        }).join('');
+    }
 
-                const capsEl = document.getElementById('detailCaps');
-                capsEl.innerHTML = (meta.caps || []).map(c => `<span class="detail-chip">${c}</span>`).join('');
+    function openDetail(cliId) {
+        const a = allAgents.find(x => x.cli_id === cliId);
+        if (!a) return;
+        const col = a.color || '#888';
+        const skills = Array.isArray(a.skills) ? a.skills : [];
+        document.getElementById('detail-accent').style.background = `linear-gradient(90deg,${col},${col}66)`;
+        document.getElementById('detail-dot').style.background = col;
+        document.getElementById('detail-dot').style.boxShadow = `0 0 8px ${col}`;
+        document.getElementById('detail-name').textContent = a.name;
+        document.getElementById('detail-role').textContent = a.role;
+        document.getElementById('detail-cli').textContent  = a.cli_id;
+        document.getElementById('detail-model').textContent = a.model || '—';
+        document.getElementById('detail-channel').textContent = a.telegram || '—';
+        document.getElementById('detail-reports').textContent = a.reports_to || '—';
+        document.getElementById('detail-resp').textContent = a.responsibilities || '—';
+        document.getElementById('detail-skill-count').textContent = skills.length;
+        document.getElementById('detail-skills').innerHTML = skills.length
+            ? skills.map(s => `<span class="detail-skill-tag">${s}</span>`).join('')
+            : '<span style="font-size:0.65rem;color:rgba(255,255,255,0.25);">No skills installed</span>';
+        const statusEl = document.getElementById('detail-status');
+        statusEl.textContent = a.status === 'dormant' ? 'Dormant' : '● Active';
+        statusEl.className = 'detail-status-pill ' + (a.status === 'dormant' ? 'dormant' : 'active');
+        document.getElementById('detail-panel').classList.add('show');
+        document.getElementById('overlay').classList.add('show');
+    }
 
-                // Determine status from gateway
-                fetch('/mc/agents').then(r => r.json()).then(d => {
-                    const text = d.gatewayUp ? 'Online' : 'Offline';
-                    const cls  = d.gatewayUp ? 'online' : 'offline';
-                    const el   = document.getElementById('detailStatus');
-                    el.textContent = id === 'ceo' ? '👑 Active' : '● ' + text;
-                    el.className   = 'detail-status ' + (id === 'ceo' ? 'online' : cls);
-                }).catch(() => {
-                    document.getElementById('detailStatus').textContent = '● Unknown';
-                });
+    function closeDetail() {
+        document.getElementById('detail-panel').classList.remove('show');
+        document.getElementById('overlay').classList.remove('show');
+    }
+    document.getElementById('overlay').addEventListener('click', closeDetail);
 
-                document.getElementById('agentDetails').classList.add('show');
-                document.getElementById('overlay').classList.add('show');
-            });
-        });
-
-        function closeDetails() {
-            document.getElementById('agentDetails').classList.remove('show');
-            document.getElementById('overlay').classList.remove('show');
-        }
-        document.getElementById('overlay').addEventListener('click', closeDetails);
-
-        // Init
-        fetchAgentStatus();
-        fetchBrainScore();
-        setInterval(fetchAgentStatus, 30000);
-        setInterval(fetchBrainScore, 60000);
-    </script>
+    loadRegistry();
+    fetchGatewayStatus();
+    setInterval(fetchGatewayStatus, 30000);
+    setInterval(loadRegistry, 120000);
+</script>
 </body>
 </html>

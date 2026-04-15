@@ -1,35 +1,35 @@
 {
-  "updated": "2026-04-14T01:42:38.842496",
+  "updated": "2026-04-15T01:43:49.859993",
   "property": "theveteransconsultant.com",
   "thisWeek": {
-    "sessions": 23,
-    "users": 11,
-    "newUsers": 9,
-    "pageviews": 43,
-    "avgDuration": 437,
-    "bounceRate": 43.5,
-    "engaged": 13,
-    "engagementRate": 56.5
+    "sessions": 22,
+    "users": 10,
+    "newUsers": 8,
+    "pageviews": 45,
+    "avgDuration": 465,
+    "bounceRate": 36.4,
+    "engaged": 14,
+    "engagementRate": 63.6
   },
   "lastWeek": {
-    "sessions": 16,
+    "sessions": 15,
     "users": 10,
-    "newUsers": 9,
-    "pageviews": 36,
-    "avgDuration": 306,
-    "bounceRate": 43.8,
-    "engaged": 9,
-    "engagementRate": 56.2
+    "newUsers": 8,
+    "pageviews": 34,
+    "avgDuration": 320,
+    "bounceRate": 53.3,
+    "engaged": 7,
+    "engagementRate": 46.7
   },
   "deltas": {
-    "sessions": 43.8,
-    "users": 10.0,
-    "pageviews": 19.4
+    "sessions": 46.7,
+    "users": 0.0,
+    "pageviews": 32.4
   },
   "topPages": [
     {
       "path": "/",
-      "views": 22,
+      "views": 24,
       "users": 9
     },
     {
@@ -39,52 +39,46 @@
     },
     {
       "path": "/health-report/",
-      "views": 3,
-      "users": 2
+      "views": 2,
+      "users": 1
     },
     {
-      "path": "/get-started/",
-      "views": 0,
+      "path": "/veteran-outreach/",
+      "views": 1,
       "users": 1
     }
   ],
   "sources": [
     {
       "channel": "Direct",
-      "sessions": 6
+      "sessions": 4
     },
     {
       "channel": "Unassigned",
       "sessions": 4
     },
     {
-      "channel": "Organic Social",
+      "channel": "Organic Search",
       "sessions": 2
     },
     {
-      "channel": "Organic Search",
-      "sessions": 1
+      "channel": "Organic Social",
+      "sessions": 2
     }
   ],
   "devices": [
     {
       "device": "desktop",
-      "sessions": 22,
-      "pct": 96
+      "sessions": 20,
+      "pct": 91
     },
     {
       "device": "mobile",
-      "sessions": 1,
-      "pct": 4
+      "sessions": 2,
+      "pct": 9
     }
   ],
   "daily": [
-    {
-      "date": "2026-04-06",
-      "sessions": 4,
-      "pageviews": 3,
-      "users": 4
-    },
     {
       "date": "2026-04-07",
       "sessions": 1,
@@ -120,6 +114,12 @@
       "sessions": 1,
       "pageviews": 2,
       "users": 1
+    },
+    {
+      "date": "2026-04-14",
+      "sessions": 3,
+      "pageviews": 5,
+      "users": 2
     }
   ]
 }
