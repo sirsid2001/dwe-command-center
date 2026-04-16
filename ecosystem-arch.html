@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosystem Architecture — DWE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #07091a;
+    color: rgba(255,255,255,0.87);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 52px 20px 40px 60px;
+  }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+  h2 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.35); margin-bottom: 12px; }
+  .subtitle { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
+  .header { margin-bottom: 22px; }
+  .section { margin-bottom: 20px; }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 0.67rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.3);
+    padding: 0 10px 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  td {
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.75);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Status dots */
+  .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dot-green  { background: #50c878; box-shadow: 0 0 5px rgba(80,200,120,0.5); }
+  .dot-red    { background: #f06060; box-shadow: 0 0 5px rgba(240,96,96,0.4); }
+  .dot-gray   { background: rgba(255,255,255,0.25); }
+
+  /* Status badge */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+  .badge-running { background: rgba(80,200,120,0.15); color: #50c878; }
+  .badge-stopped { background: rgba(240,96,96,0.12); color: #f06060; }
+  .badge-unknown { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
+  .badge-active  { background: rgba(100,149,237,0.15); color: #6495ed; }
+
+  /* Agent model tag */
+  .model-tag {
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.45);
+  }
+  .model-tag.claude { background: rgba(245,166,35,0.12); color: #F5A623; }
+
+  /* Infra grid */
+  .infra-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .infra-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 9px;
+    padding: 14px;
+  }
+  .infra-name { font-weight: 600; font-size: 0.82rem; margin-bottom: 4px; }
+  .infra-ip { font-size: 0.68rem; color: rgba(255,255,255,0.35); font-family: monospace; margin-bottom: 4px; }
+  .infra-role { font-size: 0.7rem; color: rgba(255,255,255,0.5); line-height: 1.4; }
+
+  /* Status bar */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 28px;
+    background: rgba(7,9,26,0.95);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 16px 0 60px;
+    gap: 18px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.3);
+    z-index: 100;
+  }
+
+  .cli-id { font-family: monospace; font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+  .loading { text-align: center; padding: 30px; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
+  .wf-id { font-family: monospace; font-size: 0.67rem; color: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<!-- Hamburger nav -->
+<div id="nav-hamburger" onclick="toggleNavMenu()" title="Navigate" style="position:fixed;top:14px;left:14px;z-index:9999;width:34px;height:34px;background:rgba(20,25,70,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(30,36,100,0.95)'" onmouseout="this.style.background='rgba(20,25,70,0.85)'">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="pointer-events:none;">
+    <rect y="2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+    <rect y="7.1" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+    <rect y="12.2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+  </svg>
+</div>
+<div id="nav-menu" style="display:none;position:fixed;top:54px;left:14px;z-index:9998;background:rgba(16,20,60,0.97);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:6px 4px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45);font-family:Inter,sans-serif;">
+  <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;padding:4px 10px 6px;">Navigate</div>
+  <a href="/" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">⚡</span> Command Center</a>
+  <a href="/revenue" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">💰</span> Revenue</a>
+  <a href="/pipelines" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔁</span> Pipelines</a>
+  <a href="/ai-team" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🤖</span> AI Team</a>
+  <a href="/ecosystem" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🌐</span> Ecosystem</a>
+  <a href="/n8n-workflows" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔧</span> n8n Workflows</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/vision" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔮</span> Vision</a>
+  <a href="/ceo-corner" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">👔</span> CEO Productivity</a>
+  <a href="/daily-briefing" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗓️</span> Daily Briefing</a>
+  <a href="/delegations" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📋</span> Delegations</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/architecture" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Architecture</a>
+  <a href="/dataflow" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📊</span> Data Flow</a>
+  <a href="/n8n-map" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗺️</span> n8n Map</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/worldmonitor" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📡</span> WorldMonitor</a>
+  <a href="/ecosystem-arch" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:#fff;text-decoration:none;font-size:0.78rem;font-weight:600;background:rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><span style="font-size:0.9rem;">🏗️</span> Ecosystem Arch</a>
+</div>
+
+<!-- Main content -->
+<div class="header">
+  <h1>🏗️ DWE Ecosystem Architecture</h1>
+  <div class="subtitle" id="subtitle">Live system map — loading…</div>
+</div>
+
+<!-- AI Team -->
+<div class="section card">
+  <h2>AI Command Staff — 11 Agents</h2>
+  <div id="agents-table"><div class="loading">Loading…</div></div>
+</div>
+
+<!-- Infrastructure -->
+<div class="section">
+  <h2 style="margin-bottom:12px;">Infrastructure Nodes</h2>
+  <div id="infra-grid" class="infra-grid"><div class="loading">Loading…</div></div>
+</div>
+
+<!-- Daemons -->
+<div class="section card">
+  <h2>Key Daemons (launchd)</h2>
+  <div id="daemons-table"><div class="loading">Loading…</div></div>
+</div>
+
+<!-- n8n Workflows -->
+<div class="section card">
+  <h2>Active n8n Workflows</h2>
+  <div id="workflows-table"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="status-bar">
+  <span id="status-text">Loading…</span>
+</div>
+
+<script>
+function renderData(data) {
+  const ts = new Date(data.ts).toLocaleTimeString();
+  document.getElementById('subtitle').textContent = `Live system map · loaded ${ts}`;
+  document.getElementById('status-text').textContent = `Data loaded ${ts} · ${data.agents.length} agents · ${data.daemons.length} daemons · ${data.workflows.length} workflows`;
+
+  // AI Team table
+  document.getElementById('agents-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Name</th><th>Role</th><th>CLI Agent ID</th><th>Model</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${data.agents.map(a => `
+          <tr>
+            <td style="font-weight:600">${a.name}</td>
+            <td style="color:rgba(255,255,255,0.6)">${a.role}</td>
+            <td><span class="cli-id">${a.id}</span></td>
+            <td><span class="model-tag ${a.model==='Claude Code'?'claude':''}">${a.model}</span></td>
+            <td><span class="dot dot-green"></span>Active</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // Infra grid
+  document.getElementById('infra-grid').innerHTML = data.infra.map(n => `
+    <div class="infra-card">
+      <div class="infra-name"><span class="dot dot-green"></span>${n.name}</div>
+      <div class="infra-ip">${n.ip}</div>
+      <div class="infra-role">${n.role}</div>
+    </div>
+  `).join('');
+
+  // Daemons table
+  document.getElementById('daemons-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Daemon</th><th>Full ID</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${data.daemons.map(d => `
+          <tr>
+            <td style="font-weight:500">${d.label}</td>
+            <td><span class="cli-id">${d.id}</span></td>
+            <td>
+              ${d.status === 'running'
+                ? `<span class="dot dot-green"></span><span class="badge badge-running">running</span>`
+                : d.status === 'stopped'
+                  ? `<span class="dot dot-red"></span><span class="badge badge-stopped">stopped</span>`
+                  : `<span class="dot dot-gray"></span><span class="badge badge-unknown">unknown</span>`
+              }
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // Workflows table
+  document.getElementById('workflows-table').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Workflow</th><th>ID</th><th>Trigger</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        ${data.workflows.map(w => `
+          <tr>
+            <td style="font-weight:500">${w.name}</td>
+            <td><span class="wf-id">${w.id}</span></td>
+            <td style="color:rgba(255,255,255,0.5);font-size:0.73rem">${w.trigger}</td>
+            <td><span class="dot dot-green"></span><span class="badge badge-active">active</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+fetch('/mc/ecosystem-arch')
+  .then(r => r.json())
+  .then(renderData)
+  .catch(() => {
+    document.getElementById('subtitle').textContent = 'Could not load ecosystem data';
+    document.getElementById('status-text').textContent = 'Error loading data';
+  });
+
+// Nav helpers
+function toggleNavMenu() {
+  var m = document.getElementById('nav-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function closeNavMenu() {
+  document.getElementById('nav-menu').style.display = 'none';
+}
+document.addEventListener('click', function(e) {
+  var ham = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('nav-menu');
+  if (menu.style.display !== 'none' && !ham.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

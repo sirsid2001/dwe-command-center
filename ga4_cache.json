@@ -1,41 +1,41 @@
 {
-  "updated": "2026-04-15T05:43:52.979308",
+  "updated": "2026-04-16T12:44:23.220793",
   "property": "theveteransconsultant.com",
   "thisWeek": {
-    "sessions": 21,
-    "users": 9,
-    "newUsers": 7,
-    "pageviews": 44,
-    "avgDuration": 487,
+    "sessions": 18,
+    "users": 10,
+    "newUsers": 8,
+    "pageviews": 45,
+    "avgDuration": 570,
     "bounceRate": 33.3,
-    "engaged": 14,
+    "engaged": 12,
     "engagementRate": 66.7
   },
   "lastWeek": {
     "sessions": 14,
-    "users": 10,
+    "users": 9,
     "newUsers": 7,
-    "pageviews": 33,
-    "avgDuration": 343,
+    "pageviews": 13,
+    "avgDuration": 40,
     "bounceRate": 50.0,
     "engaged": 7,
     "engagementRate": 50.0
   },
   "deltas": {
-    "sessions": 50.0,
-    "users": -10.0,
-    "pageviews": 33.3
+    "sessions": 28.6,
+    "users": 11.1,
+    "pageviews": 246.2
   },
   "topPages": [
     {
       "path": "/",
-      "views": 23,
+      "views": 21,
       "users": 8
     },
     {
       "path": "/contact/",
-      "views": 18,
-      "users": 3
+      "views": 21,
+      "users": 5
     },
     {
       "path": "/health-report/",
@@ -50,12 +50,8 @@
   ],
   "sources": [
     {
-      "channel": "Unassigned",
-      "sessions": 4
-    },
-    {
       "channel": "Direct",
-      "sessions": 3
+      "sessions": 4
     },
     {
       "channel": "Organic Search",
@@ -69,22 +65,16 @@
   "devices": [
     {
       "device": "desktop",
-      "sessions": 19,
-      "pct": 90
+      "sessions": 16,
+      "pct": 89
     },
     {
       "device": "mobile",
       "sessions": 2,
-      "pct": 10
+      "pct": 11
     }
   ],
   "daily": [
-    {
-      "date": "2026-04-08",
-      "sessions": 5,
-      "pageviews": 3,
-      "users": 2
-    },
     {
       "date": "2026-04-09",
       "sessions": 2,
@@ -114,6 +104,18 @@
       "sessions": 3,
       "pageviews": 5,
       "users": 2
+    },
+    {
+      "date": "2026-04-15",
+      "sessions": 1,
+      "pageviews": 1,
+      "users": 1
+    },
+    {
+      "date": "2026-04-16",
+      "sessions": 1,
+      "pageviews": 3,
+      "users": 1
     }
   ]
 }

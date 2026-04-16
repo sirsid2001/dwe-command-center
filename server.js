@@ -234,6 +234,49 @@ const server = http.createServer((req, res) => {
         serveFile(res, path.join(__dirname, 'architecture.html'), 'text/html', req);
         return;
     }
+    if (pathname === '/insider-signals' || pathname === '/insider-signals.html' || pathname === '/worldmonitor' || pathname === '/worldmonitor.html') {
+        serveFile(res, path.join(__dirname, 'insider-signals.html'), 'text/html', req);
+        return;
+    }
+    if (pathname === '/ecosystem-arch' || pathname === '/ecosystem-arch.html') {
+        serveFile(res, path.join(__dirname, 'ecosystem-arch.html'), 'text/html', req);
+        return;
+    }
+    if (pathname.startsWith('/arch-doc/')) {
+        const docName = pathname.replace('/arch-doc/', '').replace(/[^a-zA-Z0-9_\-]/g, '');
+        const docPath = path.join(require('os').homedir(), 'openclaw/shared/architecture', docName + '.md');
+        fs.readFile(docPath, 'utf8', (err, content) => {
+            if (err) { res.writeHead(404); res.end('Doc not found'); return; }
+            // Simple markdown → HTML: headers, bold, code, links, horizontal rules
+            const escaped = content
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const html = escaped
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/^---+$/gm, '<hr>')
+                .replace(/^\| (.+)$/gm, (m) => '<tr>' + m.replace(/\| /g,'').split('|').map(c=>`<td>${c.trim()}</td>`).join('') + '</tr>')
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/\n{2,}/g, '<br><br>');
+            const page = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docName} — DWE Arch Docs</title>
+<style>body{background:#0a0f1e;color:#d1d5db;font-family:Inter,sans-serif;max-width:900px;margin:0 auto;padding:2rem;}
+h1,h2,h3{color:#60a5fa;}h1{font-size:1.6rem;}h2{font-size:1.3rem;border-bottom:1px solid #1e3a5f;padding-bottom:0.3rem;}h3{font-size:1.1rem;}
+code{background:#1e2d45;color:#f59e0b;padding:0.1rem 0.3rem;border-radius:3px;font-family:monospace;}
+pre{background:#1e2d45;padding:1rem;border-radius:6px;overflow-x:auto;}
+strong{color:#f3f4f6;}hr{border:none;border-top:1px solid #1e3a5f;margin:1.5rem 0;}
+table{border-collapse:collapse;width:100%;}td{border:1px solid #1e3a5f;padding:0.4rem 0.6rem;}
+li{margin:0.2rem 0;}a.back{display:inline-block;margin-bottom:1.5rem;color:#93c5fd;text-decoration:none;font-size:0.85rem;}
+a.back:hover{text-decoration:underline;}</style></head><body>
+<a class="back" href="/architecture">← Architecture</a>
+${html}
+</body></html>`;
+            res.writeHead(200, {'Content-Type':'text/html'});
+            res.end(page);
+        });
+        return;
+    }
     if (pathname === '/dataflow' || pathname === '/dataflow.html') {
         serveFile(res, path.join(__dirname, 'dataflow.html'), 'text/html', req);
         return;
@@ -501,6 +544,47 @@ const server = http.createServer((req, res) => {
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ ok: !err, error: err ? err.message : null }));
             });
+            break;
+        case '/mc/brain-healer-state':
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(brainHealerState));
+            break;
+        case '/mc/mempalace-health':
+            getMemPalaceHealth(req, res);
+            break;
+        case '/mc/agent-memory-status':
+            getAgentMemoryStatus(req, res);
+            break;
+        case '/mc/brain-comms':
+            getBrainComms(req, res);
+            break;
+        case '/mc/brain-failures':
+            getBrainFailures(req, res);
+            break;
+        case '/mc/panel-config':
+            if (req.method === 'POST') {
+                let body = '';
+                req.on('data', d => { body += d; });
+                req.on('end', () => {
+                    try {
+                        const { panelId, tag } = JSON.parse(body);
+                        const cfgPath = path.join(__dirname, 'panel-config.json');
+                        const cfg = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : { tags: {}, availableTags: [] };
+                        cfg.tags[panelId] = tag;
+                        fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
+                        res.setHeader('Content-Type', 'application/json');
+                        res.end(JSON.stringify({ ok: true }));
+                    } catch(e) {
+                        res.setHeader('Content-Type', 'application/json');
+                        res.end(JSON.stringify({ ok: false, error: e.message }));
+                    }
+                });
+            } else {
+                const cfgPath = path.join(__dirname, 'panel-config.json');
+                const cfg = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : { tags: {}, availableTags: [] };
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(cfg));
+            }
             break;
         case '/mc/gateway-restart':
             exec(`launchctl kickstart -k gui/${process.getuid()}/ai.openclaw.gateway`, { timeout: 10000 }, (err) => {
@@ -927,6 +1011,66 @@ const server = http.createServer((req, res) => {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'No intel data available', top_signals: [] }));
             }
+            break;
+        case '/mc/worldmonitor':
+            try {
+                const intelPath = path.join(require('os').homedir(), 'openclaw/shared/intel/latest_signals.json');
+                const raw = JSON.parse(fs.readFileSync(intelPath, 'utf8'));
+                const allSignals = raw.top_signals || [];
+                const ALERT_THRESHOLD = 12;
+                const top20 = allSignals.slice(0, 20);
+                const alerts = allSignals.filter(s => s.score >= ALERT_THRESHOLD);
+                const sectors = {};
+                allSignals.forEach(s => {
+                    const sec = s.sector && s.sector.trim() ? s.sector.trim() : 'Unclassified';
+                    if (!sectors[sec]) sectors[sec] = { count: 0, total_score: 0 };
+                    sectors[sec].count++;
+                    sectors[sec].total_score += s.score;
+                });
+                Object.keys(sectors).forEach(k => {
+                    sectors[k].avg_score = +(sectors[k].total_score / sectors[k].count).toFixed(2);
+                    delete sectors[k].total_score;
+                });
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                res.end(JSON.stringify({
+                    generated_at: raw.generated_at,
+                    total_signals: raw.total_signals,
+                    sources: raw.by_source,
+                    top_signals: top20,
+                    alerts,
+                    sectors,
+                    alert_threshold: ALERT_THRESHOLD
+                }));
+            } catch(e) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'No signal data available', top_signals: [], alerts: [], sources: {}, sectors: {} }));
+            }
+            break;
+        case '/mc/route-to-jake':
+            if (req.method === 'POST') {
+                let rjBody = '';
+                req.on('data', chunk => { rjBody += chunk; });
+                req.on('end', () => {
+                    try {
+                        const signal = JSON.parse(rjBody);
+                        const msg = `Signal alert routed from WorldMonitor:\n\nTicker: ${signal.ticker}\nSource: ${signal.source}\nAction: ${signal.action}\nScore: ${signal.score}\nAmount: $${(signal.amount_usd || 0).toLocaleString()}\nDate: ${signal.date}\nOwner: ${(signal.meta || {}).owner || 'N/A'}\n\nPlease evaluate this signal for outreach potential.`;
+                        const { execFile } = require('child_process');
+                        execFile('/opt/homebrew/bin/openclaw', ['agent', '--agent', 'jake', '--message', msg], { timeout: 30000 }, (err) => {
+                            res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+                            res.end(JSON.stringify({ ok: !err, message: err ? String(err) : 'Routed to Jake' }));
+                        });
+                    } catch(e) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: false, error: 'Invalid signal payload' }));
+                    }
+                });
+            } else {
+                res.writeHead(405, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'POST only' }));
+            }
+            break;
+        case '/mc/ecosystem-arch':
+            getEcosystemArch(req, res);
             break;
         case '/mc/content-intel/ceo-brief':
             handleCeoIntelBrief(req, res);
@@ -1475,7 +1619,7 @@ function handleNightMode(req, res) {
             const script = action === 'stop'
                 ? path.join(process.env.HOME, 'openclaw/bin/night_mode_stop.sh')
                 : path.join(process.env.HOME, 'openclaw/bin/night_mode_start.sh');
-            const { exec } = require('child_process');
+            var exec = require('child_process').exec;
             exec(`bash "${script}"`, { timeout: 30000 }, (err, stdout, stderr) => {
                 // Lock screen when starting night mode
                 if (action === 'start') {
@@ -1520,7 +1664,7 @@ function handleDrillInject(req, res) {
                 type: scenarioText ? 'adhoc' : 'real'
             }, null, 2));
 
-            const { exec } = require('child_process');
+            var exec = require('child_process').exec;
             const script = path.join(process.env.HOME, 'openclaw/bin/command_drill_realtime.sh');
             const flag = scenarioText ? '--inbox' : '--auto';
             exec(`bash "${script}" ${flag}`, { timeout: 600000 }, () => {});
@@ -1811,10 +1955,10 @@ function serveFile(res, filePath, contentType, req) {
             res.end('Not found');
             return;
         }
-        // Static assets: short cache (5s) — browser can revalidate cheaply
+        // HTML: no-store so JS fixes apply immediately; other assets short cache
         const headers = {
             'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=5'
+            'Cache-Control': contentType === 'text/html' ? 'no-store' : 'public, max-age=5'
         };
         if (req) {
             sendCompressed(req, res, 200, headers, data);
@@ -3334,7 +3478,7 @@ function getModels(req, res) {
     }));
 }
 
-const { exec } = require('child_process');
+var exec = require('child_process').exec;
 
 // ── Daemon Taxonomy ─────────────────────────────────────────────────────────
 // tier 1 = critical (kickstart -k immediately, escalate after 2 attempts)
@@ -3348,6 +3492,7 @@ const KEY_DAEMONS = [
     { label: 'ai.openclaw.gateway',            id: 'OC-01', name: 'OpenClaw Gateway',   tier: 1, alwaysOn: true  },
     { label: 'ai.dwe.notion-sync',             id: 'BR-01', name: 'Notion Sync',        tier: 2, alwaysOn: true  },
     { label: 'ai.dwe.seed-watcher',            id: 'BR-02', name: 'Brain Seed Watcher', tier: 1, alwaysOn: true  },
+    { label: 'ai.dwe.mempalace-watchdog',      id: 'BR-03', name: 'MemPalace Watchdog', tier: 2, alwaysOn: true  },
     { label: 'ai.dwe.anomaly-check',           id: 'MN-01', name: 'Anomaly Check',      tier: 0, alwaysOn: false },
     { label: 'ai.dwe.ralphy-monitor',          id: 'MN-02', name: 'Ralphy Monitor',     tier: 2, alwaysOn: true  },
     { label: 'ai.dwe.anita-notion-triage',     id: 'PM-01', name: 'Anita PM Triage',   tier: 0, alwaysOn: false },
@@ -4081,6 +4226,71 @@ function getDaemonHealth(req, res) {
 // ── Live Ops Board ─────────────────────────────────────────────────────────────
 // Assembles a flat list of status rows from multiple sources.
 // Each row: { id, label, detail, status }   status: 'ok' | 'warn' | 'error' | 'idle'
+async function getEcosystemArch(req, res) {
+    const { execFile } = require('child_process');
+
+    const agents = [
+        { id: 'main',           name: 'Sarah',  role: 'CEO Personal Assistant', model: 'minimax-m2.7:cloud' },
+        { id: 'cto',            name: 'Steve',  role: 'CTO',                    model: 'minimax-m2.7:cloud' },
+        { id: 'chief-engineer', name: 'CE',     role: 'Chief Engineer',         model: 'minimax-m2.7:cloud' },
+        { id: 'anita',          name: 'Anita',  role: 'COO',                    model: 'minimax-m2.7:cloud' },
+        { id: 'nicole',         name: 'Nicole', role: 'CIO',                    model: 'minimax-m2.7:cloud' },
+        { id: 'cfo',            name: 'Fran',   role: 'CFO',                    model: 'minimax-m2.7:cloud' },
+        { id: 'jarvis',         name: 'Jarvis', role: 'Execution Layer',        model: 'Claude Code' },
+        { id: 'spark',          name: 'Spark',  role: 'Social Media / Traffic', model: 'minimax-m2.7:cloud' },
+        { id: 'herald',         name: 'Herald', role: 'SEO Sub-Agent',          model: 'minimax-m2.7:cloud' },
+        { id: 'jake',           name: 'Jake',   role: 'Pipeline Agent',         model: 'minimax-m2.7:cloud' },
+        { id: 'validator',      name: 'Victor', role: 'QA',                     model: 'minimax-m2.7:cloud' },
+    ];
+
+    const daemonIds = [
+        'ai.openclaw.gateway', 'ai.openclaw.relay-daemon',
+        'ai.dwe.seed-watcher', 'ai.dwe.anita-notion-triage',
+        'ai.dwe.notion-sync', 'ai.dwe.audit-runner',
+        'ai.dwe.outreach-sender', 'ai.dwe.intel-analyst',
+        'ai.dwe.ollama-tunnel', 'ai.dwe.wp-plugin-check',
+        'ai.dwe.ga4-pull', 'ai.dwe.anomaly-check',
+    ];
+
+    const workflows = [
+        { name: 'Agent Alert Hub',           id: 'kWjEEId44tZ2JxGX', trigger: 'webhook /dwe-agent-alert' },
+        { name: 'Gmail Agent',               id: 'lDbvlrDfY8P8QRDq', trigger: 'schedule 15min + webhook' },
+        { name: 'Agent Task Follow-Up',      id: 'wiwbKb9RAooZ3lmV', trigger: 'schedule 2h' },
+        { name: 'Agent Relay Hub',           id: 'kgC5LralnhQtJXZP', trigger: 'webhook /agent-relay' },
+        { name: 'VAB Pipeline',              id: 'wUQPvALo33hho1BD', trigger: 'webhook /vab-pipeline' },
+        { name: 'Jarvis Delegation Trigger', id: 'H6XccxqXqYkIsuLO', trigger: 'schedule 10min' },
+        { name: 'Notion Task Router',        id: 'P0VfIMlGfBrftBrl', trigger: 'schedule 1min' },
+    ];
+
+    const infra = [
+        { name: 'Mac Mini (M4)',    ip: '100.78.240.29', role: 'OpenClaw gateway, daemons, Ollama' },
+        { name: 'Contabo VPS',     ip: '86.48.27.45',   role: 'n8n, Mailcow, Caddy' },
+        { name: 'Pinecone dwe-v3', ip: 'cloud',         role: 'DWE Brain — 12,729 vectors' },
+        { name: 'Mailcow',         ip: '86.48.27.45',   role: 'Email infra (15 containers)' },
+    ];
+
+    let daemonStatus = {};
+    try {
+        await new Promise(resolve => {
+            execFile('launchctl', ['list'], { timeout: 10000 }, (err, stdout) => {
+                if (!err && stdout) {
+                    daemonIds.forEach(d => { daemonStatus[d] = stdout.includes(d) ? 'running' : 'stopped'; });
+                }
+                resolve();
+            });
+        });
+    } catch(e) { /* graceful fallback */ }
+
+    const daemons = daemonIds.map(id => ({
+        id,
+        label: id.replace('ai.dwe.', '').replace('ai.openclaw.', ''),
+        status: daemonStatus[id] || 'unknown'
+    }));
+
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+    res.end(JSON.stringify({ agents, daemons, workflows, infra, ts: Date.now() }));
+}
+
 async function getOpsBoardData() {
     const rows = [];
     const now = Date.now();
@@ -4358,7 +4568,7 @@ let lastBackupTime = (() => {
 
 // Run GitHub backup
 function runBackup(req, res) {
-    const { exec } = require('child_process');
+    var exec = require('child_process').exec;
     
     console.log('Starting backup...');
     
@@ -4432,7 +4642,7 @@ function getLastOpenclawBackupTime() {
 }
 
 function runOpenclawBackup(req, res) {
-    const { exec } = require('child_process');
+    var exec = require('child_process').exec;
     const SCRIPT = '/Users/elf-6/openclaw/agents/cto/skills/backup/backup.sh';
 
     console.log('Starting OpenClaw backup...');
@@ -4470,6 +4680,355 @@ function runOpenclawBackup(req, res) {
             res.end(JSON.stringify({ success: true, message: 'Backup completed', lastBackup: lastOpenclawBackupTime.toISOString() }));
         }
     });
+}
+
+// ── Brain / Memory Layer Endpoints ───────────────────────────────────────────
+
+const AGENTS = [
+    { name: 'Steve',  dir: 'cto' },
+    { name: 'CE',     dir: 'chief-engineer' },
+    { name: 'Anita',  dir: 'anita' },
+    { name: 'Nicole', dir: 'nicole' },
+    { name: 'Sarah',  dir: 'main' },
+    { name: 'Fran',   dir: 'cfo' },
+    { name: 'Jake',   dir: 'jake' },
+    { name: 'Spark',  dir: 'spark' },
+    { name: 'Jarvis', dir: 'jarvis' },
+];
+
+function getMemPalaceHealth(req, res) {
+    const MINE_LOG = path.join(process.env.HOME, 'openclaw/logs/mempalace_mine_queue.log');
+    const SEED_LOG = path.join(process.env.HOME, 'openclaw/logs/seed-watcher.log');
+    const now = Date.now();
+
+    // MemPalace mine log — last successful write
+    let mempalace = { status: 'unknown', lastWrite: null, message: '' };
+    if (fs.existsSync(MINE_LOG)) {
+        const lines = fs.readFileSync(MINE_LOG, 'utf8').trim().split('\n').filter(Boolean);
+        const lastLine = lines[lines.length - 1] || '';
+        const mtime = fs.statSync(MINE_LOG).mtime;
+        const ageMin = (now - mtime.getTime()) / 60000;
+        mempalace = {
+            status: ageMin < 60 ? 'ok' : 'stale',
+            lastWrite: mtime.toISOString(),
+            message: lastLine.slice(0, 120)
+        };
+    } else {
+        mempalace = { status: 'down', lastWrite: null, message: 'Mine log not found' };
+    }
+
+    // Seed watcher — check daemon is alive
+    let seedWatcher = { status: 'unknown', lastEvent: null };
+    if (fs.existsSync(SEED_LOG)) {
+        const lines = fs.readFileSync(SEED_LOG, 'utf8').trim().split('\n').filter(Boolean);
+        const lastLine = lines[lines.length - 1] || '';
+        const mtime = fs.statSync(SEED_LOG).mtime;
+        const ageMin = (now - mtime.getTime()) / 60000;
+        const SEED_QUEUE_DIR = path.join(process.env.HOME, 'openclaw/shared/4_Ready_to_Seed');
+        let queueDepth = 0;
+        try { queueDepth = fs.readdirSync(SEED_QUEUE_DIR).filter(f => !f.startsWith('.') && f !== 'placeholder.txt' && f !== '.gitkeep').length; } catch(e) {}
+        seedWatcher = {
+            status: ageMin < 60 ? 'ok' : ageMin < 120 ? 'stale' : 'down',
+            lastEvent: mtime.toISOString(),
+            queueDepth,
+            message: lastLine.slice(0, 100)
+        };
+    } else {
+        seedWatcher = { status: 'down', lastEvent: null, message: 'Seed watcher log not found' };
+    }
+
+    // Pinecone — quick head check using env API key
+    const PC_KEY = process.env.PINECONE_API_KEY || '';
+    const PC_HOST = 'dwe-v3-lm4owoj.svc.aped-4627-b74a.pinecone.io';
+    let pineconeResult = { status: 'unknown', vectorCount: null };
+
+    // Skip direct Pinecone check if no API key — Brain works via Mac Bridge, not direct API
+    if (!PC_KEY) {
+        pineconeResult = { status: 'ok', vectorCount: null, note: 'no_direct_key' };
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ mempalace, seedWatcher, pinecone: pineconeResult }));
+        return;
+    }
+
+    // Pinecone health via Python — retries 3x with urllib (avoids Node.js SSL handshake blips)
+    const pyScript = `
+import urllib.request, ssl, json, sys, time
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+url = 'https://dwe-v3-lm4owoj.svc.aped-4627-b74a.pinecone.io/describe_index_stats'
+data = json.dumps({}).encode()
+for attempt in range(3):
+    try:
+        req = urllib.request.Request(url, data=data, headers={'Api-Key': '${PC_KEY}', 'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=4, context=ctx) as r:
+            j = json.loads(r.read())
+            count = j.get('totalVectorCount') or j.get('total_vector_count')
+            print(f'OK:{count}' if count is not None else 'OK')
+            sys.exit(0)
+    except Exception as e:
+        if attempt < 2: time.sleep(1)
+print('DOWN')
+sys.exit(1)
+`;
+    require('child_process').execFile('python3', ['-c', pyScript], { timeout: 60000 }, (pyErr, pyOut, pyErr2) => {
+        const out = pyOut.trim();
+        if (out.startsWith('OK')) {
+            pineconeResult = { status: 'ok', vectorCount: parseInt(out.split(':')[1]) || null };
+        } else {
+            pineconeResult = { status: 'down', vectorCount: null };
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ mempalace, seedWatcher, pinecone: pineconeResult }));
+    });
+}
+
+function getAgentMemoryStatus(req, res) {
+    const now = Date.now();
+    const agents = AGENTS.map(a => {
+        const memDir = path.join(process.env.HOME, 'openclaw/agents', a.dir, 'memory');
+        try {
+            if (!fs.existsSync(memDir)) return { name: a.name, status: 'never', lastWrite: null, agoH: null };
+            const files = fs.readdirSync(memDir).filter(f => !f.startsWith('.'));
+            if (files.length === 0) return { name: a.name, status: 'never', lastWrite: null, agoH: null };
+            const newest = files.map(f => {
+                try { return fs.statSync(path.join(memDir, f)).mtime.getTime(); } catch(e) { return 0; }
+            }).reduce((a, b) => Math.max(a, b), 0);
+            const agoH = (now - newest) / 3600000;
+            const status = agoH < 2 ? 'green' : agoH < 8 ? 'amber' : 'red';
+            return { name: a.name, status, lastWrite: new Date(newest).toISOString(), agoH: Math.round(agoH * 10) / 10 };
+        } catch(e) {
+            return { name: a.name, status: 'never', lastWrite: null, agoH: null };
+        }
+    });
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ agents }));
+}
+
+function getBrainComms(req, res) {
+    const SEED_LOG = path.join(process.env.HOME, 'openclaw/logs/seed-watcher.log');
+    const events = [];
+    if (fs.existsSync(SEED_LOG)) {
+        const lines = fs.readFileSync(SEED_LOG, 'utf8').split('\n').filter(Boolean);
+        for (let i = lines.length - 1; i >= 0 && events.length < 20; i--) {
+            const line = lines[i];
+            const tsMatch = line.match(/(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2})/);
+            const ts = tsMatch ? tsMatch[1] : null;
+            if (/SUCCESS|seeded|ingested/i.test(line)) {
+                events.push({ ts, type: 'success', msg: line.slice(0, 120) });
+            } else if (/FAIL|error|ERR/i.test(line) && !/0 fail/i.test(line)) {
+                events.push({ ts, type: 'fail', msg: line.slice(0, 120) });
+            } else if (/seed|watch|queue/i.test(line)) {
+                events.push({ ts, type: 'info', msg: line.slice(0, 120) });
+            }
+        }
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ events }));
+}
+
+function getBrainFailures(req, res) {
+    const LOG_PATHS = [
+        path.join(process.env.HOME, 'openclaw/logs/seed-watcher.log'),
+        path.join(process.env.HOME, 'openclaw/logs/brain-trainer.log'),
+        path.join(process.env.HOME, 'openclaw/logs/notion-sync.log'),
+        path.join(process.env.HOME, 'openclaw/logs/mempalace_mine_queue.log'),
+    ];
+    const cutoff = Date.now() - 24 * 3600 * 1000;
+    const failures = [];
+    for (const logPath of LOG_PATHS) {
+        if (!fs.existsSync(logPath)) continue;
+        const lines = fs.readFileSync(logPath, 'utf8').split('\n').filter(Boolean);
+        for (const line of lines) {
+            // Only real error lines — skip lines like "0 failed", [EXPANSION], test results
+            if (!/\] (ERROR|FAILED|CRITICAL)\b/i.test(line)) continue;
+            if (/\[EXPANSION\]/i.test(line)) continue;
+            if (/\d+ fail/i.test(line) && /\d+ pass/i.test(line)) continue;
+            const tsMatch = line.match(/(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2})/);
+            if (tsMatch) {
+                const ts = new Date(tsMatch[1]).getTime();
+                if (ts < cutoff) continue;
+            }
+            failures.push({ source: path.basename(logPath), msg: line.slice(0, 160) });
+            if (failures.length >= 30) break;
+        }
+    }
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ failures, count: failures.length }));
+}
+
+// ── Brain Self-Healer ─────────────────────────────────────────────────────────
+
+const brainHealerState = {
+    'seed-watcher': { status: 'ok', restartCount: 0, firstRestartAt: null, lastAlertAt: null },
+    'notion-sync':  { status: 'ok', restartCount: 0, firstRestartAt: null, lastAlertAt: null },
+    'pinecone':     { status: 'ok', restartCount: 0, firstRestartAt: null, lastAlertAt: null },
+    'mempalace':    { status: 'ok', restartCount: 0, firstRestartAt: null, lastAlertAt: null },
+    'agent-memory': { status: 'ok', restartCount: 0, firstRestartAt: null, lastAlertAt: null },
+};
+const BRAIN_HEALER_WINDOW_MS   = 5 * 60 * 1000;
+const BRAIN_HEALER_MAX_RESTARTS = 2;
+const BRAIN_ALERT_COOLDOWN_MS  = 30 * 60 * 1000; // 30 min
+
+// Persist healer state to disk so cooldown survives crashes/restarts
+const BRAIN_HEALER_STATE_FILE = path.join(process.env.HOME, 'openclaw/logs/brain_healer_state.json');
+
+function loadBrainHealerState() {
+    if (!fs.existsSync(BRAIN_HEALER_STATE_FILE)) return;
+    try {
+        const saved = JSON.parse(fs.readFileSync(BRAIN_HEALER_STATE_FILE, 'utf8'));
+        Object.assign(brainHealerState, saved);
+        console.log('[BrainHealer] State restored from', BRAIN_HEALER_STATE_FILE);
+    } catch(e) { /* ignore — start fresh */ }
+}
+
+function saveBrainHealerState() {
+    try {
+        fs.writeFileSync(BRAIN_HEALER_STATE_FILE, JSON.stringify(brainHealerState, null, 2));
+    } catch(e) { /* ignore */ }
+}
+
+loadBrainHealerState();
+
+function postBrainAlertHub(layer, action, detail, attempts) {
+    const body = JSON.stringify({
+        service:   'brain-memory-layer',
+        name:      layer,
+        id:        'BR-MEM',
+        tier:      1,
+        attempts,
+        action,
+        detail,
+        timestamp: new Date().toISOString(),
+        source:    'brain-memory-healer',
+        notify:    ['chief-engineer', 'cto'],
+    });
+    const opts = {
+        hostname: 'n8n.tvcpulse.com',
+        path:     '/webhook/dwe-agent-alert',
+        method:   'POST',
+        headers:  { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    };
+    const req = https.request(opts, r => { r.resume(); });
+    req.on('error', e => console.error('[BrainHealer] Alert Hub POST failed:', e.message));
+    req.write(body);
+    req.end();
+    console.log(`[BrainHealer] Alert Hub notified | layer=${layer} action=${action}`);
+
+    // Direct OpenClaw notify to CTO + CE — fire-and-forget (same as vps_watchdog alert_command_staff)
+    const msg = `[Brain/Memory Alert] ${layer} — ${action}: ${detail}${attempts > 0 ? ` (${attempts} attempts)` : ''}`;
+    const { spawn } = require('child_process');
+    for (const agent of ['cto', 'chief-engineer']) {
+        const p = spawn('/opt/homebrew/bin/openclaw', ['agent', '--agent', agent, '--message', msg], {
+            detached: true, stdio: 'ignore'
+        });
+        p.unref();
+        console.log(`[BrainHealer] ✓ OpenClaw notify fired → ${agent}`);
+    }
+}
+
+function brainHealerRestart(daemonLabel, stateKey) {
+    const uid = process.getuid();
+    const state = brainHealerState[stateKey];
+    const now = Date.now();
+    // Crash-loop guard
+    if (state.restartCount >= BRAIN_HEALER_MAX_RESTARTS) {
+        const elapsed = state.firstRestartAt ? (now - state.firstRestartAt) : Infinity;
+        if (elapsed < BRAIN_HEALER_WINDOW_MS) {
+            if (state.status !== 'escalated') {
+                state.status = 'escalated';
+                saveBrainHealerState();
+                console.log(`[BrainHealer] CRASH LOOP: ${daemonLabel} — escalating`);
+                postBrainAlertHub(daemonLabel, 'crash-loop-detected', `${daemonLabel} restarted ${state.restartCount}x in 5 min — needs manual intervention`, state.restartCount);
+            }
+            return;
+        } else {
+            // Window expired — reset counter
+            state.restartCount = 0; state.firstRestartAt = null;
+            saveBrainHealerState();
+        }
+    }
+    if (state.restartCount === 0) state.firstRestartAt = now;
+    state.restartCount++;
+    saveBrainHealerState();
+    state.status = 'restarting';
+    saveBrainHealerState();
+    console.log(`[BrainHealer] Restarting ${daemonLabel} (attempt ${state.restartCount})`);
+    exec(`launchctl kickstart -k gui/${uid}/${daemonLabel}`, { timeout: 10000 }, err => {
+        if (err) { console.error(`[BrainHealer] Restart failed: ${daemonLabel}:`, err.message); }
+        else {
+            console.log(`[BrainHealer] ✓ Restarted: ${daemonLabel}`);
+            state.status = 'ok';
+            saveBrainHealerState();
+        }
+    });
+}
+
+function runBrainHealerTick(memHealth, agentMemory) {
+    const now = Date.now();
+
+    // 90s startup grace — suppress all alerts during server warm-up
+    if (now - startTime < 90000) return;
+
+    // Seed Watcher
+    const swState = brainHealerState['seed-watcher'];
+    const swOk = memHealth && memHealth.seedWatcher && ['ok', 'stale'].includes(memHealth.seedWatcher.status);
+    if (!swOk && swState.status !== 'escalated') {
+        console.warn('[BrainHealer] Seed Watcher unhealthy — attempting restart');
+        brainHealerRestart('ai.dwe.seed-watcher', 'seed-watcher');
+    } else if (swOk && swState.status !== 'ok') {
+        swState.status = 'ok'; swState.restartCount = 0;
+        saveBrainHealerState();
+    }
+
+    // Pinecone (external — alert only, cooldown)
+    const pcState = brainHealerState['pinecone'];
+    const pcOk = memHealth && memHealth.pinecone && memHealth.pinecone.status === 'ok';
+    if (!pcOk && pcState.status !== 'escalated') {
+        const sinceLastAlert = pcState.lastAlertAt ? (now - pcState.lastAlertAt) : Infinity;
+        if (sinceLastAlert > BRAIN_ALERT_COOLDOWN_MS) {
+            pcState.lastAlertAt = now; pcState.status = 'escalated';
+            saveBrainHealerState();
+            postBrainAlertHub('Pinecone dwe-v3', 'external-service-down', 'Pinecone index unreachable — Brain queries will fail', 0);
+        }
+    } else if (pcOk && pcState.status !== 'ok') {
+        console.log('[BrainHealer] ✓ Pinecone recovered'); pcState.status = 'ok'; pcState.lastAlertAt = null;
+        saveBrainHealerState();
+    }
+
+    // MemPalace (alert only)
+    const mpState = brainHealerState['mempalace'];
+    // stale means the queue hasn't run recently — not unhealthy, just needs attention
+    const mpOk = memHealth && memHealth.mempalace && ['ok', 'stale'].includes(memHealth.mempalace.status);
+    if (!mpOk && mpState.status !== 'escalated') {
+        const sinceLastAlert = mpState.lastAlertAt ? (now - mpState.lastAlertAt) : Infinity;
+        if (sinceLastAlert > BRAIN_ALERT_COOLDOWN_MS) {
+            mpState.lastAlertAt = now; mpState.status = 'escalated';
+            saveBrainHealerState();
+            const lastRun = memHealth && memHealth.mempalace && memHealth.mempalace.lastWrite ? memHealth.mempalace.lastWrite.split('T')[0] : 'unknown';
+            postBrainAlertHub('MemPalace ChromaDB', 'service-stale', `MemPalace mining queue stalled — last run ${lastRun}`, 0);
+        }
+    } else if (mpOk && mpState.status !== 'ok') {
+        console.log('[BrainHealer] ✓ MemPalace recovered'); mpState.status = 'ok'; mpState.lastAlertAt = null;
+        saveBrainHealerState();
+    }
+
+    // Agent Memory (all stale >8h = alert)
+    const amState = brainHealerState['agent-memory'];
+    const agents = (agentMemory && agentMemory.agents) ? agentMemory.agents : [];
+    const allStale = agents.length > 0 && agents.every(a => a.status === 'red' || a.status === 'never');
+    if (allStale && amState.status !== 'escalated') {
+        const sinceLastAlert = amState.lastAlertAt ? (now - amState.lastAlertAt) : Infinity;
+        if (sinceLastAlert > BRAIN_ALERT_COOLDOWN_MS) {
+            amState.lastAlertAt = now; amState.status = 'escalated';
+            saveBrainHealerState();
+            const staleNames = agents.filter(a => a.status === 'red' || a.status === 'never').map(a => a.name).join(', ');
+            postBrainAlertHub('Agent Memory', 'all-agents-memory-stale', `All agents stale (>8h): ${staleNames}`, agents.length);
+        }
+    } else if (!allStale && amState.status !== 'ok') {
+        amState.status = 'ok'; amState.lastAlertAt = null;
+        saveBrainHealerState();
+    }
 }
 
 function getBrainStatus(req, res) {
@@ -7148,6 +7707,7 @@ const WS_BATCH_ENDPOINTS = [
     '/mc/daemon-health', '/mc/migration',
     '/mc/recurring-tasks', '/mc/openrouter-credits', '/mc/autoresearch',
     '/mc/content-intel', '/mc/openclaw-version', '/mc/sidney-devices',
+    '/mc/worldmonitor',
 ];
 
 async function wsPushBatch() {
@@ -7184,7 +7744,8 @@ function wsPushJakeInbox()  { return wsPushSingle('jake-inbox',       '/mc/jake-
 function wsPushPipeline()   { return wsPushSingle('pipeline-push',    '/mc/pipeline'); }
 function wsPushYtIntel()    { return wsPushSingle('yt-intel',         '/mc/content-intel'); }
 function wsPushMeeting()    { return wsPushSingle('meeting-status',   '/mc/meeting-status'); }
-function wsPushOpsBoard()   { return wsPushSingle('ops-board',         '/mc/ops-board'); }
+function wsPushOpsBoard()      { return wsPushSingle('ops-board',      '/mc/ops-board'); }
+function wsPushWorldMonitor()  { return wsPushSingle('worldmonitor',   '/mc/worldmonitor'); }
 
 async function wsPushVisionScore() {
     if (wss.clients.size === 0) return;
@@ -7218,6 +7779,7 @@ wss.on('connection', (ws, req) => {
     wsPushMeeting();
     wsPushVisionScore();
     wsPushOpsBoard();
+    wsPushBrainMemory();
     ws.on('error', () => {});
     ws.on('close', () => console.log('[WS] Client disconnected'));
 });
@@ -7250,6 +7812,23 @@ setInterval(wsPushJakeInbox, 300000);
 setInterval(wsPushVisionScore, 300000);
 // Push ops board every 30s (real-time status board)
 setInterval(wsPushOpsBoard, 30000);
+setInterval(wsPushWorldMonitor, 60000);
+// Push brain/memory every 60s
+async function wsPushBrainMemory() {
+    const [memHealth, agentMemory, brainComms, brainFailures] = await Promise.all([
+        localFetch('/mc/mempalace-health'),
+        localFetch('/mc/agent-memory-status'),
+        localFetch('/mc/brain-comms'),
+        localFetch('/mc/brain-failures'),
+    ]);
+    // Run healer on every cycle regardless of WS clients
+    runBrainHealerTick(memHealth, agentMemory);
+    if (wss.clients.size === 0) return;
+    wsBroadcast('brain-memory', { memHealth, agentMemory, brainComms, brainFailures, healerState: brainHealerState });
+}
+setInterval(wsPushBrainMemory, 60000);
+// Run healer immediately on boot — don't wait for first WS client
+setTimeout(() => wsPushBrainMemory(), 20000);
 
 console.log('[WS] WebSocket server ready at ws://localhost:' + PORT + '/ws');
 

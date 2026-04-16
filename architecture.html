@@ -302,7 +302,7 @@
 </div>
 
 <h1><span>DWE</span> — Core Platform Architecture</h1>
-<p class="subtitle">Digital Workforce Ecosystem &bull; v3.12 &bull; 72 Daemons &bull; 6 AI Agents + Jarvis &bull; WorldMonitor Layer &bull; Active Brain</p>
+<p class="subtitle">Digital Workforce Ecosystem &bull; v3 &bull; 11 AI Agents + Jarvis &bull; WorldMonitor Layer &bull; Active Brain &bull; 3-Layer Memory</p>
 
 <div class="diagram">
 
@@ -330,7 +330,7 @@
   <div class="layer l-interface">
     <div class="layer-label">User Interfaces</div>
     <div class="layer-row">
-      <div class="box">Telegram Group<div class="detail">6 Topics / 6 Bots</div></div>
+      <div class="box">Telegram DMs<div class="detail">Direct only / 6 Bots</div></div>
       <div class="box">Mission Control<div class="detail">Port 8899 / Node.js</div></div>
       <div class="box">CEO Corner<div class="detail">Comms Center / Email</div></div>
       <div class="box">Claude Code CLI<div class="detail">Jarvis / Terminal</div></div>
@@ -341,7 +341,7 @@
 
   <!-- Gateway -->
   <div class="l-gateway">
-    OpenClaw Gateway <small>Port 18789 &bull; REST/HTTPS &bull; Token Auth &bull; v2026.3.13</small>
+    OpenClaw Gateway <small>Port 3000 &bull; REST/WS &bull; Token Auth &bull; LiteLLM :4000 &bull; Ollama :11434</small>
   </div>
 
   <!-- Main Content: Side Layout -->
@@ -352,21 +352,28 @@
 
       <!-- Agent Layer -->
       <div class="layer l-agents">
-        <div class="layer-label">AI Agent Layer — Command Staff</div>
+        <div class="layer-label">AI Agent Layer — Specialists</div>
+        <div class="layer-row">
+          <div class="box" style="border-color:#06b6d455;color:#06b6d4;">Herald<div class="detail">SEO / Content</div></div>
+          <div class="box" style="border-color:#22c55e55;color:#22c55e;">Jake<div class="detail">Pipeline / Sales</div></div>
+          <div class="box" style="border-color:#a855f755;color:#a855f7;">Nicole<div class="detail">CIO / Revenue</div></div>
+          <div class="box" style="border-color:#ec489955;color:#ec4899;">Spark<div class="detail">Social / Traffic</div></div>
+          <div class="box" style="border-color:#ef444455;color:#ef4444;">Victor<div class="detail">QA</div></div>
+        </div>
+        <div class="layer-label" style="margin-top:10px;">Command Staff</div>
         <div class="layer-row">
           <div class="box">Steve<div class="detail">CTO / Tech & Infra</div></div>
-          <div class="box">CE<div class="detail">Chief Engineer / Builds</div></div>
+          <div class="box">CE<div class="detail">Chief Engineer</div></div>
           <div class="box">Anita<div class="detail">COO / PM Owner</div></div>
-          <div class="box">Nicole<div class="detail">CIO / Revenue Intel</div></div>
           <div class="box">Fran<div class="detail">CFO / Finance</div></div>
-          <div class="box">Main<div class="detail">Coordinator</div></div>
-          <div class="box" style="border-color: #f59e0b55; color: #f5c842;">Jarvis<div class="detail">Execution / Claude Code</div></div>
+          <div class="box">Sarah<div class="detail">CEO Assistant</div></div>
+          <div class="box" style="border-color:#f59e0b55;color:#f5c842;">Jarvis<div class="detail">Execution / Claude Code</div></div>
         </div>
       </div>
 
-      <!-- WORLDMONITOR LAYER — NEW -->
+      <!-- WORLDMONITOR LAYER -->
       <div class="layer l-worldmonitor">
-        <div class="ribbon">NEW</div>
+        <div class="ribbon">LIVE</div>
         <div class="layer-label">WorldMonitor Intelligence — External Intel Substrate</div>
         <div class="layer-row">
           <div class="box">Finviz Insider<div class="detail">~200 signals/day</div></div>
@@ -377,13 +384,13 @@
         </div>
       </div>
 
-      <!-- BRAIN LAYER — NEW (Active Intelligence) -->
+      <!-- BRAIN LAYER (Active Intelligence) -->
       <div class="layer l-brain">
         <div class="ribbon">ACTIVE</div>
-        <div class="layer-label">The Brain — Active Intelligence Layer (Pinecone dwe-v2)</div>
+        <div class="layer-label">The Brain — Active Intelligence Layer (Pinecone dwe-v3)</div>
         <div class="layer-row">
-          <div class="box">Vector Index<div class="detail">1,247 vectors / 768-dim</div></div>
-          <div class="box">Nightly Seed<div class="detail">2am / ai.dwe.nightly-review</div></div>
+          <div class="box">Vector Index<div class="detail">12,729 vectors / 768-dim</div></div>
+          <div class="box">Nightly Seed<div class="detail">Seed Watcher / auto-ingest</div></div>
           <div class="box">Real-Time Ingest<div class="detail">n8n VPS → Pinecone</div></div>
           <div class="box">brain_query.sh<div class="detail">All agents query here</div></div>
           <div class="box">Outcome Loop<div class="detail">Stripe → EspoCRM → Brain</div></div>
@@ -446,7 +453,7 @@
       <div class="layer l-data">
         <div class="layer-label">Data Stores</div>
         <div class="layer-row">
-          <div class="box">Pinecone dwe-v2<div class="detail">1,247 vectors / Brain</div></div>
+          <div class="box">Pinecone dwe-v3<div class="detail">12,729 vectors / Brain</div></div>
           <div class="box">Notion Database<div class="detail">Task Lifecycle / TAS-####</div></div>
           <div class="box">Google Sheets<div class="detail">IncomeOps / Revenue SOT</div></div>
           <div class="box">EspoCRM<div class="detail">Lead Pipeline / OPP-33</div></div>
@@ -479,9 +486,36 @@
         <h4 style="color: #f59e0b;">LLM Stack</h4>
         <ul>
           <li>miniMax M2.7 (primary)</li>
-          <li>Ollama qwen2.5:7b</li>
-          <li>Ollama qwen2.5:3b</li>
+          <li>kimi-k2.5 (smart)</li>
+          <li>OpenRouter/auto (fallback)</li>
+          <li>qwen2.5:7b (local)</li>
           <li>nomic-embed-text</li>
+        </ul>
+      </div>
+      <div class="side-box" style="background: #0d1020; border: 1px solid #1a3a6a;">
+        <h4 style="color: #60a5fa;">Documentation</h4>
+        <ul>
+          <li><a href="https://www.notion.so/DWE-Intelligence-Vision-34397f89912980a88395d7082b6c8323" target="_blank" style="color:#60a5fa;text-decoration:none;">Intelligence Vision (Notion)</a></li>
+          <li><a href="/architecture" style="color:#60a5fa;text-decoration:none;">Platform Architecture</a></li>
+          <li><a href="/agents" style="color:#60a5fa;text-decoration:none;">Agent Registry</a></li>
+          <li><a href="/pipelines" style="color:#60a5fa;text-decoration:none;">Funnel Calculator</a></li>
+        </ul>
+        <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.06em;margin:0.6rem 0 0.3rem;">OpenClaw Arch Docs</div>
+        <ul style="font-size:0.72rem;">
+          <li><a href="/arch-doc/README" style="color:#93c5fd;text-decoration:none;">README — Overview</a></li>
+          <li><a href="/arch-doc/agents" style="color:#93c5fd;text-decoration:none;">Agents</a></li>
+          <li><a href="/arch-doc/traffic-skill-inventory" style="color:#93c5fd;text-decoration:none;">Traffic &amp; Skill Inventory</a></li>
+          <li><a href="/arch-doc/dw_control_sheet" style="color:#93c5fd;text-decoration:none;">DW Control Sheet</a></li>
+          <li><a href="/arch-doc/email" style="color:#93c5fd;text-decoration:none;">Email Infrastructure</a></li>
+          <li><a href="/arch-doc/network" style="color:#93c5fd;text-decoration:none;">Network / Tailscale</a></li>
+          <li><a href="/arch-doc/docker" style="color:#93c5fd;text-decoration:none;">Docker / n8n</a></li>
+          <li><a href="/arch-doc/vps" style="color:#93c5fd;text-decoration:none;">VPS</a></li>
+          <li><a href="/arch-doc/api-keys" style="color:#93c5fd;text-decoration:none;">API Keys</a></li>
+          <li><a href="/arch-doc/error-escalation" style="color:#93c5fd;text-decoration:none;">Error Escalation</a></li>
+          <li><a href="/arch-doc/service-classification" style="color:#93c5fd;text-decoration:none;">Service Classification</a></li>
+          <li><a href="/arch-doc/funnel-swarm-architecture" style="color:#93c5fd;text-decoration:none;">Funnel Swarm Architecture</a></li>
+          <li><a href="/arch-doc/loan-broker-pipeline" style="color:#93c5fd;text-decoration:none;">Loan Broker Pipeline</a></li>
+          <li><a href="/arch-doc/sales-pipeline-swarm-architecture" style="color:#93c5fd;text-decoration:none;">Sales Pipeline Swarm</a></li>
         </ul>
       </div>
     </div>
@@ -531,7 +565,7 @@
   <div class="legend-item"><div class="legend-dot dot-memory"></div>Memory Architecture</div>
 </div>
 
-<p class="version">DWE Platform v3.12 &bull; WorldMonitor + Active Brain + 3-Layer Memory &bull; OpenClaw 2026.3.13 &bull; Mac Mini M2 &bull; Updated 2026-04-14</p>
+<p class="version">DWE Platform v3 &bull; 11 Agents + Jarvis &bull; Pinecone dwe-v3 (12,729 vectors) &bull; WorldMonitor + Brain + 3-Layer Memory &bull; Mac Mini M4 &bull; Updated 2026-04-15</p>
 
 </body>
 </html>

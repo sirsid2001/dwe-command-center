@@ -1,0 +1,19 @@
+{
+  "tags": {
+    "brain-memory-health": "Brain",
+    "brain-agent-memory": "Brain",
+    "brain-comms-feed": "Brain",
+    "brain-failures": "Brain",
+    "brain-layer-flow": "Brain",
+    "brain-layer-stack": "Brain",
+    "stat-brain": "Brain",
+    "stat-uptime": "System",
+    "stat-system": "System",
+    "stat-revenue": "Revenue",
+    "stat-pipeline": "Pipeline",
+    "stat-agents": "AI Team",
+    "stat-sprint": "Ops",
+    "stat-n8n": "Ops"
+  },
+  "availableTags": ["Brain", "System", "Revenue", "Pipeline", "Intel", "Ops", "AI Team"]
+}

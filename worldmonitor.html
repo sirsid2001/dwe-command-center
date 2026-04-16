@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorldMonitor — DWE Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #07091a;
+    color: rgba(255,255,255,0.87);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 52px 20px 40px 60px;
+  }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+  h2 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+  .subtitle { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
+  .header { margin-bottom: 22px; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: rgba(245,166,35,0.12);
+    border: 1px solid rgba(245,166,35,0.35);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .alert-banner.has-alerts { display: block; }
+  .alert-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #F5A623;
+    margin-bottom: 8px;
+  }
+  .alert-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(245,166,35,0.12);
+    flex-wrap: wrap;
+  }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-ticker { font-weight: 700; font-size: 0.88rem; color: #F5A623; min-width: 52px; }
+  .alert-chip {
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.6);
+  }
+  .alert-score { font-weight: 600; color: #F5A623; font-size: 0.82rem; }
+  .btn-jake {
+    margin-left: auto;
+    background: rgba(245,166,35,0.18);
+    border: 1px solid rgba(245,166,35,0.4);
+    border-radius: 6px;
+    color: #F5A623;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: Inter, sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-jake:hover { background: rgba(245,166,35,0.28); }
+  .btn-jake.sent { background: rgba(80,200,120,0.15); border-color: rgba(80,200,120,0.4); color: #50c878; }
+
+  /* Two-column row */
+  .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  /* Signal table */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(255,255,255,0.35);
+    padding: 0 8px 8px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  td {
+    padding: 7px 8px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.75);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.score-high td { background: rgba(245,166,35,0.06); }
+  tr.score-mid td { background: rgba(255,220,80,0.04); }
+  .score-badge {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .score-badge.high { color: #F5A623; background: rgba(245,166,35,0.15); }
+  .score-badge.mid  { color: #e8d44d; background: rgba(232,212,77,0.12); }
+  .score-badge.low  { color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.06); }
+  .source-tag {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+  }
+  .action-buy  { color: #50c878; font-weight: 600; }
+  .action-sell { color: #f06060; font-weight: 600; }
+
+  /* Source breakdown */
+  .source-card { margin-bottom: 12px; }
+  .source-card:last-child { margin-bottom: 0; }
+  .source-name { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .source-stats { display: flex; gap: 14px; font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-bottom: 5px; }
+  .source-stats span b { color: rgba(255,255,255,0.75); font-weight: 600; }
+  .bar-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; }
+  .bar-fill  { height: 4px; border-radius: 2px; background: #F5A623; transition: width 0.4s; }
+
+  /* Sector grid */
+  .sector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .sector-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .sector-name { font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+  .sector-stats { font-size: 0.68rem; color: rgba(255,255,255,0.4); }
+  .sector-stats b { color: rgba(255,255,255,0.7); }
+
+  /* Status bar */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 28px;
+    background: rgba(7,9,26,0.95);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 16px 0 60px;
+    gap: 18px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.3);
+    z-index: 100;
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #50c878; display: inline-block; margin-right: 5px; }
+  .status-dot.stale { background: #f06060; }
+
+  /* Loading state */
+  .loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.3); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<!-- Hamburger nav (shared) -->
+<div id="nav-hamburger" onclick="toggleNavMenu()" title="Navigate" style="position:fixed;top:14px;left:14px;z-index:9999;width:34px;height:34px;background:rgba(20,25,70,0.85);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(30,36,100,0.95)'" onmouseout="this.style.background='rgba(20,25,70,0.85)'">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="pointer-events:none;">
+    <rect y="2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+    <rect y="7.1" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+    <rect y="12.2" width="16" height="1.8" rx="0.9" fill="rgba(255,255,255,0.75)"/>
+  </svg>
+</div>
+<div id="nav-menu" style="display:none;position:fixed;top:54px;left:14px;z-index:9998;background:rgba(16,20,60,0.97);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:6px 4px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45);font-family:Inter,sans-serif;">
+  <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;padding:4px 10px 6px;">Navigate</div>
+  <a href="/" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">⚡</span> Command Center</a>
+  <a href="/revenue" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">💰</span> Revenue</a>
+  <a href="/pipelines" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔁</span> Pipelines</a>
+  <a href="/ai-team" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🤖</span> AI Team</a>
+  <a href="/ecosystem" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🌐</span> Ecosystem</a>
+  <a href="/n8n-workflows" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔧</span> n8n Workflows</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/vision" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔮</span> Vision</a>
+  <a href="/ceo-corner" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">👔</span> CEO Productivity</a>
+  <a href="/daily-briefing" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗓️</span> Daily Briefing</a>
+  <a href="/delegations" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📋</span> Delegations</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/architecture" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Architecture</a>
+  <a href="/dataflow" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📊</span> Data Flow</a>
+  <a href="/n8n-map" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗺️</span> n8n Map</a>
+  <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
+  <a href="/worldmonitor" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:#fff;text-decoration:none;font-size:0.78rem;font-weight:600;background:rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.14)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><span style="font-size:0.9rem;">📡</span> WorldMonitor</a>
+  <a href="/ecosystem-arch" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Ecosystem Arch</a>
+</div>
+
+<!-- Main content -->
+<div class="header">
+  <h1>📡 WorldMonitor Intelligence</h1>
+  <div class="subtitle" id="subtitle">Loading signal data…</div>
+</div>
+
+<div id="alert-banner" class="alert-banner">
+  <div class="alert-title" id="alert-title"></div>
+  <div id="alert-rows"></div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Top 20 Signals</h2>
+    <div id="signals-table"><div class="loading">Loading…</div></div>
+  </div>
+  <div class="card">
+    <h2>Source Breakdown</h2>
+    <div id="sources-panel"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Top Movers by Sector</h2>
+  <div id="sectors-grid" class="sector-grid"><div class="loading">Loading…</div></div>
+</div>
+
+<div class="status-bar">
+  <span><span class="status-dot" id="status-dot"></span><span id="status-text">Connecting…</span></span>
+  <span id="status-total"></span>
+  <span id="status-alerts"></span>
+  <span id="status-updated"></span>
+</div>
+
+<script>
+const SOURCE_LABELS = {
+  finviz_insider:    'Finviz Insider',
+  capitol_trades:    'Capitol Trades',
+  quiver_quant:      'Quiver Quant',
+  snowtrace_wallets: 'Snowtrace Wallets'
+};
+
+function fmtAmt(v) {
+  if (!v) return '—';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+  return '$' + v.toLocaleString();
+}
+
+function scoreClass(s) {
+  if (s >= 12) return 'high';
+  if (s >= 9)  return 'mid';
+  return 'low';
+}
+
+function renderData(data) {
+  // Subtitle
+  const ts = data.generated_at ? new Date(data.generated_at).toLocaleTimeString() : '—';
+  document.getElementById('subtitle').textContent =
+    `Live signal feed from Smart Money pipeline · ${data.total_signals || 0} signals · updated ${ts}`;
+  document.getElementById('status-dot').className = 'status-dot';
+  document.getElementById('status-text').textContent = 'Live';
+  document.getElementById('status-total').textContent = `${data.total_signals || 0} signals`;
+  document.getElementById('status-alerts').textContent = `${(data.alerts||[]).length} alerts`;
+  document.getElementById('status-updated').textContent = `Updated ${ts}`;
+
+  // Alerts
+  const alerts = data.alerts || [];
+  const banner = document.getElementById('alert-banner');
+  const alertTitle = document.getElementById('alert-title');
+  const alertRows = document.getElementById('alert-rows');
+  if (alerts.length > 0) {
+    banner.classList.add('has-alerts');
+    alertTitle.textContent = `⚠ ${alerts.length} HIGH-PRIORITY SIGNAL${alerts.length>1?'S':''} (score ≥ ${data.alert_threshold || 12})`;
+    alertRows.innerHTML = alerts.map((s,i) => `
+      <div class="alert-row">
+        <span class="alert-ticker">${s.ticker||'—'}</span>
+        <span class="alert-chip">${SOURCE_LABELS[s.source]||s.source}</span>
+        <span class="alert-chip ${s.action==='BUY'?'':''}"><span class="${s.action==='BUY'?'action-buy':'action-sell'}">${s.action||'—'}</span></span>
+        <span class="alert-chip">${fmtAmt(s.amount_usd)}</span>
+        <span class="alert-score">Score: ${s.score.toFixed(2)}</span>
+        ${s.meta && s.meta.owner ? `<span style="font-size:0.7rem;color:rgba(255,255,255,0.4)">${s.meta.owner}</span>` : ''}
+        <button class="btn-jake" onclick="routeToJake(this, ${i})" data-signal='${JSON.stringify(s).replace(/'/g,"&#39;")}'>Route to Jake</button>
+      </div>
+    `).join('');
+  } else {
+    banner.classList.remove('has-alerts');
+  }
+
+  // Top 20 signals table
+  const signals = data.top_signals || [];
+  document.getElementById('signals-table').innerHTML = signals.length ? `
+    <table>
+      <thead><tr>
+        <th>Score</th><th>Ticker</th><th>Source</th><th>Action</th><th>Amount</th><th>Date</th>
+      </tr></thead>
+      <tbody>
+        ${signals.map(s => `
+          <tr class="${s.score>=12?'score-high':s.score>=9?'score-mid':''}">
+            <td><span class="score-badge ${scoreClass(s.score)}">${s.score.toFixed(2)}</span></td>
+            <td style="font-weight:600">${s.ticker||'—'}</td>
+            <td><span class="source-tag">${SOURCE_LABELS[s.source]||s.source}</span></td>
+            <td><span class="${s.action==='BUY'?'action-buy':'action-sell'}">${s.action||'—'}</span></td>
+            <td>${fmtAmt(s.amount_usd)}</td>
+            <td style="color:rgba(255,255,255,0.4)">${s.date||'—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  ` : '<div class="loading">No signal data</div>';
+
+  // Sources panel
+  const sources = data.sources || {};
+  const maxCount = Math.max(...Object.values(sources).map(s => s.signal_count || 0), 1);
+  document.getElementById('sources-panel').innerHTML = Object.entries(sources).map(([key, s]) => `
+    <div class="source-card">
+      <div class="source-name">${SOURCE_LABELS[key]||key}</div>
+      <div class="source-stats">
+        <span><b>${s.signal_count||0}</b> signals</span>
+        <span>avg <b>${(s.avg_score||0).toFixed(2)}</b></span>
+        <span>max <b>${(s.max_score||0).toFixed(2)}</b></span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((s.signal_count||0)/maxCount*100)}%"></div></div>
+    </div>
+  `).join('') || '<div class="loading">No source data</div>';
+
+  // Sectors grid — sort by avg_score desc, Unclassified last
+  const sectors = data.sectors || {};
+  const sorted = Object.entries(sectors).sort((a,b) => {
+    if (a[0]==='Unclassified') return 1;
+    if (b[0]==='Unclassified') return -1;
+    return b[1].avg_score - a[1].avg_score;
+  });
+  document.getElementById('sectors-grid').innerHTML = sorted.length ? sorted.map(([name, s]) => `
+    <div class="sector-card">
+      <div class="sector-name">${name}</div>
+      <div class="sector-stats"><b>${s.count}</b> signals · avg <b>${s.avg_score}</b></div>
+    </div>
+  `).join('') : '<div class="loading">No sector data</div>';
+}
+
+function routeToJake(btn, idx) {
+  const signal = JSON.parse(btn.dataset.signal);
+  btn.textContent = 'Routing…';
+  btn.disabled = true;
+  fetch('/mc/route-to-jake', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(signal)
+  })
+  .then(r => r.json())
+  .then(d => {
+    btn.textContent = d.ok ? 'Sent to Jake' : 'Failed';
+    btn.className = d.ok ? 'btn-jake sent' : 'btn-jake';
+    btn.disabled = false;
+  })
+  .catch(() => { btn.textContent = 'Error'; btn.disabled = false; });
+}
+
+// Initial load
+fetch('/mc/worldmonitor')
+  .then(r => r.json())
+  .then(renderData)
+  .catch(() => {
+    document.getElementById('status-dot').className = 'status-dot stale';
+    document.getElementById('status-text').textContent = 'No data';
+    document.getElementById('subtitle').textContent = 'Could not load signal data';
+  });
+
+// WebSocket live updates
+(function() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  ws.onmessage = function(e) {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'worldmonitor' && msg.data) renderData(msg.data);
+      if (msg.type === 'batch' && msg.data && msg.data['/mc/worldmonitor']) renderData(msg.data['/mc/worldmonitor']);
+    } catch(err) {}
+  };
+  ws.onerror = function() {
+    document.getElementById('status-dot').className = 'status-dot stale';
+  };
+})();
+
+// Nav helpers
+function toggleNavMenu() {
+  var m = document.getElementById('nav-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function closeNavMenu() {
+  document.getElementById('nav-menu').style.display = 'none';
+}
+document.addEventListener('click', function(e) {
+  var ham = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('nav-menu');
+  if (menu.style.display !== 'none' && !ham.contains(e.target) && !menu.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

@@ -996,6 +996,50 @@
         [data-theme="css6"] .health-status.ok { color: #22c55e; }
         [data-theme="css6"] .mini-conn.online { stroke: #8b5cf6; }
     </style>
+    <!-- React 18 CDN (no build step) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <style>
+        /* Panel tag chip (inline, before title) */
+        .panel-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0; }
+        .panel-header .panel-title { font-size:0.75rem; font-weight:700; color:#ffffff; letter-spacing:0.02em; }
+        .panel-tag-chip {
+            display:inline-flex; align-items:center; gap:0.2rem;
+            font-size:0.58rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase;
+            padding:2px 7px; border-radius:4px;
+            background:rgba(168,85,247,0.15); color:rgba(168,85,247,0.85);
+            border:1px solid rgba(168,85,247,0.25);
+            cursor:pointer; flex-shrink:0; user-select:none;
+            transition:background 0.15s, color 0.15s;
+        }
+        .panel-tag-chip:hover { background:rgba(168,85,247,0.28); color:#c084fc; }
+        .panel-tag-chip::before { content:'#'; opacity:0.6; font-size:0.55rem; }
+        /* Panel tag dropdown */
+        .panel-tag-dropdown { position:fixed; z-index:9999; background:#1e2130; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.35rem; min-width:130px; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+        .panel-tag-dropdown button { display:block; width:100%; text-align:left; background:none; border:none; color:rgba(255,255,255,0.75); font-family:Inter,sans-serif; font-size:0.72rem; padding:0.3rem 0.6rem; border-radius:5px; cursor:pointer; transition:background 0.15s; }
+        .panel-tag-dropdown button:hover { background:rgba(255,255,255,0.08); color:#fff; }
+        .panel-tag-dropdown button.active { color:#a855f7; font-weight:600; }
+        /* Brain panel agent badge */
+        .agent-mem-badge { display:flex; align-items:center; gap:0.3rem; padding:0.28rem 0.45rem; border-radius:5px; font-size:0.68rem; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); }
+        .agent-mem-badge .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .agent-mem-badge .name { color:rgba(255,255,255,0.7); font-weight:500; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .agent-mem-badge .age { color:rgba(255,255,255,0.35); font-size:0.62rem; white-space:nowrap; }
+        /* Brain comms feed item */
+        .brain-evt { display:flex; align-items:flex-start; gap:0.35rem; padding:0.22rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.67rem; }
+        .brain-evt:last-child { border-bottom:none; }
+        .brain-evt .evt-dot { width:5px; height:5px; border-radius:50%; margin-top:0.28rem; flex-shrink:0; }
+        .brain-evt .evt-ts { color:rgba(255,255,255,0.25); white-space:nowrap; min-width:40px; }
+        .brain-evt .evt-txt { color:rgba(255,255,255,0.6); line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+        /* Brain failure item */
+        .brain-fail-item { padding:0.25rem 0.4rem; border-radius:5px; background:rgba(220,38,38,0.08); border:1px solid rgba(220,38,38,0.2); font-size:0.65rem; color:rgba(255,180,180,0.85); line-height:1.4; }
+        .brain-fail-item .fail-src { font-weight:600; color:#fca5a5; margin-right:0.3rem; }
+        .brain-fail-item .fail-ts { color:rgba(255,255,255,0.3); font-size:0.6rem; }
+        /* Layer flow SVG arrows */
+        @keyframes flowPulse { 0%,100%{opacity:0.3;transform:scaleX(0.95);} 50%{opacity:1;transform:scaleX(1);} }
+        .flow-arrow-active { animation: flowPulse 2s ease-in-out infinite; }
+        /* Memory layer section divider */
+        .brain-section-divider { grid-column:span 3; display:flex; align-items:center; gap:0.75rem; margin:0.1rem 0 -0.1rem; }
+    </style>
 </head>
 <body>
     <svg width="0" height="0">
@@ -1023,20 +1067,24 @@
         </svg>
     </div>
     <div id="nav-menu" style="display:none;position:fixed;top:54px;left:14px;z-index:9998;background:rgba(16,20,60,0.97);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:6px 4px;min-width:190px;box-shadow:0 8px 32px rgba(0,0,0,0.45);font-family:Inter,sans-serif;">
-        <div style="font-size:0.6rem;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px;padding:4px 10px 6px;">Navigate</div>
+        <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.1px;padding:4px 10px 5px;font-weight:600;">Command</div>
         <a href="/" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">⚡</span> Command Center</a>
-        <a href="/revenue" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">💰</span> Revenue</a>
-        <a href="/pipelines" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔁</span> Pipelines</a>
-        <a href="/ai-team" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🤖</span> AI Team</a>
-        <a href="/ecosystem" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🌐</span> Ecosystem</a>
-        <a href="/n8n-workflows" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔧</span> n8n Workflows</a>
-        <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
-        <a href="/vision" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔮</span> Vision</a>
-        <a href="/ceo-corner" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">👔</span> CEO Productivity</a>
         <a href="/daily-briefing" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗓️</span> Daily Briefing</a>
         <a href="/delegations" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📋</span> Delegations</a>
-        <div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 8px;"></div>
-        <a href="/architecture" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Architecture</a>
+        <a href="/ai-team" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🤖</span> AI Team</a>
+        <a href="/ceo-corner" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">👔</span> CEO Productivity</a>
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin:5px 8px;"></div>
+        <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.1px;padding:4px 10px 5px;font-weight:600;">Strategy & Intelligence</div>
+        <a href="/vision" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔮</span> Vision</a>
+        <a href="/insider-signals" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📈</span> Insider Signals</a>
+        <a href="/revenue" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">💰</span> Revenue</a>
+        <a href="/pipelines" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔁</span> Pipelines</a>
+        <a href="/ecosystem" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🌐</span> Ecosystem</a>
+        <div style="height:1px;background:rgba(255,255,255,0.06);margin:5px 8px;"></div>
+        <div style="font-size:0.58rem;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:1.1px;padding:4px 10px 5px;font-weight:600;">Infrastructure</div>
+        <a href="/ecosystem-arch" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🏗️</span> Ecosystem Arch</a>
+        <a href="/n8n-workflows" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🔧</span> n8n Workflows</a>
+        <a href="/architecture" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📐</span> Architecture</a>
         <a href="/dataflow" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">📊</span> Data Flow</a>
         <a href="/n8n-map" onclick="closeNavMenu()" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.78rem;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'"><span style="font-size:0.9rem;">🗺️</span> n8n Map</a>
     </div>
@@ -1166,9 +1214,9 @@
 
             <!-- Stat Cards — Top 4 on one row -->
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;">
-                <div class="stat-card success">
+                <div class="stat-card success" id="stat-server-card" data-panel-tag="System">
                     <div class="stat-content">
-                        <div class="stat-label">Server Status</div>
+                        <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-server-card',event)" data-panel-id="stat-server-card">System</span><span class="panel-title">Server Status</span></div>
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-server" style="color: #00ff88;">Online</div>
                         </div>
@@ -1176,9 +1224,9 @@
                     </div>
                     <div class="stat-icon">🟢</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" id="stat-agents-card" data-panel-tag="System">
                     <div class="stat-content">
-                        <div class="stat-label">Active Agents</div>
+                        <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-agents-card',event)" data-panel-id="stat-agents-card">System</span><span class="panel-title">Active Agents</span></div>
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-agents">6</div>
                         </div>
@@ -1186,9 +1234,9 @@
                     </div>
                     <div class="stat-icon">🤖</div>
                 </div>
-                <div class="stat-card danger">
+                <div class="stat-card danger" id="stat-tasks-card" data-panel-tag="Ops">
                     <div class="stat-content">
-                        <div class="stat-label">Tasks In Progress</div>
+                        <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-tasks-card',event)" data-panel-id="stat-tasks-card">Ops</span><span class="panel-title">Tasks In Progress</span></div>
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-inprogress">—</div>
                         </div>
@@ -1196,9 +1244,9 @@
                     </div>
                     <div class="stat-icon">📋</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" id="stat-jarvis-card" data-panel-tag="Ops">
                     <div class="stat-content">
-                        <div class="stat-label">Jarvis Delegations</div>
+                        <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-jarvis-card',event)" data-panel-id="stat-jarvis-card">Ops</span><span class="panel-title">Jarvis Delegations</span></div>
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-jarvis-today" style="color:#7B61FF;">—</div>
                         </div>
@@ -1209,9 +1257,9 @@
             </div>
             <!-- Brain Row -->
             <div class="stats-grid">
-                <div class="stat-card brain" style="padding:1.2rem 1.3rem;">
+                <div class="stat-card brain" id="stat-brain-card" data-panel-tag="Brain" style="padding:1.2rem 1.3rem;">
                     <div class="stat-content">
-                        <div class="stat-label" style="margin-bottom:0.5rem;">Brain Knowledge</div>
+                        <div class="panel-header" style="margin-bottom:0.5rem;"><span class="panel-tag-chip" onclick="openTagMenu('stat-brain-card',event)" data-panel-id="stat-brain-card">Brain</span><span class="panel-title">Brain Knowledge</span></div>
                         <div class="stat-value-row">
                             <div class="stat-value" id="stat-brain-score" style="color: #b829dd;">—%</div>
                             <div style="font-size:0.72rem; color:rgba(255,255,255,0.4); margin-left:0.5rem; align-self:flex-end; padding-bottom:2px;" id="stat-brain-pages">— / — pages</div>
@@ -1236,9 +1284,9 @@
                 </div>
 
                 <!-- Ask the DWE Brain — question tile -->
-                <div class="stat-card" style="border-left-color:#00f5ff; padding:1.15rem 1.2rem; display:flex; flex-direction:column;">
+                <div class="stat-card" id="stat-brain-query-card" data-panel-tag="Brain" style="border-left-color:#00f5ff; padding:1.15rem 1.2rem; display:flex; flex-direction:column;">
                     <div class="stat-content" style="width:100%; display:flex; flex-direction:column; flex:1;">
-                        <div class="stat-label" style="margin-bottom:0.5rem;">Ask the DWE Brain</div>
+                        <div class="panel-header" style="margin-bottom:0.5rem;"><span class="panel-tag-chip" onclick="openTagMenu('stat-brain-query-card',event)" data-panel-id="stat-brain-query-card">Brain</span><span class="panel-title">Ask the DWE Brain</span></div>
                         <div style="display:flex; flex-direction:column; flex:1;">
                             <textarea id="brain-query-input" placeholder="Ask anything about DWE..."
                                 onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); brainQuery(); }"
@@ -1251,10 +1299,10 @@
                 </div>
 
                 <!-- Brain Answer tile -->
-                <div class="stat-card" style="border-left-color:#b829dd; padding:1.15rem 1.2rem;">
+                <div class="stat-card" id="stat-brain-response-card" data-panel-tag="Brain" style="border-left-color:#b829dd; padding:1.15rem 1.2rem;">
                     <div class="stat-content" style="width:100%;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.65rem;">
-                            <div class="stat-label" style="margin-bottom:0;">DWE Brain Response</div>
+                            <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-brain-response-card',event)" data-panel-id="stat-brain-response-card">Brain</span><span class="panel-title">DWE Brain Response</span></div>
                             <div style="display:flex; gap:0.45rem;">
                                 <button onclick="openDriveInFinder()"
                                     style="font-size:0.65rem; padding:5px 10px; background:rgba(0,245,255,0.1); border:1px solid rgba(0,245,255,0.25); border-radius:4px; color:#00f5ff; cursor:pointer;">
@@ -1285,11 +1333,121 @@
                 </div>
 
 
+                <!-- ══════════════════════════════════════════════════════════════ -->
+                <!-- BRAIN / MEMORY LAYER — 5 panels                              -->
+                <!-- ══════════════════════════════════════════════════════════════ -->
+
+                <!-- Section label -->
+                <div style="grid-column:span 3; display:flex; align-items:center; gap:0.75rem; margin-top:0.25rem; margin-bottom:-0.25rem;">
+                    <div style="flex:1; height:1px; background:linear-gradient(90deg,rgba(168,85,247,0.5),transparent);"></div>
+                    <span style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:rgba(168,85,247,0.75);">🧠 Brain &amp; Memory Layer</span>
+                    <span id="brain-healer-badge" style="display:none; font-size:0.58rem; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.05em;"></span>
+                    <div style="flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(168,85,247,0.5));"></div>
+                </div>
+
+                <!-- Row 1: 4 panels in one row (4-col inner grid) -->
+                <div style="grid-column:span 3; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0.75rem;">
+
+                    <!-- Panel 1: Memory Layer Health -->
+                    <div class="stat-card" id="brain-memory-health" data-panel-tag="Brain" style="border-left-color:#a855f7; margin:0;">
+                        <div class="stat-content">
+                            <div class="panel-header" style="margin-bottom:0.3rem;">
+                                <span class="panel-tag-chip" onclick="openTagMenu('brain-memory-health',event)" data-panel-id="brain-memory-health">Brain</span>
+                                <span class="panel-title">Memory Layer Health</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                                <div id="mlh-dot" style="width:10px;height:10px;border-radius:50%;background:#555;box-shadow:0 0 6px #555;flex-shrink:0;transition:all 0.6s;"></div>
+                                <span id="mlh-status" style="font-size:0.8rem;font-weight:600;color:#94a3b8;">Loading…</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:0.35rem;font-size:0.7rem;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.5rem;background:rgba(168,85,247,0.07);border-radius:5px;border:1px solid rgba(168,85,247,0.15);">
+                                    <span style="color:rgba(255,255,255,0.5);">🗂 MemPalace</span>
+                                    <span id="mlh-mempalace" style="color:#94a3b8;font-weight:500;">—</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.5rem;background:rgba(99,102,241,0.07);border-radius:5px;border:1px solid rgba(99,102,241,0.15);">
+                                    <span style="color:rgba(255,255,255,0.5);">🔮 Pinecone dwe-v3</span>
+                                    <span id="mlh-pinecone" style="color:#94a3b8;font-weight:500;">—</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.5rem;background:rgba(34,197,94,0.07);border-radius:5px;border:1px solid rgba(34,197,94,0.15);">
+                                    <span style="color:rgba(255,255,255,0.5);">🌱 Seed Watcher</span>
+                                    <span id="mlh-seed" style="color:#94a3b8;font-weight:500;">—</span>
+                                </div>
+                            </div>
+                            <div id="mlh-lastingest" style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.4rem;">Last ingest: —</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Agent Last Memory Write -->
+                    <div class="stat-card" id="brain-agent-memory" data-panel-tag="Brain" style="border-left-color:#7c3aed; margin:0;">
+                        <div class="stat-content">
+                            <div class="panel-header" style="margin-bottom:0.3rem;">
+                                <span class="panel-tag-chip" onclick="openTagMenu('brain-agent-memory',event)" data-panel-id="brain-agent-memory">Brain</span>
+                                <span class="panel-title">Agent Last Memory Write</span>
+                            </div>
+                            <div id="agent-mem-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem;margin-top:0.25rem;"></div>
+                            <div style="display:flex;gap:0.75rem;margin-top:0.5rem;font-size:0.6rem;color:rgba(255,255,255,0.3);">
+                                <span><span style="color:#22c55e;">●</span> &lt;2h</span>
+                                <span><span style="color:#f59e0b;">●</span> 2–8h</span>
+                                <span><span style="color:#ef4444;">●</span> &gt;8h</span>
+                                <span><span style="color:#555;">●</span> never</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Brain Activity Feed -->
+                    <div class="stat-card" id="brain-comms-feed" data-panel-tag="Brain" style="border-left-color:#6366f1; margin:0;">
+                        <div class="stat-content">
+                            <div class="panel-header" style="margin-bottom:0.3rem;">
+                                <span class="panel-tag-chip" onclick="openTagMenu('brain-comms-feed',event)" data-panel-id="brain-comms-feed">Brain</span>
+                                <span class="panel-title">Brain Activity Feed</span>
+                            </div>
+                            <div id="brain-comms-list" style="display:flex;flex-direction:column;gap:0.28rem;max-height:160px;overflow-y:auto;margin-top:0.25rem;"></div>
+                            <div id="brain-comms-empty" style="font-size:0.7rem;color:rgba(255,255,255,0.25);display:none;margin-top:0.5rem;">No recent activity</div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 4: Memory Failures -->
+                    <div class="stat-card" id="brain-failures" data-panel-tag="Brain" style="border-left-color:#dc2626; margin:0;">
+                        <div class="stat-content">
+                            <div class="panel-header" style="margin-bottom:0.35rem;">
+                                <span class="panel-tag-chip" onclick="openTagMenu('brain-failures',event)" data-panel-id="brain-failures">Brain</span>
+                                <span class="panel-title">Memory Failures</span>
+                                <span id="brain-fail-badge" style="display:none;background:#dc2626;color:#fff;font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:0.2rem;"></span>
+                            </div>
+                            <div id="brain-fail-list" style="display:flex;flex-direction:column;gap:0.3rem;max-height:155px;overflow-y:auto;"></div>
+                            <div id="brain-fail-empty" style="font-size:0.7rem;color:rgba(34,197,94,0.7);margin-top:0.4rem;">✓ No failures in last 24h</div>
+                        </div>
+                    </div>
+
+                </div><!-- end 4-col row -->
+
+                <!-- Panel 5: Communication Flow (React, spans 3 cols) -->
+                <div class="stat-card" id="brain-layer-flow" data-panel-tag="Brain" style="border-left-color:#8b5cf6; grid-column:span 3; min-height:160px;">
+                    <div class="stat-content" style="width:100%;">
+                        <div class="panel-header" style="margin-bottom:0.3rem;">
+                            <span class="panel-tag-chip" onclick="openTagMenu('brain-layer-flow',event)" data-panel-id="brain-layer-flow">Brain</span>
+                            <span class="panel-title">Memory Communication Flow</span>
+                        </div>
+                        <div id="brain-flow-root" style="width:100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Panel 6: Memory Layer Architecture (horizontal 5-node, spans full row) -->
+                <div class="stat-card" id="brain-layer-stack" data-panel-tag="Brain" style="border-left-color:#6366f1; grid-column:span 3; min-height:140px;">
+                    <div class="stat-content" style="width:100%;">
+                        <div class="panel-header" style="margin-bottom:0.3rem;">
+                            <span class="panel-tag-chip" onclick="openTagMenu('brain-layer-stack',event)" data-panel-id="brain-layer-stack">Brain</span>
+                            <span class="panel-title">Memory Architecture — Layer Flow</span>
+                        </div>
+                        <div id="brain-stack-root" style="width:100%;"></div>
+                    </div>
+                </div>
+
                 <!-- System Uptime + Mac mini Health — unified card -->
-                <div class="stat-card" style="border-left-color:#7b61ff; grid-column: span 3;">
+                <div class="stat-card" id="stat-uptime" data-panel-tag="System" style="border-left-color:#7b61ff; grid-column: span 3;">
                     <div class="stat-content" style="width:100%;">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
-                            <div class="stat-label" style="margin-bottom:0;">System Uptime</div>
+                            <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-uptime',event)" data-panel-id="stat-uptime">System</span><span class="panel-title">System Uptime</span></div>
                             <a href="/delegations" style="text-decoration:none;background:rgba(123,97,255,0.15);border:1px solid rgba(123,97,255,0.35);color:#a78bff;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;" onmouseover="this.style.background='rgba(123,97,255,0.28)'" onmouseout="this.style.background='rgba(123,97,255,0.15)'">Logs &rarr;</a>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem 1.2rem;">
@@ -1762,13 +1920,14 @@
             </div>
 
             <!-- ── Live Ops Board ── -->
-            <div id="live-ops-board" style="grid-column:span 3; background:rgba(10,14,26,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.1rem 1.4rem; backdrop-filter:blur(20px); position:relative; overflow:hidden;">
+            <div id="live-ops-board" data-panel-tag="Ops" style="grid-column:span 3; background:rgba(10,14,26,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.1rem 1.4rem; backdrop-filter:blur(20px); position:relative; overflow:hidden;">
                 <!-- subtle grid texture -->
                 <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.015) 39px,rgba(255,255,255,0.015) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.015) 39px,rgba(255,255,255,0.015) 40px);pointer-events:none;border-radius:16px;"></div>
                 <!-- Header row -->
                 <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.85rem;position:relative;z-index:1;">
                     <div style="width:8px;height:8px;border-radius:50%;background:#00f5ff;box-shadow:0 0 8px #00f5ff;flex-shrink:0;" id="ops-board-live-dot"></div>
-                    <span style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.85);">Live Ops Board</span>
+                    <span class="panel-tag-chip" onclick="openTagMenu('live-ops-board',event)" data-panel-id="live-ops-board">Ops</span>
+                    <span class="panel-title" style="letter-spacing:0.08em;text-transform:uppercase;">Live Ops Board</span>
                     <span style="font-size:0.6rem;color:rgba(255,255,255,0.28);margin-left:auto;" id="ops-board-ts">—</span>
                     <span style="font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:4px;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.25);color:#00f5ff;letter-spacing:0.06em;">LIVE</span>
                 </div>
@@ -1786,10 +1945,10 @@
             </div>
 
             <!-- Revenue & Pipeline -->
-            <div class="stat-card" style="border-left-color:#00ff88; grid-column: span 3;">
+            <div class="stat-card" id="stat-revenue-card" data-panel-tag="Revenue" style="border-left-color:#00ff88; grid-column: span 3;">
                 <div class="stat-content" style="width:100%;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
-                        <div class="stat-label" style="margin-bottom:0;">Revenue & Pipeline</div>
+                        <div class="panel-header"><span class="panel-tag-chip" onclick="openTagMenu('stat-revenue-card',event)" data-panel-id="stat-revenue-card">Revenue</span><span class="panel-title">Revenue & Pipeline</span></div>
                         <a id="revenue-btn" href="/revenue" style="text-decoration:none;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.35);color:#00ff88;font-family:Inter,sans-serif;font-size:0.7rem;font-weight:600;padding:0.25rem 0.7rem;border-radius:0.4rem;letter-spacing:0.03em;transition:all 0.2s;" onmouseover="this.style.background='rgba(0,255,136,0.28)'" onmouseout="this.style.background='rgba(0,255,136,0.15)'">Revenue &rarr;</a>
                     </div>
                     <!-- Row 1: Cash Flow · Long-Term · Opportunities · Funnels -->
@@ -4866,6 +5025,437 @@
                 document.getElementById('stat-agents').textContent = d.count;
                 document.getElementById('stat-gateway').textContent = d.gatewayUp ? 'Gateway online' : 'Gateway offline';
             } catch(e) {}
+        }
+
+        // ── Brain/Memory Layer panels ─────────────────────────────────────────
+
+        // --- Panel tag system ---
+        let _panelCfg = { tags: {}, availableTags: ['Brain','System','Revenue','Pipeline','Intel','Ops','AI Team'] };
+        let _tagDropdown = null;
+
+        async function loadPanelConfig() {
+            try {
+                _panelCfg = await fetch('/mc/panel-config').then(r => r.json());
+                Object.entries(_panelCfg.tags || {}).forEach(([id, tag]) => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.dataset.panelTag = tag;
+                        // Update inline chip label if present
+                        const chip = el.querySelector('.panel-tag-chip');
+                        if (chip) chip.textContent = tag;
+                    }
+                });
+            } catch(e) {}
+        }
+
+        function openTagMenu(panelId, evt) {
+            evt.stopPropagation();
+            if (_tagDropdown) { _tagDropdown.remove(); _tagDropdown = null; }
+            const el = document.getElementById(panelId);
+            const currentTag = el ? el.dataset.panelTag : '';
+            const chip = evt.currentTarget; // the chip element that was clicked
+            const div = document.createElement('div');
+            div.className = 'panel-tag-dropdown';
+            (_panelCfg.availableTags || []).forEach(tag => {
+                const btn = document.createElement('button');
+                btn.textContent = tag;
+                if (tag === currentTag) btn.className = 'active';
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (el) el.dataset.panelTag = tag;
+                    // Update the chip label (text node, after the ::before pseudo)
+                    if (chip && chip.classList.contains('panel-tag-chip')) chip.childNodes[0] && (chip.textContent = tag);
+                    div.remove(); _tagDropdown = null;
+                    try { await fetch('/mc/panel-config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ panelId, tag }) }); } catch(e) {}
+                };
+                div.appendChild(btn);
+            });
+            document.body.appendChild(div);
+            const rect = evt.currentTarget.getBoundingClientRect();
+            div.style.top = (rect.bottom + 4) + 'px';
+            div.style.left = Math.max(4, rect.left) + 'px';
+            _tagDropdown = div;
+        }
+        document.addEventListener('click', () => { if (_tagDropdown) { _tagDropdown.remove(); _tagDropdown = null; } });
+
+        // --- Panel 1: Memory Layer Health ---
+        function _renderMemLayerHealth(d) {
+            const dot = document.getElementById('mlh-dot');
+            const statusEl = document.getElementById('mlh-status');
+            const colors = { green:'#22c55e', amber:'#f59e0b', red:'#ef4444', unknown:'#555' };
+            const c = colors[d.overallStatus] || colors.unknown;
+            if (dot) { dot.style.background = c; dot.style.boxShadow = `0 0 8px ${c}`; }
+            const labels = { green:'All layers healthy', amber:'Degraded — check below', red:'Layer down', unknown:'Loading…' };
+            if (statusEl) { statusEl.textContent = labels[d.overallStatus] || '—'; statusEl.style.color = c; }
+            const mp = document.getElementById('mlh-mempalace');
+            if (mp) mp.textContent = d.mempalace.status === 'ok' ? '✓ Active' : ('⚠ ' + d.mempalace.status);
+            const pc = document.getElementById('mlh-pinecone');
+            if (pc) pc.textContent = d.pinecone.status === 'ok' ? `✓ ${(d.pinecone.vectorCount||0).toLocaleString()} vectors` : ('⚠ ' + d.pinecone.status);
+            const sw = document.getElementById('mlh-seed');
+            if (sw) sw.textContent = d.seedWatcher.status === 'ok'
+                ? `✓ Queue: ${d.seedWatcher.queueDepth}`
+                : ('⚠ ' + d.seedWatcher.status);
+            const li = document.getElementById('mlh-lastingest');
+            if (li && d.seedWatcher.lastSeedTs) {
+                const ago = Math.round((Date.now() - new Date(d.seedWatcher.lastSeedTs)) / 60000);
+                li.textContent = `Last ingest: ${ago < 60 ? ago + 'm ago' : Math.round(ago/60) + 'h ago'}`;
+            }
+        }
+        async function fetchMemLayerHealth() {
+            try { _renderMemLayerHealth(await fetch('/mc/mempalace-health').then(r => r.json())); }
+            catch(e) { const s = document.getElementById('mlh-status'); if (s) { s.textContent = 'Error loading'; s.style.color = '#ef4444'; } }
+        }
+
+        // --- Panel 2: Agent Memory Status ---
+        function _ageLabel(ageMs) {
+            if (ageMs === null) return 'never';
+            const h = ageMs / 3600000;
+            if (h < 1) return Math.round(ageMs/60000) + 'm ago';
+            if (h < 24) return Math.round(h) + 'h ago';
+            return Math.round(h/24) + 'd ago';
+        }
+        function _renderAgentMemoryStatus(d) {
+            const grid = document.getElementById('agent-mem-grid');
+            if (!grid) return;
+            const dotColor = { green:'#22c55e', amber:'#f59e0b', red:'#ef4444', never:'#555' };
+            grid.innerHTML = (d.agents || []).map(a => `
+                <div class="agent-mem-badge" title="${a.lastFile || 'no memory file'}">
+                    <span class="dot" style="background:${dotColor[a.status]||'#555'};box-shadow:0 0 4px ${dotColor[a.status]||'#555'};"></span>
+                    <span class="name">${a.name}</span>
+                    <span class="age">${a.agoH === null ? 'never' : a.agoH < 1 ? Math.round(a.agoH*60) + 'm ago' : a.agoH < 24 ? a.agoH + 'h ago' : Math.round(a.agoH/24) + 'd ago'}</span>
+                </div>`).join('');
+        }
+        async function fetchAgentMemoryStatus() {
+            try { _renderAgentMemoryStatus(await fetch('/mc/agent-memory-status').then(r => r.json())); }
+            catch(e) {}
+        }
+
+        // --- Panel 3: Brain Comms Feed ---
+        function _renderBrainComms(d) {
+            const list = document.getElementById('brain-comms-list');
+            const empty = document.getElementById('brain-comms-empty');
+            if (!list) return;
+            const evts = d.events || [];
+            if (evts.length === 0) { list.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+            if (empty) empty.style.display = 'none';
+            list.innerHTML = evts.slice(0, 12).map(e => {
+                const dot = e.type === 'success' ? '#22c55e' : e.type === 'fail' ? '#ef4444' : '#6366f1';
+                const ts = e.ts ? e.ts.slice(11,16) : '';
+                // Strip log prefix noise: "2026-04-15 10:38:31,001 [seed-watcher] INFO "
+                const raw = (e.msg || '').replace(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[,\d]* \[[\w-]+\] \w+ /, '');
+                const label = raw.slice(0, 60);
+                return `<div class="brain-evt">
+                    <span class="evt-dot" style="background:${dot};"></span>
+                    <span class="evt-ts">${ts}</span>
+                    <span class="evt-txt">${label}</span>
+                </div>`;
+            }).join('');
+        }
+        async function fetchBrainComms() {
+            try { _renderBrainComms(await fetch('/mc/brain-comms').then(r => r.json())); }
+            catch(e) {}
+        }
+
+        // --- Panel 4: Memory Failures ---
+        function _renderBrainFailures(d) {
+            const list = document.getElementById('brain-fail-list');
+            const empty = document.getElementById('brain-fail-empty');
+            const badge = document.getElementById('brain-fail-badge');
+            if (!list) return;
+            const fails = d.failures || [];
+            if (badge) {
+                if (fails.length > 0) { badge.textContent = fails.length; badge.style.display = 'inline'; }
+                else { badge.style.display = 'none'; }
+            }
+            if (fails.length === 0) {
+                list.innerHTML = '';
+                if (empty) empty.style.display = 'block';
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            list.innerHTML = fails.slice(0, 6).map(f => `
+                <div class="brain-fail-item">
+                    <span class="fail-src">[${f.source}]</span>
+                    <span class="fail-ts">${(f.ts||'').slice(11,16)}</span>
+                    <div style="margin-top:0.2rem;opacity:0.8;">${f.detail.slice(0,100)}</div>
+                </div>`).join('');
+        }
+        async function fetchBrainFailurePanel() {
+            try { _renderBrainFailures(await fetch('/mc/brain-failures').then(r => r.json())); }
+            catch(e) {}
+        }
+
+        // --- Panel 5: Layer Flow (React) ---
+        // Shared React roots (prevent "already has a root" warnings on re-render)
+        let _brainFlowReactRoot = null;
+        let _brainStackReactRoot = null;
+
+        function renderBrainFlowDiagram(memHealth, agentStatus) {
+            const root = document.getElementById('brain-flow-root');
+            const stackRoot = document.getElementById('brain-stack-root');
+            if (!window.React || !window.ReactDOM) return;
+
+            const { createElement: h } = React;
+
+            // ── Shared status helpers ──
+            const STATUS_COLOR = { ok:'#22c55e', green:'#22c55e', amber:'#f59e0b', red:'#ef4444', unknown:'#6366f1', never:'#555' };
+            const sc = s => STATUS_COLOR[s] || STATUS_COLOR.unknown;
+
+            // ── Panel 5: horizontal flow — equal-flex nodes ──
+
+            function FlowNode({ label, icon, status, sub }) {
+                const c = sc(status);
+                const rgb = hexToRgb(c);
+                return h('div', {
+                    style: {
+                        flex: '1 1 0',           // equal width, each node takes same share
+                        background: `linear-gradient(160deg,rgba(${rgb},0.14),rgba(${rgb},0.04))`,
+                        border: `1px solid rgba(${rgb},0.35)`,
+                        borderRadius: '10px',
+                        padding: '0.55rem 0.5rem 0.45rem',
+                        textAlign: 'center',
+                        position: 'relative',
+                        boxShadow: `0 2px 14px rgba(${rgb},0.12), inset 0 1px 0 rgba(255,255,255,0.04)`,
+                        transition: 'all 0.6s',
+                        minWidth: 0,
+                    }
+                },
+                    // Status dot top-right
+                    h('div', { style: { position:'absolute', top:'0.4rem', right:'0.45rem', width:'6px', height:'6px', borderRadius:'50%', background:c, boxShadow:`0 0 6px ${c}` } }),
+                    h('div', { style: { fontSize: '1.15rem', lineHeight: 1, marginBottom: '0.2rem' } }, icon),
+                    h('div', { style: { fontSize: '0.62rem', fontWeight: 700, color: c, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.2 } }, label),
+                    sub && h('div', { style: { fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.18rem', lineHeight: 1.3 } }, sub),
+                );
+            }
+
+            function FlowArrow({ active }) {
+                const c = active ? '#22c55e' : '#1e293b';
+                const rgb = active ? '34,197,94' : '30,41,59';
+                return h('div', {
+                    style: { display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', flexShrink: 0, width: '28px', gap: '3px' }
+                },
+                    // Arrow line with animated gradient when active
+                    h('div', { style: {
+                        width: '100%', height: '2px',
+                        background: active
+                            ? `linear-gradient(90deg, rgba(${rgb},0), rgba(${rgb},1), rgba(${rgb},0))`
+                            : `rgba(${rgb},0.4)`,
+                        borderRadius: '1px',
+                        animation: active ? 'flowPulse 2.2s ease-in-out infinite' : 'none',
+                    } }),
+                    // Arrowhead chevron
+                    h('div', { style: {
+                        width: 0, height: 0,
+                        borderTop: '4px solid transparent',
+                        borderBottom: '4px solid transparent',
+                        borderLeft: `5px solid ${active ? c : 'rgba(30,41,59,0.4)'}`,
+                        marginTop: '-9px', alignSelf: 'flex-end', marginRight: '-1px',
+                        transition: 'border-color 0.6s',
+                    } }),
+                );
+            }
+
+            function BrainFlow({ mh, am }) {
+                const pcOk = mh && mh.pinecone    && mh.pinecone.status === 'ok';
+                const swOk = mh && mh.seedWatcher && mh.seedWatcher.status === 'ok';
+                const mpOk = mh && mh.mempalace   && mh.mempalace.status === 'ok';
+                const agentStatuses = (am && am.agents) ? am.agents : [];
+                const nGreen = agentStatuses.filter(a => a.status === 'green').length;
+                const anyRed = agentStatuses.some(a => a.status === 'red' || a.status === 'never');
+                const agentOverall = nGreen > 0 ? 'green' : (anyRed ? 'red' : 'amber');
+                const vecCount = (mh && mh.pinecone) ? (mh.pinecone.vectorCount || 0).toLocaleString() : '—';
+
+                return h('div', {
+                    style: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: '100%',
+                        padding: '0.6rem 0.25rem 0.25rem',
+                        gap: '0',          // no gap — arrows provide the spacing
+                        boxSizing: 'border-box',
+                    }
+                },
+                    h(FlowNode, { label: 'Agents', icon: '🤖', status: agentOverall, sub: `${nGreen}/${agentStatuses.length} writing` }),
+                    h(FlowArrow, { active: mpOk }),
+                    h(FlowNode, { label: 'MemPalace', icon: '🏛', status: mpOk ? 'ok' : 'red', sub: 'session memory' }),
+                    h(FlowArrow, { active: swOk }),
+                    h(FlowNode, { label: 'Pinecone', icon: '🔮', status: pcOk ? 'ok' : 'red', sub: vecCount }),
+                    h(FlowArrow, { active: pcOk }),
+                    h(FlowNode, { label: 'Brain', icon: '🧠', status: pcOk ? 'ok' : 'red', sub: 'dwe-v3 RAG' }),
+                    h(FlowArrow, { active: pcOk }),
+                    h(FlowNode, { label: 'Recall', icon: '💡', status: agentOverall, sub: 'agent answers' }),
+                );
+            }
+
+            // ── Panel 6: horizontal 5-node memory architecture ──
+            // Layers: L1 Session → L2 Persistent → L3 Governed → MemPalace → DWE Brain
+
+            function ArchNode({ icon, label, tag, sub1, sub2, status, tagColor }) {
+                const c = sc(status);
+                const rgb = hexToRgb(c);
+                const tc = tagColor || 'rgba(99,102,241,0.7)';
+                return h('div', {
+                    style: {
+                        flex: '1 1 0',
+                        background: `linear-gradient(160deg,rgba(${rgb},0.13),rgba(${rgb},0.04))`,
+                        border: `1px solid rgba(${rgb},0.35)`,
+                        borderRadius: '10px',
+                        padding: '0.55rem 0.6rem 0.5rem',
+                        textAlign: 'center',
+                        position: 'relative',
+                        boxShadow: `0 2px 14px rgba(${rgb},0.1), inset 0 1px 0 rgba(255,255,255,0.04)`,
+                        transition: 'all 0.6s',
+                        minWidth: 0,
+                    }
+                },
+                    // Layer badge top-left
+                    tag && h('div', { style: {
+                        position:'absolute', top:'0.3rem', left:'0.4rem',
+                        fontSize:'0.48rem', fontWeight:700, letterSpacing:'0.08em',
+                        textTransform:'uppercase', color: tc,
+                        background: `rgba(99,102,241,0.12)`, borderRadius:'3px', padding:'1px 4px',
+                    } }, tag),
+                    // Status dot top-right
+                    h('div', { style: { position:'absolute', top:'0.4rem', right:'0.45rem', width:'6px', height:'6px', borderRadius:'50%', background:c, boxShadow:`0 0 6px ${c}` } }),
+                    h('div', { style: { fontSize:'1.2rem', lineHeight:1, marginBottom:'0.2rem', marginTop:'0.3rem' } }, icon),
+                    h('div', { style: { fontSize:'0.62rem', fontWeight:700, color:c, letterSpacing:'0.05em', textTransform:'uppercase', lineHeight:1.2 } }, label),
+                    sub1 && h('div', { style: { fontSize:'0.57rem', color:'rgba(255,255,255,0.45)', marginTop:'0.15rem', lineHeight:1.3 } }, sub1),
+                    sub2 && h('div', { style: { fontSize:'0.54rem', color:'rgba(255,255,255,0.25)', marginTop:'0.06rem', lineHeight:1.3, fontStyle:'italic' } }, sub2),
+                );
+            }
+
+            function BrainLayerStack({ mh, am }) {
+                const pcOk = mh && mh.pinecone    && mh.pinecone.status === 'ok';
+                const mpOk = mh && mh.mempalace   && mh.mempalace.status === 'ok';
+                const swOk = mh && mh.seedWatcher && mh.seedWatcher.status === 'ok';
+                const agentStatuses = (am && am.agents) ? am.agents : [];
+                const nGreen = agentStatuses.filter(a => a.status === 'green').length;
+                const agentOverall = nGreen > 0 ? 'green' : (agentStatuses.some(a=>a.status==='red'||a.status==='never') ? 'red' : 'amber');
+                const vecCount = (mh && mh.pinecone) ? (mh.pinecone.vectorCount || 0).toLocaleString() : '—';
+
+                return h('div', {
+                    style: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        width: '100%',
+                        padding: '0.5rem 0.25rem 0.2rem',
+                        gap: '0',
+                        boxSizing: 'border-box',
+                    }
+                },
+                    h(ArchNode, {
+                        icon: '⚡', label: 'L1 Session',
+                        tag: 'Layer 1', tagColor: 'rgba(99,102,241,0.8)',
+                        sub1: 'Short-term · ephemeral',
+                        sub2: 'per-session context',
+                        status: agentOverall,
+                    }),
+                    h(FlowArrow, { active: agentOverall === 'green' || agentOverall === 'amber' }),
+                    h(ArchNode, {
+                        icon: '📋', label: 'L2 Persistent',
+                        tag: 'Layer 2', tagColor: 'rgba(139,92,246,0.8)',
+                        sub1: 'Memory Index · agent files',
+                        sub2: 'MEMORY_INDEX.md',
+                        status: agentOverall,
+                    }),
+                    h(FlowArrow, { active: agentOverall === 'green' || agentOverall === 'amber' }),
+                    h(ArchNode, {
+                        icon: '📜', label: 'L3 Governed',
+                        tag: 'Layer 3', tagColor: 'rgba(168,85,247,0.8)',
+                        sub1: 'SOUL · BOOT · Notion',
+                        sub2: 'oracles & governance',
+                        status: 'ok',
+                    }),
+                    h(FlowArrow, { active: mpOk }),
+                    h(ArchNode, {
+                        icon: '🏛', label: 'MemPalace',
+                        tag: 'L4 Mining', tagColor: 'rgba(34,197,94,0.8)',
+                        sub1: 'ChromaDB · mines L1–L3',
+                        sub2: 'seeds → 4_Ready_to_Seed',
+                        status: mpOk ? 'ok' : 'red',
+                    }),
+                    h(FlowArrow, { active: swOk && pcOk }),
+                    h(ArchNode, {
+                        icon: '🧠', label: 'DWE Brain',
+                        tag: 'L5 RAG', tagColor: 'rgba(245,158,11,0.9)',
+                        sub1: `Pinecone dwe-v3 · ${vecCount}`,
+                        sub2: 'Ollama qwen2.5:3b recall',
+                        status: pcOk ? 'ok' : 'red',
+                    }),
+                );
+            }
+
+            // Mount / update Panel 5
+            if (root) {
+                if (!_brainFlowReactRoot) _brainFlowReactRoot = ReactDOM.createRoot(root);
+                _brainFlowReactRoot.render(h(BrainFlow, { mh: memHealth, am: agentStatus }));
+            }
+            // Mount / update Panel 6
+            if (stackRoot) {
+                if (!_brainStackReactRoot) _brainStackReactRoot = ReactDOM.createRoot(stackRoot);
+                _brainStackReactRoot.render(h(BrainLayerStack, { mh: memHealth, am: agentStatus }));
+            }
+        }
+
+        function hexToRgb(hex) {
+            // Handle named colors with fallback
+            const map = { '#22c55e':'34,197,94', '#f59e0b':'245,158,11', '#ef4444':'239,68,68', '#6366f1':'99,102,241', '#555':'85,85,85', '#a855f7':'168,85,247' };
+            if (map[hex]) return map[hex];
+            const m = (hex||'').replace('#','');
+            if (m.length === 6) {
+                const r = parseInt(m.slice(0,2),16), g = parseInt(m.slice(2,4),16), b = parseInt(m.slice(4,6),16);
+                return `${r},${g},${b}`;
+            }
+            return '99,102,241';
+        }
+
+        let _brainFlowMemHealth = null, _brainFlowAgentStatus = null;
+
+        // Render all brain panels from a pre-fetched data bundle (used by WS push)
+        function renderBrainPanelsFromCache(d) {
+            if (d.memHealth)     _renderMemLayerHealth(d.memHealth);
+            if (d.agentMemory)   _renderAgentMemoryStatus(d.agentMemory);
+            if (d.brainComms)    _renderBrainComms(d.brainComms);
+            if (d.brainFailures) _renderBrainFailures(d.brainFailures);
+            if (d.healerState)   _renderBrainHealerBadge(d.healerState);
+            renderBrainFlowDiagram(d.memHealth || null, d.agentMemory || null);
+        }
+
+        function _renderBrainHealerBadge(state) {
+            const badge = document.getElementById('brain-healer-badge');
+            if (!badge) return;
+            const layers = Object.values(state);
+            const hasEscalated  = layers.some(l => l.status === 'escalated');
+            const hasRecovering = layers.some(l => l.status === 'recovering');
+            if (hasEscalated) {
+                badge.textContent = '🚨 ESCALATED — CE+CTO notified';
+                badge.style.display = 'inline';
+                badge.style.background = 'rgba(239,68,68,0.2)';
+                badge.style.color = '#ef4444';
+                badge.style.border = '1px solid rgba(239,68,68,0.4)';
+            } else if (hasRecovering) {
+                badge.textContent = '⟳ Self-healing…';
+                badge.style.display = 'inline';
+                badge.style.background = 'rgba(245,158,11,0.2)';
+                badge.style.color = '#f59e0b';
+                badge.style.border = '1px solid rgba(245,158,11,0.4)';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        async function fetchBrainMemoryPanels() {
+            const [mh, am] = await Promise.allSettled([
+                fetch('/mc/mempalace-health').then(r => r.json()),
+                fetch('/mc/agent-memory-status').then(r => r.json()),
+            ]);
+            _brainFlowMemHealth  = mh.status === 'fulfilled' ? mh.value : null;
+            _brainFlowAgentStatus = am.status === 'fulfilled' ? am.value : null;
+            fetchMemLayerHealth();
+            fetchAgentMemoryStatus();
+            fetchBrainComms();
+            fetchBrainFailurePanel();
+            renderBrainFlowDiagram(_brainFlowMemHealth, _brainFlowAgentStatus);
         }
 
         // ── /mc/brain → DWE Brain score ───────────────────────────────────────
@@ -8623,6 +9213,7 @@
                 arm('comparison',       fetchComparison,      300000);
                 arm('jakeInbox',        fetchJakeInbox,       300000);
                 arm('visionScore',      fetchVisionScore,     300000);
+                arm('brainMemory',      fetchBrainMemoryPanels, 60000);
             }
 
             function stopPollingFallback() {
@@ -8752,6 +9343,11 @@
 
                     } else if (type === 'ops-board') {
                         renderOpsBoard(data);
+
+                    } else if (type === 'brain-memory') {
+                        _brainFlowMemHealth   = data.memHealth   || null;
+                        _brainFlowAgentStatus = data.agentMemory || null;
+                        renderBrainPanelsFromCache(data);
                     }
                 };
 
@@ -8769,6 +9365,8 @@
 
             // Initial HTTP load fires immediately (before WS handshake)
             refreshAll();
+            loadPanelConfig();
+            fetchBrainMemoryPanels(); // initial paint before WS connects
             updateCeoCornerStatus();
             fetchTunnels();
             fetchContaboVps();
